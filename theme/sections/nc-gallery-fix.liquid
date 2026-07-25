@@ -1,0 +1,17 @@
+{% comment %}
+  Product gallery arrow centering.
+  The theme hardcodes .l4pr .swiper-button-nav to height:540px, so the round prev/next
+  buttons vertically center on 540px instead of the actual product image. On tall square
+  images the arrows end up above the middle. Letting the nav span the gallery
+  (top:0; bottom:0; height:auto) restores true vertical centering. The :after circle keeps
+  its own top:50%/margin-top:-22px, so it now lands on the real center.
+  Desktop/tablet only; mobile uses a separate below-image arrow layout.
+{% endcomment %}
+<style>
+@media only screen and (min-width:761px){
+  #content .l4pr.aside-pager .swiper-button-nav{top:0!important;bottom:0!important;height:auto!important}
+}
+</style>
+{% schema %}
+{"name":"NC Gallery Fix","settings":[]}
+{% endschema %}
