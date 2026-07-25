@@ -39,3 +39,33 @@ on shop `v9fqfa-bd.myshopify.com` via the Admin API (themeFilesUpsert).
 Files changed:
 - sections/nc-gallery-fix.liquid (new)
 - templates/product.json (registered the new section)
+
+---
+
+# Site fix: wood roller single price on Add-to-Cart button
+
+## Problem
+On the Birchwood Massage Roller Set page, the bundle widget
+(`sections/nc-cro.liquid`) showed "Add Single — $79.99" when the **Wood Roller**
+variant ($24.99) was selected. The single tier card correctly showed $24.99, so
+the orange button and the card disagreed.
+
+## Cause
+The single button label (and the sticky-bar single price) used the hardcoded
+bundle base `B.main.pr` instead of the selected variant's live price.
+
+## Fix
+Scoped strictly to the Wood Roller variant (id `49493167046884`) via an
+`isWR()` check. When that variant is selected, the "Add Single" button and the
+sticky-bar single price read the live price the single tier already shows
+($24.99); in every other case (5 Piece Set, all other products) the original
+code runs unchanged. Bundle (Duo/Kit) pricing and add-to-cart behavior were left
+exactly as they were.
+
+## Applied to
+Shopify draft theme `161868382436` ("NC Polish round 2 + reviews (Claude)") via
+the Admin API (themeFilesUpsert), byte-verified against this branch. The
+live/MAIN theme does not use this section.
+
+Files changed:
+- sections/nc-cro.liquid (Wood-Roller single price on Add button + sticky bar)
