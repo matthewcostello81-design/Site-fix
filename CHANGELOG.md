@@ -39,3 +39,33 @@ on shop `v9fqfa-bd.myshopify.com` via the Admin API (themeFilesUpsert).
 Files changed:
 - sections/nc-gallery-fix.liquid (new)
 - templates/product.json (registered the new section)
+
+---
+
+# Site fix: collection hero carousel — sync banner image, dots, and text
+
+## Problem
+On the collection hero (`nc-collection-hero`, e.g. Best Sellers), the rotating
+banner image, the caption text, and the dots advanced on different clocks, so
+they were visibly out of sync.
+
+## Cause
+Two independent timers:
+- Banner image rotated every 4500ms (own `setInterval` in `nc-foot-fix.liquid`).
+- Caption text rotated every 3500ms (`setInterval` in `nc-collection-hero.liquid`);
+  the dots followed the caption via a MutationObserver.
+
+4500ms vs 3500ms meant the image drifted against the text and dots.
+
+## Fix (`sections/nc-foot-fix.liquid`)
+Removed the banner image's independent 4500ms interval and instead advanced the
+image layer inside the same observer that already syncs the dots to the caption.
+Now the caption's single 3500ms timer is the one master clock: on each tick the
+caption, the dots, and the banner image all change together.
+
+Summer Sale is untouched: its banner uses `.nc-ed__img--full` and has no rotating
+image layers (`:not(.nc-ed__img--full)`), so the sync code no-ops there.
+
+## Applied to
+Shopify draft theme 161830-... `161868382436` via Admin API (themeFilesUpsert).
+Files changed: sections/nc-foot-fix.liquid
