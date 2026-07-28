@@ -69,3 +69,28 @@ image layers (`:not(.nc-ed__img--full)`), so the sync code no-ops there.
 ## Applied to
 Shopify draft theme 161830-... `161868382436` via Admin API (themeFilesUpsert).
 Files changed: sections/nc-foot-fix.liquid
+
+---
+
+# Site fix: free-gift bar restyle to match the brand
+
+## Problem
+The "Free 5-Level Resistance Band Set / GIFT WITH ANY PURCHASE / INCLUDED FREE"
+bar (`.nc-gift-home`, injected by `nc-cro.liquid`) used a mint-green gradient
+(#F6FAF6 -> #B7D6C4) with a tan pill, clashing with the site's cream/sand + teal
+brand palette.
+
+## Fix (`sections/nc-nohover.liquid`, loads last globally)
+Appended a scoped override:
+- Bar background -> brand cream/sand gradient (#F7F1E3 -> #E6D6B4) with a subtle
+  teal border and soft shadow, so it reads as an on-brand raised card.
+- Eyebrow -> brand teal (#2C6E72); heading charcoal (#0F2A33); sub muted (#3C5860).
+- "INCLUDED FREE" pill -> brand teal gradient (#2C6E72 -> #15414A) with white text
+  (keeps the existing subtle shimmer animation).
+
+Scoped with `#content .nc-gift-home` for specificity; nc-nohover loads after
+nc-cro so it wins cleanly. No change to layout or responsive sizing.
+
+## Applied to
+Shopify draft theme 161868382436 via Admin API (themeFilesUpsert).
+Files changed: sections/nc-nohover.liquid
