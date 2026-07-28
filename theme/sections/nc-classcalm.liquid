@@ -1,0 +1,26 @@
+{% comment %}
+  NC Class Calm: idempotent classList shim, loaded first via header-group.json.
+  Several nc-* scripts run 300ms maintenance ticks that call classList.add or
+  classList.toggle(x, force) with values that are already in place. Per the DOM
+  spec those calls re-serialize the class attribute even when nothing changed,
+  which queues a mutation record every time. Every cart MutationObserver
+  (nc-cartfix, nc-linesave, nc-cartcount, nc-recs, nc-cro cartObs, nc-gift, and
+  the theme's own cart logic) then wakes 3+ times per second forever. That
+  permanent churn loop made cart images and prices flash and spammed /cart.js.
+  This shim makes no-op classList writes truly no-op, so redundant writes from
+  any current or future section stop generating mutations. Real class changes
+  behave exactly as before.
+{% endcomment %}
+<script data-nc-classcalm>
+(function(){
+  if(window.__ncClassCalm){return;}window.__ncClassCalm=1;
+  var p=DOMTokenList.prototype;
+  var _add=p.add,_rem=p.remove,_tog=p.toggle;
+  p.add=function(){for(var i=0;i<arguments.length;i++){if(!this.contains(String(arguments[i]))){return _add.apply(this,arguments);}}};
+  p.remove=function(){for(var i=0;i<arguments.length;i++){if(this.contains(String(arguments[i]))){return _rem.apply(this,arguments);}}};
+  p.toggle=function(t,f){if(arguments.length>1){if(this.contains(String(t))===!!f){return !!f;}return _tog.call(this,t,f);}return _tog.call(this,t);};
+})();
+</script>
+{% schema %}
+{"name":"NC Class Calm","settings":[]}
+{% endschema %}

@@ -69,3 +69,72 @@ image layers (`:not(.nc-ed__img--full)`), so the sync code no-ops there.
 ## Applied to
 Shopify draft theme 161830-... `161868382436` via Admin API (themeFilesUpsert).
 Files changed: sections/nc-foot-fix.liquid
+
+---
+
+# Site fix: cart drawer flashing (permanent mutation storm)
+
+## Problem
+Images and prices in the cart drawer flashed continuously and the cart looked
+bugged. The drawer scripts also polled /cart.js several times per second.
+
+## Cause
+Several nc-* sections run 300ms maintenance ticks that call
+`classList.add(...)` and `classList.toggle(x, force)` with values that are
+already in place (for example `li2.classList.add('nc-disc')` on the discount
+totals row and `classList.toggle('nc-stuck', ...)` on the cart header in
+nc-cro's drawerExtras). Per the DOM spec these calls re-serialize the class
+attribute even when nothing changes, and that always queues a mutation record.
+
+Every MutationObserver watching #cart (nc-cartfix, nc-linesave, nc-cartcount,
+nc-recs, nc-cro's cartObs, nc-gift, plus the theme's own cart logic) therefore
+woke 3+ times per second forever, re-running image swaps and price rewrites
+and fetching /cart.js in a loop. Reproduced in a local Playwright harness
+built from the real theme scripts: steady ~3-4 mutations/second at idle,
+dominated by no-change class writes on the savings row.
+
+## Fix
+`sections/nc-classcalm.liquid`: a tiny DOMTokenList shim, loaded first via
+sections/header-group.json, that makes no-op classList writes truly no-op
+(add of a present token, remove of an absent token, and toggle-with-force
+that would not change state return without touching the attribute). Real
+class changes behave exactly as before.
+
+This fixes the storm regardless of which section produces redundant writes,
+so ongoing edits to nc-cro.liquid by other sessions cannot reintroduce it.
+
+Verified in the harness: after the shim, zero mutations at idle over 17s
+(previously 3-4/second forever), and a quantity change produces one bounded
+rebuild burst that settles immediately.
+
+## Applied to
+Shopify draft theme `161868382436` ("NC Polish round 2 + reviews (Claude)")
+via themeFilesUpsert.
+
+Files changed:
+- sections/nc-classcalm.liquid (new)
+- sections/header-group.json (registered nc_classcalm first in the group)
+
+---
+
+# Site polish: free gift banner matched to brand theme
+
+## Problem
+The homepage free gift band (Free 5-Level Resistance Band Set) rendered in an
+off-palette sage green (from a `.nc-gift-home` override in nc-cro.liquid)
+that did not match the brand's cream/sand + teal identity.
+
+## Fix
+`sections/nc-giftfix.liquid`, registered homepage-only in
+templates/index.json: repaints the band with the brand teal promo gradient
+(the same 160deg #3a8d83 -> #2C6E72 -> #173f44 family used by the trust strip
+and the Our Promise band), cream heading, seafoam eyebrow, muted cream body
+text, and the standing 3D drop shadow. The animated gold "Included Free" pill
+is kept as the contrast accent. Selectors carry `#nc-home` specificity so they
+outrank nc-cro's single-class !important rules without editing that file.
+Color-only change: all existing responsive layout rules still apply on mobile
+and desktop.
+
+Files changed:
+- sections/nc-giftfix.liquid (new)
+- templates/index.json (added nc_giftfix to the homepage template)

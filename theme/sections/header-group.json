@@ -1,0 +1,171 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "header",
+  "name": "t:static_sections.header.name",
+  "sections": {
+    "nc_classcalm": {
+      "type": "nc-classcalm",
+      "settings": {}
+    },
+    "nc_announce": {
+      "type": "nc-announce",
+      "blocks": {
+        "m2": {
+          "type": "message",
+          "settings": {
+            "text": "10%  Off Your First Order · Code WELCOME10"
+          }
+        },
+        "m3": {
+          "type": "message",
+          "settings": {
+            "text": "Free Shipping  on All Orders"
+          }
+        }
+      },
+      "block_order": [
+        "m2",
+        "m3"
+      ],
+      "settings": {
+        "speed": 16
+      }
+    },
+    "header": {
+      "type": "header",
+      "blocks": {
+        "usp_E6PDc6": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Fast & Free Shipping!  </strong>US Based Small Business</p>",
+            "icon": "default",
+            "image_width": 90
+          }
+        },
+        "f8ee5b63-cdad-4140-9183-2aea32d44591": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Summer Sale </strong>— All Products 15% Off!</p>",
+            "icon": "default",
+            "image_width": 55
+          }
+        },
+        "5175f4ae-2923-444d-b170-20eeee54fe27": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Save Extra 10% </strong>on your first order — code WELCOME10</p>",
+            "icon": "default",
+            "image_width": 55
+          }
+        }
+      },
+      "block_order": [
+        "usp_E6PDc6",
+        "f8ee5b63-cdad-4140-9183-2aea32d44591",
+        "5175f4ae-2923-444d-b170-20eeee54fe27"
+      ],
+      "settings": {
+        "layout": "layout_7",
+        "width": 1660,
+        "header_height": "109px|90px",
+        "show_header_border": "both",
+        "header_border_opacity": 100,
+        "header_border_width": "boxed",
+        "header_shadow": false,
+        "header_shadow_opacity": 50,
+        "enable_country_selector": true,
+        "enable_language_selector": true,
+        "top_bar_color": "scheme-3",
+        "header_color": "scheme-1",
+        "menubar_color": "scheme-1",
+        "show_top_bar": false,
+        "top_bar_height": "35px|25px",
+        "top_bar_font": "secondary",
+        "top_bar_font_size": "14px",
+        "navbar_menu_item_text": "",
+        "navbar_menu_item_icon": "none",
+        "navbar_menu_item_link": "/",
+        "usp_display_type": "none",
+        "enable_usp_slider_arrows": false,
+        "enable_usp_slider_autoplay": true,
+        "usp_slider_autoplay_seconds": 3,
+        "usp_marquee_speed": "normal",
+        "usp_items_gap": 24,
+        "usp_marquee_dots": false,
+        "usp_marquee_separator": "dot",
+        "usp_marquee_invert": false,
+        "usp_text_speed": "normal",
+        "usp_typewriter_show_cursor": true,
+        "searchbar_font_size": "14px",
+        "searchbar_height": 54,
+        "searchbar_width": 420,
+        "show_searchbar_border": true,
+        "enable_sticky_header": true,
+        "sticky": "sticky-menu",
+        "cart_icon": "cart|e903",
+        "cart_icon_color": "secondary",
+        "show_cart_total": false,
+        "menubar_menu": "header-slim",
+        "menubar_height": "45px",
+        "menu_layout": "dropdown",
+        "menu_scroll": false,
+        "menu_compact": false,
+        "show_dropdown_images": false,
+        "show_dropdown_images_subs": true,
+        "show_dropdown_images_autofill": false,
+        "show_dropdown_images_rounded": false,
+        "menubar_alignment": "center",
+        "main_menu_items_clickable": true,
+        "main_menu_items_clickable_mobile": true,
+        "menu_show_chevrons": false,
+        "sale_highlight": false,
+        "sale_highlight_item": "Sale",
+        "menu_font": "secondary",
+        "menu_font_weight": "400",
+        "menu_font_size": 16,
+        "menu_letter_spacing": 0,
+        "menubar_caps": false,
+        "menu_subs_font": "secondary",
+        "menu_subs_font_weight": "400",
+        "enable_menu_subs_font_size": false,
+        "menu_subs_font_size": 14,
+        "custom_menu_items_per_columns": false,
+        "menu_items_limit": 5,
+        "submenu_items_limit": 5,
+        "main_menu_show_lines": true,
+        "enable_socials": true,
+        "extra_image_width": 125,
+        "extra_image_link": "/",
+        "enable_button": false,
+        "button_text": "Dealer login",
+        "button_url": "",
+        "button_style": "primary plain",
+        "disable_online_store": false,
+        "disable_account_dropdown": false,
+        "header_icons": false,
+        "layout_mobile": "logo_center",
+        "mobile_menu_color": "",
+        "menu_icon": "menu-left|e97f",
+        "search_compact_mobile": true,
+        "search_mobile_bd": "bd-b",
+        "searchbar_height_mobile": 45,
+        "menu_font_size_mobile": 16,
+        "spacing_desktop": 25,
+        "spacing_mobile": 20
+      }
+    }
+  },
+  "order": [
+    "nc_classcalm",
+    "nc_announce",
+    "header"
+  ]
+}

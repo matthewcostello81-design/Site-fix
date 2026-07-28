@@ -1,0 +1,21 @@
+{% comment %}
+  NC Gift banner fix (homepage only, via templates/index.json).
+  The free gift band (.nc-gift-home, mounted by nc-gift.liquid) was repainted by
+  nc-cro.liquid with an off-palette sage green gradient. This section moves it to
+  the brand teal promo gradient, the same family as the trust strip and the Our
+  promise band, with cream heading, seafoam eyebrow, and the standing 3D shadow.
+  The gold animated pill from nc-cro is kept as the contrast accent.
+  Wins the cascade over nc-cro's single-class !important rules by carrying the
+  higher #nc-home specificity. Color-only change, so desktop and mobile both
+  inherit it; all existing responsive geometry rules stay in force.
+{% endcomment %}
+<style>
+#nc-home .nc-gift-home{background:linear-gradient(160deg,#3a8d83 0%,#2C6E72 42%,#173f44 100%) !important;border:none !important;box-shadow:0 16px 14px -14px rgba(15,42,51,.42),0 30px 26px -26px rgba(15,42,51,.45),0 44px 38px -38px rgba(15,42,51,.4) !important}
+#nc-home .nc-gift-home__eb{color:#9CC9C4 !important}
+#nc-home .nc-gift-home__t{color:#F3EEE1 !important}
+#nc-home .nc-gift-home__s{color:rgba(243,238,225,.85) !important}
+#nc-home .nc-gift-home__img{background:#F3EEE1 !important;box-shadow:0 16px 30px -18px rgba(0,0,0,.55) !important}
+</style>
+{% schema %}
+{"name":"NC Gift Banner Fix","settings":[]}
+{% endschema %}
