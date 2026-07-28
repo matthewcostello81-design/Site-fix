@@ -94,3 +94,22 @@ nc-cro so it wins cleanly. No change to layout or responsive sizing.
 ## Applied to
 Shopify draft theme 161868382436 via Admin API (themeFilesUpsert).
 Files changed: sections/nc-nohover.liquid
+
+---
+
+# Homepage: free-gift promo in the hero + header
+
+The gift promo is injected at runtime (not in theme files) and only appeared on
+collection pages, so instead of moving that element, added two self-contained,
+on-brand free-gift elements (in `sections/nc-nohover.liquid`, global, homepage-scoped
+by selector):
+
+- **Hero card** (`.nc-herogift`): a compact cream/teal card injected into the hero
+  left column (`.nch-hero-text`), filling the empty space under the trust row.
+  "Free 5-pack resistance bands / Added free to every order. No code needed." + FREE pill,
+  links to /collections/best-sellers.
+- **Header pill** (`.nc-hdr-gift`): a small teal pill in the empty space left of the
+  logo (desktop only, min-width 1001px), "🎁 Free 5-pack resistance bands",
+  links to /collections/best-sellers. Hidden on mobile.
+
+Both are created via JS with retries + a MutationObserver so they appear reliably.
