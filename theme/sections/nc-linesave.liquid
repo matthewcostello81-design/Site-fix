@@ -1,0 +1,51 @@
+{% comment %} Per-line bundle savings badge at the top of each cart line item (cart page + drawer). Truthful values from /cart.js: struck original line price, discounted line total, and amount saved. Only shows when the line actually has a discount, so displayed savings always match the charged price. Loaded globally via overlay-group. {% endcomment %}
+<script>
+!function(){
+  var css="#cart .nc-lsave,body.template-cart .nc-lsave{display:flex;flex-wrap:nowrap;align-items:baseline;gap:6px;margin:0 0 7px;font-size:13px;line-height:1.3;font-weight:600;white-space:nowrap}"
+    +"#cart .nc-lsave .nc-lsave-was,body.template-cart .nc-lsave .nc-lsave-was{color:#9aa7ac;text-decoration:line-through;font-weight:600}"
+    +"#cart .nc-lsave .nc-lsave-now,body.template-cart .nc-lsave .nc-lsave-now{color:#0F2A33;font-weight:800;font-size:15px}"
+    +"#cart .nc-lsave .nc-lsave-off,body.template-cart .nc-lsave .nc-lsave-off{color:#fff;background:linear-gradient(120deg,#C85C22,#E8935A);font-weight:800;font-size:11px;padding:2px 8px;border-radius:20px;letter-spacing:.02em}";
+  var st=document.createElement('style');st.textContent=css;(document.head||document.documentElement).appendChild(st);
+  function money(c){try{return (window.Shopify&&Shopify.formatMoney)?Shopify.formatMoney(c):'$'+(c/100).toFixed(2)}catch(e){return '$'+(c/100).toFixed(2)}}
+  var busy=false;
+  function apply(cart){
+    var uls=document.querySelectorAll('.l4ca:not(.in-panel)');
+    uls.forEach(function(ul){
+      var lis=ul.querySelectorAll(':scope > li');
+      for(var i=0;i<lis.length;i++){
+        var li=lis[i],it=cart.items[i];
+        if(!it)continue;
+        var host=li.querySelector('section')||li;
+        var existing=host.querySelector(':scope > .nc-lsave');
+        var saved=it.total_discount||0;
+        var orig=it.original_line_price||0;
+        if(saved>0&&orig>0){
+          var now=orig-saved;var key=orig+'_'+saved;
+          if(existing&&existing.getAttribute('data-k')===key)continue;
+          var pct=Math.round(saved/orig*100);
+          var html='<span class="nc-lsave-was">'+money(orig)+'</span><span class="nc-lsave-now">'+money(now)+'</span><span class="nc-lsave-off">Save '+pct+'%</span>';
+          if(existing){existing.innerHTML=html;existing.setAttribute('data-k',key);}
+          else{var d=document.createElement('div');d.className='nc-lsave';d.setAttribute('data-k',key);d.innerHTML=html;host.insertBefore(d,host.firstChild);}
+        }else if(existing&&existing.getAttribute('data-k')){existing.parentNode.removeChild(existing);}
+      }
+    });
+  }
+  function run(){
+    if(busy)return;
+    if(!document.querySelector('.l4ca:not(.in-panel)'))return;
+    busy=true;
+    fetch('/cart.js').then(function(r){return r.json()}).then(function(cart){
+      if(cart&&cart.items){try{apply(cart);}catch(e){}}
+      busy=false;
+    }).catch(function(){busy=false;});
+  }
+  var c=document.getElementById('cart');
+  if(c){try{new MutationObserver(function(){setTimeout(run,140)}).observe(c,{childList:true,subtree:true});}catch(e){}}
+  if(window.openPanel){var o=window.openPanel;window.openPanel=function(){var r=o.apply(this,arguments);setTimeout(run,280);setTimeout(run,850);return r};}
+  if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
+  setTimeout(run,1200);setTimeout(run,2600);
+}();
+</script>
+{% schema %}
+{"name":"NC Line Save","settings":[],"presets":[{"name":"NC Line Save"}]}
+{% endschema %}

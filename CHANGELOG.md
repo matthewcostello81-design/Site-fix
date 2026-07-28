@@ -138,3 +138,40 @@ and desktop.
 Files changed:
 - sections/nc-giftfix.liquid (new)
 - templates/index.json (added nc_giftfix to the homepage template)
+
+---
+
+# Site fix: cart line price flashing on discount-free lines
+
+## Problem
+On cart lines without an automatic bundle discount (for example a single-item
+cart), the line's pricing area and quantity stepper flashed intermittently,
+and /cart.js was fetched dozens of times per second.
+
+## Cause
+Two scripts fight over the per-line savings row (.nc-lsave):
+- nc-cro's cartWasFix creates it from the compare-at price (was / now /
+  Save %) on every 300ms tick, for any line whose product has a compare-at.
+- nc-linesave removes any .nc-lsave on a line whose cart data shows no actual
+  discount (its own rule: only show savings the checkout will honor).
+With no bundle discount active, the row was created and deleted in an endless
+loop. Each flip also swapped which price element was visible (a CSS rule
+hides the theme price while .nc-lsave exists), so the price visibly flickered
+between two renderings, and every flip woke all cart observers, which
+re-fetched /cart.js. Reproduced in the local Playwright harness: ~90
+mutations/second and ~60 /cart.js requests/second sustained.
+
+## Fix
+nc-linesave now only removes savings rows it owns (those carrying its data-k
+state attribute). nc-cro's compare-at row is left alone on discount-free
+lines. When a real line discount exists, behavior is unchanged: nc-linesave
+takes the row over, stamps data-k, and keeps the values truthful.
+
+Verified in the harness: zero idle mutations over 17s (previously ~90/s),
+network quiet, quantity changes settle in one bounded rebuild.
+
+## Applied to
+Shopify draft theme `161868382436` via themeFilesUpsert.
+
+Files changed:
+- sections/nc-linesave.liquid (ownership guard on the removal branch)
