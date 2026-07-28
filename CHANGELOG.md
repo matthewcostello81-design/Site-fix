@@ -1,3 +1,42 @@
+# Cart drawer: stop discount/progress flicker (safe override)
+
+## Problem
+In the cart drawer, the free-shipping / discount progress bar and status
+messages visibly flickered and briefly showed the wrong discount before
+settling, especially as line items or quantities changed.
+
+## Cause
+Two things compound in `nc-cro` (the large, checkout-adjacent CRO file):
+- A redundant, **un-debounced** `MutationObserver(drawerExtras)` runs on every
+  cart mutation, on top of the well-behaved debounced `cartObs` observer that
+  already calls `drawerExtras` (disconnect/reconnect guarded). The two race and
+  re-render the drawer extras repeatedly.
+- The progress-bar fill and status text swap their values instantly, so each
+  recompute reads as a hard "snap"/flash rather than a smooth change.
+
+## Fix
+Added a self-contained override block to `sections/nc-nohover.liquid`, which
+loads after `nc-cro` so it wins cleanly. **No checkout or add-to-cart logic is
+touched** — the fix is a guard flag plus CSS:
+
+- **Pre-stamps `#cart[data-nc-extras]`** at parse time (with a short-lived
+  `documentElement` observer fallback) so `nc-cro` skips creating its redundant
+  observer. `drawerExtras` still runs via the debounced `cartObs`, so nothing is
+  lost; if the stamp loses the race it is a harmless no-op.
+- **Adds width/color/opacity transitions** to `.nc-track-fill` and the
+  ship/discount/tier/gift status elements so value changes ease instead of
+  snapping.
+
+Because `nc-cro` is a live-theme file (177KB, not tracked in this repo) and the
+storefront isn't previewable from here, the fix was scoped to the override layer
+to eliminate any risk to the cart/checkout path. A deeper consolidation of the
+competing observers should be done with live preview (Shopify CLI).
+
+## Applied to
+Files changed: sections/nc-nohover.liquid
+
+---
+
 # Site fix: product gallery arrow centering
 
 ## Problem
