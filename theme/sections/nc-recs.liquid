@@ -1,0 +1,96 @@
+{% comment %} Cart drawer polish: compact top, bold bundle-savings progress bar, and TWO recommendation blocks pulled from the reliable related endpoint (never duplicated across blocks): a big "You may also like" block under the items, plus an "Add & save more" block under the order total inside the checkout panel. Each card shows crossed-out price, after-bundle price, and % off. Loaded globally via overlay-group. {% endcomment %}
+<style>
+/* ---- compact cart top: logo pushed right to the top ---- */
+#cart .nc-drawer-top{padding:0 16px 4px!important}
+#cart img.nc-dlogo{height:142px!important;width:auto!important;max-width:320px!important;margin:-10px auto 0!important;display:block!important;object-fit:contain!important}
+#cart .nc-dship{margin:2px auto 0!important;padding-top:7px!important;padding-bottom:7px!important;font-size:12px!important}
+#cart header{margin-top:2px!important}
+
+/* ---- CART POLISH (mobile + desktop): bigger item thumbnails, unified progress+items module, tidy totals ---- */
+#cart .l4ca:not(.in-panel) > li > figure{width:120px!important;max-width:120px!important;min-width:120px!important;flex:0 0 120px!important;height:120px!important;aspect-ratio:1/1!important;overflow:hidden!important;border-radius:12px!important}
+#cart .nc-rec img{width:92px!important;height:92px!important}
+#cart .l4ca:not(.in-panel) > li > figure img,#cart .l4ca:not(.in-panel) > li > figure picture,#cart .l4ca:not(.in-panel) > li > figure picture img{width:100%!important;height:100%!important;object-fit:cover!important}
+#cart .nc-tierbox{margin:6px 0 12px!important;padding:0!important;border-top:none!important}
+#cart .l4ca:not(.in-panel){background:linear-gradient(180deg,#fbf8f2,#f4efe6)!important;border:1px solid rgba(15,42,51,.12)!important;border-radius:16px!important;padding:2px 14px 10px!important;margin-top:14px!important;box-shadow:0 12px 26px -20px rgba(15,42,51,.45)!important}
+#cart .l4ca:not(.in-panel)::before{content:"Your Cart";display:block;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#2C6E72;padding:12px 2px 10px;margin-bottom:4px;border-bottom:1px solid rgba(15,42,51,.1)}
+#cart .l4ca:not(.in-panel) > li{border-color:rgba(15,42,51,.1)!important;background:transparent!important}
+#cart .sticky-in-panel .l4tt li.overlay-gray{font-size:11.5px!important;line-height:1.35!important}
+
+/* ---- FIX 1: line items show a duplicate crossed-out compare price in the right-hand line-price column (.price.s1pr > .old-price). Hide that duplicate, and make the real (non-struck) line price bigger + bolder. Scoped to :not(.in-panel) so the inline sale price and the order total are untouched. ---- */
+#cart .l4ca:not(.in-panel) > li .price.s1pr .old-price{display:none!important}
+#cart .l4ca:not(.in-panel) > li .price.s1pr{font-size:17px!important;font-weight:800!important}
+#cart .l4ca:not(.in-panel) > li:has(.nc-lsave) .price.s1pr{display:none!important}
+
+/* ---- slim the "shipped for free" bar ---- */
+#cart .overlay-lime{padding:11px 14px!important;font-size:12.5px!important;line-height:1.35!important;height:auto!important;min-height:0!important;white-space:normal!important;overflow:visible!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+#cart ul.l4al{margin:14px 0 8px!important}
+#cart ul.l4al .overlay-lime{margin-top:12px!important}
+#cart .overlay-lime .strong,#cart .overlay-lime b,#cart .overlay-lime strong{margin-left:.28em!important}
+
+/* ---- bundle-savings progress bar (enlarged so it pops) ---- */
+#cart .nc-tiers{margin:0;padding:16px 16px 15px;border-radius:16px;background:linear-gradient(120deg,rgba(44,110,114,.06),rgba(217,118,58,.05));border:1px solid rgba(15,42,51,.1);box-shadow:0 10px 24px -18px rgba(15,42,51,.4)}
+#cart .nc-tiers-msg{font-size:15px;font-weight:800;color:#0F2A33;margin:0 0 16px;display:block;text-align:center;line-height:1.3}
+#cart .nc-tiers-msg > span:first-child{font-size:1.1em;line-height:1.2;vertical-align:middle;margin-right:4px}
+@media(max-width:600px){#cart .nc-tiers-msg > span:first-child{font-size:1em}}
+#cart .nc-tiers-msg b{color:#C85C22}
+#cart .nc-track{position:relative;height:9px;border-radius:5px;background:rgba(15,42,51,.14);margin:0 11px}
+#cart .nc-track-fill{position:absolute;left:0;top:0;height:100%;border-radius:5px;background:linear-gradient(120deg,#C85C22,#D9763A,#E8935A,#D9763A,#C85C22);background-size:200% 200%;animation:ncRecShift 3s linear infinite;transition:width .45s ease}
+#cart .nc-node{position:absolute;top:50%;transform:translate(-50%,-50%);width:19px;height:19px;border-radius:50%;background:#fff;border:2.5px solid rgba(15,42,51,.22);z-index:1;transition:.25s}
+#cart .nc-node.done{background:linear-gradient(120deg,#C85C22,#E8935A);background-size:200% 200%;animation:ncRecShift 3s linear infinite;border-color:#C85C22}
+#cart .nc-node.cur{box-shadow:0 0 0 5px rgba(200,92,34,.2)}
+#cart .nc-labs{display:flex;justify-content:space-between;margin:11px 2px 0}
+#cart .nc-lab{font-size:11.5px;line-height:1.2;color:#7c8b90;flex:1;text-align:center}
+#cart .nc-lab:first-child{text-align:left}
+#cart .nc-lab:last-child{text-align:right}
+#cart .nc-lab b{display:block;font-size:12.5px;color:#34555E;font-weight:800;margin-bottom:2px}
+#cart .nc-lab.on,#cart .nc-lab.on b{color:#C85C22}
+
+/* ---- never show Shipping Protection as a rec row (it has its own toggle) ---- */
+#cart .nc-recs .nc-rec:has(a[href*="shipping-protection"]),#cart .nc-recs-panel .nc-rec:has(a[href*="shipping-protection"]){display:none!important}
+
+/* ---- hide the theme's own recommendation block (we render our own) ---- */
+#cart .cart-upsell{display:none!important}
+
+/* ---- our clean recommendations (bigger all around) ---- */
+@keyframes ncRecShift{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+#cart .nc-recs{margin:8px 0 4px;padding-top:12px;border-top:1px solid rgba(15,42,51,.09)}
+#cart .nc-recs-h{font-size:16.5px;font-weight:800;margin:0 0 11px;color:#0F2A33}
+#cart .nc-recs ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+#cart .nc-rec{display:flex;align-items:center;gap:13px;padding:8px;border-radius:12px;transition:background .15s;text-decoration:none}
+#cart .nc-rec:hover{background:rgba(44,110,114,.06)}
+#cart .nc-rec-imgw{flex:none;line-height:0}
+#cart .nc-rec img{width:82px;height:82px;object-fit:cover;border-radius:11px;background:#f2f3f3}
+#cart .nc-rec-info{flex:1;min-width:0}
+#cart .nc-rec-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:14.5px;line-height:1.32;color:#1c2b30;font-weight:600;text-decoration:none}
+#cart .nc-rec-price{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:15px;color:#C85C22;font-weight:800;margin-top:5px}
+#cart .nc-rec-was{color:#9aa7ac;font-weight:600;text-decoration:line-through;font-size:12.5px}
+#cart .nc-rec-off{font-style:normal;font-size:10.5px;font-weight:800;color:#fff;background:linear-gradient(120deg,#C85C22,#E8935A);padding:2px 8px;border-radius:20px;letter-spacing:.02em;line-height:1.6}
+#cart .nc-rec-add{flex:none;position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;line-height:1;border:none;cursor:pointer;border-radius:10px;padding:11px 21px;font-weight:800;font-size:14px;color:#fff!important;background:linear-gradient(120deg,#C85C22,#D9763A,#E8935A,#D9763A,#C85C22)!important;background-size:200% 200%!important;animation:ncRecShift 5s linear infinite;transition:filter .15s;user-select:none;white-space:nowrap}
+#cart .nc-rec-add::before,#cart .nc-rec-add::after{display:none!important;content:none!important;background:transparent!important}
+#cart .nc-rec-add:hover{filter:brightness(1.06)}
+#cart .nc-rec-add.is-done{opacity:.85;cursor:default;animation:none;pointer-events:none}
+
+/* ---- second block, sitting under the order total inside the checkout panel ---- */
+#cart .nc-recs-panel{margin:13px 0 4px;padding:13px 14px 8px;border-top:none;border:1px solid rgba(15,42,51,.1);border-radius:14px;background:linear-gradient(120deg,rgba(44,110,114,.06),rgba(217,118,58,.05))}
+#cart .nc-recs-panel .nc-recs-h{font-size:15px;margin-bottom:9px}
+#cart .nc-recs-panel .nc-rec:hover{background:rgba(255,255,255,.5)}
+/* compact, on-brand quantity stepper */
+#cart .l4ca:not(.in-panel) .input-amount{margin:8px 0 0!important;padding:0!important}
+#cart .l4ca:not(.in-panel) .semantic-amount{display:inline-flex!important;align-items:center!important;width:auto!important;height:30px!important;min-height:0!important;border:1px solid rgba(15,42,51,.2)!important;border-radius:8px!important;background:#fff!important;overflow:hidden!important}
+#cart .l4ca:not(.in-panel) .semantic-amount input{order:2!important;width:30px!important;min-width:30px!important;height:28px!important;min-height:0!important;max-height:28px!important;font-size:13px!important;font-weight:700!important;text-align:center!important;color:#0F2A33!important;border:none!important;border-left:1px solid rgba(15,42,51,.12)!important;border-right:1px solid rgba(15,42,51,.12)!important;border-radius:0!important;padding:0!important;margin:0!important;background:transparent!important;box-shadow:none!important;-moz-appearance:textfield!important}
+#cart .l4ca:not(.in-panel) .semantic-amount input::-webkit-outer-spin-button,#cart .l4ca:not(.in-panel) .semantic-amount input::-webkit-inner-spin-button{-webkit-appearance:none!important;margin:0!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .decr,#cart .l4ca:not(.in-panel) .semantic-amount .incr{position:static!important;width:28px!important;height:28px!important;min-height:0!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;background:transparent!important;background-image:none!important;border:none!important;color:#2C6E72!important;font-size:16px!important;font-weight:700!important;line-height:1!important;cursor:pointer!important;text-decoration:none!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .decr{order:1!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .incr{order:3!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .decr::before{content:"\2212"!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .incr::before{content:"+"!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .decr::after,#cart .l4ca:not(.in-panel) .semantic-amount .incr::after{content:none!important;display:none!important}
+#cart .l4ca:not(.in-panel) .semantic-amount .incr::before,#cart .l4ca:not(.in-panel) .semantic-amount .decr::before{position:static!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:0!important}
+#cart .l4ca:not(.in-panel) > li footer{display:flex!important;align-items:center!important;gap:12px!important;margin-top:8px!important}
+#cart .l4ca:not(.in-panel) .input-amount{width:auto!important;min-width:92px!important;max-width:none!important;flex:0 0 auto!important;overflow:visible!important;margin:0!important}
+#cart .l4ca:not(.in-panel) .remove,#cart .l4ca:not(.in-panel) .remove-from-cart-link{position:static!important;margin:0!important}
+</style>
+<script src="{{ 'nc-recs.js' | asset_url }}" defer></script>
+{% schema %}
+{"name":"NC Recs","settings":[],"presets":[{"name":"NC Recs"}]}
+{% endschema %}

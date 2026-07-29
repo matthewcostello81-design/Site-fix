@@ -1,3 +1,38 @@
+# Cart drawer: remove Shipping Protection from the "Better together" upsell list
+
+## Problem
+The cart drawer's "Better together" upsell list (built by `assets/nc-recs.js`,
+heading renamed by `nc-cro`) showed a "Shipping Protection" row with a
+discounted price ($2.99 struck to $2.54, "15% off") and an ADD button, with a
+broken thumbnail. Shipping Protection already has its own dedicated toggle
+switch module lower in the drawer, so the row was a confusing duplicate that
+also promised a discount on it.
+
+## Cause
+`nc-recs.js` fills the list from Shopify's related-products endpoint
+(`/recommendations/products.json`, seeded from the first cart item) and only
+filters out products already in the cart. The Shipping Protection product came
+back as a "related" product, so it rendered like any other upsell.
+
+## Fix
+- `assets/nc-recs.js`: the recommendation filter now also excludes the product
+  by handle (`shipping-protection`) and by title (/shipping\s*protection/i), so
+  the row never renders and a real product fills the slot instead.
+- `sections/nc-recs.liquid`: CSS safety net in case a cached copy of the old
+  script still renders the row:
+  `#cart .nc-recs .nc-rec:has(a[href*="shipping-protection"]){display:none}`
+  (same for `.nc-recs-panel`).
+
+The Shipping Protection toggle module (`shipProt()` in `nc-cro`) is untouched
+and remains the only way the protection is offered.
+
+## Applied to
+Shopify draft theme 162251276516 ("NC Polish round 4 (Claude)") via the Admin
+API (themeFilesUpsert); byte-for-byte verified after push.
+Files changed: assets/nc-recs.js, sections/nc-recs.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
