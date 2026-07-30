@@ -219,3 +219,32 @@ product renders there with the default product template.
 
 Files changed:
 - theme/templates/product.nc-bands.json (new)
+
+---
+
+# Bands PDP polish: subtitle under title, price line, no stray shipping note
+
+## Problem
+On the new 5-Level Resistance Band Set page, "Free shipping on every order."
+sat directly under the H1 and there was no short description or visible price
+near the title, unlike every other product page.
+
+## Cause
+nc-cro.liquid drives the under-title subtitle (.nc-sub2) and the visible
+price line (.nc-topprice) from hardcoded per-handle maps (SUBS, BUNDLES).
+nc-cro also hides the raw .nc-prices row globally. The new handle is in none
+of those maps, so the page fell through to the bare .nc-tax shipping note as
+the first element under the title.
+
+## Fix
+sections/nc-bands-fix.liquid, loaded only by templates/product.nc-bands.json:
+recreates .nc-sub2 (subtitle) and .nc-topprice (price, struck compare-at,
+Save % chip mirrored from the selected tier) with the same class names, so
+nc-cro's styling applies unchanged and the under-title order matches the
+other pages: title, subtitle, price, then the small shipping note. Guarded,
+idempotent writes only (no intervals); compatible with nc-cro later learning
+the handle since creation is presence-checked.
+
+Files changed:
+- theme/sections/nc-bands-fix.liquid (new)
+- theme/templates/product.nc-bands.json (registered bands-fix section)

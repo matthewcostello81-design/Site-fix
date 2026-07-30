@@ -407,6 +407,10 @@
       "type": "nc-enhance",
       "settings": {}
     },
+    "bands-fix": {
+      "type": "nc-bands-fix",
+      "settings": {}
+    },
     "recommendations": {
       "type": "product-recommendations",
       "settings": {
@@ -433,6 +437,7 @@
     "breadcrumbs",
     "main",
     "nc-enhance",
+    "bands-fix",
     "recommendations"
   ]
 }

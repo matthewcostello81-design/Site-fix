@@ -1,0 +1,56 @@
+{% comment %}
+  NC Bands Fix: template-scoped polish for the 5-Level Resistance Band Set PDP
+  (loaded only via templates/product.nc-bands.json).
+  Other product pages get their under-title subtitle (.nc-sub2) and visible
+  price line (.nc-topprice) from per-handle maps inside nc-cro.liquid (SUBS,
+  BUNDLES). This product's handle is not in those maps, so its page showed the
+  bare shipping note directly under the H1 and no price near the title. This
+  section recreates both elements with the exact same class names, so nc-cro's
+  styling applies unchanged, and mirrors the selected tier's price the same way
+  nc-cro's mirrorTop does. All writes are guarded and idempotent: nothing here
+  runs on an interval, and if nc-cro later learns this handle its own logic
+  finds these elements already in place and simply keeps updating them.
+{% endcomment %}
+<script data-nc-bandsfix>
+(function(){
+  if(window.__ncBandsFix){return;}window.__ncBandsFix=1;
+  function fill(){
+    var h1=document.querySelector('#ncpdp h1.nc-title');if(!h1){return;}
+    if(!document.querySelector('#ncpdp .nc-sub2')){
+      var d=document.createElement('div');d.className='nc-sub2';
+      d.textContent='Five levels of resistance, so every exercise gets the right challenge.';
+      h1.insertAdjacentElement('afterend',d);
+    }
+    var tp=document.querySelector('#ncpdp .nc-topprice');
+    if(!tp){
+      tp=document.createElement('div');tp.className='nc-topprice';
+      tp.innerHTML='<b class="tp-now"></b><s class="tp-was"></s><span class="tp-save"></span>';
+      var anchor=document.querySelector('#ncpdp .nc-stars2')||document.querySelector('#ncpdp .nc-sub2')||h1;
+      anchor.insertAdjacentElement('afterend',tp);
+    }
+    var on=document.querySelector('#ncpdp .nc-tiers .nc-tier.nc-on')||document.querySelector('#ncpdp .nc-tiers .nc-tier');
+    if(!on){return;}
+    var pe=on.querySelector('.nc-tier-price');if(!pe){return;}
+    var nums=pe.textContent.match(/\$[\d.,]+/g)||[];
+    var save=((pe.querySelector('.nc-tier-save')||{}).textContent||'').trim();
+    var nowEl=tp.querySelector('.tp-now'),wasEl=tp.querySelector('.tp-was'),svEl=tp.querySelector('.tp-save');
+    if(nums[0]&&nowEl&&nowEl.textContent!==nums[0]){nowEl.textContent=nums[0];}
+    var wasTxt=nums[1]||'';
+    if(wasEl){if(wasEl.textContent!==wasTxt){wasEl.textContent=wasTxt;}wasEl.style.display=wasTxt?'':'none';}
+    if(svEl){if(svEl.textContent!==save){svEl.textContent=save;}svEl.style.display=save?'':'none';}
+  }
+  function boot(){
+    fill();
+    document.addEventListener('click',function(e){
+      if(e.target&&e.target.closest&&e.target.closest('#ncpdp .nc-tiers .nc-tier, #ncpdp .nc-optbtn')){
+        setTimeout(fill,60);setTimeout(fill,260);
+      }
+    },true);
+  }
+  if(document.readyState!=='loading'){boot();}else{document.addEventListener('DOMContentLoaded',boot);}
+  [400,900,1800,3200].forEach(function(t){setTimeout(fill,t);});
+})();
+</script>
+{% schema %}
+{"name":"NC Bands Fix","settings":[]}
+{% endschema %}
