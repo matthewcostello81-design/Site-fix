@@ -44,16 +44,72 @@
     if(wasEl){if(wasEl.textContent!==wasTxt){wasEl.textContent=wasTxt;}wasEl.style.display=wasTxt?'':'none';}
     if(svEl){if(svEl.textContent!==save){svEl.textContent=save;}svEl.style.display=save?'':'none';}
   }
+  /* ---- cross-product bundles, same behavior as nc-cro's BUNDLES pages ----
+     Duo = this + Vibrating Foam Roller (2 items, honored by the automatic 10%
+     quantity discount). Kit = this + Foam Roller + Deep Tissue Massage Gun
+     (3 items, honored by the automatic 15%). Partner prices are fetched live
+     from their product endpoints so displayed totals always match checkout. */
+  var MAIN={id:{{ product.selected_or_first_available_variant.id }},pr:{{ product.selected_or_first_available_variant.price | divided_by: 100.0 }},was:{{ product.selected_or_first_available_variant.compare_at_price | default: product.selected_or_first_available_variant.price | divided_by: 100.0 }}};
+  var P1={h:'vibrating-electric-foam-roller',id:48986974716132,pr:0,was:0};
+  var P2={h:'muscle-massage-gun',id:49221048172772,pr:0,was:0};
+  function money(n){return '$'+n.toFixed(2);}
+  function deal(total,pct){return Math.round((total-Math.floor(total*pct*100)/100)*100)/100;}
+  function loadP(p){return fetch('/products/'+p.h+'.js',{headers:{Accept:'application/json'}}).then(function(r){return r.json();}).then(function(j){var v=j.variants&&j.variants[0];if(v){p.id=v.id;p.pr=v.price/100;p.was=(v.compare_at_price||v.price)/100;}});}
+  function tiers(){return document.querySelectorAll('#ncpdp .nc-tiers .nc-tier');}
+  function setTier(t,mark,dealP,totalP,pct){
+    t.setAttribute('data-nc-bundle',mark);
+    var p=t.querySelector('.nc-tier-price');
+    var want=money(dealP);
+    if(p&&p.textContent.indexOf(want)===-1){p.innerHTML=want+' <s>'+money(totalP)+'</s> <em class="nc-tier-save">Save '+pct+'%</em>';}
+  }
+  function bundles(){
+    if(!(P1.pr>0&&P2.pr>0)){return;}
+    var tl=tiers();if(tl.length<3){return;}
+    var d2=deal(MAIN.pr+P1.pr,0.10),was2=Math.round((MAIN.was+P1.was)*100)/100;
+    var d3=deal(MAIN.pr+P1.pr+P2.pr,0.15),was3=Math.round((MAIN.was+P1.was+P2.was)*100)/100;
+    setTier(tl[1],'2',d2,was2,was2>d2?Math.round((was2-d2)/was2*100):10);
+    setTier(tl[2],'3',d3,was3,was3>d3?Math.round((was3-d3)/was3*100):15);
+    var atc=document.querySelector('#ncpdp button.nc-atc');
+    if(atc&&!atc.classList.contains('nc-atc-loading')&&!atc.classList.contains('nc-atc-done')){
+      var label;
+      if(tl[1].classList.contains('nc-on')){label='Add Duo \u2014 '+money(d2);}
+      else if(tl[2].classList.contains('nc-on')){label='Add Kit \u2014 '+money(d3);}
+      else{label='Add Single \u2014 '+money(MAIN.pr);}
+      if(atc.textContent.trim()!==label){atc.textContent=label;}
+    }
+    fill();
+  }
+  function refreshCart(){
+    return fetch('/',{headers:{'X-Requested-With':'XMLHttpRequest'}}).then(function(r){return r.text();}).then(function(tx){var doc=new DOMParser().parseFromString(tx,'text/html');var fresh=doc.querySelector('#cart');var cur=document.getElementById('cart');if(fresh&&cur){cur.innerHTML=fresh.innerHTML;}}).catch(function(){});
+  }
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('#ncpdp button.nc-atc');
+    if(!btn){return;}
+    var t2on=document.querySelector('#ncpdp .nc-tier[data-nc-bundle="2"].nc-on');
+    var t3on=document.querySelector('#ncpdp .nc-tier[data-nc-bundle="3"].nc-on');
+    if(!t2on&&!t3on){return;}
+    e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();
+    if(btn.classList.contains('nc-atc-loading')){return;}
+    btn.classList.add('nc-atc-loading');
+    var items=[{id:MAIN.id,quantity:1},{id:P1.id,quantity:1}];
+    if(t3on){items.push({id:P2.id,quantity:1});}
+    fetch('/cart/add.js',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-Requested-With':'XMLHttpRequest'},body:JSON.stringify({items:items})})
+      .then(function(r){if(!r.ok){throw 0;}return r.json();})
+      .then(function(){return refreshCart();})
+      .then(function(){btn.classList.remove('nc-atc-loading');btn.classList.add('nc-atc-done');setTimeout(function(){btn.classList.remove('nc-atc-done');},1600);if(typeof window.openPanel==='function'){window.openPanel('cart');}})
+      .catch(function(){btn.classList.remove('nc-atc-loading');});
+  },true);
   function boot(){
     fill();
+    Promise.all([loadP(P1),loadP(P2)]).then(function(){bundles();}).catch(function(){});
     document.addEventListener('click',function(e){
       if(e.target&&e.target.closest&&e.target.closest('#ncpdp .nc-tiers .nc-tier, #ncpdp .nc-optbtn')){
-        setTimeout(fill,60);setTimeout(fill,260);
+        setTimeout(bundles,60);setTimeout(bundles,260);
       }
     },true);
   }
   if(document.readyState!=='loading'){boot();}else{document.addEventListener('DOMContentLoaded',boot);}
-  [400,900,1800,3200].forEach(function(t){setTimeout(fill,t);});
+  [400,900,1800,3200].forEach(function(t){setTimeout(function(){bundles();fill();},t);});
 })();
 </script>
 {% schema %}

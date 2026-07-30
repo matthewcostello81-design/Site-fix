@@ -83,18 +83,18 @@
         "t2": {
           "type": "tier",
           "settings": {
-            "name": "Duo (2 sets)",
-            "qty": 2,
-            "sub": "One to keep, one to gift",
+            "name": "Recovery Duo",
+            "qty": 1,
+            "sub": "This + Foam Roller",
             "flag": "Most Popular"
           }
         },
         "t3": {
           "type": "tier",
           "settings": {
-            "name": "Family Kit (3 sets)",
-            "qty": 3,
-            "sub": "The whole household covered",
+            "name": "Complete Recovery Kit",
+            "qty": 1,
+            "sub": "This + Foam Roller + Massage Gun",
             "flag": "Best Value",
             "best": true
           }
