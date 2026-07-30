@@ -1,0 +1,438 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness training staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Five levels. One small bag. Every workout covered.",
+        "intro_text": "Too light does nothing and too heavy ruins your form. The 5-Level Resistance Band Set gives you the exact resistance each exercise calls for, from extra light stretching to extra heavy strength work, in a set that disappears into a gym bag pocket.",
+        "be_eye": "Built different",
+        "be_head": "Why this band set",
+        "be_sub": "Four reasons one small set replaces a pile of equipment.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "See what makes a few minutes with the band set actually work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How a five-level set compares to a single loop band.",
+        "cmp_ours": "5-Level Set",
+        "cmp_theirs": "Single Band",
+        "ba_eye": "Before & after",
+        "ba_head": "How training feels after two weeks",
+        "ba_sub": "What changes when the right resistance is always within reach.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to train",
+        "tl_sub": "The same routine, with and without the right band.",
+        "step_eye": "Simple to use",
+        "step_head": "Pick a band, loop it, move.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "Try it at home",
+        "promise_head": "30 days to feel the difference, or your money back.",
+        "promise_text": "Use it for a month. If it doesn't earn a place in your routine, send it back for a full refund.",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182452_5ceda1f5-de88-476f-9827-306a213f67a7.png",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182408_55625990-3d84-4bc3-97c4-0c164c0b3752.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Five resistance levels in one set, extra light to extra heavy"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "100% natural latex loops with a smooth stretch and lasting snap-back"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Carry bag included, so the whole set travels with you"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 set)",
+            "qty": 1,
+            "sub": "Five levels for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 sets)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Family Kit (3 sets)",
+            "qty": 3,
+            "sub": "The whole household covered",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Every level you will ever need",
+            "text": "Five color-coded bands run from extra light to extra heavy, so stretching, warm-ups, and serious strength work all come from the same small set. When an exercise gets easy, the next level is already in the bag."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Natural latex that lasts",
+            "text": "Each loop is 100% natural latex with a smooth, even stretch and a snap-back that holds up session after session, instead of going slack like cheap bands."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Works the whole body",
+            "text": "Loop bands wrap around thighs, ankles, or hands, which makes them just as useful for glute and leg work as for arms, shoulders, and mobility drills."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Packs into any bag",
+            "text": "The included carry bag keeps all five bands together and slips into a gym bag, suitcase, or desk drawer, so your training does not depend on where you are."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Five color-coded levels",
+            "text": "Extra light to extra heavy, with the color telling you the level at a glance."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Natural latex build",
+            "text": "Smooth, even stretch from 100% natural latex that keeps its snap over time."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Closed loop design",
+            "text": "Wraps around legs, ankles, or hands for exercises across the whole body."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Carry bag included",
+            "text": "The full set stores in one compact bag that goes wherever you train."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Resistance levels",
+            "ours": "5 levels",
+            "theirs": "1 level"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Color-coded intensity",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Progress as you get stronger",
+            "ours": "yes",
+            "theirs": "Limited"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Carry bag included",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Stretching and strength in one",
+            "ours": "yes",
+            "theirs": "Basic"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Fits every fitness level",
+            "ours": "yes",
+            "theirs": "One level only"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "One band that is too easy for some moves and too hard for others"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Skipping resistance work at home because the gear is a hassle"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Workouts that stall because there is no next step up"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "The right resistance for every exercise, every time"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Quick band sessions at home, outside, or on the road"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A clear next level waiting whenever an exercise gets easy"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "Morning",
+            "trad_title": "Stiff start, no warm-up",
+            "trad_text": "You skip the warm-up because setting anything up feels like a chore, and the first hour of the day stays tight.",
+            "trad_tag": "Stiff and slow",
+            "nc_title": "Two-minute band wake-up",
+            "nc_text": "An extra light band loosens hips and shoulders before the day starts, no setup required.",
+            "nc_tag": "Loose and ready"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "6 PM",
+            "label": "Workout",
+            "trad_title": "Wrong resistance, sloppy form",
+            "trad_text": "A single band is too easy for legs and too hard for shoulders, so half the workout is compromised.",
+            "trad_tag": "One size fits none",
+            "nc_title": "Dial in every exercise",
+            "nc_text": "Swap between levels as you move through the routine so each muscle group gets the right challenge.",
+            "nc_tag": "Right level, every move"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Evening",
+            "trad_title": "Tightness follows you to bed",
+            "trad_text": "Legs and hips stay tight through the evening and stretching never happens.",
+            "trad_tag": "Still tight",
+            "nc_title": "Gentle evening stretch",
+            "nc_text": "The extra light band makes end-of-day stretching easy enough to actually do.",
+            "nc_tag": "Wound down"
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Pick your level",
+            "text": "Start extra light for stretching and mobility, heavier for strength work."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Loop it on",
+            "text": "Around thighs, ankles, or hands depending on the exercise."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Move with control",
+            "text": "Slow, controlled reps beat fast ones. Step up a level when it feels easy."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "5 color-coded resistance loop bands, extra light to extra heavy"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Compact carry bag"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Levels",
+            "value": "5 (extra light to extra heavy)"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Material",
+            "value": "100% natural latex"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Style",
+            "value": "Closed loop bands"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Use",
+            "value": "Strength, stretching, warm-ups, recovery"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Storage",
+            "value": "Carry bag included"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Care",
+            "value": "Wipe clean, store away from direct sun"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

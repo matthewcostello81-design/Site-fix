@@ -175,3 +175,47 @@ Shopify draft theme `161868382436` via themeFilesUpsert.
 
 Files changed:
 - sections/nc-linesave.liquid (ownership guard on the removal branch)
+
+---
+
+# New product page: 5-Level Resistance Band Set ($34.99)
+
+## What
+A sellable product page for the resistance band 5-piece set, matching the
+store's standard custom PDP format (nc-product alternate-template system).
+
+The existing "Resistance Bands (5 Levels)" product stays untouched as the
+hidden $0.00 free-gift product powering the auto-add gift. Selling the same
+item required a NEW product: repricing the gift product would have made the
+gift automation silently add a charged item to every cart, and any handle
+containing "resistance-bands" would trip the cart scripts' free-gift
+detection (ncIsGift matches href substring). The new handle
+`5-level-resistance-band-set` avoids that substring.
+
+## Product (created via Admin API)
+- 5-Level Resistance Band Set, $34.99, compare-at $49.99, tag "summer"
+  (joins the sitewide Summer Sale convention), type Fitness and Exercise,
+  vendor North Cove Wellness, SKU NCW-FIT-002-5PK, ACTIVE, untracked stock.
+- SEO title + description set. Added to Massage & Recovery (manual
+  collection); Shop All and Summer Sale pick it up via smart rules.
+- templateSuffix: nc-bands.
+
+## Template
+templates/product.nc-bands.json mirrors product.nc-foam.json section-for-
+section: breadcrumbs, nc-product (buy box highlights, Single/Duo/Family Kit
+tiers priced by the real quantity discounts, benefits/FAQ accordion, system
+dots, comparison table, before/after, day timeline, steps, box contents,
+specs, promise, disclaimer), nc-enhance, recommendations.
+
+Deliberately omitted: the "By the numbers" meter blocks. On other pages those
+carry invented user-percentage stats; the store has a prior GMC
+misrepresentation flag, so no fabricated stats were added for a product with
+zero reviews. The section hides cleanly when no meter blocks exist.
+
+## Applied to
+Draft theme `162251276516` ("NC Polish round 4 (Claude)"). Note: the LIVE
+round 3 theme has no nc-bands template, so until round 4 publishes the
+product renders there with the default product template.
+
+Files changed:
+- theme/templates/product.nc-bands.json (new)
