@@ -207,42 +207,42 @@
           "type": "ba",
           "settings": {
             "side": "before",
-            "text": "One band that is too easy for some moves and too hard for others"
+            "text": "Aches and tightness that flare up in the middle of a workout"
           }
         },
         "ba2": {
           "type": "ba",
           "settings": {
             "side": "before",
-            "text": "Skipping resistance work at home because the gear is a hassle"
+            "text": "Sessions cut short because a sore spot takes over"
           }
         },
         "ba3": {
           "type": "ba",
           "settings": {
             "side": "before",
-            "text": "Workouts that stall because there is no next step up"
+            "text": "No gentle way to ease back into strength work at home"
           }
         },
         "ba4": {
           "type": "ba",
           "settings": {
             "side": "after",
-            "text": "The right resistance for every exercise, every time"
+            "text": "Start extra light and rebuild strength at your own pace"
           }
         },
         "ba5": {
           "type": "ba",
           "settings": {
             "side": "after",
-            "text": "Quick band sessions at home, outside, or on the road"
+            "text": "Steadier, stronger movement as you work up the levels"
           }
         },
         "ba6": {
           "type": "ba",
           "settings": {
             "side": "after",
-            "text": "A clear next level waiting whenever an exercise gets easy"
+            "text": "A few minutes of band work a day keeps you moving comfortably"
           }
         },
         "tl1": {
