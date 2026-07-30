@@ -248,3 +248,16 @@ the handle since creation is presence-checked.
 Files changed:
 - theme/sections/nc-bands-fix.liquid (new)
 - theme/templates/product.nc-bands.json (registered bands-fix section)
+
+---
+
+# Bands PDP: reviews wired into the standard review section
+
+Reviews were imported via Judge.me (10 reviews, 5.0 average) which only sets
+judgeme/reviews metafields. The custom PDP review section (nc-enhance's
+"What customers say" dropdown) is gated on loox.num_reviews and reads its
+review cards from custom.nc_loox_rvw. Set on the product via metafieldsSet:
+- loox.avg_rating = 5.0, loox.num_reviews = 10
+- custom.nc_loox_rvw = the 5 review texts Judge.me stores inline (the section
+  honestly shows "Showing 5 of 10 reviews", same pattern as other products)
+No theme files changed; product metafields only.
