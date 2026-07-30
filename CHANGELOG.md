@@ -1,3 +1,32 @@
+# Announcement band: color changed to blue
+
+## Request
+Make the band blue. The site-wide scrolling announcement band at the top of
+every page (`sections/nc-announce.liquid`, class `.nc-ann`) was a dark teal
+gradient.
+
+## Change
+Colors only, in `sections/nc-announce.liquid` (now tracked in this repo,
+mirrored from the draft theme "NC Polish round 4"):
+
+- Band background gradient: `#0F2A33 -> #27636A -> #2C6E72` (teal) is now
+  `#0F2A47 -> #26588F -> #2F6BA8` (navy to blue), same direction and stops.
+- Left/right edge-fade overlays updated to match the new gradient end colors
+  (`#0F2A47` / `#2F6BA8` with matching transparent rgba stops).
+- Separator sparkle color `#6FB3A8` (light teal) is now `#8BB6E3` (light
+  blue).
+
+Text colors (cream `#F4EFE7`, white) are unchanged and keep their contrast on
+the new blue. No layout, markup, animation, or schema changes; the file is
+byte-for-byte identical to the previous version except for the six color
+values. The updated file was also pushed to the draft theme via the Admin API
+(size re-verified after upsert).
+
+## Applied to
+Files changed: sections/nc-announce.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

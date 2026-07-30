@@ -1,0 +1,30 @@
+<div class="nc-ann" data-nc-ann>
+<div class="nc-ann-track" style="animation-duration:{{ section.settings.speed }}s">
+{%- for i in (1..2) -%}{%- for b in section.blocks -%}<span class="nc-ann-item">{{ b.settings.text }}</span><span class="nc-ann-sep" aria-hidden="true">✦</span>{%- endfor -%}{%- endfor -%}
+</div>
+</div>
+<style>
+#shopify-section-{{ section.id }}{margin:0;padding:0;width:100%;max-width:none}
+#shopify-section-{{ section.id }} .nc-ann{background:linear-gradient(90deg,#0F2A47 0%,#26588F 55%,#2F6BA8 100%);overflow:hidden;position:relative;width:100vw;max-width:100vw;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw)}
+#shopify-section-{{ section.id }} .nc-ann::before,#shopify-section-{{ section.id }} .nc-ann::after{content:'';position:absolute;top:0;bottom:0;width:56px;z-index:2;pointer-events:none}
+#shopify-section-{{ section.id }} .nc-ann::before{left:0;background:linear-gradient(90deg,#0F2A47,rgba(15,42,71,0))}
+#shopify-section-{{ section.id }} .nc-ann::after{right:0;background:linear-gradient(270deg,#2F6BA8,rgba(47,107,168,0))}
+#shopify-section-{{ section.id }} .nc-ann-track{display:flex;align-items:center;width:max-content;animation:nc-ann-move linear infinite;will-change:transform}
+#shopify-section-{{ section.id }} .nc-ann:hover .nc-ann-track{animation-play-state:paused}
+#shopify-section-{{ section.id }} .nc-ann-item{display:inline-flex;align-items:center;color:#F4EFE7;font-size:12.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:8px 0;white-space:nowrap}
+#shopify-section-{{ section.id }} .nc-ann-item strong{color:#fff;font-weight:800}
+#shopify-section-{{ section.id }} .nc-ann-sep{margin:0 28px;color:#8BB6E3;font-size:10px;transform:translateY(-1px)}
+@keyframes nc-ann-move{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){#shopify-section-{{ section.id }} .nc-ann-track{animation:none;justify-content:center;width:100%}}
+i.icon-menu-left,i.icon-zoom,i.icon-user,i.icon-cart-bag-wide{position:relative!important;display:inline-block!important;width:1.25em;height:1.25em;vertical-align:middle;line-height:1}
+i.icon-menu-left::before,i.icon-zoom::before,i.icon-user::before,i.icon-cart-bag-wide::before{content:""!important}
+i.icon-menu-left::after,i.icon-zoom::after,i.icon-user::after,i.icon-cart-bag-wide::after{content:"";position:absolute;inset:0;background:currentColor;pointer-events:none;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain}
+i.icon-menu-left::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M4 7h16M4 12h16M4 17h16'/%3E%3C/svg%3E")}
+i.icon-zoom::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7.5'/%3E%3Cpath d='M21 21l-4.9-4.9'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.5' cy='10.5' r='7.5'/%3E%3Cpath d='M21 21l-4.9-4.9'/%3E%3C/svg%3E")}
+i.icon-user::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.6'/%3E%3Cpath d='M5.5 20a6.5 6.5 0 0 1 13 0'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8' r='3.6'/%3E%3Cpath d='M5.5 20a6.5 6.5 0 0 1 13 0'/%3E%3C/svg%3E")}
+i.icon-cart-bag-wide::after{-webkit-mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 8.5h13l-1 10.8a1.8 1.8 0 0 1-1.8 1.6H8.3a1.8 1.8 0 0 1-1.8-1.6L5.5 8.5z'/%3E%3Cpath d='M9 8.5V6.8a3 3 0 0 1 6 0v1.7'/%3E%3C/svg%3E");mask-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5.5 8.5h13l-1 10.8a1.8 1.8 0 0 1-1.8 1.6H8.3a1.8 1.8 0 0 1-1.8-1.6L5.5 8.5z'/%3E%3Cpath d='M9 8.5V6.8a3 3 0 0 1 6 0v1.7'/%3E%3C/svg%3E")}
+i.icon-cart-bag-wide #cart-count,i.icon-cart-bag-wide [id^=cart-count]{position:absolute;z-index:3}
+</style>
+{% schema %}
+{"name":"NC Announcement","settings":[{"type":"range","id":"speed","label":"Scroll speed (seconds)","min":10,"max":60,"step":2,"default":16}],"blocks":[{"type":"message","name":"Message","settings":[{"type":"text","id":"text","label":"Text","default":"Free shipping on all orders"}]}],"max_blocks":8,"presets":[{"name":"NC Announcement","blocks":[{"type":"message"},{"type":"message"},{"type":"message"}]}]}
+{% endschema %}
