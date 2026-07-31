@@ -2,12 +2,16 @@
 {%- assign nc_flogo = '' -%}
 {%- if settings.logo != blank -%}{%- assign nc_flogo = settings.logo | image_url: width: 400 -%}{%- endif -%}
 <style>
-/* 1. Cart: the free gift gets the same strip every other line gets under its title —
-      struck original, then the orange pill (nc-linesave's .nc-lsave / .nc-lsave-off
-      treatment). Own classes so nc-cro does not strip it the way it strips .nc-lsave. */
-#cart#cart .nc-gfree,body.template-cart .nc-gfree{grid-area:auto !important;display:flex !important;flex-wrap:nowrap !important;align-items:baseline !important;justify-content:flex-start !important;justify-self:start !important;align-self:auto !important;gap:6px !important;margin:0 0 7px !important;width:auto !important;text-align:left !important;font-size:13px !important;line-height:1.3 !important;font-weight:600 !important;white-space:nowrap !important}
-#cart#cart .nc-gfree .nc-gfree-was,body.template-cart .nc-gfree .nc-gfree-was{color:#9aa7ac !important;-webkit-text-fill-color:#9aa7ac !important;text-decoration:line-through !important;font-weight:600 !important;font-size:13px !important}
-#cart#cart .nc-gfree .nc-gfree-now,body.template-cart .nc-gfree .nc-gfree-now{color:#fff !important;-webkit-text-fill-color:#fff !important;background:linear-gradient(120deg,#C85C22,#E8935A) !important;font-weight:800 !important;font-size:11px !important;padding:2px 8px !important;border-radius:20px !important;letter-spacing:.02em !important}
+/* 1. Cart: the free gift gets the same green discount pill every other line gets under
+      its title (nc-cro's .nc-dline treatment, grid-area ds). Own class so nc-cro does
+      not strip it — it removes .nc-dline whenever a line has no percentage discount. */
+#cart#cart .nc-gfree,body.template-cart .nc-gfree{grid-area:ds;display:flex !important;align-items:center !important;gap:2px !important;color:#2C7360 !important;-webkit-text-fill-color:#2C7360 !important;font-size:13px !important;font-weight:800 !important;margin:0 !important;line-height:1.2 !important;background:linear-gradient(100deg,rgba(44,115,96,0.28),rgba(44,115,96,0) 82%) !important;border-radius:100px !important;padding:5px 14px 5px 7px !important;width:-moz-fit-content !important;width:fit-content !important;justify-self:start !important;white-space:nowrap !important}
+#cart#cart .nc-gfree svg,body.template-cart .nc-gfree svg{position:static !important;width:12px !important;height:12px !important;min-width:0 !important;max-width:12px !important;flex:0 0 12px !important;background:none !important;box-shadow:none !important;padding:0 !important;border-radius:0 !important}
+
+/* 1b. One grey for every struck price on the site. These were a mix of #333333,
+       #44544e, #7c8c84, #9aa8a5 and #9AA7AC; standardise on the cart's grey.
+       Class doubled for specificity so it lands last. */
+.old-price.old-price,.nc-was.nc-was,.ncwas.ncwas,.nc-rec-was.nc-rec-was,.tp-was.tp-was,.tb-was.tb-was,.nc-og-was.nc-og-was,.nc-lsave-was.nc-lsave-was,.nch-pwas.nch-pwas,.was1.was1,.was2.was2,.was3.was3,.nc-herogift__was.nc-herogift__was,.nc-herogift__was.nc-herogift__was s,.price.price s,.price.price del,s.money.money,del.money.money{color:#9AA7AC !important;-webkit-text-fill-color:#9AA7AC !important;text-decoration-line:line-through !important;text-decoration-color:#9AA7AC !important}
 
 @media(max-width:760px){
   /* 2. Collection page: compact sort + filter controls */
@@ -70,7 +74,7 @@
       var sec=li.querySelector('section');
       if(!sec||sec.querySelector('.nc-gfree'))continue;
       var w=document.createElement('div');w.className='nc-gfree';
-      w.innerHTML='<span class="nc-gfree-was">$34.99</span><span class="nc-gfree-now">FREE</span>';
+      w.innerHTML="<svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M20.6 13.4 12 22l-9-9V3h10z'/><circle cx='7.5' cy='7.5' r='1.4'/></svg>FREE";
       sec.insertBefore(w,sec.firstChild);
     }
   }
