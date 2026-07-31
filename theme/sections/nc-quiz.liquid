@@ -131,45 +131,67 @@
 </style>
 <script>
 (function(){
-  var A="viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'";
+  var A="viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'";
   var IC={
-    heat:"<path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z'/>",
+    heart:"<path d='M12 20.6 4.7 13.3a4.7 4.7 0 0 1 0-6.6 4.7 4.7 0 0 1 6.6 0l.7.7.7-.7a4.7 4.7 0 0 1 6.6 0 4.7 4.7 0 0 1 0 6.6z'/><path d='M8.6 10.4a2 2 0 0 1 1.7-1.5'/>",
+    hand:"<path d='M9 11.5V6.4a1.6 1.6 0 0 1 3.2 0m0 0V5.1a1.6 1.6 0 0 1 3.2 0v1.3m0 0a1.6 1.6 0 0 1 3.2 0v6.2a7 7 0 0 1-7 7 5.8 5.8 0 0 1-4.4-2l-2.7-3.1a1.7 1.7 0 0 1 2.5-2.2l1.6 1.5'/><path d='M12.2 6.4v4.6M15.4 6.4v4.6'/>",
+    clock:"<circle cx='12' cy='12' r='8.4'/><path d='M12 7.4V12l3.1 1.8'/><path d='M12 3.6v1.2M20.4 12h-1.2M12 20.4v-1.2M3.6 12h1.2'/>",
     bolt:"<path d='M13 2L4 14h6l-1 8 9-12h-6l1-8z'/>",
-    battery:"<rect x='2' y='7' width='16' height='10' rx='2'/><path d='M21 10v4'/><path d='M9 9.5l-1.6 3H10l-1.6 3'/>",
-    grid:"<rect x='3.5' y='3.5' width='7' height='7' rx='1.5'/><rect x='13.5' y='3.5' width='7' height='7' rx='1.5'/><rect x='3.5' y='13.5' width='7' height='7' rx='1.5'/><rect x='13.5' y='13.5' width='7' height='7' rx='1.5'/>",
-    sliders:"<path d='M4 21v-6M4 11V3M12 21v-8M12 9V3M20 21v-4M20 13V3'/><circle cx='4' cy='13' r='2'/><circle cx='12' cy='11' r='2'/><circle cx='20' cy='15' r='2'/>",
-    mute:"<path d='M11 5L6 9H2v6h4l5 4V5z'/><path d='M22 9l-6 6M16 9l6 6'/>",
-    wind:"<path d='M3 8h11a3 3 0 1 0-3-3M3 16h8a3 3 0 1 1-3 3M3 12h15a3 3 0 1 1-3 3'/>",
-    waves:"<path d='M2 12h3l2.5-7 4 16 3.5-12 2 5h3'/>",
-    drop:"<path d='M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'/>",
-    clock:"<circle cx='12' cy='12' r='9'/><path d='M12 7v5l3 2'/>",
-    bag:"<rect x='3' y='7' width='18' height='13' rx='2'/><path d='M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/>",
-    hand:"<path d='M6 11V7a2 2 0 0 1 4 0m0 0V5a2 2 0 0 1 4 0v2m0 0a2 2 0 0 1 4 0v6a7 7 0 0 1-7 7 6 6 0 0 1-4.6-2.1l-3.2-3.7a2 2 0 0 1 3-2.6l1.8 1.6'/>",
-    heart:"<path d='M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z'/>",
-    target:"<circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='5'/><circle cx='12' cy='12' r='1.5'/>",
-    shield:"<path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'/><path d='M9 12l2 2 4-4'/>",
-    moon:"<path d='M21 13.5A9 9 0 1 1 10.5 3a7 7 0 0 0 10.5 10.5z'/>",
-    check:"<circle cx='12' cy='12' r='9'/><path d='M9 12l2 2 4-4'/>"
+    heat:"<path d='M12 3.4c3 3 4.6 5.5 4.6 7.9a4.6 4.6 0 0 1-9.2 0c0-1.3.4-2.5 1.2-3.6.3 1.2 1.1 1.9 2 1.9.9 0 1.4-.8 1.1-2.1-.3-1.4-.2-2.7.3-4.1z'/><path d='M12 20.6v0'/>",
+    target:"<circle cx='12' cy='12' r='8.4'/><circle cx='12' cy='12' r='3.9'/><circle cx='12' cy='12' r='.9' fill='currentColor' stroke='none'/><path d='M12 1.9v2.2M12 19.9v2.2M1.9 12h2.2M19.9 12h2.2'/>",
+    wind:"<path d='M3 8.4h9.4a2.7 2.7 0 1 0-2.7-2.7'/><path d='M3 15.6h6.4a2.7 2.7 0 1 1-2.7 2.7'/><path d='M3 12h12.8a2.9 2.9 0 1 1-2.9 2.9'/>",
+    moon:"<path d='M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z'/><path d='M17.4 5.2l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z'/>",
+    recover:"<path d='M21 12a9 9 0 1 1-3-6.7'/><path d='M21 4v5h-5'/>",
+    waves:"<path d='M2.5 12h2.8l2.4-6.6 3.8 15 3.3-11.4 1.9 3h4.8'/>",
+    sliders:"<path d='M4 20.6v-5.4M4 10.8V3.4M12 20.6v-7.4M12 8.8V3.4M20 20.6v-3.4M20 12.8V3.4'/><circle cx='4' cy='13' r='1.9'/><circle cx='12' cy='11' r='1.9'/><circle cx='20' cy='15' r='1.9'/>",
+    shield:"<path d='M12 3.2l7.6 2.8v5.7c0 4.7-3.3 7.6-7.6 8.5-4.3-.9-7.6-3.8-7.6-8.5V6z'/><path d='M9.2 12.1l1.9 1.9 3.7-3.8'/>",
+    check:"<circle cx='12' cy='12' r='8.4'/><path d='M8.6 12.1l2.2 2.2 4.6-4.6'/>"
   };
-  var FB=['heart','hand','clock','bolt','target','heat','waves','wind','moon','sliders','bag','shield','drop','grid','mute','battery','check'];
-  function key(t){
+  var FB=['heart','hand','clock','bolt','heat','target','wind','moon','recover','waves','sliders','shield','check'];
+  var MAP=[
+    {m:'tension that builds up after long',k:'heart',s:'Tension after long days'},
+    {m:'your hands can',k:'hand',s:'Knots you can’t reach yourself'},
+    {m:'morning stiffness',k:'clock',s:'Morning stiffness that lingers'},
+    {m:'deep tissue knots a regular roller',k:'bolt',s:'Knots a foam roller can’t reach'},
+    {m:'heavy leg muscles',k:'heart',s:'Heavy legs after every workout'},
+    {m:'muscles that take 20 minutes',k:'clock',s:'Muscles slow to loosen up'},
+    {m:'knots that stretching',k:'bolt',s:'Knots stretching can’t reach'},
+    {m:'shoulder knots',k:'hand',s:'Shoulder knots that come back'},
+    {m:'tension that builds back up',k:'heart',s:'Tension back by end of day'},
+    {m:'stubborn deep tissue knots',k:'bolt',s:'Deep knots that won’t release'},
+    {m:'muscle soreness that lingers',k:'heart',s:'Soreness that lingers for days'},
+    {m:'back within minutes',k:'clock',s:'Tightness back within minutes'},
+    {m:'neck tension that builds after hours',k:'heart',s:'Neck tension from desk days'},
+    {m:'come back no matter',k:'hand',s:'Knots that keep coming back'},
+    {m:'achy neck',k:'heat',s:'An achy neck that craves heat'},
+    {m:'follows you all day',k:'heart',s:'Neck tension all day long'},
+    {m:'massage out yourself',k:'hand',s:'Knots you can’t reach yourself'},
+    {m:'60-minute',k:'clock',s:'No time for weekly appointments'},
+    {m:'craves warmth',k:'heat',s:'A stiff back that craves warmth'},
+    {m:'cramps',k:'heart',s:'Cramps that won’t let you relax'},
+    {m:'flares up minutes',k:'clock',s:'Pain that flares up at night'},
+    {m:'knees that ache',k:'target',s:'Knees that ache on the stairs'},
+    {m:'elbow soreness',k:'heart',s:'Elbow soreness that never eases'},
+    {m:'joints that take forever',k:'heat',s:'Joints slow to warm up'},
+    {m:'poor circulation',k:'heart',s:'Heavy, swollen legs by evening'},
+    {m:'aching feet',k:'wind',s:'Aching feet after long shifts'},
+    {m:'swelling that lingers',k:'clock',s:'Swelling that lingers for hours'}
+  ];
+  function entry(t){
+    var l=(t||'').toLowerCase();
+    for(var i=0;i<MAP.length;i++){if(l.indexOf(MAP[i].m)>-1)return MAP[i];}
+    return null;
+  }
+  function guess(t){
     t=(t||'').toLowerCase();
     if(/heat|warm|therm/.test(t))return 'heat';
-    if(/cordless|recharg|batter|wireless|usb/.test(t))return 'battery';
-    if(/interchang|attachment|head|node/.test(t))return 'grid';
-    if(/quiet|silent|noise|whisper/.test(t))return 'mute';
-    if(/compress|airbag|pneumatic|air wave/.test(t))return 'wind';
-    if(/speed|level|setting|adjustab|intensit|control/.test(t))return 'sliders';
-    if(/percussion|deep tissue|power|strong|force|stubborn/.test(t))return 'bolt';
-    if(/vibrat|pulse/.test(t))return 'waves';
-    if(/water|washable|sweat/.test(t))return 'drop';
-    if(/circulat|recovery|relief|muscle|soothe|relax|tension|sore|ache|calm/.test(t))return 'heart';
-    if(/morning|minute|hour|week|linger|forever|schedule|appointment/.test(t))return 'clock';
-    if(/compact|portable|travel|lightweight|slim|pocket|gym/.test(t))return 'bag';
-    if(/knot|knead|shiatsu|massage|rolling|roller|hands/.test(t))return 'hand';
+    if(/compress|airbag|air wave|swell/.test(t))return 'wind';
+    if(/percussion|deep tissue|stubborn|power/.test(t))return 'bolt';
+    if(/knot|knead|massage|roller|hands/.test(t))return 'hand';
     if(/sleep|night|bed/.test(t))return 'moon';
-    if(/knee|elbow|joint|ergonom|wrap|contour|grip|fits|comfort/.test(t))return 'target';
-    if(/guarantee|warrant|quality|certif/.test(t))return 'shield';
+    if(/tension|sore|ache|aching|relax|relief|circulat|muscle/.test(t))return 'heart';
+    if(/morning|minute|hour|week|linger|forever|appointment/.test(t))return 'clock';
+    if(/knee|elbow|joint|comfort|fits/.test(t))return 'target';
     return 'check';
   }
   function txtNode(d){
@@ -183,36 +205,24 @@
     if(!ds.length)return;
     busy=true;
     try{
-      var used={},keys=[],i,f;
+      var mob=window.innerWidth<=760,used={},plan=[],i;
       for(i=0;i<ds.length;i++){
-        var tn0=txtNode(ds[i]);
-        var k=key(tn0?tn0.textContent:ds[i].textContent);
-        if(used[k]){for(f=0;f<FB.length;f++){if(!used[FB[f]]){k=FB[f];break;}}}
-        used[k]=1;keys.push(k);
+        var d=ds[i],tn=txtNode(d);
+        var full=d.getAttribute('data-ncfull');
+        if(!full){full=(tn?tn.textContent:d.textContent)||'';d.setAttribute('data-ncfull',full);}
+        var en=entry(full),k=en?en.k:guess(full);
+        if(used[k]){for(var f=0;f<FB.length;f++){if(!used[FB[f]]){k=FB[f];break;}}}
+        used[k]=1;
+        plan.push({d:d,tn:tn,k:k,txt:(mob&&en&&en.s)?en.s:full});
       }
-      for(i=0;i<ds.length;i++){
-        var d=ds[i],k2=keys[i],sv=d.querySelector('svg');
-        if(!sv||sv.getAttribute('data-nck')!==k2){
+      for(i=0;i<plan.length;i++){
+        var q=plan[i],sv=q.d.querySelector('svg');
+        if(!sv||sv.getAttribute('data-nck')!==q.k){
           if(sv&&sv.parentNode)sv.parentNode.removeChild(sv);
-          d.insertAdjacentHTML('afterbegin',"<svg "+A+" data-nck='"+k2+"'>"+IC[k2]+"</svg>");
+          q.d.insertAdjacentHTML('afterbegin',"<svg "+A+" data-nck='"+q.k+"'>"+IC[q.k]+"</svg>");
         }
-      }
-      var mob=window.innerWidth<=760,base=mob?15:16,min=mob?12:13.5;
-      for(i=0;i<ds.length;i++){
-        var e=ds[i],tn=txtNode(e);
-        if(!tn)continue;
-        if(!e.getAttribute('data-ncfull'))e.setAttribute('data-ncfull',tn.textContent);
-        tn.textContent=e.getAttribute('data-ncfull');
-        e.style.setProperty('font-size',base+'px','important');
-        if(e.scrollWidth<=e.clientWidth+1)continue;
-        var ok=false;
-        for(f=base-0.5;f>=min;f-=0.5){
-          e.style.setProperty('font-size',f+'px','important');
-          if(e.scrollWidth<=e.clientWidth+1){ok=true;break;}
-        }
-        if(ok||!mob)continue;
-        var w=e.getAttribute('data-ncfull').replace(/^\s+|\s+$/g,'').split(/\s+/);
-        while(w.length>3&&e.scrollWidth>e.clientWidth+1){w.pop();tn.textContent=w.join(' ')}
+        if(q.tn&&q.tn.textContent!==q.txt)q.tn.textContent=q.txt;
+        q.d.style.removeProperty('font-size');
       }
     }catch(err){}
     busy=false;
