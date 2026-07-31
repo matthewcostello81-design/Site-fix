@@ -154,6 +154,50 @@
   setTimeout(qbFit,800);setTimeout(qbFit,2000);setTimeout(qbFit,3500);
 })();
 </script>
+<script>
+(function(){
+  var HANDLE='natural-wood-body-massage-roller-set';
+  var SINGLE='hf_20260731_030140_b3f6b99b';
+  function idxOf(match){
+    var t=document.getElementById('ncg-track');if(!t)return -1;
+    for(var i=0;i<t.children.length;i++){
+      var im=t.children[i].querySelector('img');
+      if(im&&(im.getAttribute('src')||im.src||'').indexOf(match)>-1)return i;
+    }
+    return -1;
+  }
+  function selVal(){
+    var b=document.querySelector('#ncpdp .nc-optbtn.nc-on');
+    return b?(b.getAttribute('data-val')||b.textContent||''):'';
+  }
+  var last=null;
+  function sync(force){
+    if(location.pathname.indexOf('/products/'+HANDLE)<0)return;
+    if(typeof window.ncgSet!=='function')return;
+    var v=selVal();if(!v)return;
+    if(!force&&v===last)return;
+    var single=/wood roller/i.test(v)&&!/set/i.test(v);
+    var i=single?idxOf(SINGLE):0;
+    if(i<0)return;
+    last=v;
+    window.ncgSet(i);
+  }
+  function arm(){
+    if(location.pathname.indexOf('/products/'+HANDLE)<0)return;
+    document.addEventListener('click',function(e){
+      var b=e.target&&e.target.closest?e.target.closest('#ncpdp .nc-optbtn'):null;
+      if(!b)return;
+      setTimeout(function(){sync(true);},60);
+      setTimeout(function(){sync(true);},260);
+    },true);
+    setTimeout(function(){sync(true);},700);
+    setTimeout(function(){sync(true);},1800);
+    var o=document.querySelector('#ncpdp .nc-opts');
+    if(o){try{new MutationObserver(function(){sync(false);}).observe(o,{attributes:true,subtree:true,attributeFilter:['class']});}catch(e){}}
+  }
+  if(document.readyState!=='loading')arm();else document.addEventListener('DOMContentLoaded',arm);
+})();
+</script>
 {% schema %}
 {"name":"NC Quiz Popup","settings":[]}
 {% endschema %}
