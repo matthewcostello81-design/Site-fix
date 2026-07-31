@@ -123,9 +123,34 @@
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="electric-heating-pad-adjustable-heat-auto-shut-off"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-cart-heatpad-shadow.png?v=1785511741&width=600") !important}
 #cart#cart .nc-recs-panel .nc-rec:has(a[href*="octa-massage-gun"]) .nc-rec-imgw img{transform:scale(1.45) !important;transform-origin:50% 50% !important}
 #cart#cart .nc-recs-panel .nc-rec:has(a[href*="muscle-massage-gun"]) .nc-rec-imgw img{transform:scale(1.45) !important;transform-origin:50% 50% !important}
-#ncpdp#ncpdp .nc-qb > div{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;display:flex !important;align-items:center !important;gap:8px !important;line-height:1.35 !important}
+#ncpdp#ncpdp .nc-qb > div{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;display:flex !important;align-items:center !important;gap:8px !important;line-height:1.35 !important}
 #ncpdp#ncpdp .nc-qb > div svg{flex:0 0 auto !important}
 </style>
+<script>
+(function(){
+  function qbFit(){
+    var ds=document.querySelectorAll('#ncpdp .nc-qb > div');if(!ds.length)return;
+    var mob=window.innerWidth<=760;
+    for(var i=0;i<ds.length;i++){
+      var d=ds[i],tn=null;
+      for(var c=0;c<d.childNodes.length;c++){var nd=d.childNodes[c];if(nd.nodeType===3&&nd.textContent.replace(/\s/g,''))tn=nd;}
+      if(!tn)continue;
+      if(!d.getAttribute('data-nc-full'))d.setAttribute('data-nc-full',tn.textContent);
+      tn.textContent=d.getAttribute('data-nc-full');
+      d.style.fontSize='';
+      if(d.scrollWidth<=d.clientWidth+1)continue;
+      var fits=false;
+      for(var f=12.5;f>=11;f-=0.5){d.style.fontSize=f+'px';if(d.scrollWidth<=d.clientWidth+1){fits=true;break;}}
+      if(fits||!mob)continue;
+      var words=d.getAttribute('data-nc-full').replace(/^\s+|\s+$/g,'').split(/\s+/);
+      while(words.length>3&&d.scrollWidth>d.clientWidth+1){words.pop();tn.textContent=words.join(' ');}
+    }
+  }
+  if(document.readyState!=='loading')qbFit();else document.addEventListener('DOMContentLoaded',qbFit);
+  window.addEventListener('load',qbFit);window.addEventListener('resize',qbFit);
+  setTimeout(qbFit,800);setTimeout(qbFit,2000);setTimeout(qbFit,3500);
+})();
+</script>
 {% schema %}
 {"name":"NC Quiz Popup","settings":[]}
 {% endschema %}
