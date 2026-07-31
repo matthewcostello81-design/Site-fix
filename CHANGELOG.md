@@ -1,3 +1,31 @@
+# Collection toolbar: Sort By and Filter side by side on mobile
+
+## Problem
+On phone screens the collection page's Sort By and Filter controls stacked
+vertically instead of sitting side by side.
+
+## Cause
+The controls are two custom selects (`.nc-fsort`, `.nc-fcat`) built by the
+script in `sections/nc-foot-fix.liquid` inside a flex-wrap `.nc-fbar`. Each
+select sizes itself to its widest option plus 32px side padding, so the pair
+is slightly wider than a phone viewport and the second one wraps to a new
+row.
+
+## Fix
+Appended a mobile media query (max-width 760px) to
+`sections/nc-foot-fix.liquid`: the bar becomes nowrap full-width, each
+`.nc-fsel` gets `flex:1 1 0; min-width:0`, and the selects fill their half
+at 50/50 with tighter padding (12px left, 30px right for the chevron) and
+ellipsis overflow, so both controls share one row on any phone width.
+Desktop is untouched.
+
+## Applied to
+Theme "NC Polish round 4 (Claude)" (draft, gid 162251276516). File:
+sections/nc-foot-fix.liquid. Verified byte-identical to the repo copy by
+MD5.
+
+---
+
 # Shop All tile: Deep Tissue Massage Gun lifestyle photo
 
 ## Problem
