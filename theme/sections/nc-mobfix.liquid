@@ -23,13 +23,6 @@
        the <s> to order:-1 puts it first without fighting nc-cro's rebuild. */
 #cart#cart .nc-recs-panel .nc-rec-price .nc-rec-was{order:-1 !important}
 
-/* 1d. Wearable neck massager: its product sits high in frame, so the SAVED % badge
-       (absolute, top 5px) lands on top of the device. Pad the top of the image box —
-       object-fit:cover refills the smaller box, clearing the badge. The strip the
-       padding opens up is filled with the photo itself in JS below, so it carries the
-       shot's own backdrop instead of the figure's tan. */
-#cart#cart#cart .l4ca > li:has(a[href*="heated-kneading-wearable-neck-massager"]) figure img{padding-top:26px !important;box-sizing:border-box !important;object-position:50% 50% !important}
-
 @media(max-width:760px){
   /* 2. Collection page: compact sort + filter controls. Never force a fixed height
         here — the inherited line-height lays the label out taller than the box and
@@ -152,30 +145,7 @@
       pr.appendChild(s);
     }
   }
-  /* Fill the padded strip above the neck massager with the photo itself, so the strip
-     IS the shot's own backdrop rather than a colour we tried to match. An element's
-     background paints across its padding box, so the area the padding opens up shows
-     the top of the same image. Canvas sampling was tried first and failed silently
-     whenever the pixel read was blocked or the src was still lazy on the first pass;
-     this needs neither CORS nor a load event. Re-applied if the src changes. */
-  function padBg(){
-    var lis=document.querySelectorAll('#cart .l4ca > li');
-    for(var i=0;i<lis.length;i++){
-      var a=lis[i].querySelector('a[href*="/products/"]');
-      if(!a||String(a.getAttribute('href')||'').indexOf('heated-kneading-wearable-neck-massager')<0)continue;
-      var im=lis[i].querySelector('figure img');
-      if(!im)continue;
-      var src=im.currentSrc||im.src||im.getAttribute('src')||'';
-      if(!src||src.indexOf('data:')===0)continue;
-      if(im.getAttribute('data-ncbg')===src)continue;
-      im.setAttribute('data-ncbg',src);
-      im.style.setProperty('background-image','url("'+src+'")','important');
-      im.style.setProperty('background-size','cover','important');
-      im.style.setProperty('background-position','center top','important');
-      im.style.setProperty('background-repeat','no-repeat','important');
-    }
-  }
-  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{padBg();}catch(e){}}
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}}
   var t=null;
   function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
   if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
