@@ -1,3 +1,47 @@
+# 5-Level Resistance Band Set: show all imported reviews
+
+## Problem
+10 AliExpress reviews were imported into Judge.me for the 5-Level Resistance
+Band Set (product 9166441152740, handle `5-level-resistance-band-set`), but the
+PDP review widget only displayed 5 cards with the note "Showing 5 of 10
+reviews."
+
+## Cause
+The visible review grid ("What customers say", built by `nc-enhance.liquid`)
+renders its cards server-side from the `custom.nc_loox_rvw` product metafield,
+with the total taken from `loox.num_reviews` (10). Judge.me only syncs the
+FIRST PAGE of reviews (5, newest by date) into its `judgeme.review_widget_data`
+metafield, so the remaining 5 imported reviews exist only on Judge.me's servers
+and never reach any metafield the theme can render. (Judge.me, the storefront,
+and AliExpress are all unreachable from this environment's network policy, so
+the missing review texts could not be copied into the metafield server-side.)
+
+## Fix
+New small section `sections/nc-rvw-topup.liquid`, registered in
+`templates/product.json` (product pages only). In the visitor's browser, when
+the review grid holds fewer cards than the product's review total, it:
+- fetches remaining pages from Judge.me's app proxy on the same origin
+  (`/apps/judgeme/reviews_widget?external_id=<id>&page=N`, pages 1-5 max),
+- parses `.jdgm-rev` entries (author, body, optional photo), dedupes against
+  cards already shown (normalized author+text key),
+- appends matching `.ncr2-card` nodes built via DOM APIs (no HTML injection),
+- clears nc-cro's `data-nc-grid` / `data-nc-mk` flags so its 300ms tick
+  rebuilds the masonry including the new cards, and updates the
+  "Showing X of Y reviews" note.
+Fails silently (widget unchanged, still 5 cards) if the app proxy is
+unavailable or returns nothing parseable. Applies to any product whose metafield
+holds fewer reviews than its total, not just the band set.
+
+## Applied to
+Shopify draft theme `162251276516` ("NC Polish round 4 (Claude)") on shop
+`v9fqfa-bd.myshopify.com` via Admin API (themeFilesUpsert).
+
+Files changed:
+- sections/nc-rvw-topup.liquid (new)
+- templates/product.json (registered the new section)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
