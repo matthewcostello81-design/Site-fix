@@ -1,4 +1,4 @@
-{% comment %} NC mobile polish: FREE price on the cart gift line, compact collection sort/filter controls, footer logo built from the theme logo setting, and Help/Policies flush left with the policy list split into two columns. Doubled-id selectors so these win regardless of section order. {% endcomment %}
+{% comment %} NC mobile polish: FREE price on the cart gift line, compact collection sort/filter controls, footer logo built from the theme logo setting, Help/Policies layout, and the PDP highlight-box card treatment. Doubled-id selectors so these win regardless of section order. {% endcomment %}
 {%- assign nc_flogo = '' -%}
 {%- if settings.logo != blank -%}{%- assign nc_flogo = settings.logo | image_url: width: 400 -%}{%- endif -%}
 <style>
@@ -25,6 +25,24 @@
   #shopify-section-footer#shopify-section-footer .nc-foot-links{display:grid !important;grid-template-columns:auto 1fr !important;gap:0 24px !important;justify-content:start !important;padding-left:12px !important;padding-right:12px !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col{min-width:0 !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links ul{gap:9px !important}
+}
+
+/* 5. PDP highlight box: card treatment — cream gradient, teal→orange spine down the
+      left, brand sparkles bled into two corners, hairline rules between rows, and
+      icon tiles lifted off the surface with a gradient fill + inset ring. */
+#ncpdp#ncpdp .nc-qb{position:relative !important;overflow:hidden !important;margin:14px 0 !important;padding:4px 16px 4px 20px !important;border-radius:18px !important;border:1px solid rgba(44,110,114,.18) !important;background-color:#FDFCF8 !important;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M60 20L67 47L94 54L67 61L60 88L53 61L26 54L53 47Z' fill='%232C6E72' fill-opacity='.09'/%3E%3C/svg%3E"),url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath d='M60 20L67 47L94 54L67 61L60 88L53 61L26 54L53 47Z' fill='%23D9763A' fill-opacity='.08'/%3E%3C/svg%3E"),linear-gradient(155deg,rgba(44,110,114,.08),rgba(255,255,255,0) 46%,rgba(217,118,58,.07)) !important;background-repeat:no-repeat,no-repeat,no-repeat !important;background-position:right -18px top -16px,left 26px bottom -18px,center !important;background-size:104px 104px,72px 72px,cover !important;box-shadow:0 18px 32px -28px rgba(15,42,51,.55),inset 0 1px 0 rgba(255,255,255,.85) !important}
+#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:4px !important;background:linear-gradient(180deg,#2C6E72,#3E8B86 46%,#D9763A) !important;pointer-events:none !important}
+#ncpdp#ncpdp .nc-qb > div{position:relative !important;padding:11px 2px !important;border-bottom:1px solid rgba(44,110,114,.13) !important}
+#ncpdp#ncpdp .nc-qb > div:last-child{border-bottom:0 !important}
+#ncpdp#ncpdp#ncpdp#ncpdp .nc-qb > div svg{background-color:#fff !important;background-image:linear-gradient(140deg,rgba(44,110,114,.22),rgba(44,110,114,.06) 56%,rgba(217,118,58,.16)) !important;box-shadow:inset 0 0 0 1px rgba(44,110,114,.20),0 7px 13px -9px rgba(15,42,51,.6) !important}
+@media(hover:hover) and (pointer:fine){
+  #ncpdp#ncpdp .nc-qb > div{transition:transform .18s ease !important}
+  #ncpdp#ncpdp .nc-qb > div:hover{transform:translateX(3px) !important}
+}
+@media(max-width:760px){
+  #ncpdp#ncpdp .nc-qb{margin:12px 0 !important;padding:2px 12px 2px 16px !important;border-radius:16px !important;background-size:84px 84px,58px 58px,cover !important;background-position:right -14px top -13px,left 20px bottom -14px,center !important}
+  #ncpdp#ncpdp .nc-qb::before{width:3px !important}
+  #ncpdp#ncpdp .nc-qb > div{padding:9px 2px !important}
 }
 </style>
 <script>
