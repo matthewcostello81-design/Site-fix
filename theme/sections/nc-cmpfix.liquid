@@ -1,0 +1,40 @@
+{% comment %} NC Compare fix: the homepage compare chart's fifth column showed the retired Knee & Joint Wrap (product is ARCHIVED, its links get silently retargeted by nc-cro wrapFix). This swaps that column for the Birchwood 5 Piece Roller Set (4-piece set plus free fifth tool) using its LIFESTYLE photo (in-use on the thigh), not the product hero. Runs synchronously at parse time, immediately after the nc-home markup, so the mobile card builder in nc-mfix (DOMContentLoaded) and the CMP image swap in nc-global-css both see the new column and inherit it. Other columns untouched. {% endcomment %}
+{%- assign ncr = all_products['natural-wood-body-massage-roller-set'] -%}
+<script>
+(function(){
+  if(window.__ncCmpFix)return;window.__ncCmpFix=1;
+  var IMG='https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_012638_bcc335ed-4284-4648-99b6-abe039c08adb.png?v=1782871269&width=440';
+  var URL='{{ ncr.url }}';
+  var PRICE='{{ ncr.variants.first.price | money }}';
+  function fix(){
+    var tbl=document.querySelector('#nc-home .nch-cmp-tbl');if(!tbl)return;
+    var prods=tbl.querySelectorAll('.nch-cmp-head .nch-cmp-prod');
+    if(prods.length<5)return;
+    var p=prods[4];
+    if(p.getAttribute('data-nc-cmpfix'))return;
+    p.setAttribute('data-nc-cmpfix','1');
+    p.setAttribute('href',URL);
+    var img=p.querySelector('img');
+    if(img){img.removeAttribute('srcset');img.src=IMG;img.alt='5 Piece Roller Set';img.dataset.ncImg='1';}
+    var b=p.querySelector('b');if(b)b.textContent='5 Piece Roller Set';
+    var sp=p.querySelector('span');if(sp)sp.textContent=PRICE;
+    var rows=tbl.querySelectorAll('.nch-cmp-row:not(.nch-cmp-head)');
+    var NO="<span class='nch-cmp-no'>–</span>";
+    var vals={'best for':'Full-body rolling','massage type':'Manual rolling','soothing heat':NO,'hands-free':NO};
+    for(var i=0;i<rows.length;i++){
+      var lbl=rows[i].querySelector('.nch-cmp-lbl');if(!lbl)continue;
+      var key=(lbl.textContent||'').trim().toLowerCase();
+      if(!(key in vals))continue;
+      var cells=rows[i].querySelectorAll('div:not(.nch-cmp-lbl)');
+      if(cells.length<5)continue;
+      cells[4].innerHTML=vals[key];
+    }
+  }
+  fix();
+  document.addEventListener('DOMContentLoaded',fix);
+  setTimeout(fix,600);setTimeout(fix,1800);
+})();
+</script>
+{% schema %}
+{"name":"NC Compare Fix","settings":[],"presets":[{"name":"NC Compare Fix"}]}
+{% endschema %}

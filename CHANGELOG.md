@@ -1,3 +1,46 @@
+# Homepage compare chart: swap Knee & Joint Wrap for the 5 Piece Roller Set
+
+## Problem
+The homepage "Compare our most popular tools" chart still showed the Knee &
+Joint Wrap in its fifth column. That product is now ARCHIVED in Shopify, and
+`nc-cro`'s `wrapFix()` was silently retargeting its links to the Electric
+Heating Pad, so the column's name, image, and link no longer agreed.
+
+## Cause
+The chart's data is hardcoded in `sections/nc-home.liquid` (47KB), with four
+later-loading layers (`nc-cro`, `nc-homefix2`, `nc-bannerfix`,
+`nc-global-css`) mutating it at runtime. The base file was never updated when
+the wrap was retired.
+
+## Fix
+A new small override section, `sections/nc-cmpfix.liquid`, wired into
+`templates/index.json` directly after `nc_home`, rewrites only the fifth
+column at parse time (before `nc-mfix`'s mobile card builder runs, so the
+swipeable mobile cards inherit the change automatically):
+
+- Product: Birchwood 5 Piece Roller Set (handle
+  `natural-wood-body-massage-roller-set`, ACTIVE), labeled "5 Piece Roller
+  Set", linked to its product page, priced from the set variant via Liquid.
+- Image: the product's LIFESTYLE photo (roller set in use on the thigh,
+  square 2048x2048 Shopify CDN image), not the white product hero. The
+  `img.dataset.ncImg` guard stops `nc-global-css`'s name-keyed image swap
+  from overriding it.
+- Rows updated for the new column: Best for "Full-body rolling", Massage
+  type "Manual rolling", Soothing heat: no, Cordless: yes (unchanged),
+  Hands-free: no, Travel-friendly: yes (unchanged).
+- All other columns and rows untouched.
+
+Rewriting the fifth column in `nc-home.liquid` itself was considered but
+rejected: pushing the full 47KB file through the API risks corrupting the
+homepage, and this theme's established pattern is small override layers.
+
+## Applied to
+Theme "NC Polish round 4 (Claude)" (draft, gid 162251276516). Files:
+sections/nc-cmpfix.liquid (new), templates/index.json (section wired in).
+Both verified byte-identical to the repo copies by MD5 checksum.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

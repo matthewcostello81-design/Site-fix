@@ -1,0 +1,55 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "nc_home": {
+      "type": "nc-home",
+      "settings": {
+        "heading": "Feel better, every single day",
+        "subheading": "",
+        "statement_heading": "Wellness that works, without the appointment",
+        "statement_text": "We bring the spa, the recovery room, and the therapist&rsquo;s table home, with tools built to help you move, sleep, and feel your best on your own schedule."
+      }
+    },
+    "nc_cmpfix": {
+      "type": "nc-cmpfix",
+      "settings": {}
+    },
+    "nc_testimonials": {
+      "type": "nc-testimonials",
+      "settings": {}
+    },
+    "nc_mfix": {
+      "type": "nc-mfix",
+      "settings": {}
+    },
+    "nc_homefix2": {
+      "type": "nc-homefix2",
+      "settings": {}
+    },
+    "nc_homefix3": {
+      "type": "nc-homefix3",
+      "settings": {}
+    },
+    "nc_giftfix": {
+      "type": "nc-giftfix",
+      "settings": {}
+    }
+  },
+  "order": [
+    "nc_home",
+    "nc_cmpfix",
+    "nc_testimonials",
+    "nc_mfix",
+    "nc_homefix2",
+    "nc_homefix3",
+    "nc_giftfix"
+  ]
+}
