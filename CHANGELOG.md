@@ -9,7 +9,7 @@ Higgsfield, bands and cream background kept pixel-faithful) is used in all five
 placements. Juice then clarified the source photo: it is the "FIVE LEVELS,
 ONE SET" infographic from the paid band listing (`nc-4k-bands.jpg`), so a
 second clean was generated from that file and shipped as
-`files/nc-bands-clean-v2.png` (the v1 `nc-bands-clean.png` from the free-gift
+`files/nc-bands-clean-v3.png` (after a v2 look check, the flat-but-dimensional v3 render replaced it; the v1 `nc-bands-clean.png` from the free-gift
 listing photo remains on the CDN, unused), while the product listing gallery itself keeps the annotated
 original:
 
