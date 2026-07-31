@@ -119,7 +119,7 @@
 #nc-home#nc-home .nch-hero-text .nc-herogift__ic{background:transparent !important;position:relative !important;aspect-ratio:1/1 !important;height:auto !important;overflow:hidden !important;border-radius:14px !important}
 #nc-home#nc-home .nch-hero-text .nc-herogift__ic img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863&width=720") !important;position:absolute !important;top:0 !important;left:0 !important;width:100% !important;height:100% !important;max-height:none !important;object-fit:cover !important;object-position:50% 50% !important;transform:none !important;mix-blend-mode:normal !important;filter:none !important;border-radius:0 !important;background:transparent !important}
 #nc-home#nc-home .nch-hero-text .nc-herogift{align-items:center !important}
-#nc-home#nc-home .nch-hero-text .nc-herogift__ic{align-self:center !important}
+#nc-home#nc-home .nch-hero-text .nc-herogift__ic{align-self:center !important;transform:none !important}
 @media(max-width:760px){#ncpdp#ncpdp .nc-od-br{display:none !important}}
 /* Cart polish: line-item images fill their figure (no bottom gap); rec tiles bleed to tile edge and zoom in; roller plate zooms extra */
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="3d-kneading-heated-neck-massager"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-cart-neck3d-shadow.png?v=1785511741&width=600") !important}
@@ -131,27 +131,100 @@
 </style>
 <script>
 (function(){
-  function qbFit(){
-    var ds=document.querySelectorAll('#ncpdp .nc-qb > div');if(!ds.length)return;
-    var mob=window.innerWidth<=760;
-    for(var i=0;i<ds.length;i++){
-      var d=ds[i],tn=null;
-      for(var c=0;c<d.childNodes.length;c++){var nd=d.childNodes[c];if(nd.nodeType===3&&nd.textContent.replace(/\s/g,''))tn=nd;}
-      if(!tn)continue;
-      if(!d.getAttribute('data-nc-full'))d.setAttribute('data-nc-full',tn.textContent);
-      tn.textContent=d.getAttribute('data-nc-full');
-      d.style.fontSize='';
-      if(d.scrollWidth<=d.clientWidth+1)continue;
-      var fits=false;
-      for(var f=12.5;f>=11;f-=0.5){d.style.fontSize=f+'px';if(d.scrollWidth<=d.clientWidth+1){fits=true;break;}}
-      if(fits||!mob)continue;
-      var words=d.getAttribute('data-nc-full').replace(/^\s+|\s+$/g,'').split(/\s+/);
-      while(words.length>3&&d.scrollWidth>d.clientWidth+1){words.pop();tn.textContent=words.join(' ');}
-    }
+  var A="viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'";
+  var IC={
+    heat:"<path d='M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z'/>",
+    bolt:"<path d='M13 2L4 14h6l-1 8 9-12h-6l1-8z'/>",
+    battery:"<rect x='2' y='7' width='16' height='10' rx='2'/><path d='M21 10v4'/><path d='M9 9.5l-1.6 3H10l-1.6 3'/>",
+    grid:"<rect x='3.5' y='3.5' width='7' height='7' rx='1.5'/><rect x='13.5' y='3.5' width='7' height='7' rx='1.5'/><rect x='3.5' y='13.5' width='7' height='7' rx='1.5'/><rect x='13.5' y='13.5' width='7' height='7' rx='1.5'/>",
+    sliders:"<path d='M4 21v-6M4 11V3M12 21v-8M12 9V3M20 21v-4M20 13V3'/><circle cx='4' cy='13' r='2'/><circle cx='12' cy='11' r='2'/><circle cx='20' cy='15' r='2'/>",
+    mute:"<path d='M11 5L6 9H2v6h4l5 4V5z'/><path d='M22 9l-6 6M16 9l6 6'/>",
+    wind:"<path d='M3 8h11a3 3 0 1 0-3-3M3 16h8a3 3 0 1 1-3 3M3 12h15a3 3 0 1 1-3 3'/>",
+    waves:"<path d='M2 12h3l2.5-7 4 16 3.5-12 2 5h3'/>",
+    drop:"<path d='M12 2s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z'/>",
+    clock:"<circle cx='12' cy='12' r='9'/><path d='M12 7v5l3 2'/>",
+    bag:"<rect x='3' y='7' width='18' height='13' rx='2'/><path d='M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2'/>",
+    hand:"<path d='M6 11V7a2 2 0 0 1 4 0m0 0V5a2 2 0 0 1 4 0v2m0 0a2 2 0 0 1 4 0v6a7 7 0 0 1-7 7 6 6 0 0 1-4.6-2.1l-3.2-3.7a2 2 0 0 1 3-2.6l1.8 1.6'/>",
+    heart:"<path d='M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1z'/>",
+    target:"<circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='5'/><circle cx='12' cy='12' r='1.5'/>",
+    shield:"<path d='M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'/><path d='M9 12l2 2 4-4'/>",
+    moon:"<path d='M21 13.5A9 9 0 1 1 10.5 3a7 7 0 0 0 10.5 10.5z'/>",
+    check:"<circle cx='12' cy='12' r='9'/><path d='M9 12l2 2 4-4'/>"
+  };
+  var FB=['heart','hand','clock','bolt','target','heat','waves','wind','moon','sliders','bag','shield','drop','grid','mute','battery','check'];
+  function key(t){
+    t=(t||'').toLowerCase();
+    if(/heat|warm|therm/.test(t))return 'heat';
+    if(/cordless|recharg|batter|wireless|usb/.test(t))return 'battery';
+    if(/interchang|attachment|head|node/.test(t))return 'grid';
+    if(/quiet|silent|noise|whisper/.test(t))return 'mute';
+    if(/compress|airbag|pneumatic|air wave/.test(t))return 'wind';
+    if(/speed|level|setting|adjustab|intensit|control/.test(t))return 'sliders';
+    if(/percussion|deep tissue|power|strong|force|stubborn/.test(t))return 'bolt';
+    if(/vibrat|pulse/.test(t))return 'waves';
+    if(/water|washable|sweat/.test(t))return 'drop';
+    if(/morning|minute|hour|30|time|day|week|linger|forever/.test(t))return 'clock';
+    if(/compact|portable|travel|lightweight|slim|pocket|gym/.test(t))return 'bag';
+    if(/knot|knead|shiatsu|massage|rolling|roller|hands/.test(t))return 'hand';
+    if(/sleep|night|bed/.test(t))return 'moon';
+    if(/circulat|recovery|relief|muscle|soothe|relax|tension|sore|ache|calm/.test(t))return 'heart';
+    if(/knee|elbow|joint|ergonom|wrap|contour|grip|fits|comfort/.test(t))return 'target';
+    if(/guarantee|warrant|quality|certif/.test(t))return 'shield';
+    return 'check';
   }
-  if(document.readyState!=='loading')qbFit();else document.addEventListener('DOMContentLoaded',qbFit);
-  window.addEventListener('load',qbFit);window.addEventListener('resize',qbFit);
-  setTimeout(qbFit,800);setTimeout(qbFit,2000);setTimeout(qbFit,3500);
+  function txtNode(d){
+    for(var c=0;c<d.childNodes.length;c++){var n=d.childNodes[c];if(n.nodeType===3&&n.textContent.replace(/\s/g,''))return n;}
+    return null;
+  }
+  var busy=false;
+  function run(){
+    if(busy)return;
+    var ds=document.querySelectorAll('#ncpdp .nc-qb > div');
+    if(!ds.length)return;
+    busy=true;
+    try{
+      var used={},keys=[],i,f;
+      for(i=0;i<ds.length;i++){
+        var tn0=txtNode(ds[i]);
+        var k=key(tn0?tn0.textContent:ds[i].textContent);
+        if(used[k]){for(f=0;f<FB.length;f++){if(!used[FB[f]]){k=FB[f];break;}}}
+        used[k]=1;keys.push(k);
+      }
+      for(i=0;i<ds.length;i++){
+        var d=ds[i],k2=keys[i],sv=d.querySelector('svg');
+        if(!sv||sv.getAttribute('data-nck')!==k2){
+          if(sv&&sv.parentNode)sv.parentNode.removeChild(sv);
+          d.insertAdjacentHTML('afterbegin',"<svg "+A+" data-nck='"+k2+"'>"+IC[k2]+"</svg>");
+        }
+      }
+      var mob=window.innerWidth<=760,base=mob?15:16,min=mob?12:13.5;
+      for(i=0;i<ds.length;i++){
+        var e=ds[i],tn=txtNode(e);
+        if(!tn)continue;
+        if(!e.getAttribute('data-ncfull'))e.setAttribute('data-ncfull',tn.textContent);
+        tn.textContent=e.getAttribute('data-ncfull');
+        e.style.setProperty('font-size',base+'px','important');
+        if(e.scrollWidth<=e.clientWidth+1)continue;
+        var ok=false;
+        for(f=base-0.5;f>=min;f-=0.5){
+          e.style.setProperty('font-size',f+'px','important');
+          if(e.scrollWidth<=e.clientWidth+1){ok=true;break;}
+        }
+        if(ok||!mob)continue;
+        var w=e.getAttribute('data-ncfull').replace(/^\s+|\s+$/g,'').split(/\s+/);
+        while(w.length>3&&e.scrollWidth>e.clientWidth+1){w.pop();tn.textContent=w.join(' ')}
+      }
+    }catch(err){}
+    busy=false;
+  }
+  function arm(){
+    run();
+    var qb=document.querySelector('#ncpdp .nc-qb');
+    if(qb){try{new MutationObserver(function(){setTimeout(run,40);}).observe(qb,{childList:true,subtree:true});}catch(e){}}
+    window.addEventListener('resize',run);
+    setTimeout(run,900);setTimeout(run,2000);setTimeout(run,3600);setTimeout(run,5200);
+  }
+  if(document.readyState!=='loading')arm();else document.addEventListener('DOMContentLoaded',arm);
 })();
 </script>
 <script>
