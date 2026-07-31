@@ -2,12 +2,12 @@
 {%- assign nc_flogo = '' -%}
 {%- if settings.logo != blank -%}{%- assign nc_flogo = settings.logo | image_url: width: 400 -%}{%- endif -%}
 <style>
-/* 1. Cart: the free gift shows FREE in the same slot every other line uses for its price */
-#cart#cart .l4ca:not(.in-panel) > li .nc-gfree{grid-area:pr;justify-self:end;align-self:end;margin:0 !important;text-align:right;display:flex !important;flex-direction:column;align-items:flex-end;gap:0;width:auto !important}
-#cart#cart .l4ca.in-panel > li .nc-gfree{display:flex !important;flex-direction:column;align-items:flex-end;margin-top:2px}
-#cart#cart .l4ca > li .nc-gfree .nc-gfree-was{font-size:13.5px;text-decoration:line-through;opacity:.72}
-#cart#cart .l4ca > li .nc-gfree .nc-gfree-now{font-size:16.5px;font-weight:800;letter-spacing:.02em;color:#D9763A !important;-webkit-text-fill-color:#D9763A !important;font-family:Poppins,sans-serif !important}
-#cart#cart .l4ca > li:has(.nc-gfree) p.price{display:none !important}
+/* 1. Cart: the free gift gets the same strip every other line gets under its title —
+      struck original, then the orange pill (nc-linesave's .nc-lsave / .nc-lsave-off
+      treatment). Own classes so nc-cro does not strip it the way it strips .nc-lsave. */
+#cart#cart .nc-gfree,body.template-cart .nc-gfree{grid-area:auto !important;display:flex !important;flex-wrap:nowrap !important;align-items:baseline !important;justify-content:flex-start !important;justify-self:start !important;align-self:auto !important;gap:6px !important;margin:0 0 7px !important;width:auto !important;text-align:left !important;font-size:13px !important;line-height:1.3 !important;font-weight:600 !important;white-space:nowrap !important}
+#cart#cart .nc-gfree .nc-gfree-was,body.template-cart .nc-gfree .nc-gfree-was{color:#9aa7ac !important;-webkit-text-fill-color:#9aa7ac !important;text-decoration:line-through !important;font-weight:600 !important;font-size:13px !important}
+#cart#cart .nc-gfree .nc-gfree-now,body.template-cart .nc-gfree .nc-gfree-now{color:#fff !important;-webkit-text-fill-color:#fff !important;background:linear-gradient(120deg,#C85C22,#E8935A) !important;font-weight:800 !important;font-size:11px !important;padding:2px 8px !important;border-radius:20px !important;letter-spacing:.02em !important}
 
 @media(max-width:760px){
   /* 2. Collection page: compact sort + filter controls */
