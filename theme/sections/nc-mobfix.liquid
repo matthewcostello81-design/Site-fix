@@ -23,16 +23,11 @@
        the <s> to order:-1 puts it first without fighting nc-cro's rebuild. */
 #cart#cart .nc-recs-panel .nc-rec-price .nc-rec-was{order:-1 !important}
 
-/* 1d. The wood-roller add-on tile never gets a Save chip: nc-cro only fills
-       .nc-rec-off when the element already exists, and this tile has none. Draw it as
-       a pseudo-element so nc-cro's one-shot `pr.textContent=` rebuild cannot wipe it,
-       and only when a real .nc-rec-off is absent so the two can never double up.
-       Styling mirrors nc-cro's own .nc-rec-off rule. */
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="natural-wood-body-massage-roller-set"]) .nc-rec-price:not(:has(.nc-rec-off))::after{content:'Save 38%';background:#E3ECEC;color:#2C6E72;-webkit-text-fill-color:#2C6E72;font-weight:800;font-size:15px;padding:5px 12px;border-radius:100px;border:1px solid rgba(44,115,96,.28);margin-left:7px;font-style:normal;letter-spacing:.01em;white-space:nowrap;display:inline-block;align-self:center;flex:0 0 auto}
-
-/* 1e. Wearable neck massager: its product sits high in frame, so the SAVED % badge
+/* 1d. Wearable neck massager: its product sits high in frame, so the SAVED % badge
        (absolute, top 5px) lands on top of the device. Pad the top of the image box —
-       object-fit:cover then fills the smaller box, clearing the badge. */
+       object-fit:cover refills the smaller box, clearing the badge. The exposed strip
+       is tinted from the photo's own corner pixel in JS below, so it matches this
+       image rather than showing the figure's tan. */
 #cart#cart#cart .l4ca > li:has(a[href*="heated-kneading-wearable-neck-massager"]) figure img{padding-top:26px !important;box-sizing:border-box !important;object-position:50% 50% !important}
 
 @media(max-width:760px){
@@ -53,9 +48,6 @@
   #shopify-section-footer#shopify-section-footer .nc-foot-links{display:grid !important;grid-template-columns:auto 1fr !important;gap:0 24px !important;justify-content:start !important;padding-left:12px !important;padding-right:12px !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col{min-width:0 !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links ul{gap:9px !important}
-
-  /* Save chip on the roller add-on tile matches nc-cro's mobile .nc-rec-off size */
-  #cart#cart .nc-recs-panel .nc-rec:has(a[href*="natural-wood-body-massage-roller-set"]) .nc-rec-price:not(:has(.nc-rec-off))::after{font-size:9.5px;padding:3px 7px;margin-left:5px}
 }
 
 /* 5. PDP highlight box: card treatment — cream gradient, teal→orange spine down the
@@ -142,7 +134,52 @@
       sv.innerHTML=CYCLE;
     }
   }
-  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}}
+  /* The wood-roller add-on tile has no .nc-rec-off, and nc-cro only ever fills one
+     that already exists, so no Save chip rendered. Insert a real .nc-rec-off rather
+     than drawing a pseudo-element: that way it picks up whatever size and shape the
+     other tiles' chips get, instead of us guessing at the styling. */
+  function recSave(){
+    var recs=document.querySelectorAll('#cart .nc-recs-panel .nc-rec');
+    for(var i=0;i<recs.length;i++){
+      var c=recs[i],a=c.querySelector('a[href*="/products/"]');
+      if(!a||String(a.getAttribute('href')||'').indexOf('natural-wood-body-massage-roller-set')<0)continue;
+      var pr=c.querySelector('.nc-rec-price');
+      if(!pr||pr.querySelector('.nc-rec-off'))continue;
+      var s=document.createElement('i');
+      s.className='nc-rec-off';s.textContent='Save 38%';
+      pr.appendChild(s);
+    }
+  }
+  /* Tint the padded strip above the neck massager with the photo's own corner colour,
+     so it reads as part of the shot instead of the figure's tan showing through. */
+  function tint(im,src){
+    var p=new Image();
+    p.crossOrigin='anonymous';
+    p.onload=function(){
+      try{
+        var cv=document.createElement('canvas');cv.width=p.naturalWidth;cv.height=p.naturalHeight;
+        if(!cv.width)return;
+        var cx=cv.getContext('2d');cx.drawImage(p,0,0);
+        var d=cx.getImageData(2,2,1,1).data;
+        im.style.setProperty('background-color','rgb('+d[0]+','+d[1]+','+d[2]+')','important');
+      }catch(e){}
+    };
+    p.src=src;
+  }
+  function padBg(){
+    var lis=document.querySelectorAll('#cart .l4ca > li');
+    for(var i=0;i<lis.length;i++){
+      var a=lis[i].querySelector('a[href*="/products/"]');
+      if(!a||String(a.getAttribute('href')||'').indexOf('heated-kneading-wearable-neck-massager')<0)continue;
+      var im=lis[i].querySelector('figure img');
+      if(!im||im.getAttribute('data-ncbg'))continue;
+      var src=im.currentSrc||im.src;
+      if(!src)continue;
+      im.setAttribute('data-ncbg','1');
+      tint(im,src);
+    }
+  }
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{padBg();}catch(e){}}
   var t=null;
   function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
   if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
