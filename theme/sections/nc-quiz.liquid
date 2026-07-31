@@ -163,11 +163,11 @@
     if(/percussion|deep tissue|power|strong|force|stubborn/.test(t))return 'bolt';
     if(/vibrat|pulse/.test(t))return 'waves';
     if(/water|washable|sweat/.test(t))return 'drop';
-    if(/morning|minute|hour|30|time|day|week|linger|forever/.test(t))return 'clock';
+    if(/circulat|recovery|relief|muscle|soothe|relax|tension|sore|ache|calm/.test(t))return 'heart';
+    if(/morning|minute|hour|week|linger|forever|schedule|appointment/.test(t))return 'clock';
     if(/compact|portable|travel|lightweight|slim|pocket|gym/.test(t))return 'bag';
     if(/knot|knead|shiatsu|massage|rolling|roller|hands/.test(t))return 'hand';
     if(/sleep|night|bed/.test(t))return 'moon';
-    if(/circulat|recovery|relief|muscle|soothe|relax|tension|sore|ache|calm/.test(t))return 'heart';
     if(/knee|elbow|joint|ergonom|wrap|contour|grip|fits|comfort/.test(t))return 'target';
     if(/guarantee|warrant|quality|certif/.test(t))return 'shield';
     return 'check';
@@ -229,44 +229,48 @@
 </script>
 <script>
 (function(){
-  var HANDLE='natural-wood-body-massage-roller-set';
   var SINGLE='hf_20260731_030140';
-  function idxOf(match){
-    var t=document.getElementById('ncg-track');if(!t)return -1;
+  function findIdx(t,match){
     for(var i=0;i<t.children.length;i++){
       var im=t.children[i].querySelector('img');
-      if(im&&(im.getAttribute('src')||im.src||'').indexOf(match)>-1)return i;
+      if(!im)continue;
+      var u=im.currentSrc||im.src||im.getAttribute('src')||'';
+      if(u.indexOf(match)>-1)return i;
     }
     return -1;
   }
-  function selVal(){
-    var b=document.querySelector('#ncpdp .nc-optbtn.nc-on');
-    return b?(b.getAttribute('data-val')||b.textContent||''):'';
+  function goTo(single){
+    var ts=document.querySelectorAll('.ncg-track');
+    for(var n=0;n<ts.length;n++){
+      var t=ts[n],idx=single?findIdx(t,SINGLE):0;
+      if(idx<0)continue;
+      try{if(typeof window.ncgSet==='function')window.ncgSet(idx);}catch(e){}
+      t.style.transform='translateX('+(-idx*100)+'%)';
+      var d=document.getElementById('ncg-dots');
+      if(d&&d.children.length){for(var k=0;k<d.children.length;k++){d.children[k].className=(k===idx?'on':'');}}
+    }
   }
-  var last=null;
-  function sync(force){
-    if(location.pathname.indexOf('/products/'+HANDLE)<0)return;
-    if(typeof window.ncgSet!=='function')return;
-    var v=selVal();if(!v)return;
-    if(!force&&v===last)return;
-    var single=/wood roller/i.test(v)&&!/set/i.test(v);
-    var i=single?idxOf(SINGLE):0;
-    if(i<0)return;
-    last=v;
-    window.ncgSet(i);
+  function isSingle(v){v=v||'';return /wood roller/i.test(v)&&!/set|piece/i.test(v);}
+  function armClicks(){
+    document.addEventListener('click',function(e){
+      var el=e.target;
+      var b=(el&&el.closest)?el.closest('.nc-optbtn'):null;
+      if(!b)return;
+      var v=b.getAttribute('data-val')||b.textContent||'';
+      if(!/wood roller|piece|set/i.test(v))return;
+      var single=isSingle(v);
+      var go=function(){goTo(single);};
+      setTimeout(go,80);setTimeout(go,320);setTimeout(go,720);setTimeout(go,1400);
+    },true);
+  }
+  function initial(){
+    var on=document.querySelector('.nc-optbtn.nc-on');
+    if(on&&isSingle(on.getAttribute('data-val')||on.textContent||''))goTo(true);
   }
   function arm(){
-    if(location.pathname.indexOf('/products/'+HANDLE)<0)return;
-    document.addEventListener('click',function(e){
-      var b=e.target&&e.target.closest?e.target.closest('#ncpdp .nc-optbtn'):null;
-      if(!b)return;
-      setTimeout(function(){sync(true);},60);
-      setTimeout(function(){sync(true);},260);
-    },true);
-    setTimeout(function(){sync(true);},700);
-    setTimeout(function(){sync(true);},1800);
-    var o=document.querySelector('#ncpdp .nc-opts');
-    if(o){try{new MutationObserver(function(){sync(false);}).observe(o,{attributes:true,subtree:true,attributeFilter:['class']});}catch(e){}}
+    if(!document.querySelector('.ncg-track'))return;
+    armClicks();
+    setTimeout(initial,800);setTimeout(initial,1800);
   }
   if(document.readyState!=='loading')arm();else document.addEventListener('DOMContentLoaded',arm);
 })();
