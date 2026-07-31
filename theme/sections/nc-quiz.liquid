@@ -116,67 +116,12 @@
 /* NC band photo swap: clean listing plate everywhere (overrides nc-cro content urls; this section loads last) */
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="resistance-bands-exercise-set"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-bands-clean-v3.png?v=1785509779&width=600") !important;object-fit:cover !important;object-position:50% 0 !important}
 .nc-gnz.nc-gnz .nc-gift-note__img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863&width=720") !important;transform:none !important;object-fit:cover !important;object-position:50% 40% !important;mix-blend-mode:normal !important;filter:none !important;background:transparent !important}
-#nc-home#nc-home .nch-hero-text .nc-herogift__ic img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863&width=720") !important;transform:none !important;object-fit:cover !important;object-position:50% 18% !important;width:100% !important;height:100% !important;mix-blend-mode:normal !important;filter:none !important;border-radius:14px !important;background:transparent !important}
+#nc-home#nc-home .nch-hero-text .nc-herogift__ic img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863&width=720") !important;transform:none !important;object-fit:cover !important;object-position:50% 62% !important;width:100% !important;height:100% !important;mix-blend-mode:normal !important;filter:none !important;border-radius:14px !important;background:transparent !important}
 #nc-home#nc-home .nch-hero-text .nc-herogift__ic{background:transparent !important}
 /* Cart polish: line-item images fill their figure (no bottom gap); rec tiles bleed to tile edge and zoom in; roller plate zooms extra */
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="3d-kneading-heated-neck-massager"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-cart-neck3d-shadow.png?v=1785511741&width=600") !important}
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="electric-heating-pad-adjustable-heat-auto-shut-off"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-cart-heatpad-shadow.png?v=1785511741&width=600") !important}
-#cart#cart .nc-recs-panel li.nc-rec{overflow:hidden !important;min-height:126px !important;box-sizing:border-box !important;align-items:center !important}
-#cart#cart .nc-recs-panel .nc-rec-imgw{align-self:stretch !important;flex:0 0 104px !important;width:104px !important;height:auto !important;min-height:0 !important;margin:-6px 12px -6px -9px !important;border-radius:12px 0 0 12px !important;position:relative !important}
-#cart#cart .nc-recs-panel .nc-rec-imgw img{position:absolute !important;top:0 !important;left:0 !important;width:100% !important;height:100% !important;object-fit:cover !important;transform:scale(1.25) !important;transform-origin:50% 50% !important;border-radius:0 !important}
-#cart#cart .nc-rec img.nc-wr-img{transform:scale(1.15) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="octa-massage-gun"]) .nc-rec-imgw img{transform:scale(1.5) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="muscle-massage-gun"]) .nc-rec-imgw img{transform:scale(1.5) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="3d-kneading-heated-neck-massager"]) .nc-rec-imgw img{transform:scale(1.3) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="heated-kneading-wearable-neck-massager"]) .nc-rec-imgw img{transform:scale(1.3) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="vibrating-electric-foam-roller"]) .nc-rec-imgw img{transform:scale(1.25) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="electric-heating-pad-adjustable-heat-auto-shut-off"]) .nc-rec-imgw img{transform:scale(1.2) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="heated-compression-wrap-knee-elbow-comfort"]) .nc-rec-imgw img{transform:scale(1.3) !important}
-#cart#cart .nc-recs-panel .nc-rec:has(a[href*="foot-therapy-air-wave-massager-for-leg-feet"]) .nc-rec-imgw img{transform:scale(1.15) !important}
-#cart .nc-rec .nc-wr-off{background:#E3ECEC !important;color:#2C6E72 !important;-webkit-text-fill-color:#2C6E72 !important;font-weight:800 !important;font-size:12.5px !important;padding:2px 7px !important;border-radius:7px !important;border:1px solid rgba(44,110,114,.28) !important;margin-left:7px !important;font-style:normal !important;letter-spacing:.01em;white-space:nowrap;display:inline-block}
-@media(max-width:700px){#cart .nc-rec .nc-wr-off{font-size:10.5px !important;padding:2px 6px !important}}
 </style>
-<script>
-(function(){
-  var WAS=39.99,SALE=24.99;
-  function wrPrice(){
-    var cards=document.querySelectorAll('#cart .nc-recs-panel .nc-rec');
-    if(!cards.length)return;
-    var tq=0,ls=document.querySelectorAll('#cart .l4ca:not(.in-panel) > li');
-    for(var j=0;j<ls.length;j++){
-      if(ls[j].querySelector('a[href*="resistance-bands-exercise-set"]'))continue;
-      var ia=ls[j].querySelector('.input-amount');
-      var nn=ia?parseInt(String(ia.textContent).replace(/\D/g,''),10):0;
-      tq+=(nn||0);
-    }
-    var nq=tq+1,bp=nq>=3?0.15:(nq>=2?0.10:0);
-    var nowV=Math.round(SALE*(1-bp)*100)/100;
-    var pct=Math.round((WAS-nowV)/WAS*100);
-    var mny='$'+nowV.toFixed(2);
-    for(var i=0;i<cards.length;i++){
-      var c=cards[i];
-      if(!c.querySelector('a[href*="natural-wood-body-massage-roller-set"]'))continue;
-      var pr=c.querySelector('.nc-rec-price');if(!pr)continue;
-      var old=pr.querySelector('.nc-rec-off');if(old)old.parentNode.removeChild(old);
-      if(pr.getAttribute('data-nc-v')!==mny||!pr.querySelector('.nc-wr-off')){
-        pr.setAttribute('data-nc-v',mny);
-        pr.innerHTML='<s class="nc-rec-was">$'+WAS.toFixed(2)+'</s> '+mny+' <em class="nc-wr-off">Save '+pct+'%</em>';
-      }
-      if(!c.querySelector('.nc-rec-msg')){
-        var sib=document.querySelector('#cart .nc-recs-panel .nc-rec .nc-rec-msg');
-        if(sib&&sib.closest('.nc-rec')!==c){
-          var me=document.createElement('div');me.className='nc-rec-msg';me.textContent=sib.textContent;
-          (c.querySelector('.nc-rec-info')||c).appendChild(me);
-        }
-      }
-    }
-  }
-  var cart=document.getElementById('cart');
-  if(cart){try{new MutationObserver(function(){setTimeout(wrPrice,120);}).observe(cart,{childList:true,subtree:true});}catch(e){}}
-  if(document.readyState!=='loading')wrPrice();else document.addEventListener('DOMContentLoaded',wrPrice);
-  setTimeout(wrPrice,1500);setTimeout(wrPrice,3500);
-})();
-</script>
 {% schema %}
 {"name":"NC Quiz Popup","settings":[]}
 {% endschema %}
