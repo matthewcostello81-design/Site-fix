@@ -1,0 +1,69 @@
+{% comment %} NC mobile polish: FREE price on the cart gift line, compact collection sort/filter controls, footer logo built from the theme logo setting, and Help/Policies flush left with the policy list split into two columns. Doubled-id selectors so these win regardless of section order. {% endcomment %}
+{%- assign nc_flogo = '' -%}
+{%- if settings.logo != blank -%}{%- assign nc_flogo = settings.logo | image_url: width: 400 -%}{%- endif -%}
+<style>
+/* 1. Cart: the free gift shows FREE in the same slot every other line uses for its price */
+#cart#cart .l4ca:not(.in-panel) > li .nc-gfree{grid-area:pr;justify-self:end;align-self:end;margin:0 !important;text-align:right;display:flex !important;flex-direction:column;align-items:flex-end;gap:0;width:auto !important}
+#cart#cart .l4ca.in-panel > li .nc-gfree{display:flex !important;flex-direction:column;align-items:flex-end;margin-top:2px}
+#cart#cart .l4ca > li .nc-gfree .nc-gfree-was{font-size:13.5px;text-decoration:line-through;opacity:.72}
+#cart#cart .l4ca > li .nc-gfree .nc-gfree-now{font-size:16.5px;font-weight:800;letter-spacing:.02em;color:#D9763A !important;-webkit-text-fill-color:#D9763A !important;font-family:Poppins,sans-serif !important}
+#cart#cart .l4ca > li:has(.nc-gfree) p.price{display:none !important}
+
+@media(max-width:760px){
+  /* 2. Collection page: compact sort + filter controls */
+  .nc-fbar .nc-fsort,.nc-fbar .nc-fcat,select.nc-fsort,select.nc-fcat{font-size:13px !important;height:38px !important;min-height:0 !important;padding:0 26px 0 10px !important;max-width:44vw !important}
+  .nc-fbar{gap:8px !important;padding-top:6px !important;padding-bottom:6px !important}
+
+  /* 3. Footer: big logo, hard left */
+  #shopify-section-footer#shopify-section-footer .nc-foot-lock{justify-content:flex-start !important;gap:12px !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-chip{height:96px !important;padding:8px 14px !important;border-radius:16px !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-emblem{height:80px !important;max-width:200px !important}
+
+  /* 4. Footer: Help and Policies both flush left, policy list wraps into two columns
+        instead of one tall run down the right-hand side */
+  #shopify-section-footer#shopify-section-footer .nc-foot-links{grid-template-columns:1fr !important;gap:20px 0 !important;padding-left:12px !important;padding-right:12px !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col{min-width:0 !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col:last-child ul{column-count:2 !important;column-gap:18px !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col ul li{break-inside:avoid;-webkit-column-break-inside:avoid}
+}
+</style>
+<script>
+(function(){
+  var LOGO={{ nc_flogo | json }};
+  /* nc-footer builds the logo chip by cloning #cart img.nc-dlogo, which is absent on
+     most pages — that is why the wordmark shows with no logo beside it. Build the
+     chip from the theme logo setting instead. */
+  function footLogo(){
+    if(!LOGO)return;
+    var lock=document.querySelector('#shopify-section-footer .nc-foot-lock');
+    if(!lock||lock.querySelector('.nc-foot-chip'))return;
+    var chip=document.createElement('span');chip.className='nc-foot-chip';
+    var img=document.createElement('img');img.className='nc-foot-emblem';img.src=LOGO;img.alt='North Cove Wellness';
+    chip.appendChild(img);
+    lock.insertBefore(chip,lock.firstChild);
+  }
+  /* nc-cro strips .nc-lsave off the gift line, so it renders with no price at all.
+     Use our own class so nc-cro will not remove it again. */
+  function giftFree(){
+    var lis=document.querySelectorAll('#cart .l4ca > li');
+    for(var i=0;i<lis.length;i++){
+      var li=lis[i],a=li.querySelector('a[href*="/products/"]');
+      if(!a||String(a.getAttribute('href')||'').indexOf('resistance-bands')<0)continue;
+      var sec=li.querySelector('section');
+      if(!sec||sec.querySelector('.nc-gfree'))continue;
+      var w=document.createElement('div');w.className='nc-gfree';
+      w.innerHTML='<span class="nc-gfree-was">$34.99</span><span class="nc-gfree-now">FREE</span>';
+      sec.insertBefore(w,sec.firstChild);
+    }
+  }
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}}
+  var t=null;
+  function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
+  if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
+  setTimeout(run,600);setTimeout(run,1600);setTimeout(run,3200);
+  try{new MutationObserver(queue).observe(document.body,{childList:true,subtree:true});}catch(e){}
+})();
+</script>
+{% schema %}
+{"name":"NC Mobile Fix","settings":[],"presets":[{"name":"NC Mobile Fix"}]}
+{% endschema %}
