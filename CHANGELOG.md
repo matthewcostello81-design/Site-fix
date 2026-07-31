@@ -1,3 +1,51 @@
+# Site fix: heating pad PDP image words cut off (bottom left)
+
+## Problem
+On the Electric Heating Pad product page (the plush gray pad, aka the
+"heated blanket"), the words baked into the main product image were cut off,
+visibly at the bottom left.
+
+## Cause
+The product's main catalog image (`nc-4k-pad.jpg`, alt "Electric Heating Pad
+features") is a 4096x4096 square feature-callout graphic with text near its
+edges. `sections/nc-ba-fix.liquid` forces every PDP gallery slide to
+`aspect-ratio:4/5` with `object-fit:cover`, which slices about 10% off each
+side of a square image, so the callout words at the image edges get cropped.
+(Product cards were unaffected: `nc-nohover` already renders the first card
+image with `object-fit:contain`.)
+
+## Fix (`sections/nc-nohover.liquid`, loads last)
+On this product's PDP only, gallery slides render the image contained on the
+brand letterbox gradient instead of cover-cropped, so the full graphic and
+its words stay visible:
+
+    #ncpdp.nc-padfit .ncg-slide{background:linear-gradient(180deg,#F6F1E9,#EBE2D2)!important}
+    #ncpdp.nc-padfit .ncg-slide img{object-fit:contain!important;object-position:center!important}
+
+A small guarded script adds the `nc-padfit` class to `#ncpdp` only when the
+page is `/products/electric-heating-pad-adjustable-heat-auto-shut-off`
+(checked via `NC_HANDLE` or the pathname, with retries). The id+class
+selector out-specifies nc-ba-fix's `#ncpdp .ncg-slide` rules, so load order
+does not matter. Other products keep the 4/5 cover crop. Desktop and mobile.
+
+The product's other gallery images are 928x1152 / 1856x2304 (about 4:5
+already, so contain is visually a no-op) and squares (small letterbox bands
+on the brand gradient), so the change is safe for the whole gallery.
+
+Note: the same side-crop applies to the other square "nc-4k" feature images
+(neck massagers). If those show the same cut-off words, the fix is to extend
+the handle list in the same script.
+
+## Applied to
+Shopify draft theme `162251276516` ("NC Polish round 4 (Claude)") on shop
+`v9fqfa-bd.myshopify.com` via Admin API (themeFilesUpsert); saved size
+verified at 17570 bytes.
+
+Files changed: sections/nc-nohover.liquid (also re-synced the repo copy to
+the draft theme's current contents, which had drifted ahead of this repo).
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
