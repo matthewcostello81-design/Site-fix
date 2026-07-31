@@ -35,7 +35,11 @@
       left, hairline rules between rows, and icon tiles lifted off the surface with
       a gradient fill + inset ring. */
 #ncpdp#ncpdp .nc-qb{position:relative !important;overflow:hidden !important;margin:14px 0 !important;padding:4px 16px 4px 20px !important;border-radius:18px !important;border:1px solid rgba(44,110,114,.18) !important;background-color:#FDFCF8 !important;background-image:linear-gradient(155deg,rgba(44,110,114,.08),rgba(255,255,255,0) 46%,rgba(217,118,58,.07)) !important;background-repeat:no-repeat !important;background-position:center !important;background-size:cover !important;box-shadow:0 18px 32px -28px rgba(15,42,51,.55),inset 0 1px 0 rgba(255,255,255,.85) !important}
-#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:4px !important;background:linear-gradient(180deg,#2C6E72,#3E8B86 46%,#D9763A) !important;pointer-events:none !important}
+/* Spine: taller-than-the-bar gradient (320%) drifting up and down, so teal and orange
+   read as one colour flowing through it rather than a static two-stop fade. */
+@keyframes ncQbFlow{0%,100%{background-position:50% 0%}50%{background-position:50% 100%}}
+#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:6px !important;background-image:linear-gradient(180deg,#2C6E72,#3E8B86 18%,#D9763A 38%,#E8935A 50%,#D9763A 62%,#3E8B86 82%,#2C6E72) !important;background-size:100% 320% !important;background-repeat:no-repeat !important;animation:ncQbFlow 8s ease-in-out infinite !important;pointer-events:none !important}
+@media(prefers-reduced-motion:reduce){#ncpdp#ncpdp .nc-qb::before{animation:none !important}}
 #ncpdp#ncpdp .nc-qb > div{position:relative !important;padding:11px 2px !important;border-bottom:1px solid rgba(44,110,114,.13) !important}
 #ncpdp#ncpdp .nc-qb > div:last-child{border-bottom:0 !important}
 #ncpdp#ncpdp#ncpdp#ncpdp .nc-qb > div svg{background-color:#fff !important;background-image:linear-gradient(140deg,rgba(44,110,114,.22),rgba(44,110,114,.06) 56%,rgba(217,118,58,.16)) !important;box-shadow:inset 0 0 0 1px rgba(44,110,114,.20),0 7px 13px -9px rgba(15,42,51,.6) !important}
@@ -45,7 +49,7 @@
 }
 @media(max-width:760px){
   #ncpdp#ncpdp .nc-qb{margin:12px 0 !important;padding:2px 12px 2px 16px !important;border-radius:16px !important}
-  #ncpdp#ncpdp .nc-qb::before{width:3px !important}
+  #ncpdp#ncpdp .nc-qb::before{width:5px !important}
   #ncpdp#ncpdp .nc-qb > div{padding:9px 2px !important}
 }
 </style>
@@ -91,7 +95,23 @@
       sv[i].innerHTML=FLAME;
     }
   }
-  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}}
+  /* "Knots that come back no matter what" was drawing the open-palm glyph, which says
+     nothing about recurrence and is unreadable at this size. A rotate arrow reads as
+     "keeps coming back" immediately. Swap the contents only and leave data-nck alone,
+     otherwise nc-quiz sees a key mismatch and re-renders over us every pass. */
+  var CYCLE="<path d='M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8'/><path stroke='#D9763A' d='M21 3v5h-5'/>";
+  function cycleFix(){
+    var ds=document.querySelectorAll('#ncpdp .nc-qb > div');
+    for(var i=0;i<ds.length;i++){
+      var d=ds[i],txt=(d.getAttribute('data-ncfull')||d.textContent||'').toLowerCase();
+      if(txt.indexOf('come back no matter')<0)continue;
+      var sv=d.querySelector('svg');
+      if(!sv||sv.getAttribute('data-nccycle'))continue;
+      sv.setAttribute('data-nccycle','1');
+      sv.innerHTML=CYCLE;
+    }
+  }
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}}
   var t=null;
   function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
   if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
