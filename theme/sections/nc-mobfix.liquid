@@ -38,10 +38,11 @@
 /* Spine: brand stops only — #2C6E72 teal, #5FB894 the bright green off the SAVED
    badge, #D9763A / #E8935A the CTA oranges. The earlier dark green (#2C7360) blended
    into orange through rgb(130,116,77), i.e. brown; the bright green keeps the mix
-   light and the green/orange stops are held on plateaus so the crossover band stays
-   narrow. Gradient is 320% of the bar and drifts between its ends to read as flow. */
+   light. Green holds 16-30% and 70-84%, orange holds 38-62%, so both colours read as
+   solid runs and the crossovers stay 8% narrow. Gradient is 320% of the bar and
+   drifts between its ends to read as flow. */
 @keyframes ncQbFlow{0%,100%{background-position:50% 0%}50%{background-position:50% 100%}}
-#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:9px !important;background-image:linear-gradient(180deg,#2C6E72 0%,#5FB894 22%,#5FB894 38%,#E8935A 46%,#D9763A 54%,#E8935A 62%,#5FB894 70%,#5FB894 86%,#2C6E72 100%) !important;background-size:100% 320% !important;background-repeat:no-repeat !important;animation:ncQbFlow 8s ease-in-out infinite !important;pointer-events:none !important}
+#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:9px !important;background-image:linear-gradient(180deg,#2C6E72 0%,#5FB894 16%,#5FB894 30%,#D9763A 38%,#E8935A 50%,#D9763A 62%,#5FB894 70%,#5FB894 84%,#2C6E72 100%) !important;background-size:100% 320% !important;background-repeat:no-repeat !important;animation:ncQbFlow 8s ease-in-out infinite !important;pointer-events:none !important}
 @media(prefers-reduced-motion:reduce){#ncpdp#ncpdp .nc-qb::before{animation:none !important}}
 #ncpdp#ncpdp .nc-qb > div{position:relative !important;padding:11px 2px !important;border-bottom:1px solid rgba(44,110,114,.13) !important}
 #ncpdp#ncpdp .nc-qb > div:last-child{border-bottom:0 !important}
