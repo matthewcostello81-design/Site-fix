@@ -23,6 +23,16 @@
        the <s> to order:-1 puts it first without fighting nc-cro's rebuild. */
 #cart#cart .nc-recs-panel .nc-rec-price .nc-rec-was{order:-1 !important}
 
+/* 1d. Wearable neck massager: the product sits high in frame so the SAVED % badge
+       (absolute, top:5px, ~22px tall) lands on the device. Pad the top of the image
+       box; object-fit:cover refills the smaller box and the product drops clear.
+       The strip is a FLAT fill, not the photo repeated as a background — doing that
+       painted a second, differently-scaled copy of the shot above itself. #ECE4D7 is
+       the measured colour of these photos' own top band (sampled across both neck
+       massager tiles, stable within ~2/255 over the first 40px), so the strip reads
+       as a continuation of the backdrop. */
+#cart#cart#cart .l4ca > li:has(a[href*="heated-kneading-wearable-neck-massager"]) figure img{padding-top:26px !important;box-sizing:border-box !important;background-color:#ECE4D7 !important;background-image:none !important;object-position:50% 50% !important}
+
 @media(max-width:760px){
   /* 2. Collection page: compact sort + filter controls. Never force a fixed height
         here — the inherited line-height lays the label out taller than the box and
