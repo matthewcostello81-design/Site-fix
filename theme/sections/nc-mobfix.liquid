@@ -25,9 +25,9 @@
 
 /* 1d. Wearable neck massager: its product sits high in frame, so the SAVED % badge
        (absolute, top 5px) lands on top of the device. Pad the top of the image box —
-       object-fit:cover refills the smaller box, clearing the badge. The exposed strip
-       is tinted from the photo's own corner pixel in JS below, so it matches this
-       image rather than showing the figure's tan. */
+       object-fit:cover refills the smaller box, clearing the badge. The strip the
+       padding opens up is filled with the photo itself in JS below, so it carries the
+       shot's own backdrop instead of the figure's tan. */
 #cart#cart#cart .l4ca > li:has(a[href*="heated-kneading-wearable-neck-massager"]) figure img{padding-top:26px !important;box-sizing:border-box !important;object-position:50% 50% !important}
 
 @media(max-width:760px){
@@ -150,33 +150,27 @@
       pr.appendChild(s);
     }
   }
-  /* Tint the padded strip above the neck massager with the photo's own corner colour,
-     so it reads as part of the shot instead of the figure's tan showing through. */
-  function tint(im,src){
-    var p=new Image();
-    p.crossOrigin='anonymous';
-    p.onload=function(){
-      try{
-        var cv=document.createElement('canvas');cv.width=p.naturalWidth;cv.height=p.naturalHeight;
-        if(!cv.width)return;
-        var cx=cv.getContext('2d');cx.drawImage(p,0,0);
-        var d=cx.getImageData(2,2,1,1).data;
-        im.style.setProperty('background-color','rgb('+d[0]+','+d[1]+','+d[2]+')','important');
-      }catch(e){}
-    };
-    p.src=src;
-  }
+  /* Fill the padded strip above the neck massager with the photo itself, so the strip
+     IS the shot's own backdrop rather than a colour we tried to match. An element's
+     background paints across its padding box, so the area the padding opens up shows
+     the top of the same image. Canvas sampling was tried first and failed silently
+     whenever the pixel read was blocked or the src was still lazy on the first pass;
+     this needs neither CORS nor a load event. Re-applied if the src changes. */
   function padBg(){
     var lis=document.querySelectorAll('#cart .l4ca > li');
     for(var i=0;i<lis.length;i++){
       var a=lis[i].querySelector('a[href*="/products/"]');
       if(!a||String(a.getAttribute('href')||'').indexOf('heated-kneading-wearable-neck-massager')<0)continue;
       var im=lis[i].querySelector('figure img');
-      if(!im||im.getAttribute('data-ncbg'))continue;
-      var src=im.currentSrc||im.src;
-      if(!src)continue;
-      im.setAttribute('data-ncbg','1');
-      tint(im,src);
+      if(!im)continue;
+      var src=im.currentSrc||im.src||im.getAttribute('src')||'';
+      if(!src||src.indexOf('data:')===0)continue;
+      if(im.getAttribute('data-ncbg')===src)continue;
+      im.setAttribute('data-ncbg',src);
+      im.style.setProperty('background-image','url("'+src+'")','important');
+      im.style.setProperty('background-size','cover','important');
+      im.style.setProperty('background-position','center top','important');
+      im.style.setProperty('background-repeat','no-repeat','important');
     }
   }
   function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{padBg();}catch(e){}}
