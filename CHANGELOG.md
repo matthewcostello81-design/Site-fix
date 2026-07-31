@@ -5,9 +5,12 @@ The free-gift "5-Level Resistance Band Set" photo used around the store was a
 mix of three images (an old lifestyle shot, a background-removed cutout, and
 the annotated listing plate that has arrows/labels on it). Per Juice's request,
 a cleaned version of the listing plate (arrows and labels removed in
-Higgsfield, bands and cream background kept pixel-faithful) was uploaded to the
-Shopify CDN as `files/nc-bands-clean.png` and is now used in all five
-placements, while the product listing gallery itself keeps the annotated
+Higgsfield, bands and cream background kept pixel-faithful) is used in all five
+placements. Juice then clarified the source photo: it is the "FIVE LEVELS,
+ONE SET" infographic from the paid band listing (`nc-4k-bands.jpg`), so a
+second clean was generated from that file and shipped as
+`files/nc-bands-clean-v2.png` (the v1 `nc-bands-clean.png` from the free-gift
+listing photo remains on the CDN, unused), while the product listing gallery itself keeps the annotated
 original:
 
 1. Cart drawer free-gift line thumbnail (was nc-cro `content:url` override)
@@ -27,10 +30,12 @@ original:
   image's baked-in cream margin stays visible at the top of the thumbnail.
 - `sections/nc-quiz.liquid` v4.5: `step3()` now always routes to
   `/products/natural-wood-body-massage-roller-set` (Birchwood Roller Set)
-  regardless of quiz answers; `ROUTES` kept in place for easy revert.
+  regardless of quiz answers; `ROUTES` kept in place for easy revert. The
+  step-2 option "Soothing heat" is relabeled "Rolling massage" to fit the
+  roller (data-v values unchanged).
 
 All edits are on draft theme "NC Polish round 4 (Claude)" (162251276516);
-pushed sizes verified byte-exact (13237 / 7471).
+pushed sizes verified byte-exact (13251 / 7477).
 
 ---
 
