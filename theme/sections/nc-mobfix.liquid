@@ -10,8 +10,18 @@
 
 /* 1b. One grey for every struck price on the site. These were a mix of #333333,
        #44544e, #7c8c84, #9aa8a5 and #9AA7AC; standardise on the cart's grey.
-       Class doubled for specificity so it lands last. */
-.old-price.old-price,.nc-was.nc-was,.ncwas.ncwas,.nc-rec-was.nc-rec-was,.tp-was.tp-was,.tb-was.tb-was,.nc-og-was.nc-og-was,.nc-lsave-was.nc-lsave-was,.nch-pwas.nch-pwas,.was1.was1,.was2.was2,.was3.was3,.nc-herogift__was.nc-herogift__was,.nc-herogift__was.nc-herogift__was s,.price.price s,.price.price del,s.money.money,del.money.money{color:#9AA7AC !important;-webkit-text-fill-color:#9AA7AC !important;text-decoration-line:line-through !important;text-decoration-color:#9AA7AC !important}
+       Doubling the class was not enough: collection cards are held black by
+       `.product-card .price .old-price` (0-3-0 + !important) and the cart add-on
+       tiles by `#cart#cart#cart .nc-rec-was` (three IDs). Hence the quadrupled
+       classes, plus explicit four-ID variants for the cart/PDP cases. */
+.old-price.old-price.old-price.old-price,.nc-was.nc-was.nc-was.nc-was,.ncwas.ncwas.ncwas.ncwas,.nc-rec-was.nc-rec-was.nc-rec-was.nc-rec-was,.tp-was.tp-was.tp-was.tp-was,.tb-was.tb-was.tb-was.tb-was,.nc-og-was.nc-og-was.nc-og-was.nc-og-was,.nc-lsave-was.nc-lsave-was.nc-lsave-was.nc-lsave-was,.nch-pwas.nch-pwas.nch-pwas.nch-pwas,.was1.was1.was1.was1,.was2.was2.was2.was2,.was3.was3.was3.was3,.nc-herogift__was.nc-herogift__was.nc-herogift__was.nc-herogift__was,.nc-herogift__was.nc-herogift__was.nc-herogift__was.nc-herogift__was s,.price.price.price.price s,.price.price.price.price del,s.money.money.money.money,del.money.money.money.money,#cart#cart#cart#cart .nc-rec-was,#cart#cart#cart#cart .old-price,#cart#cart#cart#cart .nc-lsave-was,#cart#cart#cart#cart p.price s,#ncpdp#ncpdp#ncpdp#ncpdp .tp-was,#ncpdp#ncpdp#ncpdp#ncpdp .nc-was,#root#root .l4hs .price .old-price{color:#9AA7AC !important;-webkit-text-fill-color:#9AA7AC !important;text-decoration-line:line-through !important;text-decoration-color:#9AA7AC !important}
+
+/* 1c. Cart add-on tiles: nc-cro rebuilds the wood-roller tile with
+       `pr.textContent='$24.99'` and then APPENDS the <s>, so its struck price lands
+       to the right of the price while every other tile has it on the left. The price
+       row is a flexbox and the live price is an anonymous item (order 0), so pulling
+       the <s> to order:-1 puts it first without fighting nc-cro's rebuild. */
+#cart#cart .nc-recs-panel .nc-rec-price .nc-rec-was{order:-1 !important}
 
 @media(max-width:760px){
   /* 2. Collection page: compact sort + filter controls */
