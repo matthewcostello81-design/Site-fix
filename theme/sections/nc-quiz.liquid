@@ -169,7 +169,7 @@
   var MAP=[
     {m:'tension that builds up after long',k:'heart',s:'Tension that builds after long days'},
     {m:'your hands can',k:'hand',s:'Knots you can’t massage out yourself'},
-    {m:'morning stiffness',k:'clock',s:'Morning stiffness that lasts 30 min'},
+    {m:'morning stiffness',k:'clock',s:'Morning stiffness that won’t loosen up'},
     {m:'deep tissue knots a regular roller',k:'bolt',s:'Deep knots a foam roller can’t reach'},
     {m:'heavy leg muscles',k:'heart',s:'Sore, heavy legs after every workout'},
     {m:'muscles that take 20 minutes',k:'clock',s:'Muscles that take 20 min to loosen up'},
@@ -263,6 +263,8 @@
 <script>
 (function(){
   var SINGLE='hf_20260731_030140';
+  var LOCK=1200;
+  var picks=[],until=0,want1=false,running=false,aborted=false;
   function findIdx(t,match){
     for(var i=0;i<t.children.length;i++){
       var im=t.children[i].querySelector('img');
@@ -272,38 +274,69 @@
     }
     return -1;
   }
-  function goTo(single){
+  function collect(){
+    picks=[];
     var ts=document.querySelectorAll('.ncg-track');
     for(var n=0;n<ts.length;n++){
-      var t=ts[n],idx=single?findIdx(t,SINGLE):0;
-      if(idx<0)continue;
-      try{if(typeof window.ncgSet==='function')window.ncgSet(idx);}catch(e){}
-      t.style.transform='translateX('+(-idx*100)+'%)';
-      var d=document.getElementById('ncg-dots');
-      if(d&&d.children.length){for(var k=0;k<d.children.length;k++){d.children[k].className=(k===idx?'on':'');}}
+      var t=ts[n],idx=want1?findIdx(t,SINGLE):0;
+      if(idx>=0)picks.push({t:t,i:idx});
     }
   }
+  /* Re-assert every frame with transitions off: the theme's own variant handler
+     also moves the track, and letting both animate is what caused the bounce. */
+  function paint(){
+    for(var n=0;n<picks.length;n++){
+      var t=picks[n].t,w='translateX('+(-picks[n].i*100)+'%)';
+      if(t.style.transition!=='none')t.style.transition='none';
+      if(t.style.transform!==w)t.style.transform=w;
+    }
+    if(!picks.length)return;
+    var idx=picks[0].i,d=document.getElementById('ncg-dots');
+    if(d&&d.children.length){for(var k=0;k<d.children.length;k++){var c=(k===idx?'on':'');if(d.children[k].className!==c)d.children[k].className=c;}}
+  }
+  function release(){
+    var ts=document.querySelectorAll('.ncg-track');
+    for(var n=0;n<ts.length;n++)ts[n].style.removeProperty('transition');
+  }
+  function sync(){
+    if(!picks.length)return;
+    try{if(typeof window.ncgSet==='function')window.ncgSet(picks[0].i);}catch(e){}
+  }
+  function frame(){
+    if(aborted||Date.now()>=until){
+      running=false;
+      if(!aborted){paint();sync();}
+      setTimeout(release,40);
+      return;
+    }
+    if(!picks.length)collect();
+    paint();
+    requestAnimationFrame(frame);
+  }
+  function settle(single){
+    want1=single;aborted=false;until=Date.now()+LOCK;
+    collect();paint();sync();
+    if(!running){running=true;requestAnimationFrame(frame);}
+  }
   function isSingle(v){v=v||'';return /wood roller/i.test(v)&&!/set|piece/i.test(v);}
-  function armClicks(){
+  function arm(){
+    if(!document.querySelector('.ncg-track'))return;
     document.addEventListener('click',function(e){
       var el=e.target;
+      if(el&&el.closest&&el.closest('.ncg-arr,#ncg-dots')){aborted=true;return;}
       var b=(el&&el.closest)?el.closest('.nc-optbtn'):null;
       if(!b)return;
       var v=b.getAttribute('data-val')||b.textContent||'';
       if(!/wood roller|piece|set/i.test(v))return;
-      var single=isSingle(v);
-      var go=function(){goTo(single);};
-      setTimeout(go,80);setTimeout(go,320);setTimeout(go,720);setTimeout(go,1400);
+      settle(isSingle(v));
     },true);
-  }
-  function initial(){
-    var on=document.querySelector('.nc-optbtn.nc-on');
-    if(on&&isSingle(on.getAttribute('data-val')||on.textContent||''))goTo(true);
-  }
-  function arm(){
-    if(!document.querySelector('.ncg-track'))return;
-    armClicks();
-    setTimeout(initial,800);setTimeout(initial,1800);
+    document.addEventListener('touchstart',function(e){
+      if(e.target&&e.target.closest&&e.target.closest('.ncg-track'))aborted=true;
+    },true);
+    setTimeout(function(){
+      var on=document.querySelector('.nc-optbtn.nc-on');
+      if(on&&isSingle(on.getAttribute('data-val')||on.textContent||''))settle(true);
+    },800);
   }
   if(document.readyState!=='loading')arm();else document.addEventListener('DOMContentLoaded',arm);
 })();
