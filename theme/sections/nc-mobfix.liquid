@@ -59,14 +59,15 @@
       left, hairline rules between rows, and icon tiles lifted off the surface with
       a gradient fill + inset ring. */
 #ncpdp#ncpdp .nc-qb{position:relative !important;overflow:hidden !important;margin:14px 0 !important;padding:4px 16px 4px 24px !important;border-radius:18px !important;border:1px solid rgba(44,110,114,.18) !important;background-color:#FDFCF8 !important;background-image:linear-gradient(155deg,rgba(44,110,114,.08),rgba(255,255,255,0) 46%,rgba(217,118,58,.07)) !important;background-repeat:no-repeat !important;background-position:center !important;background-size:cover !important;box-shadow:0 18px 32px -28px rgba(15,42,51,.55),inset 0 1px 0 rgba(255,255,255,.85) !important}
-/* Spine: brand stops only. Each hue runs its own light-to-dark range — teal #2C6E72
-   into the bright #5FB894 badge green, and the CTA oranges #E8935A → #D9763A →
-   #C85C22 and back. Orange holds 34-66%, green 14-28% + 72-86%. The green/orange
-   junction is deliberately made at the two LIGHTEST stops (#5FB894 / #E8935A) so the
-   blend stays high-luminance instead of passing through brown. Gradient is 320% of
-   the bar and drifts between its ends to read as flow. */
+/* Spine: brand stops only. Orange now runs 24-76% against teal/green's 48%, so it is
+   the dominant colour rather than a band passing through, and #C85C22 is HELD from
+   44-56% instead of touched at a single point — without that plateau the dark end
+   never actually reads as dark. Green keeps 8-18% + 82-92% with #2C6E72 at the very
+   ends. The green/orange junctions sit at the two lightest stops (#5FB894 / #E8935A)
+   so the blend stays high-luminance instead of passing through brown. Gradient is
+   320% of the bar and drifts between its ends to read as flow. */
 @keyframes ncQbFlow{0%,100%{background-position:50% 0%}50%{background-position:50% 100%}}
-#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:9px !important;background-image:linear-gradient(180deg,#2C6E72 0%,#5FB894 14%,#5FB894 28%,#E8935A 34%,#D9763A 44%,#C85C22 50%,#D9763A 56%,#E8935A 66%,#5FB894 72%,#5FB894 86%,#2C6E72 100%) !important;background-size:100% 320% !important;background-repeat:no-repeat !important;animation:ncQbFlow 8s ease-in-out infinite !important;pointer-events:none !important}
+#ncpdp#ncpdp .nc-qb::before{content:'' !important;position:absolute !important;left:0 !important;top:0 !important;bottom:0 !important;width:9px !important;background-image:linear-gradient(180deg,#2C6E72 0%,#5FB894 8%,#5FB894 18%,#E8935A 24%,#D9763A 34%,#C85C22 44%,#C85C22 56%,#D9763A 66%,#E8935A 76%,#5FB894 82%,#5FB894 92%,#2C6E72 100%) !important;background-size:100% 320% !important;background-repeat:no-repeat !important;animation:ncQbFlow 8s ease-in-out infinite !important;pointer-events:none !important}
 @media(prefers-reduced-motion:reduce){#ncpdp#ncpdp .nc-qb::before{animation:none !important}}
 #ncpdp#ncpdp .nc-qb > div{position:relative !important;padding:11px 2px !important;border-bottom:1px solid rgba(44,110,114,.13) !important}
 #ncpdp#ncpdp .nc-qb > div:last-child{border-bottom:0 !important}
