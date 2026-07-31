@@ -1,3 +1,39 @@
+# Band photos: clean listing plate everywhere + quiz routes to roller set
+
+## What changed
+The free-gift "5-Level Resistance Band Set" photo used around the store was a
+mix of three images (an old lifestyle shot, a background-removed cutout, and
+the annotated listing plate that has arrows/labels on it). Per Juice's request,
+a cleaned version of the listing plate (arrows and labels removed in
+Higgsfield, bands and cream background kept pixel-faithful) was uploaded to the
+Shopify CDN as `files/nc-bands-clean.png` and is now used in all five
+placements, while the product listing gallery itself keeps the annotated
+original:
+
+1. Cart drawer free-gift line thumbnail (was nc-cro `content:url` override)
+2. Site-wide small add-on / upsell band thumbnails (`PLATE` in nc-cartcount)
+3. Homepage product-card image for the band set (`LIFE` in nc-cartcount)
+4. Homepage hero free-gift card icon (was nc-cro `content:url` override)
+5. Product-page free-gift note image (was nc-cro `content:url` override)
+
+## How
+- `sections/nc-cartcount.liquid`: `LIFE` and `PLATE` now point to
+  `nc-bands-clean.png`; their src guards updated to `nc-bands-clean` so the
+  swap loop does not re-fire.
+- `sections/nc-quiz.liquid` (loads last in footer-group): appended a style
+  block that out-specifies the three `content:url()` rules in `nc-cro`
+  (221KB, deliberately untouched) for the cart thumb, `.nc-gnz` gift note and
+  homepage hero gift icon. The cart rule adds `object-position:50% 0` so the
+  image's baked-in cream margin stays visible at the top of the thumbnail.
+- `sections/nc-quiz.liquid` v4.5: `step3()` now always routes to
+  `/products/natural-wood-body-massage-roller-set` (Birchwood Roller Set)
+  regardless of quiz answers; `ROUTES` kept in place for easy revert.
+
+All edits are on draft theme "NC Polish round 4 (Claude)" (162251276516);
+pushed sizes verified byte-exact (13237 / 7471).
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

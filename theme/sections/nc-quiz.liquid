@@ -1,0 +1,124 @@
+{% comment %}NC Quiz popup v4.5 (all outcomes route to Birchwood Roller Set) + PAYMENT KILL BLOCK + PSEUDO-ELEMENT KILL (loads absolutely last in footer-group): the THEME PAINTS BUTTONS VIA A BLACK ::before OVERLAY — that was the 'weird black box' behind '(N Reviews)'; killed here for the reviews toggle (any element form) and the drawer qty steppers with max-specificity content:none rules. Payment kill: tripled-id hide of the 'Other Payment Options' link (an older section styles it display:block !important), global wallet/.l4pm/.nc-xdiv hides, 400ms payKill() remove(). Quiz v4: match interstitial auto-redirects (spinner, no button); skip link fit-content/centered (tripled selector, longhand auto margins); option hover = glowing animated orange; offer popup on product-page arrival → WELCOME10; no top-right ×.{% endcomment %}
+<style>
+#ncpdp#ncpdp#ncpdp .nc-rvw-toggle::before,#ncpdp#ncpdp#ncpdp .nc-rvw-toggle::after,.nc-rvw-toggle::before,.nc-rvw-toggle::after{content:none !important;display:none !important;background:none !important;background-image:none !important}
+#cart .nc-qd::before,#cart .nc-qd::after,.nc-rvwm__close::before,.nc-rvwm__close::after{content:none !important;display:none !important;background:none !important}
+#ncpdp#ncpdp#ncpdp .shopify-payment-button__more-options,.shopify-product-form .shopify-payment-button__more-options,more-payment-options-link,#more-payment-options-link{display:none !important}
+.dynamic-checkout__content,shopify-accelerated-checkout,shopify-accelerated-checkout-cart,shop-pay-wallet-button,shopify-paypal-button,.nc-xdiv{display:none !important}
+.l4pm{display:none !important}
+.nc-pop{display:none !important}
+@keyframes ncQzGrad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes ncQzGlow{0%,100%{box-shadow:0 12px 26px -12px rgba(217,118,58,.7)}50%{box-shadow:0 0 26px 3px rgba(217,118,58,.5),0 12px 26px -12px rgba(217,118,58,.85)}}
+.nc-qz{position:fixed;inset:0;z-index:99998;display:none;align-items:center;justify-content:center;padding:18px;font-family:inherit}
+.nc-qz.on{display:flex}
+.nc-qz__bg{position:absolute;inset:0;background:rgba(15,42,51,.52)}
+.nc-qz__card{position:relative;background:#fff;border-radius:24px;box-shadow:0 26px 24px -24px rgba(15,42,51,.6),0 46px 40px -40px rgba(15,42,51,.4);width:100%;max-width:400px;padding:30px 24px 18px;text-align:center;color:#0F2A33}
+.nc-qz__eye{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#2C6E72;margin-bottom:10px}
+.nc-qz__q{font-size:22px;font-weight:800;line-height:1.15;margin:0 0 18px;color:#0F2A33}
+.nc-qz__opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.nc-qz__opt{white-space:nowrap !important;text-align:center !important;justify-content:center !important;display:flex !important;align-items:center !important}
+@media(max-width:480px){.nc-qz__opts{grid-template-columns:1fr !important}.nc-qz__opt{padding:12px 10px !important}}
+.nc-qz__opt{border:1.5px solid rgba(44,110,114,.3) !important;background:#f7faf5 !important;border-radius:14px !important;padding:15px 10px !important;font-size:14.5px !important;font-weight:700 !important;color:#0F2A33 !important;-webkit-text-fill-color:#0F2A33 !important;cursor:pointer;transition:color .15s ease,border-color .15s ease;line-height:1.25}
+.nc-qz__opt:hover,.nc-qz__opt:focus{background-color:transparent !important;background-image:linear-gradient(120deg,#C85C22,#D9763A,#E8935A,#D9763A,#C85C22) !important;background-size:220% 220% !important;border-color:transparent !important;color:#fff !important;-webkit-text-fill-color:#fff !important;outline:none;animation:ncQzGrad 3.5s ease infinite,ncQzGlow 2.4s ease-in-out infinite}
+.nc-qz__match{background:linear-gradient(135deg,#f2f8f5,#e6f2ed);border:1px solid rgba(44,110,114,.18);border-radius:16px;padding:14px;margin:0 0 14px;font-size:15px;color:#34555E}
+.nc-qz__match b{display:block;font-size:17px;margin-top:3px;color:#0F2A33}
+.nc-qz__email{width:100%;box-sizing:border-box;border:1.5px solid rgba(15,42,51,.16);border-radius:12px;padding:13px 14px;font-size:15px;margin:0 0 10px;background:#fffdf8;color:#0F2A33}
+.nc-qz__email:focus{outline:none;border-color:#2C6E72;box-shadow:0 0 0 3px rgba(44,110,114,.15)}
+.nc-qz__cta{display:block;width:100%;box-sizing:border-box;text-decoration:none;border:none !important;border-radius:12px !important;color:#fff !important;-webkit-text-fill-color:#fff !important;font-weight:800 !important;font-size:15px !important;padding:14px !important;cursor:pointer;background-image:linear-gradient(120deg,#C85C22,#D9763A,#E8935A,#D9763A,#C85C22) !important;background-size:220% 220% !important;animation:ncQzGrad 5s ease infinite,ncQzGlow 2.4s ease-in-out infinite}
+.nc-qz__code{font-size:26px;font-weight:800;letter-spacing:.08em;color:#2C6E72;background:rgba(44,110,114,.1);border-radius:12px;padding:12px;margin:0 0 12px}
+.nc-qz__note{font-size:12.5px;color:#7d8c89;margin-top:10px}
+.nc-qz__spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(44,110,114,.25);border-top-color:#2C6E72;border-radius:50%;vertical-align:-2px;margin-right:7px;animation:ncQzSpin .7s linear infinite}
+@keyframes ncQzSpin{to{transform:rotate(360deg)}}
+.nc-qz__skip.nc-qz__skip.nc-qz__skip{display:block !important;width:-moz-fit-content !important;width:fit-content !important;max-width:100% !important;margin-top:12px !important;margin-bottom:0 !important;margin-left:auto !important;margin-right:auto !important;padding:2px 6px !important;text-align:center !important;font-size:12.5px !important;font-weight:600 !important;text-transform:none !important;letter-spacing:normal !important;color:#7d8c89 !important;-webkit-text-fill-color:#7d8c89 !important;text-decoration:underline;text-underline-offset:4px;cursor:pointer;background:none !important;border:none !important;box-shadow:none !important;float:none !important;position:static !important}
+.nc-qz__skip.nc-qz__skip.nc-qz__skip:hover,.nc-qz__skip.nc-qz__skip.nc-qz__skip:focus{color:#34555E !important;-webkit-text-fill-color:#34555E !important;background:none !important;box-shadow:none !important;outline:none;text-decoration-thickness:2px}
+</style>
+<script>
+(function(){
+  function payKill(){
+    var els=document.querySelectorAll('more-payment-options-link,.shopify-payment-button__more-options,#ncpdp .nc-xdiv,.shopify-product-form .nc-xdiv');
+    for(var i=els.length-1;i>=0;i--){try{els[i].remove();}catch(e){}}
+  }
+  payKill();
+  setInterval(payKill,400);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',payKill);
+})();
+(function(){
+  var OFFER_KEY='nc_quiz_offer';
+  var ROUTES={
+    'neck':{heat:['heated-kneading-wearable-neck-massager','Wearable Neck Massager'],pressure:['3d-kneading-heated-neck-massager','Heated 3D Neck Massager'],both:['3d-kneading-heated-neck-massager','Heated 3D Neck Massager']},
+    'back':{heat:['electric-heating-pad-adjustable-heat-auto-shut-off','Electric Heating Pad'],pressure:['vibrating-electric-foam-roller','Vibrating Foam Roller'],both:['octa-massage-gun-8-head-percussion-massager','Octa Massage Gun']},
+    'legs':{heat:['foot-therapy-air-wave-massager-for-leg-feet','Foot & Leg Compression Massager'],pressure:['natural-wood-body-massage-roller-set','Birchwood Roller Set'],both:['foot-therapy-air-wave-massager-for-leg-feet','Foot & Leg Compression Massager']},
+    'joints':{heat:['electric-heating-pad-adjustable-heat-auto-shut-off','Electric Heating Pad'],pressure:['electric-heating-pad-adjustable-heat-auto-shut-off','Electric Heating Pad'],both:['electric-heating-pad-adjustable-heat-auto-shut-off','Electric Heating Pad']}
+  };
+  function ss(k,v){try{if(v===null)sessionStorage.removeItem(k);else if(v!==undefined)sessionStorage.setItem(k,v);else return sessionStorage.getItem(k);}catch(e){return null;}}
+  function build(offer){
+    if(document.querySelector('.nc-qz'))return;
+    if(/\/cart|\/checkout/.test(location.pathname))return;
+    if(!offer&&ss('nc_quiz_done'))return;
+    var area='',pref='',goTimer=null;
+    var wrap=document.createElement('div');
+    wrap.className='nc-qz';
+    wrap.innerHTML='<div class="nc-qz__bg"></div><div class="nc-qz__card"><div class="nc-qz__eye">Find your relief</div><div class="nc-qz__body"></div><button type="button" class="nc-qz__skip">No thanks, I\'ll browse on my own</button></div>';
+    document.body.appendChild(wrap);
+    var body=wrap.querySelector('.nc-qz__body');
+    var eye=wrap.querySelector('.nc-qz__eye');
+    function close(){if(goTimer){clearTimeout(goTimer);goTimer=null;}wrap.classList.remove('on');ss('nc_quiz_done','1');ss(OFFER_KEY,null);}
+    wrap.querySelector('.nc-qz__skip').addEventListener('click',close);
+    wrap.querySelector('.nc-qz__bg').addEventListener('click',close);
+    function step1(){
+      eye.textContent='Find your relief';
+      body.innerHTML='<h3 class="nc-qz__q">Where do you feel it most?</h3><div class="nc-qz__opts"><button type="button" class="nc-qz__opt" data-v="neck">Neck & shoulders</button><button type="button" class="nc-qz__opt" data-v="back">Back</button><button type="button" class="nc-qz__opt" data-v="legs">Legs & feet</button><button type="button" class="nc-qz__opt" data-v="joints">Knees & elbows</button></div>';
+      body.querySelectorAll('.nc-qz__opt').forEach(function(b){b.addEventListener('click',function(){area=b.getAttribute('data-v');step2();});});
+    }
+    function step2(){
+      body.innerHTML='<h3 class="nc-qz__q">What helps you most?</h3><div class="nc-qz__opts"><button type="button" class="nc-qz__opt" data-v="heat">Soothing heat</button><button type="button" class="nc-qz__opt" data-v="pressure">Deep pressure</button><button type="button" class="nc-qz__opt" data-v="both" style="grid-column:1/-1">Both, please</button></div>';
+      body.querySelectorAll('.nc-qz__opt').forEach(function(b){b.addEventListener('click',function(){pref=b.getAttribute('data-v');step3();});});
+    }
+    function step3(){
+      var r=['natural-wood-body-massage-roller-set','Birchwood Roller Set'];
+      var url='/products/'+r[0];
+      ss(OFFER_KEY,r[0]+'|'+r[1]);
+      eye.textContent='We found your match';
+      body.innerHTML='<h3 class="nc-qz__q">Perfect — this one\'s for you</h3><div class="nc-qz__match">Based on your answers:<b>'+r[1]+'</b></div><div class="nc-qz__note" style="margin-top:2px"><span class="nc-qz__spin"></span>Taking you there…</div>';
+      goTimer=setTimeout(function(){location.href=url;},1500);
+    }
+    function stepOffer(name){
+      eye.textContent='Your perfect match';
+      body.innerHTML='<h3 class="nc-qz__q">Want 10% off?</h3><div class="nc-qz__match">You\'re looking at your match:<b>'+name+'</b></div><input type="email" class="nc-qz__email" placeholder="Email for your 10% code" autocomplete="email"><button type="button" class="nc-qz__cta">Get my 10% code</button>';
+      body.querySelector('.nc-qz__cta').addEventListener('click',function(){
+        var em=body.querySelector('.nc-qz__email').value.trim();
+        if(em&&/.+@.+\..+/.test(em)){
+          var fd=new FormData();
+          fd.append('form_type','customer');fd.append('utf8','✓');fd.append('contact[email]',em);fd.append('contact[tags]','newsletter,quiz');fd.append('contact[accepts_marketing]','true');
+          fetch('/contact',{method:'POST',body:fd}).catch(function(){});
+        }
+        stepCode();
+      });
+    }
+    function stepCode(){
+      ss('nc_quiz_done','1');ss(OFFER_KEY,null);
+      eye.textContent='Your reward';
+      body.innerHTML='<h3 class="nc-qz__q">Here\'s your code</h3><div class="nc-qz__code">WELCOME10</div><div class="nc-qz__note" style="margin:0 0 12px">Enter it at checkout for 10% off your whole order.</div><button type="button" class="nc-qz__cta">Start shopping</button>';
+      body.querySelector('.nc-qz__cta').addEventListener('click',close);
+    }
+    if(offer){var parts=offer.split('|');stepOffer(parts[1]||'your match');}
+    else{step1();}
+    wrap.classList.add('on');
+  }
+  function arm(){
+    var offer=ss(OFFER_KEY);
+    if(offer){setTimeout(function(){build(offer);},500);}
+    else{setTimeout(function(){build(null);},6000);}
+  }
+  if(document.readyState!=='loading')arm();else document.addEventListener('DOMContentLoaded',arm);
+})();
+</script>
+<style>
+/* NC band photo swap: clean listing plate everywhere (overrides nc-cro content urls; this section loads last) */
+#cart#cart .l4ca:not(.in-panel) > li:has(a[href*="resistance-bands-exercise-set"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-bands-clean.png?v=1785506975&width=600") !important;object-fit:cover !important;object-position:50% 0 !important}
+.nc-gnz.nc-gnz .nc-gift-note__img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-bands-clean.png?v=1785506975&width=720") !important}
+img.nc-gift-note__img[src*="d3c2cd73"]{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-bands-clean.png?v=1785506975&width=720") !important}
+#nc-home#nc-home .nch-hero-text .nc-herogift__ic img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-bands-clean.png?v=1785506975&width=720") !important}
+</style>
+{% schema %}
+{"name":"NC Quiz Popup","settings":[]}
+{% endschema %}
