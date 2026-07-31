@@ -126,26 +126,33 @@
 #cart#cart .l4ca:not(.in-panel) > li:has(a[href*="electric-heating-pad-adjustable-heat-auto-shut-off"]) figure img{content:url("https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-cart-heatpad-shadow.png?v=1785511741&width=600") !important}
 #cart#cart .nc-recs-panel .nc-rec:has(a[href*="octa-massage-gun"]) .nc-rec-imgw img{transform:scale(1.45) !important;transform-origin:50% 50% !important}
 #cart#cart .nc-recs-panel .nc-rec:has(a[href*="muscle-massage-gun"]) .nc-rec-imgw img{transform:scale(1.45) !important;transform-origin:50% 50% !important}
-#ncpdp#ncpdp .nc-qb > div{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;display:flex !important;align-items:center !important;gap:8px !important;line-height:1.35 !important}
-#ncpdp#ncpdp .nc-qb > div svg{flex:0 0 auto !important}
+#ncpdp#ncpdp .nc-qb > div{white-space:nowrap !important;overflow:hidden !important;text-overflow:clip !important;display:flex !important;align-items:center !important;gap:12px !important;line-height:1.35 !important}
+#ncpdp#ncpdp#ncpdp .nc-qb > div svg{flex:0 0 auto !important;width:38px !important;height:38px !important;padding:7px !important;box-sizing:border-box !important;border-radius:11px !important;background:rgba(44,110,114,.1) !important;color:#2C6E72 !important;overflow:visible !important}
+#ncpdp#ncpdp .nc-qb > div .nc-qb-m{display:none}
+@media(max-width:760px){
+  #ncpdp#ncpdp#ncpdp .nc-qb > div svg{width:34px !important;height:34px !important;padding:6px !important;border-radius:10px !important}
+  #ncpdp#ncpdp .nc-qb > div .nc-qb-f{display:none}
+  #ncpdp#ncpdp .nc-qb > div .nc-qb-m{display:inline}
+}
 </style>
 <script>
 (function(){
   var A="viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'";
+  var OR="#D9763A";
   var IC={
-    heart:"<path d='M12 20.6 4.7 13.3a4.7 4.7 0 0 1 0-6.6 4.7 4.7 0 0 1 6.6 0l.7.7.7-.7a4.7 4.7 0 0 1 6.6 0 4.7 4.7 0 0 1 0 6.6z'/><path d='M8.6 10.4a2 2 0 0 1 1.7-1.5'/>",
-    hand:"<path d='M9 11.5V6.4a1.6 1.6 0 0 1 3.2 0m0 0V5.1a1.6 1.6 0 0 1 3.2 0v1.3m0 0a1.6 1.6 0 0 1 3.2 0v6.2a7 7 0 0 1-7 7 5.8 5.8 0 0 1-4.4-2l-2.7-3.1a1.7 1.7 0 0 1 2.5-2.2l1.6 1.5'/><path d='M12.2 6.4v4.6M15.4 6.4v4.6'/>",
-    clock:"<circle cx='12' cy='12' r='8.4'/><path d='M12 7.4V12l3.1 1.8'/><path d='M12 3.6v1.2M20.4 12h-1.2M12 20.4v-1.2M3.6 12h1.2'/>",
-    bolt:"<path d='M13 2L4 14h6l-1 8 9-12h-6l1-8z'/>",
-    heat:"<path d='M12 3.4c3 3 4.6 5.5 4.6 7.9a4.6 4.6 0 0 1-9.2 0c0-1.3.4-2.5 1.2-3.6.3 1.2 1.1 1.9 2 1.9.9 0 1.4-.8 1.1-2.1-.3-1.4-.2-2.7.3-4.1z'/><path d='M12 20.6v0'/>",
-    target:"<circle cx='12' cy='12' r='8.4'/><circle cx='12' cy='12' r='3.9'/><circle cx='12' cy='12' r='.9' fill='currentColor' stroke='none'/><path d='M12 1.9v2.2M12 19.9v2.2M1.9 12h2.2M19.9 12h2.2'/>",
-    wind:"<path d='M3 8.4h9.4a2.7 2.7 0 1 0-2.7-2.7'/><path d='M3 15.6h6.4a2.7 2.7 0 1 1-2.7 2.7'/><path d='M3 12h12.8a2.9 2.9 0 1 1-2.9 2.9'/>",
-    moon:"<path d='M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z'/><path d='M17.4 5.2l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z'/>",
-    recover:"<path d='M21 12a9 9 0 1 1-3-6.7'/><path d='M21 4v5h-5'/>",
-    waves:"<path d='M2.5 12h2.8l2.4-6.6 3.8 15 3.3-11.4 1.9 3h4.8'/>",
-    sliders:"<path d='M4 20.6v-5.4M4 10.8V3.4M12 20.6v-7.4M12 8.8V3.4M20 20.6v-3.4M20 12.8V3.4'/><circle cx='4' cy='13' r='1.9'/><circle cx='12' cy='11' r='1.9'/><circle cx='20' cy='15' r='1.9'/>",
-    shield:"<path d='M12 3.2l7.6 2.8v5.7c0 4.7-3.3 7.6-7.6 8.5-4.3-.9-7.6-3.8-7.6-8.5V6z'/><path d='M9.2 12.1l1.9 1.9 3.7-3.8'/>",
-    check:"<circle cx='12' cy='12' r='8.4'/><path d='M8.6 12.1l2.2 2.2 4.6-4.6'/>"
+    heart:"<path d='M12 20.4 5 13.4a4.5 4.5 0 0 1 0-6.4 4.5 4.5 0 0 1 6.4 0l.6.6.6-.6a4.5 4.5 0 0 1 6.4 0 4.5 4.5 0 0 1 0 6.4z'/><path stroke='"+OR+"' d='M8.7 10.3a2.1 2.1 0 0 1 1.8-1.6'/>",
+    hand:"<path d='M9 11.5V6.4a1.6 1.6 0 0 1 3.2 0m0 0V5.1a1.6 1.6 0 0 1 3.2 0v1.3m0 0a1.6 1.6 0 0 1 3.2 0v6.2a7 7 0 0 1-7 7 5.8 5.8 0 0 1-4.4-2l-2.7-3.1a1.7 1.7 0 0 1 2.5-2.2l1.6 1.5'/><path stroke='"+OR+"' d='M12.2 6.6v4.3M15.4 6.6v4.3'/>",
+    clock:"<circle cx='12' cy='12' r='8.3'/><path d='M12 7.5V12l3 1.8'/><path stroke='"+OR+"' d='M12 3.7v1.1M20.3 12h-1.1M12 20.3v-1.1M3.7 12h1.1'/>",
+    bolt:"<path d='M13 2L4 14h6l-1 8 9-12h-6l1-8z'/><path stroke='"+OR+"' d='M19.6 4.4l1.6-1.6M20.6 8.2h2.2'/>",
+    heat:"<path d='M12 3.4c3 3 4.6 5.5 4.6 7.9a4.6 4.6 0 0 1-9.2 0c0-1.3.4-2.5 1.2-3.6.3 1.2 1.1 1.9 2 1.9.9 0 1.4-.8 1.1-2.1-.3-1.4-.2-2.7.3-4.1z'/><path stroke='"+OR+"' d='M12 17.9a2.4 2.4 0 0 1-1.7-2.6'/>",
+    target:"<circle cx='12' cy='12' r='8.3'/><circle cx='12' cy='12' r='3.9'/><circle cx='12' cy='12' r='1.1' fill='"+OR+"' stroke='none'/><path stroke='"+OR+"' d='M12 2.1v2M12 19.9v2M2.1 12h2M19.9 12h2'/>",
+    wind:"<path d='M3 8.4h9.4a2.7 2.7 0 1 0-2.7-2.7'/><path d='M3 12h12.6a2.8 2.8 0 1 1-2.8 2.8'/><path stroke='"+OR+"' d='M3 15.7h6.2a2.6 2.6 0 1 1-2.6 2.6'/>",
+    moon:"<path d='M20 14.5A7.5 7.5 0 0 1 9.5 4 7.5 7.5 0 1 0 20 14.5z'/><path stroke='"+OR+"' d='M17.5 5.1l.5 1.3 1.3.5-1.3.5-.5 1.3-.5-1.3-1.3-.5 1.3-.5z'/>",
+    recover:"<path d='M21 12a9 9 0 1 1-3-6.7'/><path stroke='"+OR+"' d='M21 4v5h-5'/>",
+    waves:"<path d='M2.5 12h2.8l2.4-6.6 3.8 15 3.3-11.4'/><path stroke='"+OR+"' d='M14.8 9l1.9 3h4.8'/>",
+    sliders:"<path d='M4 20.6v-5.4M4 10.8V3.4M12 20.6v-7.4M12 8.8V3.4M20 20.6v-3.4M20 12.8V3.4'/><circle stroke='"+OR+"' cx='4' cy='13' r='1.9'/><circle stroke='"+OR+"' cx='12' cy='11' r='1.9'/><circle stroke='"+OR+"' cx='20' cy='15' r='1.9'/>",
+    shield:"<path d='M12 3.2l7.6 2.8v5.7c0 4.7-3.3 7.6-7.6 8.5-4.3-.9-7.6-3.8-7.6-8.5V6z'/><path stroke='"+OR+"' d='M9.2 12.1l1.9 1.9 3.7-3.8'/>",
+    check:"<circle cx='12' cy='12' r='8.3'/><path stroke='"+OR+"' d='M8.6 12.1l2.2 2.2 4.6-4.6'/>"
   };
   var FB=['heart','hand','clock','bolt','heat','target','wind','moon','recover','waves','sliders','shield','check'];
   var MAP=[
@@ -205,15 +212,15 @@
     if(!ds.length)return;
     busy=true;
     try{
-      var mob=window.innerWidth<=760,used={},plan=[],i;
+      var used={},plan=[],i;
       for(i=0;i<ds.length;i++){
         var d=ds[i],tn=txtNode(d);
         var full=d.getAttribute('data-ncfull');
-        if(!full){full=(tn?tn.textContent:d.textContent)||'';d.setAttribute('data-ncfull',full);}
+        if(!full){full=((tn?tn.textContent:d.textContent)||'').replace(/^\s+|\s+$/g,'');d.setAttribute('data-ncfull',full);}
         var en=entry(full),k=en?en.k:guess(full);
         if(used[k]){for(var f=0;f<FB.length;f++){if(!used[FB[f]]){k=FB[f];break;}}}
         used[k]=1;
-        plan.push({d:d,tn:tn,k:k,txt:(mob&&en&&en.s)?en.s:full});
+        plan.push({d:d,tn:tn,k:k,full:full,shrt:en?en.s:''});
       }
       for(i=0;i<plan.length;i++){
         var q=plan[i],sv=q.d.querySelector('svg');
@@ -221,7 +228,12 @@
           if(sv&&sv.parentNode)sv.parentNode.removeChild(sv);
           q.d.insertAdjacentHTML('afterbegin',"<svg "+A+" data-nck='"+q.k+"'>"+IC[q.k]+"</svg>");
         }
-        if(q.tn&&q.tn.textContent!==q.txt)q.tn.textContent=q.txt;
+        if(!q.d.querySelector('.nc-qb-f')){
+          if(q.tn&&q.tn.parentNode)q.tn.parentNode.removeChild(q.tn);
+          var h="<span class='nc-qb-f'>"+q.full+"</span>";
+          if(q.shrt)h+="<span class='nc-qb-m'>"+q.shrt+"</span>";
+          q.d.insertAdjacentHTML('beforeend',h);
+        }
         q.d.style.removeProperty('font-size');
       }
     }catch(err){}
