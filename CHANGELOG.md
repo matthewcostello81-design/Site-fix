@@ -1,3 +1,43 @@
+# 5-Level Resistance Band Set: all real reviews shown, counts self-correcting
+
+## Request
+Juice imported reviews into Loox for the band set and wants them combined with
+the 10 Judge.me reviews, all visible in the existing review-grid structure.
+
+## What the data actually is
+Both importers pulled from the same AliExpress listing (item 3256807290293914),
+which has exactly 10 reviews total (verified via the public feedback API).
+Judge.me imported all 10. Loox had published only 1 at the time of this change,
+and that 1 is the same AliExpress review as one of Judge.me's 10. So 10 unique
+real reviews exist right now; there is no larger set to show yet. If/when
+Loox publishes more (from this or another listing), they are additional.
+
+## Changes
+1. `custom.nc_loox_rvw` metafield now holds all 10 real reviews (was 5: the
+   Judge.me metafield sync only exposes page 1). The five newly added use the
+   AliExpress reviewer display names (masked initials, or "AliExpress Shopper"
+   for the anonymous one) since Judge.me's pseudonyms for them are not
+   retrievable. All 10 render server-side in the existing ncr2 card grid,
+   identical structure to the other products.
+2. `loox.num_reviews` and `reviews.rating_count` set to 10 (the Loox app had
+   overwritten them to 1 mid-import, which made the widget header read
+   "Based on 1 review").
+3. `sections/nc-rvw-topup.liquid` rewritten: the previous client-side Judge.me
+   app-proxy fetcher was removed because the proxy path 404s on this shop
+   (verified), so it could never fire. The section now makes the card list the
+   source of truth for displayed numbers: count from `nc_loox_rvw.reviews.size`
+   fixes the "Based on N reviews" line, the "Showing all N reviews." note, and
+   the hidden `.jdgm-rev-widg` count attribute that nc-cro's star row and
+   popover read. This survives the Loox app re-stomping the count metafields.
+
+## Applied to
+Shopify draft theme `162251276516` ("NC Polish round 4 (Claude)") via Admin API.
+Files changed: sections/nc-rvw-topup.liquid (rewritten).
+Metafields changed on product 9166441152740: custom.nc_loox_rvw,
+loox.num_reviews, reviews.rating_count.
+
+---
+
 # 5-Level Resistance Band Set: show all imported reviews
 
 ## Problem

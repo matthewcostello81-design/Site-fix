@@ -1,87 +1,30 @@
-{% comment %} NC review top-up: the PDP review grid (nc-enhance) renders cards from the custom.nc_loox_rvw metafield, but Judge.me only syncs the first page (5 reviews) of a product's reviews into Shopify metafields, so newly imported reviews beyond page 1 never render. This runs in the visitor's browser: when the grid holds fewer cards than the product's review total, it fetches the remaining pages from Judge.me's app proxy on this same origin (/apps/judgeme/reviews_widget), dedupes against cards already shown, appends matching .ncr2-card nodes, and clears nc-cro's grid flags so its 300ms tick rebuilds the masonry with the new cards. Fails silently (widget unchanged) if the proxy is unavailable. {% endcomment %}
-{%- if product -%}<script>window.__ncRvwPid={{ product.id }};window.__ncRvwTot={{ product.metafields.loox.num_reviews | default: 0 | plus: 0 }};</script>{%- endif -%}
+{% comment %} NC review count fix: the PDP review widget (nc-enhance) renders its cards from the custom.nc_loox_rvw metafield but takes its "Based on N reviews" total from loox.num_reviews, which the Loox app overwrites with its own count whenever it syncs (it set it to 1 mid-import on the 5-Level Resistance Band Set while the metafield held 10 real reviews). This section makes the card list the source of truth for the visible numbers: it reads the review count from nc_loox_rvw server-side and corrects the summary line, the "Showing all N reviews" note, and the hidden .jdgm-rev-widg count attribute that nc-cro's star row and popover read. No fetching, no fabricated data; numbers always equal the real reviews rendered on the page. {% endcomment %}
+{%- if product -%}
+{%- assign _ncr = product.metafields.custom.nc_loox_rvw.value -%}
+{%- if _ncr and _ncr.reviews and _ncr.reviews.size > 0 -%}
 <script>
 (function(){
-if(window.__ncRvwTopup)return;window.__ncRvwTopup=1;
-function norm(s){return (s||'').replace(/\s+/g,' ').trim().toLowerCase();}
-function keyOf(n,t){return norm(n)+'|'+norm(t);}
-function parseRevs(txt){
-  var html=txt;
-  try{var j=JSON.parse(txt);if(j&&typeof j==='object'&&j.html)html=j.html;}catch(e){}
-  var doc;try{doc=new DOMParser().parseFromString(html,'text/html');}catch(e){return [];}
-  var out=[],nodes=doc.querySelectorAll('.jdgm-rev');
-  for(var i=0;i<nodes.length;i++){
-    var a=nodes[i].querySelector('.jdgm-rev__author'),b=nodes[i].querySelector('.jdgm-rev__body');
-    if(!a||!b)continue;
-    var im=nodes[i].querySelector('.jdgm-rev__pic img,.jdgm-rev__pics img');
-    var src=im?(im.getAttribute('data-src')||im.getAttribute('src')||''):'';
-    if(src.indexOf('https://')!==0)src='';
-    var n=(a.textContent||'').trim(),t=(b.textContent||'').replace(/\s+/g,' ').trim();
-    if(!n||!t)continue;
-    out.push({n:n,t:t,img:src});
+if(window.__ncRvwCnt)return;window.__ncRvwCnt=1;
+var N={{ _ncr.reviews.size }};
+function fix(){
+  var c=document.querySelector('#nc-reviews .nc-rvw-count');
+  var want='Based on '+N+' review'+(N>1?'s':'');
+  if(c&&c.textContent!==want)c.textContent=want;
+  var note=document.querySelector('#nc-reviews .ncr2-note');
+  if(note){
+    var cards=document.querySelectorAll('#nc-reviews .ncr2-card').length;
+    var wantNote=(cards>=N)?('Showing all '+N+' reviews.'):('Showing '+cards+' of '+N+' reviews.');
+    if(note.textContent!==wantNote)note.textContent=wantNote;
   }
-  return out;
+  var w=document.querySelector('.jdgm-rev-widg');
+  if(w&&w.getAttribute('data-number-of-reviews')!==String(N))w.setAttribute('data-number-of-reviews',String(N));
 }
-function makeCard(rv){
-  var cd=document.createElement('div');cd.className='ncr2-card'+(rv.img?'':' noimg');
-  if(rv.img){var im=document.createElement('img');im.className='ncr2-img';im.loading='lazy';im.src=rv.img;im.alt='Customer photo by '+rv.n;cd.appendChild(im);}
-  var bd=document.createElement('div');bd.className='ncr2-body';
-  var q=document.createElement('p');q.className='ncr2-quote';q.textContent=rv.t;bd.appendChild(q);
-  var who=document.createElement('div');who.className='ncr2-who';
-  var av=document.createElement('span');av.className='ncr2-ava';av.textContent=(rv.n.charAt(0)||'C').toUpperCase();who.appendChild(av);
-  var nm=document.createElement('b');nm.textContent=rv.n;who.appendChild(nm);
-  bd.appendChild(who);cd.appendChild(bd);
-  return cd;
-}
-function run(){
-  var pid=window.__ncRvwPid,tot=window.__ncRvwTot||0;
-  if(!pid||!tot)return;
-  var tr=document.querySelector('#nc-reviews .ncr2-track');
-  if(!tr||tr.getAttribute('data-nc-topup'))return;
-  var have={},cards=tr.querySelectorAll('.ncr2-card'),count=cards.length;
-  for(var i=0;i<cards.length;i++){
-    var nm=cards[i].querySelector('.ncr2-who b'),qt=cards[i].querySelector('.ncr2-quote');
-    have[keyOf(nm?nm.textContent:'',qt?qt.textContent:'')]=1;
-  }
-  if(count>=tot)return;
-  tr.setAttribute('data-nc-topup','1');
-  var added=0,page=1;
-  function done(){
-    if(!added)return;
-    var btn=document.querySelector('.nc-morerev');if(btn&&btn.parentNode)btn.parentNode.removeChild(btn);
-    tr.removeAttribute('data-nc-grid');tr.removeAttribute('data-nc-mk');
-    var note=document.querySelector('#nc-reviews .ncr2-note');
-    var now=tr.querySelectorAll('.ncr2-card').length;
-    if(note)note.textContent=(now>=tot?'Showing all '+tot+' reviews.':'Showing '+now+' of '+tot+' reviews.');
-  }
-  function step(){
-    if(page>5||count>=tot){done();return;}
-    fetch('/apps/judgeme/reviews_widget?external_id='+pid+'&page='+page+'&per_page=10',{credentials:'same-origin'})
-    .then(function(r){if(!r.ok)throw 0;return r.text();})
-    .then(function(txt){
-      var revs=parseRevs(txt);
-      if(!revs.length){done();return;}
-      for(var i=0;i<revs.length;i++){
-        var k=keyOf(revs[i].n,revs[i].t);
-        if(have[k])continue;
-        have[k]=1;tr.appendChild(makeCard(revs[i]));added++;count++;
-      }
-      page++;step();
-    })
-    .catch(function(){done();});
-  }
-  step();
-}
-function boot(){
-  var n=0,iv=setInterval(function(){
-    n++;
-    if(document.querySelector('#nc-reviews .ncr2-track')){clearInterval(iv);run();}
-    else if(n>25){clearInterval(iv);}
-  },400);
-}
-if(document.readyState!=='loading')boot();else document.addEventListener('DOMContentLoaded',boot);
+if(document.readyState!=='loading')fix();else document.addEventListener('DOMContentLoaded',fix);
+[300,800,1600,3000,6000].forEach(function(t){setTimeout(fix,t)});
 })();
 </script>
+{%- endif -%}
+{%- endif -%}
 {% schema %}
 {"name":"NC Review Topup","settings":[]}
 {% endschema %}
