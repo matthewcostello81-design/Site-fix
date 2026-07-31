@@ -35,6 +35,30 @@
   setTimeout(fix,600);setTimeout(fix,1800);
 })();
 </script>
+{% comment %} Shop All tile: show the Deep Tissue Massage Gun (thera gun style) LIFESTYLE photo (in use on the thigh) instead of the hand massager that nc-global-css's CAT map swaps in. Pre-stamping img.dataset.ncImg makes that later swap skip this tile. Other tiles untouched. {% endcomment %}
+<script>
+(function(){
+  if(window.__ncCatFix)return;window.__ncCatFix=1;
+  var IMG='https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_014108_449f7468-ee9f-4dd9-981d-5b1480509344.png?v=1782871270&width=900';
+  function fix(){
+    var cats=document.querySelectorAll('#nc-home .nch-cat');
+    for(var i=0;i<cats.length;i++){
+      var n=cats[i].querySelector('.nch-cat-name');
+      if(!n||(n.textContent||'').trim()!=='Shop All')continue;
+      var img=cats[i].querySelector('.nch-cat-media img');
+      if(!img||img.getAttribute('data-nc-catfix'))continue;
+      img.setAttribute('data-nc-catfix','1');
+      img.removeAttribute('srcset');
+      img.src=IMG;
+      img.alt='Deep Tissue Massage Gun in use';
+      img.dataset.ncImg='1';
+    }
+  }
+  fix();
+  document.addEventListener('DOMContentLoaded',fix);
+  setTimeout(fix,600);setTimeout(fix,1800);
+})();
+</script>
 {% schema %}
 {"name":"NC Compare Fix","settings":[],"presets":[{"name":"NC Compare Fix"}]}
 {% endschema %}

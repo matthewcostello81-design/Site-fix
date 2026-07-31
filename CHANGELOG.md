@@ -1,3 +1,28 @@
+# Shop All tile: Deep Tissue Massage Gun lifestyle photo
+
+## Problem
+The homepage "Shop the collection" band's Shop All tile showed a hand
+massager photo instead of the massage gun.
+
+## Cause
+The tile image is swapped at runtime by the CAT map in
+`sections/nc-global-css.liquid` (`'Shop All'` pointed at a cloudfront hand
+massager render). The base image in `nc-home.liquid` never shows.
+
+## Fix
+Added a second guarded script block to `sections/nc-cmpfix.liquid` (already
+wired right after `nc_home`, so it runs first). It sets the Shop All tile
+image to the Deep Tissue Massage Gun's LIFESTYLE photo (black and gold gun
+in use on the thigh, square 2048x2048 Shopify CDN image) and pre-stamps
+`img.dataset.ncImg`, which makes the later CAT swap in `nc-global-css` skip
+the tile. The Massage & Recovery and Best Sellers tiles are untouched.
+
+## Applied to
+Theme "NC Polish round 4 (Claude)" (draft, gid 162251276516). File:
+sections/nc-cmpfix.liquid. Verified byte-identical to the repo copy by MD5.
+
+---
+
 # Homepage compare chart: swap Knee & Joint Wrap for the 5 Piece Roller Set
 
 ## Problem
