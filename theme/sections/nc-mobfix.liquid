@@ -162,7 +162,63 @@
       pr.appendChild(s);
     }
   }
-  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}}
+  /* Shipping protection is a real $2.99 line, so Shopify's Total already includes it,
+     but the Subtotal row never moved. nc-cro rebuilds that row itself and the
+     protection line contributes nothing to it: the line has no .old-price and its
+     handle is not in the WASH/SALEM maps, so `wasT += wu` adds 0. nc-cro then does
+     `tot9 -= 2.99` before working out savings.
+
+     Rather than overwrite nc-cro's numbers (it re-renders on an interval, so that
+     fights and flickers), feed it the two inputs it reads:
+       - a hidden .old-price of $2.99 on the protection line, so wasT picks it up and
+         the Subtotal rises by 2.99;
+       - a hidden span appended to li.strong carrying total+2.99, because nc-cro reads
+         the LAST dollar figure there and immediately subtracts 2.99 — so this cancels
+         out and savings stay product-only instead of inflating by 2.99.
+     Net: Subtotal +2.99, Savings unchanged, Total unchanged, and the three reconcile
+     (subtotal - savings == total) which they did not before. */
+  function protLine(){
+    var lis=document.querySelectorAll('#cart .l4ca:not(.in-panel) > li');
+    for(var i=0;i<lis.length;i++){
+      var a=lis[i].querySelector('a[href*="/products/"]');
+      if(a&&String(a.getAttribute('href')||'').indexOf('shipping-protection')>-1)return lis[i];
+    }
+    return null;
+  }
+  function protMath(){
+    var strong=document.querySelector('#cart .sticky-in-panel .l4tt li.strong');
+    var prot=protLine();
+    if(!prot){
+      var st=strong&&strong.querySelector('.nc-ttshim');
+      if(st&&st.parentNode)st.parentNode.removeChild(st);
+      return;
+    }
+    if(!prot.querySelector('.nc-protwas')){
+      var w=document.createElement('span');
+      w.className='old-price nc-protwas';
+      w.style.setProperty('display','none','important');
+      w.textContent='$2.99';
+      prot.appendChild(w);
+    }
+    if(!strong)return;
+    var clone=strong.cloneNode(true);
+    var cs=clone.querySelector('.nc-ttshim');
+    if(cs&&cs.parentNode)cs.parentNode.removeChild(cs);
+    var m=String(clone.textContent).match(/\$[\d.,]+/g);
+    if(!m)return;
+    var real=parseFloat(m[m.length-1].replace(/[^0-9.]/g,''))||0;
+    if(!real)return;
+    var want='$'+(Math.round((real+2.99)*100)/100).toFixed(2);
+    var shim=strong.querySelector('.nc-ttshim');
+    if(!shim){
+      shim=document.createElement('span');
+      shim.className='nc-ttshim';
+      shim.style.setProperty('display','none','important');
+      strong.appendChild(shim);
+    }
+    if(shim.textContent!==want)shim.textContent=want;
+  }
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{protMath();}catch(e){}}
   var t=null;
   function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
   if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
