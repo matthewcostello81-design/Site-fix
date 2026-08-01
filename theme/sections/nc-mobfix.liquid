@@ -59,6 +59,16 @@
   #shopify-section-footer#shopify-section-footer .nc-foot-links{display:grid !important;grid-template-columns:auto 1fr !important;gap:0 24px !important;justify-content:start !important;padding-left:12px !important;padding-right:12px !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links > .nc-foot-col{min-width:0 !important}
   #shopify-section-footer#shopify-section-footer .nc-foot-links ul{gap:9px !important}
+
+  /* 6. "Built different" / "Why it matters" media. nc-express pins these into a fixed
+        4:3 box on mobile and crops them with `object-position:center 72%` — a blanket
+        bottom-weighted anchor applied to every product, so any clip whose subject sits
+        centred or high loses its top (the octa massager falls out of frame entirely).
+        Let the media keep its own aspect on mobile instead: the box sizes to the clip,
+        nothing is cropped, and no product can fall outside the frame. Desktop never
+        used these rules, so it is untouched. */
+  #ncpdp#ncpdp .nc-split-img{aspect-ratio:auto !important;height:auto !important;min-height:0 !important;background:transparent !important}
+  #ncpdp#ncpdp .nc-split-img video,#ncpdp#ncpdp .nc-split-vid,#ncpdp#ncpdp .nc-split-img img{position:relative !important;inset:auto !important;height:auto !important;min-height:0 !important;max-height:none !important;aspect-ratio:auto !important;object-fit:contain !important;object-position:50% 50% !important}
 }
 
 /* 5. PDP highlight box: card treatment — cream gradient, teal→orange spine down the

@@ -1,0 +1,348 @@
+{% comment %}
+  NC GIFT
+  Free 5-level resistance band set with any purchase.
+
+  What this section does:
+  1. Renders a premium note on every product page (under the buy box) and one band on the homepage.
+  2. Keeps the gift product hidden everywhere on the storefront: collection grids, search,
+     predictive search, recommendations, and its own product page (which redirects home).
+  3. Auto adds the gift to the cart whenever the cart holds any other item, keeps it at qty 1,
+     and auto removes it when the cart empties.
+
+  The gift is priced at 0.00 with no compare-at price, which also keeps it out of the two smart
+  collections (Shop All needs price > 0, Summer Sale needs compare-at price > 0).
+
+  Registered globally through sections/footer-group.json so it runs on every template.
+{% endcomment %}
+
+{%- assign nc_gift_handle = 'resistance-bands-exercise-set-fitness-workout-stretch-elastic-loop-legs-therapy' -%}
+{%- assign nc_gift = all_products[nc_gift_handle] -%}
+{%- assign nc_gift_v = nc_gift.variants.first -%}
+
+{%- if nc_gift_v -%}
+{%- assign nc_gift_img = '' -%}
+{%- if nc_gift.featured_image -%}{%- assign nc_gift_img = nc_gift.featured_image | image_url: width: 260 -%}{%- endif -%}
+
+<style data-nc-gift="css">
+/* ---------- keep the gift product off the storefront ---------- */
+#content div[id*="main-collection"] li:has(a[href*="{{ nc_gift_handle }}"]),
+#content [id*="recommendations"] li:has(a[href*="{{ nc_gift_handle }}"]),
+#content [class*="predictive"] li:has(a[href*="{{ nc_gift_handle }}"]),
+#content [id*="search"] li:has(a[href*="{{ nc_gift_handle }}"]),
+[data-nc-gift-hidden]{display:none !important}
+
+/* ---------- product page note ---------- */
+.nc-gift-note{
+  position:relative;display:flex;align-items:center;gap:14px;
+  margin:18px 0 4px;padding:14px 16px;border-radius:16px;
+  background:linear-gradient(135deg,#FCF9F2 0%,#F3EEE1 52%,#EADFC7 100%);
+  border:1px solid rgba(44,110,114,.22);
+  box-shadow:0 14px 30px -22px rgba(15,42,51,.7),inset 0 1px 0 rgba(255,255,255,.75);
+  overflow:hidden;-webkit-font-smoothing:antialiased
+}
+.nc-gift-note::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:linear-gradient(180deg,#2C6E72,#15414A)}
+.nc-gift-note__img{flex:0 0 auto;width:84px;height:84px;border-radius:12px;background:#fff;border:1px solid rgba(15,42,51,.08);object-fit:cover;padding:4px}
+.nc-gift-note__txt{min-width:0}
+.nc-gift-note__eb{display:block;font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#2C6E72;margin:0 0 4px}
+.nc-gift-note__t{display:block;font-size:15.5px;font-weight:800;line-height:1.25;color:#0F2A33;margin:0 0 3px}
+.nc-gift-note__s{display:block;font-size:13px;line-height:1.45;color:#3C5860;margin:0}
+.nc-gift-note__was{flex:0 0 auto;margin-left:auto;align-self:center;font-size:17px;font-weight:700;color:#333333;font-family:Poppins,sans-serif}
+.nc-gift-note__was s{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:#333333}
+.nc-gift-note__pill{flex:0 0 auto;margin-left:-8px;align-self:center;font-size:12px;font-weight:800;letter-spacing:.06em;color:#fff;background:linear-gradient(120deg,#C85C22,#E8935A,#D9763A,#C85C22);background-size:220% 220%;animation:ncGiftShine 6s ease infinite;padding:9px 16px;border-radius:100px;box-shadow:0 10px 20px -8px rgba(217,118,58,.6);white-space:nowrap}
+@keyframes ncGiftShine{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@media only screen and (max-width:760px){
+  .nc-gift-note{gap:12px;padding:12px 13px;border-radius:14px;flex-wrap:wrap}
+  .nc-gift-note__img{width:48px;height:48px}
+  .nc-gift-note__t{font-size:14.5px}
+  .nc-gift-note__s{font-size:12.5px}
+  .nc-gift-note__txt{flex:1 1 auto;min-width:calc(100% - 76px)}
+  .nc-gift-note__was{margin:0 0 0 auto;order:2;width:auto;font-size:16px}
+  .nc-gift-note__pill{margin:0 auto 0 0;order:3;width:auto;text-align:center;padding:8px 14px}
+}
+
+/* ---------- homepage band ---------- */
+.nc-gift-home-wrap{padding:34px 20px 6px}
+.nc-gift-home{
+  position:relative;overflow:hidden;max-width:1180px;margin:0 auto;
+  display:flex;align-items:center;gap:26px;padding:26px 32px;border-radius:22px;
+  background:linear-gradient(135deg,#15414A 0%,#0E2C33 100%);
+  box-shadow:0 30px 56px -34px rgba(15,42,51,.85);-webkit-font-smoothing:antialiased
+}
+.nc-gift-home::after{content:'';position:absolute;right:-70px;top:-90px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(44,110,114,.55) 0%,rgba(44,110,114,0) 70%);pointer-events:none}
+.nc-gift-home__img{position:relative;z-index:1;flex:0 0 auto;width:96px;height:96px;border-radius:18px;background:#F3EEE1;object-fit:cover;padding:6px;box-shadow:0 16px 30px -18px rgba(0,0,0,.7)}
+.nc-gift-home__txt{position:relative;z-index:1;min-width:0}
+.nc-gift-home__eb{display:block;font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9CC9C4;margin:0 0 7px}
+.nc-gift-home__t{font-size:clamp(20px,2.3vw,27px);font-weight:800;line-height:1.2;color:#F3EEE1;margin:0 0 7px}
+.nc-gift-home__s{font-size:15px;line-height:1.55;color:rgba(243,238,225,.82);margin:0;max-width:62ch}
+.nc-gift-home__pill{position:relative;z-index:1;margin-left:auto;flex:0 0 auto;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#0E2C33;background:linear-gradient(135deg,#F3EEE1,#D4BE8E);padding:11px 18px;border-radius:100px;white-space:nowrap;box-shadow:0 14px 26px -14px rgba(0,0,0,.8)}
+@media only screen and (max-width:860px){
+  .nc-gift-home-wrap{padding:26px 16px 4px}
+  .nc-gift-home{flex-wrap:wrap;gap:16px;padding:22px 20px;border-radius:18px}
+  .nc-gift-home__img{width:66px;height:66px;border-radius:14px}
+  .nc-gift-home__txt{flex:1 1 200px}
+  .nc-gift-home__t{margin-bottom:6px}
+  .nc-gift-home__s{font-size:14px}
+  .nc-gift-home__pill{margin-left:0;width:100%;text-align:center}
+}
+
+/* ---------- the gift line inside the cart ---------- */
+.nc-gift-line{background:linear-gradient(135deg,rgba(44,110,114,.08),rgba(44,110,114,.02)) !important;border-radius:12px}
+.nc-gift-line [name="updates[]"],
+.nc-gift-line [class*="quantity"],
+.nc-gift-line [class*="qty"]{display:none !important}
+.nc-gift-pill{display:inline-block;margin-left:8px;vertical-align:middle;font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#F3EEE1;background:linear-gradient(135deg,#2C6E72,#15414A);padding:4px 9px;border-radius:100px}
+</style>
+
+{%- if request.page_type == 'product' and product.handle == nc_gift_handle -%}
+<style data-nc-gift="redirect">#content{visibility:hidden !important}</style>
+<script data-nc-gift="redirect">
+(function(){if(!(window.Shopify&&window.Shopify.designMode)){location.replace('/');}else{document.querySelectorAll('style[data-nc-gift="redirect"]').forEach(function(s){s.remove();});}})();
+</script>
+{%- endif -%}
+
+<script data-nc-gift="js">
+(function(){
+  if(window.__ncGiftInit){return;} window.__ncGiftInit=1;
+
+  var H={{ nc_gift_handle | json }};
+  var VID={{ nc_gift_v.id }};
+  var IMG={{ nc_gift_img | json }};
+  var OF=window.fetch.bind(window);
+  var CART_RE=/\/cart\/(add|change|update|clear)/;
+  var busy=false;
+
+  /* ------------------------------------------------------------------ cart */
+
+  function jf(u,o){return OF(u,o).then(function(r){return r.json();});}
+  function getCart(){return jf('/cart.js',{headers:{'Accept':'application/json'},credentials:'same-origin'});}
+  function post(u,b){
+    return jf(u,{method:'POST',credentials:'same-origin',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify(b)});
+  }
+  function addGift(){return post('/cart/add.js',{items:[{id:VID,quantity:1,properties:{_nc_gift:'1'}}]});}
+  function setQty(key,q){return post('/cart/change.js',{id:key,quantity:q});}
+
+  /* Brings the cart in line with the promo. Resolves true when it changed something. */
+  function optedOut(){try{return sessionStorage.getItem('nc_gift_optout')==='1';}catch(e){return false;}}
+  function clearOptout(){try{sessionStorage.removeItem('nc_gift_optout');sessionStorage.removeItem('nc_gift_optout_n');}catch(e){}}
+  /* Low-water mark of real items held while the gift is declined. Rising above it --
+     a new item OR a quantity bump -- means the shopper is buying more, so the gift is
+     offered back. Declining the gift does not move the count (only the gift line
+     changes), so it stays declined instead of reappearing the instant it is removed,
+     and lowering quantities just moves the mark down rather than re-triggering. */
+  function optoutBase(others){
+    var n;
+    try{n=parseInt(sessionStorage.getItem('nc_gift_optout_n'),10);}catch(e){n=NaN;}
+    if(isNaN(n)||others<n){try{sessionStorage.setItem('nc_gift_optout_n',String(others));}catch(e){}return others;}
+    return n;
+  }
+  function sync(){
+    if(busy){return Promise.resolve(false);}
+    busy=true;
+    return getCart().then(function(c){
+      var gift=null,others=0;
+      (c.items||[]).forEach(function(it){
+        if(it.variant_id===VID){gift=it;}else{others+=it.quantity;}
+      });
+      if(others<=0){clearOptout();return gift?setQty(gift.key,0).then(function(){return true;}):false;}
+      if(!gift){
+        if(optedOut()){
+          if(others<=optoutBase(others)){return false;}
+          clearOptout();
+        }
+        return addGift().then(function(){return true;});
+      }
+      if(gift.quantity!==1){return setQty(gift.key,1).then(function(){return true;});}
+      return false;
+    }).catch(function(){return false;}).then(function(changed){
+      busy=false;return changed;
+    });
+  }
+
+  function afterSync(changed){
+    if(changed){
+      try{
+        ['cart:refresh','cart:updated','cart:change','cart:build'].forEach(function(n){
+          document.dispatchEvent(new CustomEvent(n,{bubbles:true,detail:{}}));
+        });
+      }catch(e){}
+      if(/^\/cart(\/|$|\?)/.test(location.pathname)){location.reload();return;}
+    }
+    paint();setTimeout(paint,120);setTimeout(paint,500);setTimeout(paint,1400);
+  }
+
+  /* Hold the theme's own add-to-cart promise open until the gift is in, so whatever
+     the theme renders next (cart drawer, cart page) already shows it. */
+  window.fetch=function(input,init){
+    var url='';
+    try{url=(typeof input==='string')?input:((input&&input.url)||'');}catch(e){}
+    var p=OF(input,init);
+    if(CART_RE.test(url)&&!busy){
+      if(/\/cart\/add/.test(url)){clearOptout();}
+      return p.then(function(res){
+        return sync().then(function(ch){afterSync(ch);return res;});
+      });
+    }
+    return p;
+  };
+
+  var xo=XMLHttpRequest.prototype.open,xs=XMLHttpRequest.prototype.send;
+  XMLHttpRequest.prototype.open=function(m,u){this.__ncUrl=u||'';return xo.apply(this,arguments);};
+  XMLHttpRequest.prototype.send=function(){
+    var x=this;
+    if(CART_RE.test(x.__ncUrl||'')&&!busy){
+      if(/\/cart\/add/.test(x.__ncUrl||'')){clearOptout();}
+      x.addEventListener('load',function(){sync().then(afterSync);});
+    }
+    return xs.apply(this,arguments);
+  };
+
+  /* ------------------------------------------------------------- dom helpers */
+
+  function cls(el){
+    var c=(typeof el.className==='string')?el.className:'';
+    return c+' '+(el.id||'');
+  }
+  function inCartCtx(el){
+    /* the cart page form, but never a product card's quick-buy /cart/add form */
+    if(el.closest('form[action^="/cart"]:not([action*="/cart/add"])')){return true;}
+    var p=el,n=0;
+    while(p&&p!==document.body&&n<14){
+      if(/cart|basket|drawer|checkout/i.test(cls(p))){return true;}
+      p=p.parentElement;n++;
+    }
+    return false;
+  }
+  function giftLinks(){return document.querySelectorAll('a[href*="'+H+'"]');}
+
+  /* Hide every storefront surface that would expose the gift product. */
+  function hide(){
+    var as=giftLinks();
+    for(var i=0;i<as.length;i++){
+      var a=as[i];
+      if(a.closest('[data-nc-gift]')){continue;}
+      if(inCartCtx(a)){continue;}
+      var row=a.closest('li,article,.product-card,.grid__item,.card');
+      if(row&&row.querySelector('[name="updates[]"],a[href*="/cart/change"]')){continue;}
+      var t=row||a;
+      if(!t.hasAttribute('data-nc-gift-hidden')){t.setAttribute('data-nc-gift-hidden','1');}
+    }
+  }
+
+  /* Dress the gift line in the cart drawer / cart page. */
+  function dressCart(){
+    var as=giftLinks();
+    for(var i=0;i<as.length;i++){
+      var a=as[i];
+      if(a.closest('[data-nc-gift]')){continue;}
+      if(!inCartCtx(a)){continue;}
+      var row=a.closest('li,tr,[class*="item"],[class*="line"]')||a.parentElement;
+      if(!row){continue;}
+      if(!row.classList.contains('nc-gift-line')){row.classList.add('nc-gift-line');}
+      if(!row.querySelector('.nc-gift-pill')){
+        var pill=document.createElement('span');
+        pill.className='nc-gift-pill';
+        pill.textContent='Free gift';
+        a.insertAdjacentElement('afterend',pill);
+      }
+    }
+  }
+
+  /* -------------------------------------------------------------- the notes */
+
+  function noteHTML(){
+    var IMGHD='https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260725_050337_d3c2cd73-beb6-44e7-9de3-3bc9bebcef6e.png?v=1784955863&width=720';
+    return (IMGHD?'<img class="nc-gift-note__img" src="'+IMGHD+'" alt="Free 5 level resistance band set" loading="lazy" width="58" height="58">':'')+
+      '<span class="nc-gift-note__txt">'+
+        '<span class="nc-gift-note__eb">&#10022; Gift with any purchase</span>'+
+        '<span class="nc-gift-note__t">Free 5-Level Resistance Band Set</span>'+
+        '<span class="nc-gift-note__s">Added free to every order. No code needed.</span>'+
+      '</span>'+
+      '<span class="nc-gift-note__was"><s>$34.99</s></span><span class="nc-gift-note__pill">FREE</span>';
+  }
+
+  function homeHTML(){
+    return (IMG?'<img class="nc-gift-home__img" src="'+IMG+'" alt="Free 5 level resistance band set" loading="lazy" width="96" height="96">':'')+
+      '<div class="nc-gift-home__txt">'+
+        '<span class="nc-gift-home__eb">&#10022; Gift with any purchase</span>'+
+        '<h2 class="nc-gift-home__t">Free 5-Level Resistance Band Set</h2>'+
+        '<p class="nc-gift-home__s">Every order comes with a full set of 5 resistance bands and a carry bag, on us. It is added to your bag automatically the moment you add any item. No code needed.</p>'+
+      '</div>'+
+      '<span class="nc-gift-home__pill">Included free</span>';
+  }
+
+  function mountPdp(){
+    if(document.querySelector('.nc-gift-note')){return;}
+    var main=document.querySelector('#shopify-section-main-product');
+    var host=null,mode='after';
+    if(main){host=main.querySelector('form[action*="/cart/add"]');}
+    if(!host){
+      var bb=document.querySelector('#ncpdp .nc-buybox');
+      if(bb){host=bb;mode='append';}
+    }
+    if(!host){return;}
+    var n=document.createElement('div');
+    n.className='nc-gift-note';
+    n.setAttribute('data-nc-gift','note');
+    n.innerHTML=noteHTML();
+    if(mode==='append'){host.appendChild(n);}else{host.insertAdjacentElement('afterend',n);}
+  }
+
+  function mountHome(){
+    return;
+    if(document.querySelector('.nc-gift-home')){return;}
+    var home=document.querySelector('#nc-home');
+    if(!home){return;}
+    var wrap=document.createElement('div');
+    wrap.className='nc-gift-home-wrap';
+    wrap.setAttribute('data-nc-gift','home');
+    var band=document.createElement('div');
+    band.className='nc-gift-home';
+    band.innerHTML=homeHTML();
+    wrap.appendChild(band);
+    var mq=home.querySelector('.nch-mq');
+    var heroIn=home.querySelector('.nch-hero-in');
+    var anchor=mq||(heroIn?heroIn.parentElement:null);
+    if(anchor&&anchor!==home){anchor.insertAdjacentElement('afterend',wrap);}
+    else{home.insertAdjacentElement('afterbegin',wrap);}
+  }
+
+  /* ------------------------------------------------------------------- boot */
+
+  function paint(){
+    try{hide();}catch(e){}
+    try{dressCart();}catch(e){}
+    try{mountPdp();}catch(e){}
+    try{mountHome();}catch(e){}
+  }
+
+  function boot(){
+    paint();
+    sync().then(afterSync);
+    try{
+      var mo=new MutationObserver(function(){
+        if(mo.__t){return;}
+        mo.__t=setTimeout(function(){mo.__t=null;paint();},120);
+      });
+      mo.observe(document.documentElement,{childList:true,subtree:true});
+    }catch(e){}
+  }
+
+  document.addEventListener('click',function(e){
+    var t=e.target;
+    if(t&&t.closest&&t.closest('.nc-gift-line')&&t.closest('a[href*="/cart/change"],[class*="remove"]')){
+      try{sessionStorage.setItem('nc_gift_optout','1');}catch(err){}
+    }
+  },true);
+  if(document.readyState!=='loading'){boot();}else{document.addEventListener('DOMContentLoaded',boot);}
+  window.addEventListener('load',paint);
+  window.addEventListener('pageshow',function(e){if(e.persisted){sync().then(afterSync);}});
+  setTimeout(paint,900);setTimeout(paint,2200);
+})();
+</script>
+{%- endif -%}
+
+{% schema %}
+{"name":"NC Gift","settings":[]}
+{% endschema %}
