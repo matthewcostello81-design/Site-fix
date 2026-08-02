@@ -238,16 +238,23 @@
      So: drop the gift and shipping-protection cards outright rather than hiding them,
      top the row up from the catalogue with products not already shown, and re-pick the
      width class from the final count so the row always comes out full. Cards are cloned
-     from a collection page, so they are the same product-item markup and styling. */
+     from a collection page, so they are the same product-item markup and styling.
+     This must stay idempotent. The section is populated asynchronously and the theme
+     re-renders the list after its own fetch, so a one-shot pass gets its appended
+     cards wiped and never runs again. Instead top up on every pass whenever the row
+     is short; once it is full the function costs one length check and exits. The
+     source cards are fetched once and cached. */
   var REC_TARGET=5;
   var REC_SKIP=['resistance-bands-exercise-set-fitness','shipping-protection'];
+  var RECPOOL=null,RECBUSY=false;
   function recWidth(ul){
     var n=ul.children.length,map={2:'w50',3:'w33',4:'w25',5:'w20',6:'w16',7:'w14'};
-    ['w50','w33','w25','w20','w16','w14','w12'].forEach(function(c){ul.classList.remove(c);});
-    ul.classList.add(n>=7?'w14':(map[n]||'w20'));
+    var want=n>=7?'w14':(map[n]||'w20');
+    ['w50','w33','w25','w20','w16','w14','w12'].forEach(function(c){if(c!==want&&ul.classList.contains(c))ul.classList.remove(c);});
+    if(!ul.classList.contains(want))ul.classList.add(want);
   }
   function recHandle(li){
-    var a=li.querySelector('a[href*="/products/"]');
+    var a=li.querySelector&&li.querySelector('a[href*="/products/"]');
     if(!a)return '';
     var m=String(a.getAttribute('href')||'').match(/\/products\/([^\/?#]+)/);
     return m?m[1]:'';
@@ -256,35 +263,51 @@
     for(var i=0;i<REC_SKIP.length;i++){if(h.indexOf(REC_SKIP[i])>-1)return true;}
     return false;
   }
-  function recFill(){
-    var wrap=document.querySelector('#section-related');
-    if(!wrap||wrap.getAttribute('data-ncfill'))return;
-    var ul=wrap.querySelector('ul.l4cl');
-    if(!ul||!ul.children.length)return;
-    wrap.setAttribute('data-ncfill','1');
-    var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1]||'';
-    var have={};
-    [].slice.call(ul.children).forEach(function(li){
-      var h=recHandle(li);
-      if(!h||recSkip(h)||h===cur){if(li.parentNode)li.parentNode.removeChild(li);return;}
+  function recTop(ul,have,cur){
+    for(var i=0;i<RECPOOL.length&&ul.children.length<REC_TARGET;i++){
+      var h=recHandle(RECPOOL[i]);
+      if(!h||h===cur||have[h]||recSkip(h))continue;
       have[h]=1;
-    });
-    if(ul.children.length>=REC_TARGET){recWidth(ul);return;}
+      ul.appendChild(RECPOOL[i].cloneNode(true));
+    }
     recWidth(ul);
-    fetch('/collections/all',{headers:{'X-Requested-With':'XMLHttpRequest'}})
+    var w=document.querySelector('#section-related');
+    if(w)w.removeAttribute('data-hide');
+  }
+  function recLoad(url,next){
+    fetch(url,{headers:{'X-Requested-With':'XMLHttpRequest'},credentials:'same-origin'})
       .then(function(r){return r.text();})
       .then(function(tx){
         var doc=new DOMParser().parseFromString(tx,'text/html');
-        var cards=doc.querySelectorAll('ul.l4cl > li');
-        for(var i=0;i<cards.length&&ul.children.length<REC_TARGET;i++){
-          var h=recHandle(cards[i]);
-          if(!h||h===cur||have[h]||recSkip(h))continue;
-          have[h]=1;
-          ul.appendChild(document.importNode(cards[i],true));
-        }
-        recWidth(ul);
-        wrap.removeAttribute('data-hide');
-      }).catch(function(){});
+        var cards=doc.querySelectorAll('ul.l4cl > li, ul#collection > li, li.product-card');
+        var out=[];
+        for(var i=0;i<cards.length;i++){if(recHandle(cards[i]))out.push(document.importNode(cards[i],true));}
+        if(!out.length&&next){recLoad(next,null);return;}
+        RECPOOL=out;RECBUSY=false;
+        run();
+      }).catch(function(){
+        if(next){recLoad(next,null);return;}
+        RECBUSY=false;
+      });
+  }
+  function recFill(){
+    var wrap=document.querySelector('#section-related')||document.querySelector('.product-recommendations');
+    if(!wrap)return;
+    var ul=wrap.querySelector('ul.l4cl');
+    if(!ul)return;
+    var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1]||'';
+    var have={},n=0;
+    [].slice.call(ul.children).forEach(function(li){
+      var h=recHandle(li);
+      if(!h||recSkip(h)||h===cur||have[h]){if(li.parentNode)li.parentNode.removeChild(li);return;}
+      have[h]=1;n++;
+    });
+    if(!n)return;
+    if(n>=REC_TARGET){recWidth(ul);return;}
+    if(RECPOOL){recTop(ul,have,cur);return;}
+    if(RECBUSY)return;
+    RECBUSY=true;
+    recLoad('/collections/all','/collections/shop-all');
   }
   function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{protMath();}catch(e){}try{recFill();}catch(e){}}
   var t=null;
