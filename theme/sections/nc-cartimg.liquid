@@ -1,0 +1,37 @@
+{% comment %} Cart thumbnail for the Foot & Leg Compression Massager. nc-cro's CIMG map pins this line item to an older photo; this points it at the uploaded product shot instead. It stamps data-nc-ci with nc-cro's own url, which is the exact value cartImg() checks before re-applying, so nc-cro skips the node rather than fighting for it. The observer is childList/subtree only, so the attribute writes below cannot retrigger it. No other product is touched. {% endcomment %}
+<script>
+(function(){
+  if(window.__ncCartFoot)return;window.__ncCartFoot=1;
+  var H='foot-therapy-air-wave-massager-for-leg-feet';
+  var NEW='https://cdn.shopify.com/s/files/1/0815/5706/1860/files/nc-y-foot_a136ccd0-6e74-4a09-bec5-a9d4aa84a09d.jpg?v=1785650161&width=400';
+  var OLD='https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260724_231320_ea345a34-4e83-42c2-8d15-d14a653073b7.png';
+  function fix(){
+    var nodes=document.querySelectorAll('.l4ca > li, #cart .nc-rec');
+    for(var i=0;i<nodes.length;i++){
+      var li=nodes[i];
+      if(!li.querySelector('a[href*="/products/'+H+'"]'))continue;
+      var img=li.querySelector('figure img')||li.querySelector('img');
+      if(!img||img.getAttribute('data-nc-foot')==='1')continue;
+      img.setAttribute('data-nc-foot','1');
+      img.setAttribute('data-nc-ci',OLD);
+      var pic=img.closest('picture');
+      if(pic){var ss=pic.querySelectorAll('source');for(var s=0;s<ss.length;s++)ss[s].setAttribute('srcset',NEW);}
+      img.removeAttribute('srcset');
+      img.setAttribute('src',NEW);
+    }
+  }
+  function bind(){
+    var c=document.getElementById('cart');
+    if(!c||c.__ncFootObs)return;
+    c.__ncFootObs=1;
+    new MutationObserver(fix).observe(c,{childList:true,subtree:true});
+  }
+  function go(){fix();bind();}
+  go();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);
+  [600,1500,3000].forEach(function(t){setTimeout(go,t);});
+})();
+</script>
+{% schema %}
+{"name":"NC Cart Image","settings":[],"presets":[{"name":"NC Cart Image"}]}
+{% endschema %}

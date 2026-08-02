@@ -1,3 +1,44 @@
+# Cart thumbnail: Foot & Leg Compression Massager product shot
+
+## Problem
+The cart line item for the Foot & Leg Compression Massager showed an older
+photo instead of the uploaded product shot.
+
+## Cause
+`sections/nc-cro.liquid` carries a `CIMG` map (handle to image url) and its
+`cartImg()` rewrites every cart thumbnail from it, overriding the product's
+own media. The entry for this handle pointed at
+`hf_20260724_231320_ea345a34...png`.
+
+## Fix
+`nc-cro` is 209KB, so it was not rewritten. Added a small section,
+`sections/nc-cartimg.liquid`, registered last in `sections/footer-group.json`
+(after `nc_cro`), which repoints only this one line item to
+`nc-y-foot_a136ccd0-6e74-4a09-bec5-a9d4aa84a09d.jpg` (1100x1100, uploaded
+2026-08-02).
+
+Rather than fight `nc-cro` for the node, it cooperates with it: `cartImg()`
+skips any image whose `data-nc-ci` already equals its own CIMG url, so the
+override stamps that value while setting a different `src`. `nc-cro` then
+leaves the node alone on every subsequent pass. The observer watches
+`#cart` with childList/subtree only and is not debounced, so it claims new
+nodes before `nc-cro`'s 40ms-debounced pass and its own attribute writes
+cannot retrigger it. This deliberately avoids the competing-observer flicker
+documented in the cart drawer entry below. The existing `ZOOMC` 1.2 scale
+for this handle is left in place; it crops only the photo's empty margin.
+
+No other product, and no other cart behavior, is affected.
+
+## Applied to
+Theme "NC Polish round 4 (Claude)" (draft, gid 162251276516). Files:
+sections/nc-cartimg.liquid (new), sections/footer-group.json (section
+registered). Both verified byte-identical to the repo copies by MD5. The
+footer-group edit was made programmatically against a checksum-matched copy
+of the live file and asserted to preserve every existing section, the footer
+block, and `nc_global` (whose loss would kill the site-wide gradient).
+
+---
+
 # Collection toolbar: Sort By and Filter side by side on mobile
 
 ## Problem

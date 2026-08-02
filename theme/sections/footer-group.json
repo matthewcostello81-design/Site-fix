@@ -1,0 +1,147 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "t:static_sections.footer.name",
+  "sections": {
+    "nc_global": {
+      "type": "nc-global-css",
+      "settings": {}
+    },
+    "nc_contactcard": {
+      "type": "nc-contactcard",
+      "settings": {}
+    },
+    "nc_pdp2": {
+      "type": "nc-pdp2",
+      "settings": {}
+    },
+    "nc_ba_fix": {
+      "type": "nc-ba-fix",
+      "settings": {}
+    },
+    "nc_bannerfix": {
+      "type": "nc-bannerfix",
+      "settings": {}
+    },
+    "nc_qbfix": {
+      "type": "nc-qbfix",
+      "settings": {}
+    },
+    "nc_chatfix": {
+      "type": "nc-chatfix",
+      "settings": {}
+    },
+    "nc_cro": {
+      "type": "nc-cro",
+      "settings": {}
+    },
+    "nc_quiz": {
+      "type": "nc-quiz",
+      "settings": {}
+    },
+    "nc_looxpop": {
+      "type": "nc-looxpop-off",
+      "settings": {}
+    },
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "footer_links_html": {
+          "type": "html",
+          "settings": {
+            "html": "<style>\n.nc-foot-links{display:flex;flex-wrap:wrap;gap:36px 64px;padding:8px 0}\n.nc-foot-col{min-width:150px}\n.nc-foot-h{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0F2A33;margin:0 0 14px}\n.nc-foot-links ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}\n.nc-foot-links a{color:#3C5860;text-decoration:none;font-size:14.5px;transition:color .15s ease}\n.nc-foot-links a:hover{color:#2C6E72}\n@media(max-width:600px){\n.nc-foot-links{gap:26px 40px}\n}\n</style>\n<div class=\"nc-foot-links\">\n  <div class=\"nc-foot-col\"><p class=\"nc-foot-h\">Help</p><ul><li><a href=\"/pages/contact\">Contact</a></li><li><a href=\"/pages/about-us\">About Us</a></li><li><a href=\"/pages/track-order\">Track Order</a></li></ul></div>\n  <div class=\"nc-foot-col\"><p class=\"nc-foot-h\">Policies</p><ul><li><a href=\"/pages/refund-policy\">Return &amp; Refund Policy</a></li><li><a href=\"/pages/shipping-policy\">Shipping Policy</a></li><li><a href=\"/pages/payment-billing\">Payment &amp; Billing</a></li><li><a href=\"/pages/privacy-policy\">Privacy Policy</a></li><li><a href=\"/pages/terms-of-service\">Terms of Service</a></li><li><a href=\"/pages/data-sharing-opt-out\">Your Privacy Choices</a></li></ul></div>\n</div>"
+          }
+        },
+        "socials_newsletter_TL7dni": {
+          "type": "socials_newsletter",
+          "settings": {
+            "title": "Stay Up To Date With North Cove Wellness!",
+            "show_socials": true,
+            "enable_follow_on_shop": true,
+            "show_newsletter": true,
+            "footer_button_style": "primary plain",
+            "enable_newsletter_terms_checkbox": false,
+            "newsletter_terms_text": ""
+          }
+        },
+        "ee8cf9cf-0a8b-4986-b76c-1016a9510c5b": {
+          "type": "customer_support",
+          "settings": {
+            "title": "Contact for Support",
+            "title_underline_style": "secondary_font",
+            "customer_support_img_width": 320,
+            "customer_support_offset_right": 150,
+            "customer_support_offset_bottom": 50,
+            "extra_customer_support": "<ul><li><strong>Email us with questions or order concerns</strong></li><li><strong>We typically respond within 1-2 business days</strong></li></ul>",
+            "show_phone_link": true,
+            "show_mail_link": true,
+            "show_whatsapp_link": false,
+            "customer_support_offset_right_mobile": 0,
+            "customer_support_offset_bottom_mobile": 0
+          }
+        }
+      },
+      "block_order": [
+        "footer_links_html",
+        "socials_newsletter_TL7dni",
+        "ee8cf9cf-0a8b-4986-b76c-1016a9510c5b"
+      ],
+      "settings": {
+        "width": "boxed",
+        "footer_color": "white",
+        "title_font": "primary",
+        "title_size_blocks": "h4",
+        "bottom_color": "scheme-3",
+        "bottom_img_width": 50,
+        "bottom_img_link": "",
+        "enable_country_selector": true,
+        "enable_language_selector": true,
+        "enable_follow_on_shop": false,
+        "show_payment_methods": true,
+        "spacing_desktop": 0,
+        "spacing_mobile": 0
+      }
+    },
+    "nc_nohover": {
+      "type": "nc-nohover",
+      "settings": {}
+    },
+    "nc_gift": {
+      "type": "nc-gift",
+      "settings": {}
+    },
+    "nc_mobfix": {
+      "type": "nc-mobfix",
+      "settings": {}
+    },
+    "nc_cartimg": {
+      "type": "nc-cartimg",
+      "settings": {}
+    }
+  },
+  "order": [
+    "nc_global",
+    "nc_contactcard",
+    "footer",
+    "nc_pdp2",
+    "nc_ba_fix",
+    "nc_bannerfix",
+    "nc_qbfix",
+    "nc_chatfix",
+    "nc_cro",
+    "nc_quiz",
+    "nc_looxpop",
+    "nc_nohover",
+    "nc_gift",
+    "nc_mobfix",
+    "nc_cartimg"
+  ]
+}
