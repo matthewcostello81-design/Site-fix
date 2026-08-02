@@ -1,3 +1,62 @@
+# Sale badge: Birchwood Roller Set card showed 33% instead of 50%
+
+Note: this and all later work targets the current draft, "Copy of NC Polish
+round 6 (Claude)" (gid 162401812708). Round 6 is now MAIN. The four earlier
+fixes in this changelog were verified present in the new draft with
+identical MD5s before this change was made.
+
+## Problem
+The Birchwood Massage Roller Set product card showed "33% OFF". The real
+headline discount is 50% (the 4-Piece Set variant, $54.99 from $109.99).
+
+## Cause
+`fixBadge()` in `sections/nc-nohover.liquid` converts the server-rendered
+dollar badge into a percentage with `saving / (price + saving)`. That is
+correct only when `price` is the sale price, but it takes
+`Math.max(...)` of every number inside `p.price` — and the theme nests the
+struck `span.old-price` INSIDE that element. So it read the compare-at
+price: 55 / (109.99 + 55) = 33%, instead of 55 / (54.99 + 55) = 50%.
+
+This is a general bug, not specific to this product: any card with a
+compare-at price is understated wherever `fixBadge` governs the badge. It
+was not fixed at source here because `nc-nohover` is a shared 17.5KB file
+that has been drifting between sessions.
+
+Two further writers made a text-node fix unreliable:
+- `saleBadge()` (nc-cro) runs on collection pages only and re-applies
+  unconditionally from a 300ms master interval, so anything written to the
+  badge there is overwritten within 300ms. It also pairs the lowest sale
+  price with the lowest compare-at price, so it reports 37% for this
+  two-variant product.
+- `fixBadge` is self-limiting (it skips badges with no "$"), so whichever
+  script writes first wins off-collection.
+
+## Fix
+Appended to `sections/nc-cartimg.liquid` (footer-group position 15, loads
+last). The percentage is computed in Liquid as the highest per-variant
+discount and painted over the badge with a CSS `::after` overlay:
+`color:transparent` on the badge, the real value centred on top.
+
+CSS was chosen over JS deliberately. It cannot be undone by any of the three
+scripts that write that text node, so the badge is correct on collection
+pages, the homepage and PDP rails alike, with no 300ms flicker war. The
+overlay is absolutely positioned rather than using `font-size:0` because
+nc-cro sets an inline `font-size:...!important` on collection pages, which
+would beat a stylesheet rule.
+
+Because the value is computed at render time from the variants, it tracks
+price changes instead of going stale — a hardcoded percentage on a store
+carrying a prior GMC misrepresentation flag would be a liability.
+
+Scoped to this product's cards only; no other badge is affected.
+
+## Applied to
+Theme "Copy of NC Polish round 6 (Claude)" (draft, gid 162401812708). File:
+sections/nc-cartimg.liquid. Verified byte-identical to the repo copy by MD5,
+with the footer-group registration confirmed unchanged.
+
+---
+
 # Cart thumbnail: Foot & Leg Compression Massager product shot
 
 ## Problem

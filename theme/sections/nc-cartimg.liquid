@@ -32,6 +32,25 @@
   [600,1500,3000].forEach(function(t){setTimeout(go,t);});
 })();
 </script>
+{% comment %} Sale badge on the Birchwood Roller Set card. The card showed 33% OFF: fixBadge() in nc-nohover derives the percentage as saving/(price+saving), but the theme nests the struck .old-price INSIDE .price, so its Math.max reads the compare-at price (109.99) instead of the sale price, giving 55/164.99 rather than 55/109.99. Two variants also make saleBadge() in nc-cro pair the lowest sale price with the lowest compare-at price on collection pages, and it re-applies every 300ms from the master interval. Rather than fight three writers for the text node, the real percentage is computed here in Liquid (highest variant discount) and painted over the badge in CSS, which no JS text write can undo. Computed at render time, so it follows the variant prices instead of going stale. {% endcomment %}
+{%- assign ncb_p = all_products['natural-wood-body-massage-roller-set'] -%}
+{%- assign ncb_best = 0 -%}
+{%- for ncb_v in ncb_p.variants -%}
+  {%- if ncb_v.compare_at_price > ncb_v.price -%}
+    {%- assign ncb_d = ncb_v.compare_at_price | minus: ncb_v.price | times: 100 | divided_by: ncb_v.compare_at_price -%}
+    {%- if ncb_d > ncb_best -%}{%- assign ncb_best = ncb_d -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- if ncb_best > 0 -%}
+<style>
+#root .product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale,
+.product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale,
+.legacy-product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale{color:transparent!important;position:relative!important}
+#root .product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale::after,
+.product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale::after,
+.legacy-product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale::after{content:'{{ ncb_best }}% OFF'!important;position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;white-space:nowrap!important}
+</style>
+{%- endif -%}
 {% schema %}
 {"name":"NC Cart Image","settings":[],"presets":[{"name":"NC Cart Image"}]}
 {% endschema %}
