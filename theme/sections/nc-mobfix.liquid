@@ -228,7 +228,65 @@
     }
     if(shim.textContent!==want)shim.textContent=want;
   }
-  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{protMath();}catch(e){}}
+  /* "You may also like" comes up short or gappy on some products, for two reasons.
+     1. The section picks its grid width server-side from recommendations.products_count
+        (`limit | at_most: number_of_items` -> w50/w33/w25/w20...). nc-gift then hides
+        the gift card client-side with display:none, so the server counted a card that
+        never renders and one card-width of the row is left empty -- the blank box.
+     2. Shopify's related-products API keys off order history; with none, it returns
+        only two or three matches for some products.
+     So: drop the gift and shipping-protection cards outright rather than hiding them,
+     top the row up from the catalogue with products not already shown, and re-pick the
+     width class from the final count so the row always comes out full. Cards are cloned
+     from a collection page, so they are the same product-item markup and styling. */
+  var REC_TARGET=5;
+  var REC_SKIP=['resistance-bands-exercise-set-fitness','shipping-protection'];
+  function recWidth(ul){
+    var n=ul.children.length,map={2:'w50',3:'w33',4:'w25',5:'w20',6:'w16',7:'w14'};
+    ['w50','w33','w25','w20','w16','w14','w12'].forEach(function(c){ul.classList.remove(c);});
+    ul.classList.add(n>=7?'w14':(map[n]||'w20'));
+  }
+  function recHandle(li){
+    var a=li.querySelector('a[href*="/products/"]');
+    if(!a)return '';
+    var m=String(a.getAttribute('href')||'').match(/\/products\/([^\/?#]+)/);
+    return m?m[1]:'';
+  }
+  function recSkip(h){
+    for(var i=0;i<REC_SKIP.length;i++){if(h.indexOf(REC_SKIP[i])>-1)return true;}
+    return false;
+  }
+  function recFill(){
+    var wrap=document.querySelector('#section-related');
+    if(!wrap||wrap.getAttribute('data-ncfill'))return;
+    var ul=wrap.querySelector('ul.l4cl');
+    if(!ul||!ul.children.length)return;
+    wrap.setAttribute('data-ncfill','1');
+    var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1]||'';
+    var have={};
+    [].slice.call(ul.children).forEach(function(li){
+      var h=recHandle(li);
+      if(!h||recSkip(h)||h===cur){if(li.parentNode)li.parentNode.removeChild(li);return;}
+      have[h]=1;
+    });
+    if(ul.children.length>=REC_TARGET){recWidth(ul);return;}
+    recWidth(ul);
+    fetch('/collections/all',{headers:{'X-Requested-With':'XMLHttpRequest'}})
+      .then(function(r){return r.text();})
+      .then(function(tx){
+        var doc=new DOMParser().parseFromString(tx,'text/html');
+        var cards=doc.querySelectorAll('ul.l4cl > li');
+        for(var i=0;i<cards.length&&ul.children.length<REC_TARGET;i++){
+          var h=recHandle(cards[i]);
+          if(!h||h===cur||have[h]||recSkip(h))continue;
+          have[h]=1;
+          ul.appendChild(document.importNode(cards[i],true));
+        }
+        recWidth(ul);
+        wrap.removeAttribute('data-hide');
+      }).catch(function(){});
+  }
+  function run(){try{footLogo();}catch(e){}try{giftFree();}catch(e){}try{flameFix();}catch(e){}try{cycleFix();}catch(e){}try{recSave();}catch(e){}try{protMath();}catch(e){}try{recFill();}catch(e){}}
   var t=null;
   function queue(){if(t)return;t=setTimeout(function(){t=null;run();},120);}
   if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
