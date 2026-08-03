@@ -58,6 +58,43 @@
   #ncpdp#ncpdp .nc-qb > div:not(:has(.nc-qb-m)) .nc-qb-f{display:inline!important}
 }
 </style>
+{% comment %} Homepage card for the Birchwood Roller Set showed $24.99 / $39.99. nc-home renders the grid with {{ product.price }}, which is Shopify's price_min, so a product with a cheap secondary variant advertises that variant: here the single Wood Roller rather than the set the card pictures and titles. The set variant's real figures are resolved below (highest-priced variant) and written into the card. The badge is corrected in the same pass, because leaving the Liquid-rendered 37% next to a 50% price pair would misstate the discount. nc-cro's cardWas() re-derives struck prices for .nch-pcard from its own VMAP, but skips any card already carrying data-nc-cw, so stamping that claims the card instead of fighting its 300ms interval. Scoped to #nc-home, so the compare chart and collection cards are untouched. {% endcomment %}
+{%- assign ncr_p = all_products['natural-wood-body-massage-roller-set'] -%}
+{%- if ncr_p != blank and ncr_p.variants.size > 0 -%}
+  {%- assign ncr_v = ncr_p.variants.first -%}
+  {%- for ncr_x in ncr_p.variants -%}
+    {%- if ncr_x.price > ncr_v.price -%}{%- assign ncr_v = ncr_x -%}{%- endif -%}
+  {%- endfor -%}
+  {%- assign ncr_off = 0 -%}
+  {%- if ncr_v.compare_at_price > ncr_v.price -%}
+    {%- assign ncr_off = ncr_v.compare_at_price | minus: ncr_v.price | times: 100 | divided_by: ncr_v.compare_at_price -%}
+  {%- endif -%}
+<script>
+(function(){
+  if(window.__ncRollPrice)return;window.__ncRollPrice=1;
+  var H='natural-wood-body-massage-roller-set';
+  var NOW={{ ncr_v.price | money | json }};
+  var WAS={{ ncr_v.compare_at_price | money | json }};
+  var OFF={{ ncr_off }};
+  function fix(){
+    var cards=document.querySelectorAll('#nc-home .nch-pcard[href*="/products/'+H+'"]');
+    for(var i=0;i<cards.length;i++){
+      var cd=cards[i];
+      if(cd.getAttribute('data-nc-roll')==='1')continue;
+      cd.setAttribute('data-nc-roll','1');
+      cd.setAttribute('data-nc-cw','1');
+      var pe=cd.querySelector('.nch-pprice');
+      if(pe)pe.innerHTML=NOW+(OFF>0?'<s>'+WAS+'</s>':'');
+      var bg=cd.querySelector('.nch-pbadge');
+      if(bg&&OFF>0){var t=OFF+'% OFF';if(bg.textContent!==t)bg.textContent=t;}
+    }
+  }
+  fix();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);
+  [400,1200,2600].forEach(function(t){setTimeout(fix,t);});
+})();
+</script>
+{%- endif -%}
 {% schema %}
 {"name":"NC Late Fixes","settings":[],"presets":[{"name":"NC Late Fixes"}]}
 {% endschema %}

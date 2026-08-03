@@ -1,3 +1,53 @@
+# Homepage card advertised the single roller price, not the set
+
+## Problem
+In the homepage "Shop Massage & Recovery" grid, the Birchwood Massage Roller
+Set card showed $24.99 struck from $39.99 with a 37% OFF badge. The card
+pictures and titles the full set, which is $54.99 from $109.99 (50% off).
+
+## Cause
+`sections/nc-home.liquid` renders the grid with:
+
+    {{ product.price | money }}{%- if product.compare_at_price > product.price -%}<s>{{ product.compare_at_price | money }}</s>
+
+`product.price` is Shopify's `price_min`. This product has a second, cheaper
+"Wood Roller" variant at $24.99, so the card advertised that variant rather
+than the set it depicts. The badge is derived from the same two values in
+Liquid, which is why it read 37%.
+
+## Fix
+Appended to `sections/nc-cartimg.liquid` (footer-group position 15). The set
+variant is resolved in Liquid as the highest-priced variant, and its figures
+are written into the card:
+
+    var NOW={{ ncr_v.price | money | json }};
+    var WAS={{ ncr_v.compare_at_price | money | json }};
+
+Resolving by highest price rather than hardcoding, or trusting variant
+position, keeps this correct if the variants are reordered or repriced.
+
+The badge is corrected in the same pass. That was not part of the request,
+but leaving the Liquid-rendered 37% beside a $54.99/$109.99 pair would state
+a discount the prices contradict — on a store carrying a prior GMC
+misrepresentation flag, shipping that knowingly is not defensible.
+
+`cardWas()` in nc-cro re-derives struck prices for `.nch-pcard` from its own
+VMAP on the 300ms master interval, but it skips any card already carrying
+`data-nc-cw`. Stamping that attribute claims the card outright, so there is
+no competing write and no flicker. The fix runs at parse time, before
+nc-cro's first pass.
+
+Scoped to `#nc-home`, so the compare chart, collection cards and PDP are
+untouched. It covers both the Massage & Recovery grid and the Bestsellers
+rail, since both render `.nch-pcard`.
+
+## Applied to
+Theme "Copy of NC Polish round 6 (Claude)" (draft, gid 162401812708). File:
+sections/nc-cartimg.liquid. Verified byte-identical to the repo copy by MD5,
+footer-group registration confirmed unchanged.
+
+---
+
 # PDP highlight bullets rendered blank on mobile
 
 ## Problem
