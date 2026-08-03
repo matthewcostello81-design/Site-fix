@@ -1,3 +1,70 @@
+# PDP highlight bullets rendered blank on mobile
+
+## Problem
+On the 5-Level Resistance Band Set product page (template
+`product.nc-bands.json`), the three highlight bullets under the gallery
+showed their icons but no text on mobile. Desktop rendered correctly.
+
+## Cause
+Not a missing-content problem — the text is hidden by CSS.
+
+`sections/nc-product.liquid` renders each `highlight` block as
+`<div><svg/>bare text node</div>`. `sections/nc-quiz.liquid` then rewrites
+every row client-side into `<svg> + <span class="nc-qb-f">full text</span>`,
+plus `<span class="nc-qb-m">short text</span>` — but the short span is only
+appended when the row's copy matches an entry in that file's hardcoded MAP
+of pain-point strings:
+
+    if(!q.d.querySelector('.nc-qb-f')){
+      var h="<span class='nc-qb-f'>"+q.full+"</span>";
+      if(q.shrt)h+="<span class='nc-qb-m'>"+q.shrt+"</span>";
+
+Its CSS then hides the full text below 760px and shows the short one:
+
+    @media(max-width:760px){
+      #ncpdp#ncpdp .nc-qb > div .nc-qb-f{display:none}
+      #ncpdp#ncpdp .nc-qb > div .nc-qb-m{display:inline}
+    }
+
+Most PDPs survive this because `qbFix()` in nc-cro overwrites their rows
+with `PAINS` copy drawn from those same strings. This product's handle is
+absent from `PAINS`, so it keeps its own theme-block copy, matches no MAP
+entry, gets no `.nc-qb-m`, and the only element holding text is hidden with
+nothing to replace it.
+
+## Fix
+Appended to `sections/nc-cartimg.liquid` (footer-group position 15):
+
+    @media(max-width:760px){
+      #ncpdp#ncpdp .nc-qb > div:not(:has(.nc-qb-m)){white-space:normal!important;overflow:visible!important;align-items:center!important}
+      #ncpdp#ncpdp .nc-qb > div:not(:has(.nc-qb-m)) .nc-qb-f{display:inline!important}
+    }
+
+The `:not(:has(.nc-qb-m))` guard is the important part: it restores the full
+text only on rows that never received a short variant — precisely the rows
+that are blank — and leaves every working short-text row untouched. It wins
+on specificity, (2,3,1) against nc-quiz's (2,2,1), so it does not depend on
+source order.
+
+`white-space:normal` is required alongside it because both nc-quiz and
+nc-cro pin the row to `nowrap` + `overflow:hidden`. That suits the terse
+pain-point copy, but a full-length highlight would otherwise be clipped at
+the card edge rather than wrapping.
+
+This is a latent bug for any product outside `PAINS`, not just this one; the
+guard makes the rule safe to leave in place globally.
+
+The section's schema label was renamed to "NC Late Fixes" to match what it
+now holds. That label is cosmetic — `footer-group.json` references the
+section by filename/type, which is unchanged.
+
+## Applied to
+Theme "Copy of NC Polish round 6 (Claude)" (draft, gid 162401812708). File:
+sections/nc-cartimg.liquid. Verified byte-identical to the repo copy by MD5,
+footer-group registration confirmed unchanged.
+
+---
+
 # Sale badge: Birchwood Roller Set card showed 33% instead of 50%
 
 Note: this and all later work targets the current draft, "Copy of NC Polish

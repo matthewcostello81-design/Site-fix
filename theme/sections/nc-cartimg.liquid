@@ -51,6 +51,13 @@
 .legacy-product-card:has(a[href*="natural-wood-body-massage-roller-set"]) .overlay-sale::after{content:'{{ ncb_best }}% OFF'!important;position:absolute!important;left:0!important;top:0!important;right:0!important;bottom:0!important;display:flex!important;align-items:center!important;justify-content:center!important;color:#fff!important;white-space:nowrap!important}
 </style>
 {%- endif -%}
+{% comment %} PDP highlight bullets went blank on mobile. nc-quiz rewrites every .nc-qb row into a full-text span (.nc-qb-f) plus a shorter mobile span (.nc-qb-m), then below 760px hides .nc-qb-f and shows .nc-qb-m. But .nc-qb-m is only emitted when the row's copy matches an entry in nc-quiz's hardcoded MAP of pain-point strings. Most PDPs match because nc-cro's qbFix overwrites their rows with PAINS copy drawn from those same strings; a product outside PAINS keeps its own theme-block copy, matches nothing, and so gets no .nc-qb-m — leaving the row with its only text node hidden and nothing to replace it. The 5-Level Resistance Band Set is one such product. Restoring the full text is gated on :not(:has(.nc-qb-m)), so this touches only rows that are genuinely blank and leaves every working short-text row exactly as it was. Those rows also need white-space:normal: both nc-quiz and nc-cro pin the row to nowrap + overflow:hidden, which suits the terse pain-point copy but would clip a full-length highlight at the card edge. {% endcomment %}
+<style>
+@media(max-width:760px){
+  #ncpdp#ncpdp .nc-qb > div:not(:has(.nc-qb-m)){white-space:normal!important;overflow:visible!important;align-items:center!important}
+  #ncpdp#ncpdp .nc-qb > div:not(:has(.nc-qb-m)) .nc-qb-f{display:inline!important}
+}
+</style>
 {% schema %}
-{"name":"NC Cart Image","settings":[],"presets":[{"name":"NC Cart Image"}]}
+{"name":"NC Late Fixes","settings":[],"presets":[{"name":"NC Late Fixes"}]}
 {% endschema %}
