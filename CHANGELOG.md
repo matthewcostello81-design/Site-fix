@@ -1,3 +1,55 @@
+# Side Sleeper Leg Pillow: reviews now render in the standard PDP review widget
+
+## Problem
+Reviews for the Side Sleeper Leg Pillow were imported into Judge.me, but the
+product page showed no reviews at all — no star row, no "What customers say"
+block — while every other PDP shows them.
+
+## Cause
+The PDP review UI is `sections/nc-enhance.liquid`, and it is **not** driven by
+Judge.me. It gates on `product.metafields.loox.num_reviews > 0`, and renders its
+cards from `product.metafields.custom.nc_loox_rvw` (JSON:
+`{"reviews":[{"n":name,"t":text,"img":url,"r":rating}]}`). When
+`loox.num_reviews` is missing it hides the `.nc-stars2` row entirely and renders
+nothing.
+
+`templates/product.nc-legpillow.json` already includes the `nc-enhance` section
+in the same position as every other `product.nc-*.json`, so no template or
+theme-file change was needed. The product was simply missing the three
+metafields the widget reads.
+
+## Fix
+Set on product 9179026129124 (`side-sleeper-leg-pillow`) via Admin API
+`metafieldsSet`, matching the shape used by the other PDPs:
+
+- `loox.avg_rating` (number_decimal) = `5.0`
+- `loox.num_reviews` (number_integer) = `13`
+- `custom.nc_loox_rvw` (json) = the 5 reviews readable from
+  `judgeme.review_widget_data`, verbatim, with real reviewer names and 5-star
+  ratings. No photos (the Judge.me import carried none).
+
+`reviews.rating` (5.0) and `reviews.rating_count` (13) were already correct and
+were left alone.
+
+## Known gap
+`judgeme.review_widget_data` only caches **page 1** of the Judge.me widget
+(`per_page: 5`, `total_pages: 3`), so only 5 of the 13 review bodies are
+reachable from Shopify, and judge.me / the storefront are both unreachable from
+this environment. The widget handles this honestly: the summary reads "Based on
+13 reviews" and the footer reads "Showing 5 of 13 reviews." Dropping the
+remaining 8 bodies into `custom.nc_loox_rvw` will make it read "Showing all 13
+reviews." like the other products.
+
+## Note on the Loox side
+This does not put the reviews into the Loox app itself — that needs the Loox
+dashboard. The PDP widget does not read from Loox at runtime for these products;
+it reads the metafields above, which is why the page now matches the others.
+
+## Applied to
+Shopify product metafields (live). No theme files changed.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
