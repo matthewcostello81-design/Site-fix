@@ -1,3 +1,35 @@
+# Side Sleeper Leg Pillow: photo reviews promoted to the front of the carousel
+
+`judgeme.review_widget_data` re-synced at 2026-08-08T04:07:15Z and
+`photo_gallery` came back populated — this time with images uploaded directly to
+Judge.me's own S3 bucket (`me.judge.review-images/north-cove-wellness-llc/...`)
+rather than the AliExpress CDN, so these are newly attached photos, not the
+imported ones that were deleted.
+
+## Change
+`custom.nc_loox_rvw` reordered: the photo reviews now occupy positions 1-3,
+with their image URLs attached. The remaining 24 follow in date order. Card
+count stays 27; counts unchanged at 115 @ 4.70.
+
+1. Hyman Labadie (5) - `...1786161910__1786161887237-review1__huge.jpg`
+2. Ozell Nikolaus (5) - `...1786162011__1786161995693-review3__huge.jpg`
+3. Loan Conroy (5)    - `...1786162033__1786162027611-review4__huge.jpg`
+
+All three already existed as text-only cards; only the image and position
+changed.
+
+## Three, not four
+The cached gallery contains three. The uploaded filenames run `review1`,
+`review3`, `review4` — `review2` is absent from the cache, so a fourth photo
+exists but has not been written into `photo_gallery`. Its URL cannot be derived
+(the filename carries an upload timestamp). It should appear on the next
+Judge.me sync of this metafield.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: re-sync after mixed delete + import (115 reviews)
 
 Judge.me 98 -> **115** @ 4.70 (synced 2026-08-08T02:25Z). Because this round
