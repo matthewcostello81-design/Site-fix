@@ -1,3 +1,48 @@
+# Side Sleeper Leg Pillow: review widget refreshed to the 72-review import
+
+## What changed
+A second Judge.me import took the product from 13 reviews @ 5.00 to **72 reviews
+@ 4.83** (`judgeme.badge` / `reviews.rating_count`, synced 2026-08-08T00:27Z).
+Updated the three metafields the PDP widget reads:
+
+- `loox.avg_rating` 5.0 -> **4.83**
+- `loox.num_reviews` 13 -> **72**
+- `custom.nc_loox_rvw` 5 review cards -> **15**, eight of them with customer photos
+
+## Where the 15 bodies came from
+`judgeme.review_widget_data` still caches only page 1 of the widget
+(`per_page: 5`, now `total_pages: 15`), but this sync also populated a
+`photo_gallery` array carrying 8 further complete reviews — name, rating, body
+and picture URLs. Union of:
+
+- `reviews` (page 1): 5 — Carmine Anderson, Jessica Wunsch, Loan Conroy,
+  Aide Feeney, Yuette Morar
+- `photo_gallery`: 8 — Delmar Lebsack, Deloras Schaden, Bonnie Balistreri,
+  Peggie Marks, Terrence Swift, Adelaida Stamm, Tamara Moore (+ Jessica Wunsch,
+  deduped by uuid against page 1)
+- 3 captured from the earlier 13-review sync and still present in the 72:
+  Luigi Jast, Kenisha Shanahan, Casey Prohaska
+
+All verbatim, real names, real star ratings (4s and 5s preserved, not flattened
+to 5). Ordered newest-first by `created_at`. Photo URLs are the AliExpress CDN
+originals Judge.me itself serves.
+
+## What the page shows now
+"Based on 72 reviews" at 4.8 stars, 15 cards in the carousel, footer note
+"Showing 15 of 72 reviews." The `nc-enhance` histogram is computed from the 15
+card ratings, so the star bars reflect the cards rather than the full 72.
+
+## Still capped
+The remaining 57 bodies are not reachable from Shopify — only page 1 plus the
+photo gallery are cached, and judge.me / the storefront are blocked by the
+egress policy. Raising Judge.me's reviews-per-page above 72 would cache them all
+and let the full set be pulled in one pass.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: reviews now render in the standard PDP review widget
 
 ## Problem
