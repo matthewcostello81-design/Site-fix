@@ -1,3 +1,46 @@
+# Side Sleeper Leg Pillow: re-sync after mixed delete + import (115 reviews)
+
+Judge.me 98 -> **115** @ 4.70 (synced 2026-08-08T02:25Z). Because this round
+both removed and added reviews, the delta no longer identifies deletions, so
+every existing card was re-verified against the live caches rather than
+carried forward on arithmetic.
+
+- `loox.avg_rating` 4.61 -> **4.70**
+- `loox.num_reviews` 98 -> **115**
+- `custom.nc_loox_rvw` 30 cards -> **27**
+
+## Deleted, removed from the snapshot
+Kayce Yost, Florentino Bergnaum, Jeramy Jacobson — all three were in the grid
+cache last sync, all three sit inside its current date window (2026-06-10 ->
+2026-08-03), and all three are gone. `photo_gallery` is `null` again, so every
+photo review on this product has now been deleted. The snapshot has no images.
+
+## Verified live (17)
+Present in the refreshed `reviews_grid`: Leslie Haag, Tamatha Daugherty,
+Heath Huel, Lester Spinka, Bud Smitham, Ervin Conn, Hyman Labadie,
+Jamika Lueilwitz, Rutha Nader, Ozell Nikolaus, Sadie Schroeder, Maureen Leannon,
+Jon Wyman, Palmer Von, Carmine Anderson, Loan Conroy, Aide Feeney.
+
+## Carried forward unverified (10)
+Yuette Morar, Luigi Jast, Fletcher Kertzmann, Ai Hintz, Vernice Rohan,
+Francis Thiel, Kenisha Shanahan, Hershel Batz, Giuseppina O'Kon, Casey Prohaska.
+
+All predate 2026-06-10 and so fall outside the grid's current window, which means
+neither cache can confirm them either way. Kept because every deletion observed
+so far has been a photo review and none of these has a photo — an inference, not
+a confirmation. If any were deleted, they are still on the page.
+
+## New reviews not retrievable
+The import added at least 20 reviews, but the newest leg pillow review is still
+2026-08-03, so the additions are backdated earlier than 2026-06-10 and land on
+pages 2-23. Neither `review_widget_data` (page 1 only) nor `reviews_grid` (25
+most recent shop-wide) reaches them.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: card count 13 -> 30 after the 98-review import
 
 Judge.me 64 -> **98** @ 4.61 (badge + `reviews.rating_count`, synced
