@@ -1,3 +1,40 @@
+# Side Sleeper Leg Pillow: card count 7 -> 13 from the shop reviews_grid cache
+
+## New source
+`shop.metafields.judgeme.reviews_grid` (json) is a shop-wide Judge.me cache that
+re-syncs on every review change — it updated at 2026-08-08T00:41:32Z. Its
+`product_reviews.reviews` array held 25 reviews across products, **12 of them
+for the leg pillow**, complete with names, ratings and bodies.
+
+This is a second retrievable source alongside the per-product
+`judgeme.review_widget_data` (page 1 only) and its `photo_gallery` (now empty).
+
+## Result
+`custom.nc_loox_rvw` 7 cards -> **13**. Seven new, all verbatim from the grid
+cache: Fletcher Kertzmann, Ai Hintz, Vernice Rohan, Francis Thiel, Hershel Batz
+(3-star), Giuseppina O'Kon, plus Kenisha Shanahan already held. Casey Prohaska
+kept from the earlier capture; he is not in the grid's 12 but the deletion
+deltas are fully accounted for. Ordered newest-first by `created_at`.
+
+`loox.num_reviews` (64) and `loox.avg_rating` (4.84) unchanged — still correct.
+Footer reads "Showing 13 of 64 reviews."
+
+## Why 13 and not 15
+Thirteen is every distinct leg pillow review body reachable from Shopify. Checked
+and exhausted: `review_widget_data.reviews` (5, page 1 of 13),
+`review_widget_data.photo_gallery` (null since the photo reviews were deleted),
+`reviews_grid` (12), `trust_badge.modal_data` (no review bodies), and the
+`all_reviews_0` / `featured_carousel` / `popup_widget` / `html_miracle_0` shop
+caches (all last synced before the import, so no leg pillow entries). The other
+51 sit on pages 2-13, which Judge.me never writes to a metafield.
+
+Raising Judge.me's reviews-per-page above 5 would cache them and lift the ceiling.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: re-sync after Peggie Marks deletion
 
 Judge.me 65 -> **64** @ 4.84. `photo_gallery` is now `null` — Peggie Marks was
