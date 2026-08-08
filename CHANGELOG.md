@@ -1,3 +1,54 @@
+# Side Sleeper Leg Pillow: purge deleted reviews from the widget snapshot
+
+## Problem
+Seven reviews were deleted in Judge.me, but they kept rendering on the product
+page — including their customer photos.
+
+## Cause
+`custom.nc_loox_rvw` is a **static snapshot**, not a live feed. `nc-enhance`
+renders its cards straight from that metafield, so a deletion in Judge.me
+updates Judge.me's own metafields (`badge`, `review_widget_data`,
+`reviews.rating_count`) but leaves the snapshot untouched. The deleted reviews
+stay on the storefront until the snapshot is rewritten by hand.
+
+This is inherent to the snapshot design and applies to **every** product using
+`custom.nc_loox_rvw`, not just this one.
+
+## Reconciliation
+Judge.me went 72 -> 65 @ 4.85. Cross-checked all 15 snapshot cards against the
+current `reviews` (page 1) and `photo_gallery` arrays. All 7 deletions were
+photo reviews, and they account for the full 72 -> 65 delta:
+
+Deleted (removed from the snapshot): Jessica Wunsch, Delmar Lebsack,
+Deloras Schaden, Bonnie Balistreri, Terrence Swift, Adelaida Stamm, Tamara Moore
+
+Confirmed still live in Judge.me: Carmine Anderson, Loan Conroy, Aide Feeney,
+Yuette Morar, Luigi Jast (page 1), Peggie Marks (photo gallery)
+
+Kenisha Shanahan and Casey Prohaska sit on page 2+ so are not directly visible,
+but the 7-review delta is fully explained by the photo deletions, so both were
+kept.
+
+## Result
+- `loox.avg_rating` 4.83 -> **4.85**
+- `loox.num_reviews` 72 -> **65**
+- `custom.nc_loox_rvw` 15 cards -> **8** (one with a photo, Peggie Marks)
+
+Page reads "Based on 65 reviews", "Showing 8 of 65 reviews."
+
+## Standing risk
+Every future Judge.me edit (import, delete, reply) desyncs this snapshot again
+and it must be re-reconciled by hand. The durable fix is to have `nc-enhance`
+render from `judgeme.review_widget_data` directly — page 1 plus `photo_gallery`
+are already in that metafield and Judge.me keeps them current — instead of from
+`custom.nc_loox_rvw`. Not done here; it is a theme change beyond this task, and
+Admin API theme writes are blocked against the live theme.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: review widget refreshed to the 72-review import
 
 ## What changed
