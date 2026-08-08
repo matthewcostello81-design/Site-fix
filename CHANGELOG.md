@@ -1,3 +1,39 @@
+# Side Sleeper Leg Pillow: card count 13 -> 30 after the 98-review import
+
+Judge.me 64 -> **98** @ 4.61 (badge + `reviews.rating_count`, synced
+2026-08-08T02:15Z). Nothing was deleted this round, so all 13 existing cards
+stayed valid.
+
+`shop.metafields.judgeme.reviews_grid` re-synced at 02:14:24 and the new import
+pushed leg pillow reviews to the top of its 25-review shop-wide window — it now
+carries **18** for this product (previously 12). Seventeen were new.
+
+- `loox.avg_rating` 4.84 -> **4.61**
+- `loox.num_reviews` 64 -> **98**
+- `custom.nc_loox_rvw` 13 cards -> **30**, three with photos
+  (Kayce Yost, Florentino Bergnaum, Jeramy Jacobson)
+
+Footer reads "Showing 30 of 98 reviews."
+
+## Note on the grid window
+`reviews_grid` holds only the 25 most recent reviews shop-wide, so its reach for
+any one product moves over time. It currently reaches back to 2026-06-15; the
+older cards (Loan Conroy and earlier) are no longer in it and are carried
+forward from prior captures. They remain valid — the count rose, so nothing was
+removed.
+
+## Ratings now include low scores
+The import brought the first sub-4 reviews: Jon Wyman (1, non-delivery,
+refunded), Jeramy Jacobson (1, has a photo), Lester Spinka (2, "Bespontova"),
+Hershel Batz (3). All included verbatim, which is why the aggregate moved to
+4.61. Two cards have the product name as their entire body (Kayce Yost,
+Florentino Bergnaum) — both are photo reviews, so the image carries the card.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: card count 7 -> 13 from the shop reviews_grid cache
 
 ## New source
