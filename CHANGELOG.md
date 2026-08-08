@@ -1,3 +1,43 @@
+# Side Sleeper Leg Pillow: re-sync after Peggie Marks deletion
+
+Judge.me 65 -> **64** @ 4.84. `photo_gallery` is now `null` — Peggie Marks was
+the last surviving photo review and has been deleted.
+
+- `loox.avg_rating` 4.85 -> **4.84**
+- `loox.num_reviews` 65 -> **64**
+- `custom.nc_loox_rvw` 8 cards -> **7**, no photos remaining
+
+Remaining cards: Carmine Anderson, Loan Conroy, Aide Feeney, Yuette Morar,
+Luigi Jast (all confirmed on page 1), plus Kenisha Shanahan and Casey Prohaska
+(page 2+; the 65 -> 64 delta is exactly Peggie Marks, so neither was touched).
+
+## Why the card count cannot go back to 15
+The retrievable pool has shrunk, not the display logic. `review_widget_data`
+exposes only page 1 (`per_page: 5`, `total_pages: 13`) plus `photo_gallery`,
+and the photo gallery is now empty because all 8 photo reviews have been
+deleted. That gallery was the source of the extra cards. Seven of the fifteen
+were deleted deliberately; re-adding them would put deleted reviews back on the
+storefront.
+
+The supported way to raise the count: increase Judge.me's reviews-per-page above
+5 (Judge.me -> Widgets -> Review Widget). `review_widget_data.reviews` then
+caches that many and the snapshot can be rebuilt from real, live reviews in one
+pass. At `per_page: 50` roughly 50 of the 64 become available.
+
+## Separate issue found, not fixed
+The storefront renders a green "check Verified" badge on every review card, but
+every one of these reviews carries `verified_buyer: false` and
+`transparency_badges: ["review_collected_from_another_provider"]` — they are
+imported, not verified purchases. The badge is not produced by `nc-enhance`
+(its card markup has no such element), so something else in the live theme adds
+it. This is a false trust signal on a live storefront and should be traced and
+removed.
+
+## Applied to
+Shopify product metafields (live), product 9179026129124. No theme files changed.
+
+---
+
 # Side Sleeper Leg Pillow: purge deleted reviews from the widget snapshot
 
 ## Problem
