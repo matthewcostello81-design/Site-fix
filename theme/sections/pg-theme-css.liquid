@@ -94,18 +94,22 @@
   .pgf-nav a{font-size:15px;color:#2b2b2b;text-decoration:none}
   .pgf-nav a:hover{color:#7A2FA2;text-decoration:underline}
 
-  /* Homepage: centered, balanced layout */
+  /* Homepage: centered, balanced layout; big Best Sellers heading with stars */
   #pgh .pgh-eyebrow,#pgh .pgh-h2{text-align:center}
+  #pgh .pgh-eyebrow{font-size:15px !important;letter-spacing:.32em !important;color:#7A2FA2 !important;font-weight:700 !important}
+  #pgh .pgh-h2{font-size:52px !important;font-weight:800 !important;color:#2b1240;margin:8px 0 30px !important;position:relative}
+  .pgh-hstar{position:absolute;display:block;background:#9B4BC4;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pgfTwinkle 3s ease-in-out infinite;pointer-events:none;filter:drop-shadow(0 0 6px rgba(155,75,196,.8))}
   /* Hero removed; Best Sellers leads the page */
   #pgh .pgh-hero{display:none !important}
   #pgh .pgh-wrap{padding-top:34px}
   #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
   #pgh .pgh-grid .pgh-card{width:calc(50% - 11px);max-width:100%}
   #pgh .pgh-card-t,#pgh .pgh-card-p{text-align:center}
-  /* Card ATC: same pill look as the Sale badge, top right of the image */
+  /* Card ATC: full-width fading purple button under the price, NC style */
   #pgh .pgh-badge{top:12px !important;bottom:auto !important}
-  #pgh .pgh-atc{position:absolute !important;left:auto !important;right:12px !important;top:12px !important;bottom:auto !important;transform:none !important;background:#fff !important;background-color:#fff !important;background-image:none !important;color:#121212 !important;border:1px solid #e2e2e2 !important;border-radius:999px !important;font-size:12.5px !important;font-weight:500 !important;line-height:1.4 !important;padding:5px 16px !important;margin:0 !important;width:auto !important;min-width:0 !important;height:auto !important;min-height:0 !important;text-transform:none !important;letter-spacing:0 !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.35) !important;animation:none !important}
-  #pgh .pgh-atc:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important;color:#fff !important;border-color:#7A2FA2 !important;transform:none !important}
+  #pgh .pgh-card{background:#fff !important;border-radius:16px;overflow:hidden;box-shadow:0 14px 34px -24px rgba(74,28,102,.5)}
+  #pgh .pgh-atc{position:static !important;display:block !important;width:calc(100% - 28px) !important;margin:4px 14px 16px !important;background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;background-image:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;color:#fff !important;border:none !important;border-radius:999px !important;font-size:14px !important;font-weight:700 !important;line-height:1.4 !important;padding:13px 16px !important;min-width:0 !important;height:auto !important;min-height:0 !important;text-transform:uppercase !important;letter-spacing:.06em !important;box-shadow:0 12px 26px -12px rgba(122,47,162,.6) !important;animation:none !important;transform:none !important;cursor:pointer}
+  #pgh .pgh-atc:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important;color:#fff !important;transform:none !important}
   /* Banner Shop now button removed per request */
   #pgh .pgh-split-btn{display:none !important}
   /* Collections tiles removed per request */
@@ -114,8 +118,11 @@
     #pgh .pgh-grid .pgh-card{width:calc(50% - 11px)}
   }
   .pgx-announce,.pgc-announce{text-transform:uppercase;letter-spacing:.08em;font-size:12px !important;font-weight:600}
-  /* Announcement bar: rotating messages on a light-to-dark purple fade */
-  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#B478E0 0%,#9B4BC4 32%,#7A2FA2 64%,#4A1C66 100%) !important;background-size:100% 100% !important;animation:none !important;color:#fff !important;transition:opacity .35s ease}
+  /* Announcement bar: sideways scrolling marquee on a light-to-dark purple fade */
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#B478E0 0%,#9B4BC4 32%,#7A2FA2 64%,#4A1C66 100%) !important;background-size:100% 100% !important;animation:none !important;color:#fff !important;overflow:hidden !important;padding-left:0 !important;padding-right:0 !important}
+  @keyframes pgMarq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .pg-marq{display:inline-flex;white-space:nowrap;animation:pgMarq 24s linear infinite;will-change:transform}
+  .pg-marq span{display:inline-block;padding:0 34px}
   #pgx .pgx-hero{border-radius:16px}
   #pgx .pgx-thumbs button{border-radius:14px}
   #pgx .pgx-quote{border-radius:14px}
@@ -185,6 +192,8 @@
   /* Old tiered-discount messaging (2 for 10, 3 for 15): removed per request */
   #cart .nc-tiers,body.template-cart .nc-tiers{display:none !important}
   #cart .nc-upsell-note,body.template-cart .nc-upsell-note{display:none !important}
+  /* Footer payment icon strip was getting cut off; the cart shows them instead */
+  #shopify-section-footer [class*="payment"],.shopify-section[id$="__footer"] [class*="payment"]{display:none !important}
   /* Contact page: theme styling for the native form */
   #content form[action*="contact"]{background:rgba(255,255,255,.85);border:1.5px solid #4A1C66;border-radius:16px;padding:26px 22px;max-width:680px;margin:14px auto 60px;box-shadow:0 18px 44px -30px rgba(74,28,102,.55)}
   #content form[action*="contact"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
@@ -373,8 +382,9 @@
     .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{font-size:15px !important}
     #pgh .pgh-grid .pgh-card{width:100% !important}
     .pgh-h2{font-size:26px !important}
+    #pgh .pgh-h2{font-size:34px !important}
     .pgh-wrap{padding-left:16px !important;padding-right:16px !important}
-    .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 10px !important}
+    .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 0 !important}
     .pgh-ic a,.pgx-ic a,.pgc-ic a{width:44px;height:44px}
     .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:23px !important;height:23px !important}
     #pgh .pgh-nav{gap:30px !important}
@@ -483,18 +493,39 @@
         if(/off your order|more item|unlock|15%/i.test(el.textContent)) el.textContent='Save 10%';
       });
     },900);
-    /* Announcement bar: rotate through a few messages with a soft fade */
+    /* Announcement bar: continuous sideways marquee of the offer messages */
     var MSGS=['Free shipping on all orders','30-day money back guarantee','Free R36S case included with every order','15,000+ classic games preloaded'];
-    var ai=0;
-    setInterval(function(){
-      var els=document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce');
-      if(!els.length)return;
-      ai=(ai+1)%MSGS.length;
-      els.forEach(function(el){
-        el.style.opacity='0';
-        setTimeout(function(){ el.textContent=MSGS[ai]; el.style.opacity='1'; },360);
+    function marq(){
+      document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
+        if(el.dataset.pgMarq)return; el.dataset.pgMarq='1';
+        var half=MSGS.map(function(m){return '<span>'+m+' ✦</span>';}).join('');
+        el.innerHTML='<div class="pg-marq">'+half+half+'</div>';
       });
-    },4500);
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',marq);else marq();
+    setTimeout(marq,900);
+    /* Homepage cards: move the ATC under the price as a full-width button */
+    function atcMove(){
+      document.querySelectorAll('#pgh .pgh-card').forEach(function(c){
+        var b=c.querySelector('.pgh-atc');
+        if(b&&b.parentNode!==c) c.appendChild(b);
+      });
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',atcMove);else atcMove();
+    setTimeout(atcMove,900);
+    /* Twinkling purple stars around the Best Sellers heading */
+    function hstars(){
+      var h=document.querySelector('#pgh .pgh-h2');
+      if(!h||h.dataset.pgStars)return; h.dataset.pgStars='1';
+      [[-14,12,14],[-4,86,10],[26,4,11],[8,94,16],[-18,68,9],[30,90,12]].forEach(function(s,i){
+        var d=document.createElement('span'); d.className='pgh-hstar';
+        d.style.top=s[0]+'px'; d.style.left=s[1]+'%'; d.style.width=s[2]+'px'; d.style.height=s[2]+'px';
+        d.style.animationDelay=(i*0.5)+'s';
+        h.appendChild(d);
+      });
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',hstars);else hstars();
+    setTimeout(hstars,900);
   })();
 </script>
 {% schema %}
