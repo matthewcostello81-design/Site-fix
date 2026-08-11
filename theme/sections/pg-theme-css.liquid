@@ -230,6 +230,7 @@
           + '<div class="pg-search-dd"></div>';
         a.replaceWith(w);
         var input = w.querySelector('input');
+        if (window.matchMedia && window.matchMedia('(max-width: 760px)').matches) input.placeholder = 'Search';
         var dd = w.querySelector('.pg-search-dd');
         var t;
         input.addEventListener('keydown', function(e){
@@ -364,6 +365,9 @@
     .pgh-wrap{padding-left:16px !important;padding-right:16px !important}
     .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 10px !important}
     .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:28px !important;height:28px !important}
+    .pg-search{width:34vw !important;min-width:104px;max-width:150px !important;padding:7px 10px !important;gap:6px !important}
+    .pg-search input{font-size:12.5px !important}
+    .pg-search svg{width:15px !important;height:15px !important}
     .pgu-yml{margin-bottom:96px}
     .pgu-yml-grid a{width:46%}
     .pgh-split{grid-template-columns:1fr !important;margin-top:40px !important}

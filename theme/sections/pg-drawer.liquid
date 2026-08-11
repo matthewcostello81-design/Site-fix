@@ -73,7 +73,30 @@
   /* Free gift line: FREE tag replaces $0.00, stepper locked */
   #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
   body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:hidden !important}
-  .pg-free-tag{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:11.5px;font-weight:700;letter-spacing:.08em;padding:3px 10px;border-radius:999px;text-transform:uppercase}
+  /* Free Gift and Saved % labels: fading purple gradient text, sized to the words */
+  .pg-free-tag{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2 55%,#4A1C66);-webkit-background-clip:text;background-clip:text;color:transparent !important;-webkit-text-fill-color:transparent !important;font-size:12px;font-weight:800;letter-spacing:.06em;padding:0;text-transform:uppercase;width:max-content;max-width:100%;margin:3px 0 2px;white-space:nowrap}
+  /* North Cove cart-line layout: title top, qty left, price right, label under the price */
+  #cart .l4ca > li section{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;grid-template-areas:"nm nm" "vr vr" "qt pr" "sv sv" !important;align-items:end !important;gap:2px 10px !important;overflow:hidden !important}
+  #cart .l4ca > li section > p{grid-area:vr;margin:0 !important;font-size:12.5px;color:#8a8a8a;justify-self:start}
+  #cart .l4ca > li section > span.overlay-gray{display:none !important}
+  #cart .l4ca > li section .nc-lsave{position:static !important;width:auto !important;max-width:100% !important;margin:0 !important;padding:0 !important}
+  #cart .l4ca > li section .cols{display:contents !important}
+  #cart .l4ca > li section h2{grid-area:nm !important;border:0 !important;margin:0 !important}
+  #cart .l4ca > li section .pg-save-chip,#cart .l4ca > li section .pg-free-tag{grid-area:sv;justify-self:end;text-align:right}
+  #cart .l4ca > li section footer{grid-area:qt !important;position:static !important;display:flex !important;align-items:center !important;justify-content:flex-start !important;gap:10px !important;width:auto !important}
+  #cart .l4ca > li section footer > *{margin-left:0 !important;margin-right:0 !important;position:static !important}
+  #cart .l4ca > li section .nc-lsave{grid-area:pr !important;display:flex !important;flex-direction:column !important;align-items:flex-end !important;gap:1px !important;justify-self:end;align-self:end}
+  #cart .l4ca > li section .cols p.price{display:none !important}
+  #cart .l4ca > li .nc-lsave-was{color:#8a8a8a !important;text-decoration:line-through !important;font-size:12.5px !important;font-weight:400 !important}
+  #cart .l4ca > li .nc-lsave-now{color:#7A2FA2 !important;font-weight:800 !important;font-size:16.5px !important}
+  #cart .l4ca > li .nc-lsave-off{display:none !important}
+  #cart .l4ca > li section > p:empty{display:none !important}
+  #cart .l4ca > li:hover,#cart .l4ca > li:hover section,#cart .l4ca > li:hover figure{background:transparent !important;box-shadow:none !important}
+  #cart .l4ca > li::before,#cart .l4ca > li::after{display:none !important;content:none !important}
+  #cart .l4ca > li section{padding-right:4px !important}
+  .pg-save-chip{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2 55%,#4A1C66);-webkit-background-clip:text;background-clip:text;color:transparent !important;-webkit-text-fill-color:transparent !important;font-size:12px;font-weight:800;letter-spacing:.06em;padding:0;text-transform:uppercase;margin:3px 0 2px;width:max-content;max-width:100%;white-space:nowrap}
+  s.pg-lwas{color:#8a8a8a !important;font-weight:400;font-size:13px;margin-right:6px}
+  #cart .l4ca > li .old-price{display:none !important}
 
   /* "Shipped for free" bars anywhere (drawer, cart page, express checkout):
      nc-cartfix also paints the gradient on the ::before pseudo, so both layers
@@ -188,17 +211,17 @@
       var a = li.querySelector('a[href*="free-gift"]');
       if (!a || li.dataset.pgFree) return;
       li.dataset.pgFree = '1';
-      var done = false;
+      if (/\(FREE Gift\)/i.test(a.textContent)) a.textContent = a.textContent.replace(/\s*\(FREE Gift\)/i, '');
       li.querySelectorAll('*').forEach(function(el){
-        if (done || el.children.length) return;
-        if (/^\$?0[.,]00$/.test(el.textContent.trim())){
-          el.innerHTML = '<span class="pg-free-tag">Free</span>';
-          done = true;
-        }
+        if (el.children.length) return;
+        if (/^\$?0[.,]00$/.test(el.textContent.trim())) el.innerHTML = '';
       });
-      if (!done) a.insertAdjacentHTML('beforeend', ' <span class="pg-free-tag">Free</span>');
+      var h2g = a.closest('h2');
+      if (h2g) h2g.insertAdjacentHTML('afterend', '<span class="pg-free-tag">Free Gift</span>');
+      else a.insertAdjacentHTML('afterend', '<span class="pg-free-tag">Free Gift</span>');
     });
   }
+  window.pgGiftTag = giftTag;
   function spInject(){
     var c = document.getElementById('cart');
     if (c){
@@ -239,6 +262,60 @@
   setTimeout(function(){ fix(); spInject(); }, 400);
   setTimeout(function(){ fix(); spInject(); giftQueue(); }, 1200);
   setTimeout(function(){ fix(); spInject(); }, 3000);
+})();
+</script>
+<script>
+(function(){
+  if (window.pgDeals) return; window.pgDeals = 1;
+  var VMAP = null;
+  fetch('/products.json?limit=50').then(function(r){return r.json();}).then(function(j){
+    VMAP = {};
+    (j.products||[]).forEach(function(p){(p.variants||[]).forEach(function(v){VMAP[v.id]=[parseFloat(v.price||0),parseFloat(v.compare_at_price||0)];});});
+  }).catch(function(){});
+  function money(n){ return '$' + n.toFixed(2); }
+  function pass(){
+    if (!VMAP) return;
+    if (!document.querySelector('#cart .l4ca > li')) return;
+    fetch('/cart.js').then(function(r){return r.json();}).then(function(c){
+      var items = c.items || [];
+      var used = {};
+      document.querySelectorAll('#cart .l4ca > li').forEach(function(li){
+        var a = li.querySelector('a[href*="/products/"]'); if (!a) return;
+        var href = a.getAttribute('href') || '';
+        if (href.indexOf('free-gift') > -1) return;
+        var it = null, m = href.match(/[?&]variant=([0-9]+)/);
+        if (m){ var vid = parseInt(m[1],10); it = items.filter(function(x){return x.variant_id===vid;})[0]; }
+        if (!it){
+          var h = (href.match(/\/products\/([^\/?#]+)/)||[])[1];
+          for (var i=0;i<items.length;i++){ if(!used[i] && items[i].handle===h){ it=items[i]; used[i]=1; break; } }
+        }
+        if (!it) return;
+        var pc = VMAP[it.variant_id];
+        if (!pc) return;
+        /* True savings: full retail for the line vs what the line actually
+           costs after every discount Shopify applied in the cart. */
+        var wasU = pc[1] > pc[0] ? pc[1] : pc[0];
+        var wasC = Math.round(wasU * 100) * it.quantity;
+        var nowC = (typeof it.final_line_price === 'number') ? it.final_line_price : it.line_price;
+        if (!(wasC > nowC)) return;
+        var key = it.variant_id + ':' + it.quantity + ':' + nowC;
+        if (li.getAttribute('data-pg-deal') === key) return;
+        var pct = Math.round((wasC - nowC) / wasC * 100);
+        var h2 = li.querySelector('h2') || a;
+        var chip = li.querySelector('.pg-save-chip');
+        if (!chip){ chip = document.createElement('span'); chip.className = 'pg-save-chip'; (h2.parentNode||li).insertBefore(chip, h2.nextSibling); }
+        chip.textContent = 'Saved ' + pct + '%';
+        var pr = li.querySelector('p.price') || li.querySelector('[class*="price"]');
+        if (pr){
+          var st = pr.querySelector('s.pg-lwas');
+          if (!st){ st = document.createElement('s'); st.className = 'pg-lwas'; pr.insertBefore(st, pr.firstChild); }
+          st.textContent = money(wasC / 100);
+        }
+        li.setAttribute('data-pg-deal', key);
+      });
+    }).catch(function(){});
+  }
+  setInterval(function(){ pass(); if (window.pgGiftTag) window.pgGiftTag(document); }, 800);
 })();
 </script>
 {% schema %}
