@@ -389,8 +389,11 @@
 <script>
   (function(){
     if (window.pgWire) return; window.pgWire = 1;
-    /* Pop-out cart: refresh the drawer section markup, then slide it out */
+    /* Pop-out cart: refresh the drawer section markup, then slide it out.
+       On mobile the theme drawer renders badly, so the styled cart page is
+       the cart experience there. */
     window.pgOpenCart = function(){
+      if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches){ window.location.href = '/cart'; return; }
       var done=function(){ if (window.openPanel) { openPanel('cart'); } else { window.location.href='/cart'; } };
       fetch('/?sections=side-cart').then(function(r){return r.json();}).then(function(j){
         var html=j['side-cart']||'';
