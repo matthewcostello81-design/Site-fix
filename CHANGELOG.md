@@ -1,3 +1,48 @@
+# Pocket Era: dark footer payment bar + on-theme contact card
+
+## Problem
+On the Pocket Era dark (purple/black) skin, the footer bottom bar — copyright
+line plus payment icons — still rendered on the base theme's light scheme: a
+white full-width strip with near-white text (unreadable) and the payment icons
+pushed to the right in stark white boxes. The "Have any questions?" contact
+card above the footer on product pages also kept the old North Cove styling
+(cream card, teal text, orange gradient button), clashing with the dark theme.
+
+## Cause
+The dark skin (`sections/pg-dark.liquid`) restyled the footer band but never
+touched the bottom bar (`div.base-font`) or the contact card
+(`sections/nc-contactcard.liquid`, rendered from footer-group). The base
+theme's color-scheme rules kept the bar light and floated the `ul.l4pm`
+payment list to the right; the overlay layers (nc-footer/pg-footer) only
+recolored its text, leaving white-on-white.
+
+## Fix (`sections/pg-dark.liquid`)
+Two new blocks in the dark-skin file (so removing `pg_dark` from footer-group
+still reverts everything in one edit):
+
+- **Bottom bar**: near-black background (#0E0914) with a subtle purple top
+  border, matching the footer band above it; the bar becomes a centered
+  column, so the copyright line and the payment icons are centered. The
+  payment list is a centered flex row; each icon sits in a soft lavender chip
+  (#EDE2F8 with a purple border) instead of stark white, keeping the brand
+  marks legible while fitting the dark skin. Muted lavender text/link colors.
+- **Contact card**: dark purple surface (gradient #1C1428→#140C1E) with a
+  purple border and glow; heading near-white, body text muted lavender; the
+  Contact us button becomes the site's purple gradient pill (reusing the
+  card's existing ncCcGlow sweep animation).
+
+Selectors are written twice (`#shopify-section-footer ~ .base-font` and
+`.shopify-section-footer .base-font`) with boosted specificity so they win
+against both the base theme scheme rules and the nc-footer/pg-footer overlay
+layers regardless of load order.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") on shop
+thepocketera.com via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-dark.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
