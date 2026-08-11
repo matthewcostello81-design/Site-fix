@@ -43,6 +43,31 @@
   /* Premium polish, sitewide */
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   ::selection{background:#7A2FA2;color:#fff}
+
+  /* NC header/tabs are gone everywhere; PG headers or the fallback below replace them */
+  .shopify-section-header,
+  #shopify-section-header,
+  .shopify-section[id*="__header"],
+  .shopify-section[id*="nc_announce"],
+  .shopify-section[id*="nc-announce"]{display:none !important}
+  #content{padding-top:0 !important}
+  .pgf-announce{background:linear-gradient(90deg,#4A1C66,#7A2FA2 50%,#4A1C66);color:#fff;text-align:center;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:11px 16px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pgf-head{background:#fff;border-bottom:1px solid #e9dcf3;text-align:center;padding:14px 16px 6px}
+  .pgf-head img{max-height:88px;width:auto;display:inline-block}
+  .pgf-nav{display:flex;justify-content:center;gap:26px;padding:8px 16px 14px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e9dcf3;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pgf-nav a{font-size:15px;color:#2b2b2b;text-decoration:none}
+  .pgf-nav a:hover{color:#7A2FA2;text-decoration:underline}
+
+  /* Homepage: centered, balanced layout */
+  #pgh .pgh-eyebrow,#pgh .pgh-h2{text-align:center}
+  #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
+  #pgh .pgh-grid .pgh-card{width:300px;max-width:100%}
+  #pgh .pgh-tiles{display:flex !important;flex-wrap:wrap;justify-content:center;gap:20px}
+  #pgh .pgh-tiles .pgh-tile{width:420px;max-width:100%}
+  @media(max-width:900px){
+    #pgh .pgh-grid .pgh-card{width:calc(50% - 11px)}
+    #pgh .pgh-tiles .pgh-tile{width:100%}
+  }
   .pgx-announce,.pgc-announce{background:linear-gradient(90deg,#4A1C66,#7A2FA2 50%,#4A1C66) !important;text-transform:uppercase;letter-spacing:.08em;font-size:12px !important;font-weight:600}
   #pgx .pgx-hero{border-radius:16px}
   #pgx .pgx-thumbs button{border-radius:14px}
@@ -147,6 +172,23 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', widget); else widget();
     setTimeout(widget, 900);
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgFallbackHead) return; window.pgFallbackHead = 1;
+    function head(){
+      if (document.querySelector('.pgh-head,.pgx-head,.pgc-head,[data-pgf-head]')) return;
+      var c = document.getElementById('content') || document.body;
+      var d = document.createElement('div');
+      d.setAttribute('data-pgf-head', '1');
+      d.innerHTML = '<div class="pgf-announce">Free shipping on all orders</div>'
+        + '<div class="pgf-head"><a href="/"><img src="https://cdn.shopify.com/s/files/1/0815/5706/1860/files/Gemini_Generated_Image_utaycgutaycgutay.png" alt="PocketEra"></a></div>'
+        + '<nav class="pgf-nav"><a href="/">Home</a><a href="/products/handheld-game-console">Shop</a><a href="/pages/track-order">Track your order</a><a href="/pages/contact">Contact</a></nav>';
+      c.insertBefore(d, c.firstChild);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
+    setTimeout(head, 600);
   })();
 </script>
 {% schema %}
