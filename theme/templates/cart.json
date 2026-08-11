@@ -39,7 +39,7 @@
         "0de7a67d-1bf0-4afd-a266-123b54034a66"
       ],
       "settings": {
-        "show_dynamic_buybutton": true,
+        "show_dynamic_buybutton": false,
         "enable_discount_tab": true,
         "show_payment_methods": true,
         "show_order_notes": false,

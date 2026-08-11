@@ -45,10 +45,6 @@
       "type": "nc-footer",
       "settings": {}
     },
-    "nc-express": {
-      "type": "nc-express",
-      "settings": {}
-    },
     "nc-recs": {
       "type": "nc-recs",
       "settings": {}
@@ -102,7 +98,6 @@
     "nc-popfix",
     "nc-cartfix",
     "nc-footer",
-    "nc-express",
     "nc-recs",
     "nc-linesave",
     "nc-cartcount",

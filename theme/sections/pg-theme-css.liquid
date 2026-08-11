@@ -54,6 +54,21 @@
   #pgx .pgx-guar{border-radius:10px}
   #pgx .pgx-card{border-radius:14px;box-shadow:0 12px 30px -24px rgba(18,4,28,.4)}
   .pgu-card{box-shadow:0 16px 38px -28px rgba(74,28,102,.5)}
+
+  /* Inline header search box with product dropdown (replaces the /search link) */
+  .pg-search{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:9px 16px;width:220px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-search:focus-within{border-color:#7A2FA2;box-shadow:0 0 0 3px rgba(122,47,162,.12)}
+  .pg-search svg{width:17px;height:17px;stroke:#555;fill:none;stroke-width:1.8;flex:none}
+  .pg-search input{border:none !important;outline:none !important;background:transparent !important;font-size:13.5px;width:100%;padding:0 !important;margin:0 !important;color:#121212;box-shadow:none !important;min-height:0 !important;height:auto !important}
+  .pg-search-dd{display:none;position:absolute;top:calc(100% + 8px);left:0;width:330px;max-width:82vw;background:#fff;border:1px solid #e9dcf3;border-radius:14px;box-shadow:0 24px 54px -24px rgba(18,4,28,.45);padding:8px;z-index:99}
+  .pg-search-dd.on{display:block}
+  .pg-search-dd a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;text-decoration:none;color:#121212}
+  .pg-search-dd a:hover{background:#f6effb}
+  .pg-search-dd img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:#f4f4f4}
+  .pg-search-dd span{flex:1;min-width:0;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pg-search-dd b{font-size:13px;color:#7A2FA2;flex:none}
+  .pg-search-none{padding:12px;font-size:13px;color:#666}
+  @media(max-width:900px){.pg-search{width:150px;padding:8px 12px}.pg-search input{font-size:13px}}
 </style>
 <script>
   (function(){
@@ -74,6 +89,59 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix); else fix();
     setTimeout(fix, 800);
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgSearch) return; window.pgSearch = 1;
+    var ALLOW = ['handheld-game-console', 'data-frog-protective-bag-for-r36s-retro-video-game-bags-olig-cover-case-for-rg35xx-r35s', 'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift'];
+    function widget(){
+      document.querySelectorAll('.pgh-head-in > a[aria-label="Search"], .pgx-head-in > a[aria-label="Search"], .pgc-head-in > a[aria-label="Search"]').forEach(function(a){
+        var w = document.createElement('div');
+        w.className = 'pg-search';
+        w.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>'
+          + '<input type="text" placeholder="Search here..." aria-label="Search products">'
+          + '<div class="pg-search-dd"></div>';
+        a.replaceWith(w);
+        var input = w.querySelector('input');
+        var dd = w.querySelector('.pg-search-dd');
+        var t;
+        input.addEventListener('keydown', function(e){
+          if (e.key === 'Enter') e.preventDefault();
+          if (e.key === 'Escape'){ dd.classList.remove('on'); input.blur(); }
+        });
+        input.addEventListener('input', function(){
+          clearTimeout(t);
+          var q = input.value.trim();
+          if (q.length < 2){ dd.classList.remove('on'); dd.innerHTML = ''; return; }
+          t = setTimeout(function(){
+            fetch('/search/suggest.json?q=' + encodeURIComponent(q) + '&resources[type]=product&resources[limit]=10')
+              .then(function(r){ return r.json(); })
+              .then(function(d){
+                var items = ((d.resources && d.resources.results && d.resources.results.products) || []).filter(function(p){
+                  return ALLOW.some(function(h){ return (p.url || '').indexOf(h) > -1; });
+                });
+                if (!items.length){
+                  dd.innerHTML = '<div class="pg-search-none">No matching products</div>';
+                } else {
+                  dd.innerHTML = items.map(function(p){
+                    var img = (p.featured_image && p.featured_image.url) || p.image || '';
+                    return '<a href="' + p.url + '">'
+                      + (img ? '<img src="' + img + '" alt="">' : '')
+                      + '<span>' + p.title + '</span>'
+                      + (p.price ? '<b>$' + p.price + '</b>' : '')
+                      + '</a>';
+                  }).join('');
+                }
+                dd.classList.add('on');
+              }).catch(function(){});
+          }, 250);
+        });
+        document.addEventListener('click', function(e){ if (!w.contains(e.target)) dd.classList.remove('on'); });
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', widget); else widget();
+    setTimeout(widget, 900);
   })();
 </script>
 {% schema %}
