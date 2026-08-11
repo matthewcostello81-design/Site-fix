@@ -6,7 +6,8 @@
 {%- endcomment -%}
 <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  /* Nav links: bigger, bolder, slab font */
+  /* Nav links: bigger, bolder, slab font, wide spacing */
+  .pgh-nav,.pgx-nav,.pgc-nav,.pgf-nav{gap:64px !important}
   .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{font-family:'Roboto Slab',Georgia,serif !important;font-size:17.5px !important;font-weight:700 !important;color:#4A1C66 !important;letter-spacing:.01em !important}
   .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#7A2FA2 !important}
   #shopify-section-footer#shopify-section-footer,
@@ -41,8 +42,11 @@
   }
   #shopify-section-footer#shopify-section-footer button,
   #shopify-section-footer#shopify-section-footer [class*="button"]{
-    background:#121212 !important;background-color:#121212 !important;color:#fff !important;border-color:#121212 !important;
+    background:#fff !important;background-color:#fff !important;color:#4A1C66 !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.04em !important;padding:13px 26px !important;box-shadow:0 10px 22px -12px rgba(18,4,28,.5) !important;
   }
+  #shopify-section-footer#shopify-section-footer button:hover,
+  #shopify-section-footer#shopify-section-footer [class*="button"]:hover{background:#F3E9FB !important;background-color:#F3E9FB !important;color:#4A1C66 !important}
+  html body #shopify-section-footer button::before,html body #shopify-section-footer button::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important}
 
   /* Premium polish, sitewide */
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
@@ -58,7 +62,7 @@
   #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
   /* Homepage: top third melts into the same fading purple as the page canvas */
   #pgh .pgh-head{background:transparent !important;background-color:transparent !important;border-bottom:0 !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important}
-  #pgh .pgh-nav{background:transparent !important;border-bottom:0 !important;gap:58px !important}
+  #pgh .pgh-nav{background:transparent !important;border-bottom:0 !important;gap:76px !important}
   /* Accordions: outlined dark purple boxes */
   #pgh .pgh-acc{border-top:0 !important}
   #pgh .pgh-acc details{border:1.5px solid #4A1C66 !important;border-bottom:1.5px solid #4A1C66 !important;border-radius:12px;margin-bottom:12px;padding:0 18px;background:rgba(255,255,255,.78)}
@@ -147,8 +151,8 @@
   .pgh-head-in,.pgx-head-in,.pgc-head-in{max-width:none !important;padding-left:40px !important;padding-right:40px !important}
   .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
   /* Person and bag icons: white on fading purple circles so they always read */
-  .pgh-ic a,.pgx-ic a,.pgc-ic a{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#B478E0 0%,#9B4BC4 40%,#7A2FA2 75%,#4A1C66 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px -12px rgba(74,28,102,.65)}
-  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:29px !important;height:29px !important;stroke:#fff !important;stroke-width:1.9 !important;fill:none !important;filter:none !important;opacity:1 !important}
+  .pgh-ic a,.pgx-ic a,.pgc-ic a{width:62px;height:62px;border-radius:50%;background:linear-gradient(135deg,#E2C8F5 0%,#B478E0 32%,#8F3BB8 68%,#4A1C66 100%);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px -12px rgba(74,28,102,.65)}
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:33px !important;height:33px !important;stroke:#fff !important;stroke-width:1.9 !important;fill:none !important;filter:none !important;opacity:1 !important}
   .pgh-cart-n{background:#fff !important;color:#4A1C66 !important;border:1.5px solid #7A2FA2;min-width:18px !important;height:18px !important;line-height:15px !important;font-size:11px !important;font-weight:700}
 
   /* Kill the theme's dark button overlay pseudo-elements on all PG buttons */
@@ -170,7 +174,7 @@
   @media(max-width:1100px){.pgf-stars{display:none}}
 
   /* Inline header search box with product dropdown (replaces the /search link) */
-  .pg-search{position:relative;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:12px 18px;width:300px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-search{position:relative;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:11px 16px;width:200px;max-width:30vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
   .pg-search:focus-within{border-color:#7A2FA2;box-shadow:0 0 0 3px rgba(122,47,162,.12)}
   .pg-search svg{width:19px;height:19px;stroke:#555;fill:none;stroke-width:1.8;flex:none}
   .pg-search input{border:none !important;outline:none !important;background:transparent !important;font-size:14.5px;width:100%;padding:0 !important;margin:0 !important;color:#121212;box-shadow:none !important;min-height:0 !important;height:auto !important}
@@ -195,7 +199,11 @@
   /* Footer payment icon strip was getting cut off; the cart shows them instead */
   #shopify-section-footer [class*="payment"],.shopify-section[id$="__footer"] [class*="payment"]{display:none !important}
   /* Contact page: theme styling for the native form */
-  #content form[action*="contact"]{background:rgba(255,255,255,.85);border:1.5px solid #4A1C66;border-radius:16px;padding:26px 22px;max-width:680px;margin:14px auto 60px;box-shadow:0 18px 44px -30px rgba(74,28,102,.55)}
+  #content form[action*="contact"]{background:rgba(255,255,255,.85);border:1.5px solid #4A1C66;border-radius:16px;padding:26px 22px;max-width:680px;width:calc(100% - 32px);margin:14px auto 60px;box-shadow:0 18px 44px -30px rgba(74,28,102,.55);box-sizing:border-box;overflow:hidden}
+  #content form[action*="contact"] *{box-sizing:border-box;max-width:100%}
+  #content form[action*="contact"] button,#content form[action*="contact"] [type="submit"]{width:100% !important;display:block !important;float:none !important;margin:6px 0 0 !important}
+  /* Cart page: keep ancestors overflow-visible so the sticky panes work */
+  body.template-cart #content,body.template-cart main,body.template-cart #root{overflow:visible !important}
   #content form[action*="contact"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
   #content form[action*="contact"] textarea{width:100% !important;background:#fff !important;border:1px solid #d9c6ea !important;border-radius:12px !important;padding:12px 14px !important;font-size:14.5px !important;color:#121212 !important;margin-bottom:12px !important;box-shadow:none !important}
   #content form[action*="contact"] input:focus,#content form[action*="contact"] textarea:focus{border-color:#7A2FA2 !important;box-shadow:0 0 0 3px rgba(122,47,162,.15) !important;outline:none !important}
@@ -385,9 +393,10 @@
     #pgh .pgh-h2{font-size:34px !important}
     .pgh-wrap{padding-left:16px !important;padding-right:16px !important}
     .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 0 !important}
-    .pgh-ic a,.pgx-ic a,.pgc-ic a{width:44px;height:44px}
-    .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:23px !important;height:23px !important}
-    #pgh .pgh-nav{gap:30px !important}
+    .pgh-ic a,.pgx-ic a,.pgc-ic a{width:50px;height:50px}
+    .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:26px !important;height:26px !important}
+    .pgh-nav,.pgx-nav,.pgc-nav,.pgf-nav{gap:32px !important}
+    body.template-page .rte,body.template-page #content>div>div{padding-left:18px !important;padding-right:18px !important;box-sizing:border-box}
     .pg-search{width:34vw !important;min-width:104px;max-width:150px !important;padding:7px 10px !important;gap:6px !important}
     .pg-search input{font-size:12.5px !important}
     .pg-search svg{width:15px !important;height:15px !important}

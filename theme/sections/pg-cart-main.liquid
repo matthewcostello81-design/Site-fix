@@ -53,7 +53,7 @@
   .pgm-price{font-size:16px;font-weight:700;color:#7A2FA2}
   .pgm-del{position:absolute;top:10px;right:12px;border:0;background:none;cursor:pointer;color:#b6a3c6;font-size:15px;padding:4px;line-height:1}
   .pgm-del:hover{color:#7A2FA2}
-  .pgm-sp{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:13px 14px;margin:14px 0;box-shadow:0 12px 30px -24px rgba(74,28,102,.4)}
+  .pgm-sp{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:10px 12px;margin:0 0 8px;box-shadow:0 12px 30px -24px rgba(74,28,102,.4)}
   .pgm-sp-ic{flex:none;width:42px;height:42px;border-radius:50%;background:#f5eefa;display:flex;align-items:center;justify-content:center}
   .pgm-sp-ic svg{width:22px;height:22px;stroke:#7A2FA2;fill:none;stroke-width:1.8}
   .pgm-sp-t{flex:1;min-width:0}
@@ -163,13 +163,6 @@
     </div>
   {%- endfor -%}
 
-  <div class="pgm-sp" data-pgm-sp>
-    <div class="pgm-sp-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></div>
-    <div class="pgm-sp-t"><b>Shipping Protection</b><small>Protect your order against loss or damage in transit</small></div>
-    <span class="pgm-sp-price">$2.99</span>
-    <label class="pgm-sw"><input type="checkbox" aria-label="Add shipping protection"><i></i></label>
-  </div>
-
   {%- assign orb = all_products['pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift'] -%}
   {%- assign orb_in_cart = false -%}
   {%- for item in cart.items -%}{%- if item.product.handle contains 'crystal-ball' -%}{%- assign orb_in_cart = true -%}{%- endif -%}{%- endfor -%}
@@ -186,6 +179,12 @@
   {%- endif -%}
 
   <div class="pgm-sum">
+    <div class="pgm-sp" data-pgm-sp>
+      <div class="pgm-sp-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <div class="pgm-sp-t"><b>Shipping Protection</b><small>Protect your order against loss or damage in transit</small></div>
+      <span class="pgm-sp-price">$2.99</span>
+      <label class="pgm-sw"><input type="checkbox" aria-label="Add shipping protection"><i></i></label>
+    </div>
     <div class="pgm-row"><span>Subtotal ({{ visible_count }} item{% if visible_count != 1 %}s{% endif %}):</span><span>{{ cart.original_total_price | money }}</span></div>
     {%- if total_savings > 0 -%}
       <div class="pgm-row hl"><span>Total Savings:</span><span>-{{ total_savings | money }}</span></div>
