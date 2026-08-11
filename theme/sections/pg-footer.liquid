@@ -55,11 +55,11 @@
       var walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
       var n;
       while ((n = walker.nextNode())){
-        if (/North[\s ]*Cove/i.test(n.nodeValue)){
+        if (/North[\s ]*Cove/i.test(n.nodeValue)){
           n.nodeValue = n.nodeValue
-            .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'Pocketera')
-            .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'Pocketera')
-            .replace(/North[\s ]*Cove/gi, 'Pocketera');
+            .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'Pocketera')
+            .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'Pocketera')
+            .replace(/North[\s ]*Cove/gi, 'Pocketera');
         }
       }
     }
