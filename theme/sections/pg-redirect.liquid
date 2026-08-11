@@ -1,0 +1,13 @@
+{%- comment -%}
+  PG Redirect: assigned via the product.redirect template to products that must
+  not be purchased directly (the $0 free-gift case and the paid case it
+  replaced). Bounces straight to the homepage. Template only exists on the
+  PixelGlow theme, so the live theme is unaffected.
+{%- endcomment -%}
+<script>window.location.replace("{{ routes.root_url }}");</script>
+<noscript><meta http-equiv="refresh" content="0; url={{ routes.root_url }}"></noscript>
+<style>#content{min-height:60vh;background:#fff}</style>
+
+{% schema %}
+{"name": "PG Redirect", "settings": []}
+{% endschema %}
