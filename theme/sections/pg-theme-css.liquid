@@ -56,6 +56,9 @@
   /* Logo PNG has a white box baked in; multiply melts it into the tinted bar */
   .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{mix-blend-mode:multiply}
   #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
+  /* Homepage: top third melts into the same fading purple as the page canvas */
+  #pgh .pgh-head{background:transparent !important;background-color:transparent !important;border-bottom:0 !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important}
+  #pgh .pgh-nav{background:transparent !important;border-bottom:0 !important}
   /* Accordions: outlined dark purple boxes */
   #pgh .pgh-acc{border-top:0 !important}
   #pgh .pgh-acc details{border:1.5px solid #4A1C66 !important;border-bottom:1.5px solid #4A1C66 !important;border-radius:12px;margin-bottom:12px;padding:0 18px;background:rgba(255,255,255,.78)}
@@ -138,6 +141,8 @@
   .pgh-head-in,.pgx-head-in,.pgc-head-in{max-width:none !important;padding-left:40px !important;padding-right:40px !important}
   .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
   .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:27px !important;height:27px !important}
+  /* Person and bag icons: white with a soft purple glow so they read on the tint */
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{stroke:#fff !important;filter:drop-shadow(0 1px 3px rgba(74,28,102,.55))}
   .pgh-cart-n{min-width:18px !important;height:18px !important;line-height:18px !important;font-size:11px !important}
 
   /* Kill the theme's dark button overlay pseudo-elements on all PG buttons */
@@ -172,6 +177,24 @@
   .pg-search-dd b{font-size:13px;color:#7A2FA2;flex:none}
   .pg-search-none{padding:12px;font-size:13px;color:#666}
   @media(max-width:900px){.pg-search{width:150px;padding:8px 12px}.pg-search input{font-size:13px}}
+  /* Search bar: purple theme */
+  .pg-search{border:1.5px solid #7A2FA2 !important;background:rgba(255,255,255,.85) !important;box-shadow:0 10px 24px -16px rgba(122,47,162,.55)}
+  .pg-search:focus-within{border-color:#4A1C66 !important;box-shadow:0 0 0 3px rgba(122,47,162,.18) !important}
+  .pg-search svg{stroke:#7A2FA2 !important}
+  .pg-search input{color:#4A1C66 !important;font-weight:500}
+  .pg-search input::placeholder{color:#9a7ab5}
+  /* "Your order will be shipped for free" status bars: removed per request */
+  .overlay-lime,html .overlay-lime,#cart#cart#cart .overlay-lime,body.template-cart .overlay-lime{display:none !important}
+  /* Contact page: theme styling for the native form */
+  #content form[action*="contact"]{background:rgba(255,255,255,.85);border:1.5px solid #4A1C66;border-radius:16px;padding:26px 22px;max-width:680px;margin:14px auto 60px;box-shadow:0 18px 44px -30px rgba(74,28,102,.55)}
+  #content form[action*="contact"] input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]),
+  #content form[action*="contact"] textarea{width:100% !important;background:#fff !important;border:1px solid #d9c6ea !important;border-radius:12px !important;padding:12px 14px !important;font-size:14.5px !important;color:#121212 !important;margin-bottom:12px !important;box-shadow:none !important}
+  #content form[action*="contact"] input:focus,#content form[action*="contact"] textarea:focus{border-color:#7A2FA2 !important;box-shadow:0 0 0 3px rgba(122,47,162,.15) !important;outline:none !important}
+  #content form[action*="contact"] label{font-size:13px;font-weight:600;color:#4A1C66}
+  #content form[action*="contact"] button,#content form[action*="contact"] [type="submit"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.05em !important;text-transform:uppercase !important;padding:14px 34px !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.6) !important;cursor:pointer}
+  html body #content form[action*="contact"] button::before,html body #content form[action*="contact"] button::after,
+  html body #content form[action*="contact"] [type="submit"]::before,html body #content form[action*="contact"] [type="submit"]::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important}
+  #content .page-title,#content h1.title,body.template-page #content h1{font-family:'Roboto Slab',Georgia,serif !important;color:#4A1C66 !important;text-align:center}
 </style>
 <script>
   (function(){
@@ -301,11 +324,11 @@
   })();
 </script>
 <style>
-  /* 30-day guarantee: beating live dot */
-  @keyframes pgBeatDot{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(46,125,50,.45)}50%{transform:scale(1.28);box-shadow:0 0 0 7px rgba(46,125,50,0)}}
-  @keyframes pgBeatPill{0%,100%{box-shadow:0 0 0 0 rgba(46,125,50,0)}50%{box-shadow:0 10px 26px -14px rgba(46,125,50,.55)}}
-  #pgx .pgx-guar{animation:pgBeatPill 2.4s ease-in-out infinite}
-  #pgx .pgx-guar:before{animation:pgBeatDot 1.6s ease-in-out infinite}
+  /* 30-day guarantee: purple pill with a beating live dot */
+  @keyframes pgBeatDot{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(122,47,162,.45)}50%{transform:scale(1.28);box-shadow:0 0 0 7px rgba(122,47,162,0)}}
+  @keyframes pgBeatPill{0%,100%{box-shadow:0 0 0 0 rgba(122,47,162,0)}50%{box-shadow:0 10px 26px -14px rgba(122,47,162,.55)}}
+  #pgx .pgx-guar{animation:pgBeatPill 2.4s ease-in-out infinite;background:linear-gradient(120deg,#F6EFFB,#EEE0F7) !important;color:#4A1C66 !important;border:1px solid rgba(122,47,162,.3)}
+  #pgx .pgx-guar:before{animation:pgBeatDot 1.6s ease-in-out infinite;background:#7A2FA2 !important}
   /* Bottom sticky buy bar (product pages) */
   #pg-sticky{position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(122,47,162,.22);box-shadow:0 -14px 34px -20px rgba(74,28,102,.45);display:none;padding:10px clamp(14px,4vw,40px)}
   #pg-sticky.on{display:block}
