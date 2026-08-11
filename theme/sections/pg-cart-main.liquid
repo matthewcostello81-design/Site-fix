@@ -9,8 +9,10 @@
 {%- assign sp_handle = 'shipping-protection' -%}
 {%- assign eligible = 0 -%}
 {%- assign compare_savings = 0 -%}
+{%- assign visible_count = 0 -%}
 {%- for item in cart.items -%}
   {%- assign h = item.product.handle -%}
+  {%- unless h contains sp_handle -%}{%- assign visible_count = visible_count | plus: item.quantity -%}{%- endunless -%}
   {%- unless h contains gift_handle or h contains sp_handle -%}
     {%- assign eligible = eligible | plus: item.quantity -%}
     {%- if item.variant.compare_at_price > item.final_price -%}
@@ -100,7 +102,7 @@
     <a href="{{ routes.root_url }}">Continue shopping</a>
   </div>
 {%- else -%}
-  <div class="pgm-h1"><b>Your Cart</b><span>{{ cart.item_count }} item{% if cart.item_count != 1 %}s{% endif %} in cart</span></div>
+  <div class="pgm-h1"><b>Your Cart</b><span>{{ visible_count }} item{% if visible_count != 1 %}s{% endif %} in cart</span></div>
   <div class="pgm-stars"><i>&#9733;&#9733;&#9733;&#9733;&#9733;</i> 10,000+ happy customers</div>
   <div class="pgm-ship">FREE Shipping included</div>
 
@@ -177,7 +179,7 @@
   {%- endif -%}
 
   <div class="pgm-sum">
-    <div class="pgm-row"><span>Subtotal ({{ cart.item_count }} items):</span><span>{{ cart.original_total_price | money }}</span></div>
+    <div class="pgm-row"><span>Subtotal ({{ visible_count }} item{% if visible_count != 1 %}s{% endif %}):</span><span>{{ cart.original_total_price | money }}</span></div>
     {%- if total_savings > 0 -%}
       <div class="pgm-row hl"><span>Total Savings:</span><span>-{{ total_savings | money }}</span></div>
     {%- endif -%}

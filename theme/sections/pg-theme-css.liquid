@@ -42,6 +42,13 @@
 
   /* Premium polish, sitewide */
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  /* Purple gradient canvas on every page (stars float above it) */
+  html,body,body.template-cart,body.template-cart #content,body.template-cart main,#content,main{background:linear-gradient(160deg,#F8F3FD 0%,#EFE2F9 45%,#E2CDF3 100%) !important;background-attachment:fixed !important}
+  #pgh,#pgx,.pgm{background:transparent !important}
+  #pgh .pgh-head,#pgx .pgx-head,.pgc-head{background:rgba(255,255,255,.82) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .pgf-head,.pgf-nav{background:rgba(255,255,255,.82) !important}
+  #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
+  #pgh .pgh-acc details{background:transparent}
   ::selection{background:#7A2FA2;color:#fff}
   button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.05em !important;text-transform:uppercase !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.6) !important}
   button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
@@ -88,6 +95,7 @@
   #pgx .pgx-thumbs button{border-radius:14px}
   #pgx .pgx-quote{border-radius:14px}
   #pgx .pgx-tile{border-radius:14px}
+  #pgx .pgx-tile{background:#fff !important}
   #pgx .pgx-tile.pgx-sel{box-shadow:0 14px 34px -24px rgba(122,47,162,.55)}
   /* Review carousel next: purple circle, white arrow */
   #pgx .pgx-quote-next{width:44px !important;height:44px !important;min-width:44px !important;min-height:0 !important;flex:none !important;border-radius:50% !important;background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;color:#fff !important;border:none !important;font-size:24px !important;line-height:1 !important;padding:0 0 3px !important;margin-left:auto !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 10px 22px -10px rgba(122,47,162,.6) !important;animation:none !important;text-transform:none !important}
