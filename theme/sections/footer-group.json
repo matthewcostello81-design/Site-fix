@@ -68,11 +68,16 @@
     "nc_chatfix": {
       "type": "nc-chatfix",
       "settings": {}
+    },
+    "pg_theme": {
+      "type": "pg-theme-css",
+      "settings": {}
     }
   },
   "order": [
     "footer",
     "nc_contactcard",
-    "nc_chatfix"
+    "nc_chatfix",
+    "pg_theme"
   ]
 }

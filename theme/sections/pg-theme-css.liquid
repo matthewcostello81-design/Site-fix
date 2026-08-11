@@ -1,0 +1,66 @@
+{%- comment -%}
+  PG Theme CSS: sitewide Pocketera purple/black overrides.
+  Rendered from footer-group so it loads on every page. Paints the footer in the
+  logo purple and swaps visible "North Cove" text in the footer to "Pocketera"
+  (shop.name itself is untouched so live-site invoicing/emails are unaffected).
+{%- endcomment -%}
+<style>
+  #shopify-section-footer#shopify-section-footer,
+  .shopify-section[id$="__footer"].shopify-section[id$="__footer"]{
+    background:#7A2FA2 !important;background-color:#7A2FA2 !important;
+  }
+  #shopify-section-footer#shopify-section-footer [class*="palette-"],
+  #shopify-section-footer#shopify-section-footer .module-color-palette,
+  .shopify-section[id$="__footer"] [class*="palette-"],
+  .shopify-section[id$="__footer"] .module-color-palette{
+    background:transparent !important;background-color:transparent !important;
+  }
+  #shopify-section-footer#shopify-section-footer h1,
+  #shopify-section-footer#shopify-section-footer h2,
+  #shopify-section-footer#shopify-section-footer h3,
+  #shopify-section-footer#shopify-section-footer h4,
+  #shopify-section-footer#shopify-section-footer h5,
+  #shopify-section-footer#shopify-section-footer p,
+  #shopify-section-footer#shopify-section-footer li,
+  #shopify-section-footer#shopify-section-footer span,
+  #shopify-section-footer#shopify-section-footer label,
+  #shopify-section-footer#shopify-section-footer strong,
+  #shopify-section-footer#shopify-section-footer div{color:#fff}
+  #shopify-section-footer#shopify-section-footer a{color:#EBDCF6}
+  #shopify-section-footer#shopify-section-footer a:hover{color:#fff}
+  #shopify-section-footer#shopify-section-footer .nc-foot-h{color:#fff !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#EBDCF6 !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#fff !important}
+  #shopify-section-footer#shopify-section-footer input[type="email"],
+  #shopify-section-footer#shopify-section-footer input[type="text"]{
+    background:#fff !important;background-color:#fff !important;color:#1c1c1c !important;border-color:#4A1C66 !important;
+  }
+  #shopify-section-footer#shopify-section-footer button,
+  #shopify-section-footer#shopify-section-footer [class*="button"]{
+    background:#121212 !important;background-color:#121212 !important;color:#fff !important;border-color:#121212 !important;
+  }
+</style>
+<script>
+  (function(){
+    if (window.pgxBrandFix) return; window.pgxBrandFix = 1;
+    function fix(){
+      var f = document.getElementById('shopify-section-footer') || document.querySelector('.shopify-section[id$="__footer"]');
+      if (!f) return;
+      var w = document.createTreeWalker(f, NodeFilter.SHOW_TEXT);
+      var n;
+      while ((n = w.nextNode())){
+        if (/North Cove/i.test(n.nodeValue)){
+          n.nodeValue = n.nodeValue
+            .replace(/North Cove Wellness LLC/gi, 'Pocketera')
+            .replace(/North Cove Wellness/gi, 'Pocketera')
+            .replace(/North Cove/gi, 'Pocketera');
+        }
+      }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix); else fix();
+    setTimeout(fix, 800);
+  })();
+</script>
+{% schema %}
+{"name": "PG Theme CSS", "settings": []}
+{% endschema %}
