@@ -128,7 +128,9 @@
       <img src="{{ item.image | image_url: width: 164 }}" alt="{{ item.product.title | escape }}">
       <div class="pgm-mid">
         <a class="pgm-t" href="{% if is_gift %}#{% else %}{{ item.url }}{% endif %}">{{ item.product.title }}</a>
-        {%- unless is_gift or item.variant_title == blank -%}<div class="pgm-v">{{ item.variant_title }}</div>{%- endunless -%}
+        {%- unless is_gift or item.product.has_only_default_variant -%}
+          <div class="pgm-v">{%- for opt in item.options_with_values -%}{{ opt.value }}{%- unless forloop.last %} / {% endunless -%}{%- endfor -%}</div>
+        {%- endunless -%}
         {%- if is_gift -%}
           <span class="pgm-badge">Free Gift</span>
         {%- else -%}
