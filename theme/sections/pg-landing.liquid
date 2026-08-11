@@ -34,7 +34,7 @@
   .pgx-head-in{max-width:1280px;margin:0 auto;padding:18px 24px 10px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
   .pgx-head svg{width:22px;height:22px;stroke:#121212;fill:none;stroke-width:1.6}
   .pgx-logo{justify-self:center;text-align:center}
-  .pgx-logo img{max-height:74px;width:auto;margin:0 auto}
+  .pgx-logo img{max-height:120px;width:auto;margin:0 auto}
   .pgx-logo-text{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:42px;line-height:1}
   .pgx-ic{display:flex;gap:18px;justify-self:end;align-items:center}
   .pgx-cart{position:relative}
@@ -141,7 +141,7 @@
     .pgx-title{font-size:34px}
     .pgx-nav{gap:20px;padding-top:8px}
     .pgx-logo-text{font-size:34px}
-    .pgx-logo img{max-height:56px}
+    .pgx-logo img{max-height:84px}
     .pgx-head-in{padding:14px 16px 6px}
     .pgx-thumbs{grid-template-columns:1fr 1fr;gap:10px}
     .pgx-rev-head{gap:22px}
@@ -168,7 +168,7 @@
       </a>
       <a class="pgx-logo" href="{{ routes.root_url }}" aria-label="Home">
         {%- if section.settings.logo_image -%}
-          <img src="{{ section.settings.logo_image | image_url: width: 300 }}" alt="{{ shop.name }}">
+          <img src="{{ section.settings.logo_image | image_url: width: 600 }}" alt="{{ shop.name }}">
         {%- else -%}
           <span class="pgx-logo-text">{{ section.settings.logo_text }}</span>
         {%- endif -%}
