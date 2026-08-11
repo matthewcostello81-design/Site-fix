@@ -79,7 +79,8 @@
   .pgm-rec-add{flex:none;background:#fff;color:#7A2FA2;border:1.5px solid #7A2FA2;border-radius:999px;font-size:13px;font-weight:700;letter-spacing:.05em;padding:10px 24px;cursor:pointer;font-family:inherit;transition:all .15s ease}
   .pgm-rec-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2);color:#fff}
   .pgm-rec-add[disabled]{opacity:.55;cursor:default}
-  .pgm-sum{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:760px;z-index:60;background:#FBF7FE;border:1px solid #e6dcf0;border-bottom:0;border-radius:16px 16px 0 0;padding:12px 12px 14px;box-shadow:0 -16px 34px -20px rgba(74,28,102,.5)}
+  .pgm-sum{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:760px;z-index:60;background:#FBF7FE;border:1px solid #e6dcf0;border-bottom:0;border-radius:16px 16px 0 0;padding:12px 12px 14px;box-shadow:0 -16px 34px -20px rgba(74,28,102,.5);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:#121212}
+  .pgm-sum,.pgm-sum *{box-sizing:border-box}
   .pgm-row{display:flex;justify-content:space-between;font-size:14px;padding:7px 10px;border-radius:9px}
   .pgm-row.hl{background:linear-gradient(120deg,#F6EFFB,#EEE0F7);color:#4A1C66;font-weight:700;margin-top:6px}
   .pgm-row.tot{font-size:18px;font-weight:700;padding-top:14px}
@@ -242,6 +243,10 @@
     var s = document.querySelector('.pgm-sum'), w = document.getElementById('pgm');
     if (s && w) w.style.paddingBottom = (s.offsetHeight + 18) + 'px';
   }
+  /* position:fixed anchors to any transformed ancestor, so the pane is
+     re-homed onto <body> to guarantee it pins to the viewport bottom. */
+  var pgmSum = document.querySelector('.pgm-sum');
+  if (pgmSum && pgmSum.parentElement !== document.body) document.body.appendChild(pgmSum);
   if (document.readyState !== 'loading') restyle(); else document.addEventListener('DOMContentLoaded', restyle);
   setTimeout(restyle, 500);
   window.addEventListener('resize', padSum);
