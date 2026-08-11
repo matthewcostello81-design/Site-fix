@@ -329,6 +329,13 @@
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
     setTimeout(head, 600);
   })();
+  (function pgFav() {
+    var u = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/Gemini_Generated_Image_utaycgutaycgutay.png?width=128';
+    document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(function (l) { l.parentNode.removeChild(l); });
+    var l = document.createElement('link');
+    l.rel = 'icon'; l.type = 'image/png'; l.href = u;
+    document.head.appendChild(l);
+  })();
 </script>
 {% schema %}
 {"name": "PG Theme CSS", "settings": []}
