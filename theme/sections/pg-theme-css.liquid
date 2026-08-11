@@ -58,7 +58,7 @@
   #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
   /* Homepage: top third melts into the same fading purple as the page canvas */
   #pgh .pgh-head{background:transparent !important;background-color:transparent !important;border-bottom:0 !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;box-shadow:none !important}
-  #pgh .pgh-nav{background:transparent !important;border-bottom:0 !important}
+  #pgh .pgh-nav{background:transparent !important;border-bottom:0 !important;gap:58px !important}
   /* Accordions: outlined dark purple boxes */
   #pgh .pgh-acc{border-top:0 !important}
   #pgh .pgh-acc details{border:1.5px solid #4A1C66 !important;border-bottom:1.5px solid #4A1C66 !important;border-radius:12px;margin-bottom:12px;padding:0 18px;background:rgba(255,255,255,.78)}
@@ -114,9 +114,8 @@
     #pgh .pgh-grid .pgh-card{width:calc(50% - 11px)}
   }
   .pgx-announce,.pgc-announce{text-transform:uppercase;letter-spacing:.08em;font-size:12px !important;font-weight:600}
-  /* Announcement bar: animated purple gradient sweeping in from both sides */
-  @keyframes pgAnnounceSweep{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#4A1C66 0%,#7A2FA2 20%,#9B4BC4 50%,#7A2FA2 80%,#4A1C66 100%) !important;background-size:220% 100% !important;animation:pgAnnounceSweep 7s ease-in-out infinite}
+  /* Announcement bar: rotating messages on a light-to-dark purple fade */
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#B478E0 0%,#9B4BC4 32%,#7A2FA2 64%,#4A1C66 100%) !important;background-size:100% 100% !important;animation:none !important;color:#fff !important;transition:opacity .35s ease}
   #pgx .pgx-hero{border-radius:16px}
   #pgx .pgx-thumbs button{border-radius:14px}
   #pgx .pgx-quote{border-radius:14px}
@@ -140,10 +139,10 @@
   /* Header: full-width bar, larger search + icons pushed to the edges */
   .pgh-head-in,.pgx-head-in,.pgc-head-in{max-width:none !important;padding-left:40px !important;padding-right:40px !important}
   .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
-  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:34px !important;height:34px !important}
-  /* Person and bag icons: plain solid white, bolder stroke */
-  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{stroke:#fff !important;stroke-width:2.2 !important;fill:none !important;filter:none !important;opacity:1 !important}
-  .pgh-cart-n{min-width:18px !important;height:18px !important;line-height:18px !important;font-size:11px !important}
+  /* Person and bag icons: white on purple gradient circles so they always read */
+  .pgh-ic a,.pgx-ic a,.pgc-ic a{width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#9B4BC4,#7A2FA2 60%,#4A1C66);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px -12px rgba(74,28,102,.65)}
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:23px !important;height:23px !important;stroke:#fff !important;stroke-width:1.9 !important;fill:none !important;filter:none !important;opacity:1 !important}
+  .pgh-cart-n{background:#fff !important;color:#4A1C66 !important;border:1.5px solid #7A2FA2;min-width:18px !important;height:18px !important;line-height:15px !important;font-size:11px !important;font-weight:700}
 
   /* Kill the theme's dark button overlay pseudo-elements on all PG buttons */
   html body .pgh-atc::before,html body .pgh-atc::after,
@@ -177,10 +176,10 @@
   .pg-search-dd b{font-size:13px;color:#7A2FA2;flex:none}
   .pg-search-none{padding:12px;font-size:13px;color:#666}
   @media(max-width:900px){.pg-search{width:150px;padding:8px 12px}.pg-search input{font-size:13px}}
-  /* Search bar: purple theme */
-  .pg-search{border:1.5px solid #7A2FA2 !important;background:rgba(255,255,255,.85) !important;box-shadow:0 10px 24px -16px rgba(122,47,162,.55)}
-  .pg-search:focus-within{border-color:#4A1C66 !important;box-shadow:0 0 0 3px rgba(122,47,162,.18) !important}
-  .pg-search svg{stroke:#7A2FA2 !important}
+  /* Search bar: soft, seamless purple theme with a small icon */
+  .pg-search{border:1px solid rgba(122,47,162,.35) !important;background:rgba(255,255,255,.6) !important;box-shadow:none !important}
+  .pg-search:focus-within{border-color:#7A2FA2 !important;background:rgba(255,255,255,.9) !important;box-shadow:0 0 0 3px rgba(122,47,162,.14) !important}
+  .pg-search svg{width:16px !important;height:16px !important;stroke:#9a7ab5 !important;stroke-width:1.7 !important}
   .pg-search input{color:#4A1C66 !important;font-weight:500}
   .pg-search input::placeholder{color:#9a7ab5}
   /* Dynamic savings-tier progress bar: removed per request */
@@ -375,7 +374,9 @@
     .pgh-h2{font-size:26px !important}
     .pgh-wrap{padding-left:16px !important;padding-right:16px !important}
     .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 10px !important}
-    .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:28px !important;height:28px !important}
+    .pgh-ic a,.pgx-ic a,.pgc-ic a{width:38px;height:38px}
+    .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:19px !important;height:19px !important}
+    #pgh .pgh-nav{gap:30px !important}
     .pg-search{width:34vw !important;min-width:104px;max-width:150px !important;padding:7px 10px !important;gap:6px !important}
     .pg-search input{font-size:12.5px !important}
     .pg-search svg{width:15px !important;height:15px !important}
@@ -475,6 +476,18 @@
     }
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',gal);else gal();
     setTimeout(gal,1000);
+    /* Announcement bar: rotate through a few messages with a soft fade */
+    var MSGS=['Free shipping on all orders','30-day money back guarantee','Free R36S case included with every order','15,000+ classic games preloaded'];
+    var ai=0;
+    setInterval(function(){
+      var els=document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce');
+      if(!els.length)return;
+      ai=(ai+1)%MSGS.length;
+      els.forEach(function(el){
+        el.style.opacity='0';
+        setTimeout(function(){ el.textContent=MSGS[ai]; el.style.opacity='1'; },360);
+      });
+    },4500);
   })();
 </script>
 {% schema %}
