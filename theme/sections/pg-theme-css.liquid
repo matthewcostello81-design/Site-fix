@@ -4,7 +4,11 @@
   logo purple and swaps visible "North Cove" text in the footer to "Pocketera"
   (shop.name itself is untouched so live-site invoicing/emails are unaffected).
 {%- endcomment -%}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700&display=swap" rel="stylesheet">
 <style>
+  /* Nav links: bigger, bolder, slab font */
+  .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{font-family:'Roboto Slab',Georgia,serif !important;font-size:17.5px !important;font-weight:700 !important;color:#4A1C66 !important;letter-spacing:.01em !important}
+  .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#7A2FA2 !important}
   #shopify-section-footer#shopify-section-footer,
   .shopify-section[id$="__footer"].shopify-section[id$="__footer"]{
     background:#7A2FA2 !important;background-color:#7A2FA2 !important;
@@ -45,10 +49,16 @@
   /* Purple gradient canvas on every page (stars float above it) */
   html,body,body.template-cart,body.template-cart #content,body.template-cart main,#content,main{background:linear-gradient(160deg,#F8F3FD 0%,#EFE2F9 45%,#E2CDF3 100%) !important;background-attachment:fixed !important}
   #pgh,#pgx,.pgm{background:transparent !important}
-  #pgh .pgh-head,#pgx .pgx-head,.pgc-head{background:rgba(255,255,255,.82) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-  .pgf-head,.pgf-nav{background:rgba(255,255,255,.82) !important}
+  #pgh .pgh-head,#pgx .pgx-head,.pgc-head{background:rgba(243,233,251,.88) !important;border-bottom:1px solid rgba(122,47,162,.16) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .pgf-head,.pgf-nav{background:rgba(243,233,251,.88) !important;border-bottom-color:rgba(122,47,162,.16) !important}
+  /* Logo PNG has a white box baked in; multiply melts it into the tinted bar */
+  .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{mix-blend-mode:multiply}
   #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
-  #pgh .pgh-acc details{background:transparent}
+  /* Accordions: outlined dark purple boxes */
+  #pgh .pgh-acc{border-top:0 !important}
+  #pgh .pgh-acc details{border:1.5px solid #4A1C66 !important;border-bottom:1.5px solid #4A1C66 !important;border-radius:12px;margin-bottom:12px;padding:0 18px;background:rgba(255,255,255,.78)}
+  #pgh .pgh-acc details[open]{box-shadow:0 12px 28px -20px rgba(74,28,102,.5)}
+  #pgh .pgh-acc summary{padding:18px 2px}
   ::selection{background:#7A2FA2;color:#fff}
   button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.05em !important;text-transform:uppercase !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.6) !important}
   button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
