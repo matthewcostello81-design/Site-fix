@@ -1,0 +1,52 @@
+{%- comment -%}
+  PG Mobile: mobile-only polish for the dark PocketEra skin. Loads last from
+  footer-group so it wins every tie. Keep ALL mobile-specific fixes here.
+{%- endcomment -%}
+<style>
+@media(max-width:900px){
+  /* iOS ignores background-attachment:fixed and repaints badly; scroll + a
+     solid dark html behind everything keeps overscroll areas black */
+  html{background:#0B0710 !important}
+  html,body,#content,main,
+  body.template-cart,body.template-cart #content,body.template-cart main{background-attachment:scroll !important}
+  html,body{overflow-x:hidden !important;max-width:100vw}
+}
+@media(max-width:560px){
+  /* 16px inputs stop iOS Safari from zooming the page on focus */
+  .pg-search input,
+  #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+  #content form[action*='contact'] textarea,
+  #shopify-section-footer input[type='email'],
+  #shopify-section-footer input[type='text']{font-size:16px !important}
+
+  /* comfortable thumb targets in the cart */
+  .pgm-qty button{width:36px !important;height:34px !important;font-size:18px !important}
+  .pgm-qty span{min-width:32px !important;font-size:14.5px !important}
+  .pgm-del{padding:8px !important;font-size:16px !important}
+  .pgm-vsel{padding:8px 30px 8px 13px !important;font-size:13px !important;max-width:150px !important}
+  .pgm-rec-add{padding:11px 18px !important}
+  .pgm-co{padding:16px 20px !important}
+
+  /* homepage cards: tight, even gutters */
+  .pgh-wrap{padding-left:14px !important;padding-right:14px !important}
+  #pgh .pgh-atc{width:calc(100% - 24px) !important;margin:6px 12px 14px !important;padding:13px 16px !important}
+  #pgh .pgh-card-t{font-size:15.5px !important;margin:11px 0 5px !important}
+  #pgh .pgh-card-p{font-size:15px !important}
+
+  /* header: keep logo, search and icons on one tidy line */
+  .pgh-head-in,.pgx-head-in,.pgc-head-in{padding-left:14px !important;padding-right:14px !important}
+  .pgh-ic,.pgx-ic,.pgc-ic{gap:14px !important}
+
+  /* product page: gallery dots and buy bar clear of the thumb */
+  #pg-sticky{padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important}
+  .pgm-sum{padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important}
+
+  /* footer: stack cleanly */
+  #shopify-section-footer .nc-foot-links{gap:22px 34px !important}
+  #shopify-section-footer button,#shopify-section-footer [class*='button']{width:100% !important;margin-top:8px !important}
+}
+</style>
+
+{% schema %}
+{"name": "PG Mobile", "settings": []}
+{% endschema %}

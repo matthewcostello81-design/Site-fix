@@ -1,0 +1,63 @@
+{%- comment -%}
+  PG Dark ATC + copy: the base theme paints a black ::before over any <button>, which on
+  the dark skin swallowed the purple Add to Cart. Kill the overlay and restate the fill.
+  Also lifts product description copy off the black on every product page.
+{%- endcomment -%}
+<style>
+html body #pgx .pgx-atc::before,html body #pgx .pgx-atc::after,
+html body .pgx-atc::before,html body .pgx-atc::after,
+html body #pgx-atc::before,html body #pgx-atc::after{
+  display:none !important; content:none !important;
+  background:none !important; animation:none !important; opacity:0 !important;
+}
+html body #pgx .pgx-atc,html body #pgx-atc{
+  position:relative !important;
+  background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 55%,#5E2380 100%) !important;
+  background-color:#8B44BE !important;
+  background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 55%,#5E2380 100%) !important;
+  color:#FFFFFF !important;
+  border:0 !important;
+  box-shadow:0 16px 34px -14px rgba(139,68,190,.65) !important;
+}
+html body #pgx .pgx-atc:hover,html body #pgx-atc:hover{
+  background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;
+  background-color:#5E2380 !important;
+}
+html body #pgx .pgx-atc span,html body #pgx-atc span{color:#FFFFFF !important;position:relative;z-index:2}
+
+/* home card sale badge was a white pill; near invisible on black */
+#pgh .pgh-badge{background:#8B44BE !important;color:#FFFFFF !important;border:0 !important}
+
+/* ---------- product description copy ----------
+   Body copy renders at rgb(51,51,51), which is unreadable on the dark canvas.
+   Covers the PDP accordion body and any Shopify rich text block sitewide. */
+html body #pgx .pgx-acc-body,
+html body #pgx .pgx-acc-body *,
+html body #pgx .pgx-acc details div,
+html body #pgx .pgx-acc details p,
+html body #pgx .pgx-acc details span,
+html body #pgx .pgx-acc details li,
+html body #content .rte,
+html body #content .rte *,
+html body #content .product-description,
+html body #content .product-description *{
+  color:#F1EDF7 !important;
+}
+html body #pgx .pgx-acc-body strong,html body #pgx .pgx-acc-body b,
+html body #pgx .pgx-acc-body h1,html body #pgx .pgx-acc-body h2,
+html body #pgx .pgx-acc-body h3,html body #pgx .pgx-acc-body h4,
+html body #content .rte strong,html body #content .rte b,
+html body #content .rte h1,html body #content .rte h2,
+html body #content .rte h3,html body #content .rte h4{
+  color:#FFFFFF !important;
+}
+html body #pgx .pgx-acc-body a,html body #content .rte a{color:#C79BEA !important}
+html body #pgx .pgx-acc-body hr,html body #content .rte hr{border-color:rgba(255,255,255,.12) !important}
+html body #pgx .pgx-acc-body table,html body #pgx .pgx-acc-body td,html body #pgx .pgx-acc-body th{
+  border-color:rgba(255,255,255,.12) !important;color:#F1EDF7 !important;
+}
+</style>
+
+{% schema %}
+{"name": "PG Dark ATC", "settings": []}
+{% endschema %}

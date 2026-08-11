@@ -72,12 +72,27 @@
     "pg_theme": {
       "type": "pg-theme-css",
       "settings": {}
+    },
+    "pg_dark": {
+      "type": "pg-dark",
+      "settings": {}
+    },
+    "pg_dark_atc": {
+      "type": "pg-dark-atc",
+      "settings": {}
+    },
+    "pg_mobile": {
+      "type": "pg-mobile",
+      "settings": {}
     }
   },
   "order": [
     "footer",
     "nc_contactcard",
     "nc_chatfix",
-    "pg_theme"
+    "pg_theme",
+    "pg_dark",
+    "pg_dark_atc",
+    "pg_mobile"
   ]
 }

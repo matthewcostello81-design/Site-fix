@@ -1,0 +1,196 @@
+{%- comment -%}
+  PG Dark: sitewide black and purple skin. Loads from footer-group AFTER pg-theme-css
+  so it wins ties. Restrained by design: near black surfaces, one purple accent used
+  only for CTA, active state, price and links. Remove pg_dark from footer-group order
+  to revert everything in a single edit.
+{%- endcomment -%}
+<style>
+:root{
+  --pgd-bg:#0B0710; --pgd-bg2:#140C1E;
+  --pgd-surf:#16101F; --pgd-surf2:#1C1428; --pgd-sink:#0F0A16;
+  --pgd-line:rgba(255,255,255,.09); --pgd-lineP:rgba(168,120,214,.24);
+  --pgd-text:#F1EDF7; --pgd-mute:#A296B4;
+  --pgd-p:#8B44BE; --pgd-plt:#C79BEA; --pgd-pdk:#4A1C66;
+}
+
+/* ---------- canvas ---------- */
+html,body,#content,main,
+body.template-cart,body.template-cart #content,body.template-cart main{
+  background:linear-gradient(180deg,#0B0710 0%,#140C1E 52%,#0B0710 100%) !important;
+  background-attachment:fixed !important;
+  color:#F1EDF7 !important;
+}
+#root{background:transparent !important;background-color:transparent !important}
+#pgh,#pgx,#pgc,.pgm{background:transparent !important}
+
+/* ---------- type ---------- */
+#content,#pgh,#pgx,#pgc,.pgm,.pgu-yml{color:#F1EDF7}
+#content h1,#content h2,#content h3,#content h4,#content h5,
+#pgx h1,#pgx h2,#pgx h3,#pgh h2,#pgh h3,#pgc h1,#pgc h2{color:#F5F1FA !important}
+#pgh p,#pgx p,#pgc p,#pgh li,#pgx li{color:#C1B4D2}
+#content .page-title,#content h1.title,body.template-page #content h1{color:#F1EDF7 !important}
+
+/* ---------- header, nav, logo ---------- */
+#pgx .pgx-head,.pgc-head,.pgf-head,.pgf-nav{
+  background:rgba(11,7,16,.90) !important;
+  border-bottom:1px solid rgba(168,120,214,.16) !important;
+}
+.pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{color:#E4D9F0 !important}
+.pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#C79BEA !important}
+#pgh .pgh-trust{background:rgba(255,255,255,.04) !important;border-color:rgba(168,120,214,.18) !important;color:#C1B4D2 !important}
+/* logo art is dark on a baked in white box; invert it and screen the box away */
+.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{
+  mix-blend-mode:screen !important;
+  filter:invert(1) hue-rotate(180deg) saturate(1.2) brightness(1.18) !important;
+}
+.pgh-cart-n{background:#C79BEA !important;color:#1A0B28 !important;border-color:#8B44BE !important}
+/* person and bag glyphs: light strokes so they read on the black header */
+.pgh-ic svg,.pgx-ic svg,.pgc-ic svg{stroke:#EFE8F7 !important}
+.pgh-ic a:hover svg,.pgx-ic a:hover svg,.pgc-ic a:hover svg{stroke:#C79BEA !important}
+
+/* ---------- announcement ---------- */
+.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{
+  background:linear-gradient(90deg,#26103A 0%,#4A1C66 50%,#26103A 100%) !important;
+  color:#EADCF7 !important;
+  border-bottom:1px solid rgba(168,120,214,.18) !important;
+}
+
+/* ---------- PDP surfaces ---------- */
+#pgx .pgx-tile{background:#16101F !important;border-color:rgba(255,255,255,.10) !important;color:#F1EDF7 !important}
+#pgx .pgx-tile.pgx-sel{
+  background:#1C1428 !important;border-color:#8B44BE !important;
+  box-shadow:0 0 0 3px rgba(139,68,190,.18),0 12px 30px -20px rgba(139,68,190,.55) !important;
+}
+#pgx .pgx-info{
+  background:linear-gradient(180deg,#16101F,#110B19) !important;
+  border-color:rgba(168,120,214,.24) !important;
+  box-shadow:0 0 0 1px rgba(168,120,214,.10),0 18px 44px -30px rgba(0,0,0,.85) !important;
+}
+/* info row labels and values both need lifting off the black */
+#pgx .pgx-info,#pgx .pgx-info div,#pgx .pgx-info p,#pgx .pgx-info span,#pgx .pgx-info small{color:#D3C9E4 !important}
+#pgx .pgx-info b,#pgx .pgx-info strong{color:#F1EDF7 !important}
+#pgx .pgx-info-ic{background:rgba(139,68,190,.18) !important;box-shadow:0 0 14px rgba(139,68,190,.28) !important}
+#pgx .pgx-guar{background:#16101F !important;color:#DFD6EC !important;border-color:rgba(168,120,214,.30) !important}
+#pgx .pgx-card,#pgx .pgx-quote{background:#16101F !important;border-color:rgba(255,255,255,.09) !important}
+#pgx .pgx-quote p,#pgx .pgx-quote span,#pgx .pgx-quote div{color:#D6CCE6 !important}
+#pgx .pgx-quote strong,#pgx .pgx-quote b{color:#F1EDF7 !important}
+#pgx .pgx-thumbs button{border-color:rgba(255,255,255,.12) !important;background:#16101F !important}
+#pgh .pgh-acc details,#pgx .pgx-acc details{
+  background:rgba(255,255,255,.035) !important;
+  border-color:rgba(168,120,214,.24) !important;
+  color:#E4DCF0 !important;
+}
+#pgh .pgh-acc summary,#pgx .pgx-acc summary{color:#F1EDF7 !important}
+
+/* storage select on dark.
+   NOTE: background-image is deliberately NOT set here. nc-pgx-style already paints
+   the chevron; overriding only the image here produced a tiled artifact. */
+html body .pgx-tile-opts .pgx-opt select,
+html body .pgx-opt.has-select select,
+html body .pgx-tile .pgx-opt select{
+  background-color:#0F0A16 !important;
+  background-repeat:no-repeat !important;
+  background-position:right 10px center !important;
+  background-size:11px 7px !important;
+  color:#EFE8F7 !important;
+  border-color:#8B44BE !important;
+  box-shadow:0 0 0 3px rgba(139,68,190,.16),0 2px 9px rgba(0,0,0,.55) !important;
+}
+html body .pgx-tile-opts .pgx-opt select option,
+html body .pgx-opt.has-select select option{background:#16101F !important;color:#EFE8F7 !important}
+
+/* ---------- home cards ---------- */
+#pgh .pgh-card{background:#16101F !important;border-color:rgba(255,255,255,.08) !important}
+#pgh .pgh-card-t{color:#F1EDF7 !important}
+#pgh .pgh-card-p{color:#C1B4D2 !important}
+#pgh .pgh-atc{background:#1C1428 !important;color:#EFE8F7 !important;border-color:rgba(255,255,255,.16) !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.7) !important}
+#pgh .pgh-atc:hover{background:#8B44BE !important;background-color:#8B44BE !important;border-color:#8B44BE !important;color:#fff !important}
+#pgh .pgh-split-l{background:#16101F !important;color:#F1EDF7 !important}
+
+/* ---------- search ---------- */
+.pg-search{background:rgba(255,255,255,.05) !important;border-color:rgba(168,120,214,.26) !important}
+.pg-search:focus-within{background:rgba(255,255,255,.09) !important;border-color:#8B44BE !important;box-shadow:0 0 0 3px rgba(139,68,190,.16) !important}
+.pg-search input{color:#EFE8F7 !important}
+.pg-search input::placeholder{color:#9384A8 !important}
+.pg-search svg{stroke:#9384A8 !important}
+.pg-search-dd{background:#16101F !important;border-color:rgba(168,120,214,.22) !important;box-shadow:0 24px 54px -24px rgba(0,0,0,.9) !important}
+.pg-search-dd a{color:#EFE8F7 !important}
+.pg-search-dd a:hover{background:rgba(139,68,190,.16) !important}
+.pg-search-dd b{color:#C79BEA !important}
+.pg-search-none{color:#9384A8 !important}
+
+/* ---------- you may also like ---------- */
+.pgu-yml h3{color:#F1EDF7 !important}
+.pgu-yml-eye{color:#C79BEA !important}
+.pgu-yml-grid a{background:#16101F !important;box-shadow:0 14px 34px -24px rgba(0,0,0,.95) !important}
+.pgu-yml-grid .t{color:#EFE8F7 !important}
+.pgu-yml-grid .p{color:#C79BEA !important}
+.pgu-yml-grid .p s{color:#8A7C9C !important}
+.pgu-card{background:#16101F !important;box-shadow:0 16px 38px -28px rgba(0,0,0,.9) !important}
+
+/* ---------- sticky buy bar ---------- */
+#pg-sticky{background:rgba(11,7,16,.96) !important;border-top-color:rgba(168,120,214,.22) !important}
+.pgst-t{color:#F1EDF7 !important}
+.pgst-p{color:#C79BEA !important}
+.pgst-p s{color:#8A7C9C !important}
+
+/* ---------- cart ---------- */
+#cart,#cart .pgm,body.template-cart #content,.pgm-card,.pgm-panel{background:#0F0A16 !important;color:#EFE8F7 !important}
+#cart a,.pgm a{color:#C79BEA !important}
+.pgm-card,.pgm-panel{border-color:rgba(255,255,255,.09) !important}
+
+/* ---------- footer ---------- */
+#shopify-section-footer#shopify-section-footer,
+.shopify-section[id$='__footer'].shopify-section[id$='__footer']{
+  background:#0E0914 !important;background-color:#0E0914 !important;
+  border-top:1px solid rgba(168,120,214,.20) !important;
+}
+#shopify-section-footer#shopify-section-footer a{color:#C6B6DA !important}
+#shopify-section-footer#shopify-section-footer a:hover{color:#EFE4FB !important}
+#shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#C6B6DA !important}
+#shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#EFE4FB !important}
+#shopify-section-footer#shopify-section-footer input[type='email'],
+#shopify-section-footer#shopify-section-footer input[type='text']{
+  background:#16101F !important;background-color:#16101F !important;
+  color:#EFE8F7 !important;border-color:rgba(168,120,214,.28) !important;
+}
+#shopify-section-footer#shopify-section-footer button,
+#shopify-section-footer#shopify-section-footer [class*='button']{
+  background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
+  background-color:#8B44BE !important;border-color:transparent !important;color:#fff !important;
+}
+
+/* ---------- side stars: keep, but stop them twinkling ---------- */
+.pgf-stars i{animation:none !important;opacity:.13 !important;filter:none !important;background:#8B6BB0 !important}
+
+/* ---------- cookie banner ---------- */
+#shopify-pc__banner,#shopify-pc__banner .shopify-pc__banner__dialog{
+  background:#120B1A !important;background-image:none !important;
+  color:#E4DCF0 !important;border-top-color:rgba(168,120,214,.25) !important;
+}
+#shopify-pc__banner p,#shopify-pc__banner span{color:#C9BFD6 !important}
+#shopify-pc__banner a{color:#C79BEA !important}
+#shopify-pc__banner button[id*='decline'],#shopify-pc__banner .shopify-pc__banner__btn-decline{
+  background:transparent !important;color:#C79BEA !important;border-color:rgba(168,120,214,.45) !important;
+}
+
+/* ---------- contact form ---------- */
+#content form[action*='contact']{background:#16101F !important;border-color:rgba(168,120,214,.26) !important;box-shadow:0 18px 44px -30px rgba(0,0,0,.9) !important}
+#content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+#content form[action*='contact'] textarea{
+  background:#0F0A16 !important;border-color:rgba(168,120,214,.24) !important;color:#EFE8F7 !important;
+}
+#content form[action*='contact'] label{color:#C6B6DA !important}
+
+/* ---------- misc ---------- */
+::selection{background:#8B44BE;color:#fff}
+hr{border-color:rgba(255,255,255,.10) !important}
+
+@media(max-width:760px){
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#26103A,#4A1C66) !important}
+}
+</style>
+
+{% schema %}
+{"name": "PG Dark", "settings": []}
+{% endschema %}
