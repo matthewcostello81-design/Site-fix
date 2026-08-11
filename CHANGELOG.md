@@ -1,3 +1,52 @@
+# PixelGlow Site Build: one-page R36S landing (Sleek Mood style)
+
+## Scope
+Theme "PixelGlow Site Build" (unpublished draft, id 162692006116) on North Cove
+Wellness. The homepage is now a single product landing page for the R36S
+handheld console (handle `handheld-game-console`), rebuilt from the owner's
+Sleek Mood store screenshots. Policies and contact links remain in the footer.
+
+## Files
+- `sections/pg-landing.liquid` (new): self-contained landing section. Black
+  announcement bar, centered-logo header (editable logo image or text) with
+  search/account/cart, anchor nav (Home, Description, Reviews, Track your
+  order, Contact), product gallery with thumbnail swap, title + 5.0 rating
+  row, rotating review quote card, Bundle & Save tiles (single unit and
+  2-pack), black add-to-cart posting to /cart/add.js then redirecting to the
+  cart page, Ships By / Easy Returns / Free Shipping info tiles, real
+  payment icons via shop.enabled_payment_types, 30-day guarantee bar, and
+  Description / Features / Shipping accordions. Reviews section with 5.0
+  histogram and masonry cards driven by section blocks. Mobile and desktop
+  CSS ship together. Native theme header, announcement marquee, newsletter
+  popup and sticky ATC are hidden on the homepage only.
+- `templates/index.json` (replaced): renders only pg-landing, configured for
+  the R36S with 8 review blocks transcribed from the owner's screenshots.
+- `sections/footer-group.json` (trimmed, theme copy only): keeps footer
+  (policy/contact links, newsletter, support card), nc-contactcard and
+  nc-chatfix; drops the NC homepage CRO/gift/quiz/gradient sections from
+  this theme so they cannot inject NC widgets onto the new landing page.
+
+## Pricing honesty
+- Single tile shows the variant price with compare-at strike (64G $59.99,
+  128G $69.99, compare $119.99).
+- The 2-pack tile advertises 10% off because the store's existing automatic
+  discount "10% Off (2+ Items)" applies to the R36S (it qualifies for the
+  Bundle Discount Eligible automated collection), so the shown price is
+  honored at checkout.
+
+## Deliberately not copied (GMC safety)
+- "SELLOUT RISK: High" fabricated urgency box.
+- "Black Friday" deal labels (out of season, price claims not backed by a
+  discount).
+- 14-day returns copy replaced with the store's real 30-day guarantee.
+
+## Store-state changes outside the theme
+- Product `handheld-game-console` set from DRAFT to ACTIVE (required for the
+  storefront to render it and for add-to-cart). Reversible via product
+  status.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
