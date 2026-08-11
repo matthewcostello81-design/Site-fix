@@ -82,7 +82,7 @@
   .pgx-tile-opts{display:flex;gap:14px;margin-top:12px;padding-left:34px;flex-wrap:wrap}
   .pgx-opt{display:flex;flex-direction:column;align-items:center;gap:6px}
   .pgx-opt img{width:58px;height:58px;border-radius:8px;object-fit:cover;border:1px solid var(--pgx-line)}
-  .pgx-opt select{border:1px solid #bbb;border-radius:8px;padding:7px 10px;font-size:13.5px;background:#fff}
+  .pgx-opt select{border:1px solid #bbb;border-radius:8px;padding:7px 10px;font-size:13.5px;background:#fff;max-width:190px}
   .pgx-plus{align-self:center;font-size:20px;color:#777}
 
   .pgx-atc{display:block;width:100%;border:0;background:#111 !important;background-color:#111 !important;color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;padding:17px;border-radius:6px;cursor:pointer;margin:16px 0 6px;font-family:'Poppins',sans-serif;transition:opacity .15s ease}
@@ -216,6 +216,8 @@
     <div class="pgx-buy">
       <h1 class="pgx-title">{{ section.settings.display_title | default: prod.title }}</h1>
 
+      {%- assign quote_blocks = section.blocks | where: "type", "review" -%}
+      {%- if quote_blocks.size > 0 -%}
       <div class="pgx-rating">
         <span class="pgx-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
         <strong>{{ section.settings.rating_value }}</strong>
@@ -223,8 +225,6 @@
         <span>{{ section.settings.rating_label }}</span>
       </div>
 
-      {%- assign quote_blocks = section.blocks | where: "type", "review" -%}
-      {%- if quote_blocks.size > 0 -%}
       <div class="pgx-quote">
         <img src="{{ prod.featured_image | image_url: width: 128 }}" alt="{{ prod.title | escape }}">
         <div>
@@ -238,8 +238,15 @@
       <div class="pgx-divider">BUNDLE &amp; SAVE</div>
 
       {%- for option in prod.options_with_values -%}
-        {%- if option.name == 'Size' -%}{%- assign size_opt = option -%}{%- endif -%}
+        {%- if option.name == 'Size' and option.values.size > 1 -%}{%- assign size_opt = option -%}{%- endif -%}
       {%- endfor -%}
+      {%- if size_opt == blank -%}
+        {%- for option in prod.options_with_values -%}
+          {%- if size_opt == blank and option.values.size > 1 -%}{%- assign size_opt = option -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- assign vpos = 0 -%}
+      {%- if size_opt -%}{%- assign vpos = size_opt.position | minus: 1 -%}{%- endif -%}
 
       <div class="pgx-tile pgx-sel" data-pgx-tile="single" role="radio" aria-checked="true" tabindex="0">
         <div class="pgx-tile-row">
@@ -256,7 +263,7 @@
         {%- if size_opt -%}
         <div class="pgx-tile-opts">
           <div class="pgx-opt">
-            <select data-pgx-size="s1" aria-label="Size">
+            <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
               {%- for value in size_opt.values -%}
                 <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
               {%- endfor -%}
@@ -283,7 +290,7 @@
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
             {%- if size_opt -%}
-            <select data-pgx-size="d1" aria-label="Size for unit 1">
+            <select data-pgx-size="d1" aria-label="{{ size_opt.name | escape }} for unit 1">
               {%- for value in size_opt.values -%}
                 <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
               {%- endfor -%}
@@ -294,7 +301,7 @@
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
             {%- if size_opt -%}
-            <select data-pgx-size="d2" aria-label="Size for unit 2">
+            <select data-pgx-size="d2" aria-label="{{ size_opt.name | escape }} for unit 2">
               {%- for value in size_opt.values -%}
                 <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
               {%- endfor -%}
@@ -349,6 +356,7 @@
     </div>
   </div>
 
+  {%- if quote_blocks.size > 0 -%}
   <section class="pgx-rev" id="pg-reviews">
     <div class="pgx-rev-head">
       <div class="pgx-rev-score">
@@ -384,9 +392,10 @@
       {%- endfor -%}
     </div>
   </section>
+  {%- endif -%}
 
   <script type="application/json" id="pgx-vdata">
-    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.option2 | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
+    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
   </script>
 
   {%- endif -%}
