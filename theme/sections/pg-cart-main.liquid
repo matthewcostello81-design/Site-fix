@@ -9,6 +9,7 @@
 {%- assign sp_handle = 'shipping-protection' -%}
 {%- assign eligible = 0 -%}
 {%- assign compare_savings = 0 -%}
+{%- assign gift_savings = 0 -%}
 {%- assign visible_count = 0 -%}
 {%- assign has_case_gift = false -%}
 {%- assign has_cards_gift = false -%}
@@ -16,6 +17,10 @@
   {%- assign h = item.product.handle -%}
   {%- if h == 'r36s-protective-case-free-gift' -%}{%- assign has_case_gift = true -%}{%- endif -%}
   {%- if h == '25-pokemon-cards-free-gift' -%}{%- assign has_cards_gift = true -%}{%- endif -%}
+  {%- if h contains gift_handle -%}
+    {%- assign gw = item.variant.compare_at_price | default: 1999 -%}
+    {%- assign gift_savings = gift_savings | plus: gw -%}
+  {%- endif -%}
   {%- unless h contains sp_handle -%}{%- assign visible_count = visible_count | plus: item.quantity -%}{%- endunless -%}
   {%- unless h contains gift_handle or h contains sp_handle -%}
     {%- assign eligible = eligible | plus: item.quantity -%}
@@ -25,7 +30,7 @@
     {%- endif -%}
   {%- endunless -%}
 {%- endfor -%}
-{%- assign total_savings = compare_savings | plus: cart.total_discount -%}
+{%- assign total_savings = compare_savings | plus: cart.total_discount | plus: gift_savings -%}
 
 <style>
   .pgm{max-width:760px;margin:0 auto;padding:26px 18px 70px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:#121212}
