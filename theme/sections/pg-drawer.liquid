@@ -112,7 +112,12 @@
   }
   function spCount(){
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
-      document.querySelectorAll('.cart-count,[data-cart-count]').forEach(function(el){ el.textContent = c.item_count; });
+      var n = 0;
+      c.items.forEach(function(it){ if (it.handle !== 'shipping-protection') n += it.quantity; });
+      document.querySelectorAll('.pgh-cart-n,.pgx-cart-n,.cart-count,[data-cart-count]').forEach(function(el){
+        el.textContent = n;
+        el.style.display = n === 0 ? 'none' : '';
+      });
     }).catch(function(){});
   }
   function spBox(){

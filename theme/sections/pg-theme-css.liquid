@@ -235,6 +235,24 @@
 </script>
 <script>
   (function(){
+    if (window.pgCount) return; window.pgCount = 1;
+    function upd(){
+      fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+        var n = 0;
+        c.items.forEach(function(it){ if (it.handle !== 'shipping-protection') n += it.quantity; });
+        document.querySelectorAll('.pgh-cart-n,.pgx-cart-n,.cart-count,[data-cart-count]').forEach(function(el){
+          el.textContent = n;
+          el.style.display = n === 0 ? 'none' : '';
+        });
+      }).catch(function(){});
+    }
+    window.pgCountUpd = upd;
+    if (document.readyState !== 'loading') upd(); else document.addEventListener('DOMContentLoaded', upd);
+    setTimeout(upd, 1200);
+  })();
+</script>
+<script>
+  (function(){
     if (window.pgStars) return; window.pgStars = 1;
     function stars(){
       if (document.querySelector('.pgf-stars')) return;
