@@ -52,8 +52,17 @@
   #cart#cart#cart .semantic-amount .decr,#cart#cart#cart .semantic-amount .incr{color:#7A2FA2 !important}
   #cart#cart#cart .nc-upsell-note{color:#7A2FA2 !important;background:rgba(122,47,162,.1) !important}
 
-  /* Cart page bars painted by nc-cartfix: purple instead of NC green */
-  body.template-cart .overlay-lime{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important}
+  /* "Shipped for free" bars anywhere (drawer, cart page, express checkout):
+     nc-cartfix also paints the gradient on the ::before pseudo, so both layers
+     must be recolored. Global on purpose - every lime status bar goes purple. */
+  .overlay-lime,
+  html .overlay-lime,
+  #cart#cart#cart .overlay-lime,
+  body.template-cart .overlay-lime{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important;border:none !important}
+  .overlay-lime::before,
+  html .overlay-lime::before,
+  #cart#cart#cart .overlay-lime::before{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important}
+  .overlay-lime,.overlay-lime *{color:#fff !important;-webkit-text-fill-color:#fff !important}
   body.template-cart .form-cart .l4us li::before{color:#7A2FA2 !important;-webkit-text-fill-color:#7A2FA2 !important}
 </style>
 <script>
