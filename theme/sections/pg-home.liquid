@@ -98,14 +98,6 @@
   .pgh-acc-body{font-size:15px;line-height:1.65;color:#3a3a3a;padding:0 4px 20px}
   .pgh-acc-body a{color:var(--p);text-decoration:underline;text-underline-offset:3px}
 
-  /* Side stars: light purple, fading in and out along both margins */
-  .pgh-stars{position:fixed;top:0;bottom:0;width:230px;pointer-events:none;z-index:4}
-  .pgh-stars.l{left:0}
-  .pgh-stars.r{right:0}
-  .pgh-stars i{position:absolute;display:block;background:#C9A6E8;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pghTwinkle 3.6s ease-in-out infinite;opacity:.2}
-  @keyframes pghTwinkle{0%,100%{opacity:.1;transform:scale(.65)}50%{opacity:.85;transform:scale(1.15)}}
-  @media(max-width:1100px){.pgh-stars{display:none}}
-
   /* Trust row */
   .pgh-trust{max-width:1232px;margin:56px auto 72px;padding:46px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;text-align:center;background:#faf7fc;border:1px solid #efe3f8;border-radius:20px}
   .pgh-trust svg{width:44px;height:44px;stroke:var(--p);fill:none;stroke-width:1.5;margin:0 auto 12px}
@@ -136,28 +128,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <div id="pgh">
-  <div class="pgh-stars l" aria-hidden="true">
-    <i style="top:14%;left:34%;width:9px;height:9px"></i>
-    <i style="top:22%;left:62%;width:5px;height:5px;animation-delay:.6s;background:#D9BCF2"></i>
-    <i style="top:31%;left:20%;width:7px;height:7px;animation-delay:1.4s"></i>
-    <i style="top:40%;left:52%;width:11px;height:11px;animation-delay:2.1s;background:#B98FD9"></i>
-    <i style="top:49%;left:30%;width:5px;height:5px;animation-delay:.9s;background:#D9BCF2"></i>
-    <i style="top:58%;left:64%;width:8px;height:8px;animation-delay:1.8s"></i>
-    <i style="top:67%;left:24%;width:6px;height:6px;animation-delay:.3s;background:#B98FD9"></i>
-    <i style="top:76%;left:50%;width:10px;height:10px;animation-delay:2.6s"></i>
-    <i style="top:85%;left:34%;width:6px;height:6px;animation-delay:1.1s;background:#D9BCF2"></i>
-  </div>
-  <div class="pgh-stars r" aria-hidden="true">
-    <i style="top:16%;left:56%;width:8px;height:8px;animation-delay:.4s"></i>
-    <i style="top:25%;left:26%;width:5px;height:5px;animation-delay:1.6s;background:#D9BCF2"></i>
-    <i style="top:34%;left:66%;width:10px;height:10px;animation-delay:2.3s;background:#B98FD9"></i>
-    <i style="top:43%;left:36%;width:6px;height:6px;animation-delay:.8s"></i>
-    <i style="top:52%;left:60%;width:5px;height:5px;animation-delay:1.9s;background:#D9BCF2"></i>
-    <i style="top:61%;left:28%;width:9px;height:9px;animation-delay:.1s"></i>
-    <i style="top:70%;left:58%;width:6px;height:6px;animation-delay:2.8s;background:#B98FD9"></i>
-    <i style="top:79%;left:32%;width:11px;height:11px;animation-delay:1.2s"></i>
-    <i style="top:88%;left:56%;width:6px;height:6px;animation-delay:.5s;background:#D9BCF2"></i>
-  </div>
   <div class="pgh-announce">{{ section.settings.announce_text }}</div>
 
   <header class="pgh-head">
@@ -211,7 +181,10 @@
           <a class="pgh-card" href="{{ bp.url }}" {{ block.shopify_attributes }}>
             <div class="pgh-card-img">
               <img src="{{ bp.featured_image | image_url: width: 700 }}" alt="{{ block.settings.label | default: bp.title | escape }}" loading="lazy">
-              {%- if bp.compare_at_price > bp.price -%}<span class="pgh-badge">Sale</span>{%- endif -%}
+              {%- if bp.compare_at_price > bp.price -%}
+                {%- assign pgh_pct = bp.compare_at_price | minus: bp.price | times: 100 | divided_by: bp.compare_at_price -%}
+                <span class="pgh-badge">Sale {{ pgh_pct }}% Off</span>
+              {%- endif -%}
               <button type="button" class="pgh-atc" data-variant="{{ bp.selected_or_first_available_variant.id }}">Add to Cart</button>
             </div>
             <div class="pgh-card-t">{{ block.settings.label | default: bp.title }}</div>
