@@ -1,0 +1,46 @@
+{
+  "sections": {
+    "pg_header": {
+      "type": "pg-cart-header",
+      "settings": {
+        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "announce_text": "Free shipping on all orders"
+      }
+    },
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": false
+      }
+    },
+    "main-page": {
+      "type": "main-page",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "title_size": "h1"
+          }
+        },
+        "content": {
+          "type": "content",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "title",
+        "content"
+      ],
+      "settings": {
+        "text_alignment": "start",
+        "spacing_desktop": 50,
+        "spacing_mobile": 30
+      }
+    }
+  },
+  "order": [
+    "pg_header",
+    "breadcrumbs",
+    "main-page"
+  ]
+}

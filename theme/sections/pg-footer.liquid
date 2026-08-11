@@ -1,9 +1,11 @@
 {%- comment -%}
-  PG Footer: Pocketera overrides for the nc-footer brand injection. Loads after
-  nc-footer in overlay-group so it wins order ties. Swaps the injected brand
-  lockup (emblem image, NORTH COVE wordmark, wellness tagline) to Pocketera,
-  fixes the copyright line, and recolors the band and newsletter button from
-  teal/orange to purple/black.
+  PG Footer: PocketEra overrides for the nc-footer brand injection, plus sitewide
+  rebranding. Loads after nc-footer in overlay-group so it wins order ties.
+  Swaps the injected brand lockup (emblem image, NORTH COVE wordmark, wellness
+  tagline) to PocketEra, rewrites any visible "North Cove" text in the page
+  content, footer, bottom bar and document title, and recolors the band and
+  newsletter button from teal/orange to purple/black. The underlying store data
+  (shop name, CMS pages) is untouched so the live North Cove site is unaffected.
 {%- endcomment -%}
 <style>
   /* Band + bottom bar: purple */
@@ -35,33 +37,47 @@
       box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
     }
   }
+
+  /* Content pages (policies, about, track order): purple links to match the theme */
+  body[class*="template-page"] #content a:not([class*="button"]):not(.pgc-x){color:#7A2FA2}
+  body[class*="template-page"] #content a:not([class*="button"]):hover{color:#4A1C66}
 </style>
 <script>
 (function(){
   if (window.pgFooter) return; window.pgFooter = 1;
   var LOGO = {{ section.settings.logo_image | image_url: width: 420 | json }};
+  function rebrand(root){
+    if (!root) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var n;
+    while ((n = walker.nextNode())){
+      if (/North[\s ]*Cove/i.test(n.nodeValue)){
+        n.nodeValue = n.nodeValue
+          .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*(&|and)[\s ]*Care/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove/gi, 'PocketEra');
+      }
+    }
+  }
   function fix(){
     var f = document.getElementById('shopify-section-footer');
     if (f){
       var img = f.querySelector('img.nc-foot-emblem');
-      if (img && img.dataset.pgf !== '1'){ img.dataset.pgf = '1'; if (LOGO) img.src = LOGO; img.alt = 'Pocketera'; }
+      if (img && img.dataset.pgf !== '1'){ img.dataset.pgf = '1'; if (LOGO) img.src = LOGO; img.alt = 'PocketEra'; }
       var w = f.querySelector('.nc-foot-word');
       if (w && w.dataset.pgf !== '1'){ w.dataset.pgf = '1'; w.innerHTML = 'POCKETERA'; }
       var tag = f.querySelector('.nc-foot-tag');
       if (tag && /Drug-free/i.test(tag.textContent)) tag.textContent = {{ section.settings.tagline | json }};
+      rebrand(f);
     }
-    var base = document.querySelector('#shopify-section-footer + .base-font');
-    if (base){
-      var walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
-      var n;
-      while ((n = walker.nextNode())){
-        if (/North[\s ]*Cove/i.test(n.nodeValue)){
-          n.nodeValue = n.nodeValue
-            .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'Pocketera')
-            .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'Pocketera')
-            .replace(/North[\s ]*Cove/gi, 'Pocketera');
-        }
-      }
+    rebrand(document.querySelector('#shopify-section-footer + .base-font'));
+    rebrand(document.getElementById('content'));
+    if (/North[\s ]*Cove/i.test(document.title)){
+      document.title = document.title
+        .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'PocketEra')
+        .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'PocketEra')
+        .replace(/North[\s ]*Cove/gi, 'PocketEra');
     }
   }
   function bind(){
