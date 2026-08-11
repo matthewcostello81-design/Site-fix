@@ -60,6 +60,29 @@
       }
     }
   }
+  var PHONE_TXT = '(402) 979-6583';
+  var PHONE_TEL = 'tel:+14029796583';
+  function unmail(root){
+    if (!root) return;
+    root.querySelectorAll('a[href^="mailto:"]').forEach(function(a){
+      var li = a.closest('li');
+      var list = a.closest('ul,ol');
+      if (li && list && list.querySelector('a[href^="tel:"]')){ li.remove(); return; }
+      var t = document.createElement('a');
+      t.href = PHONE_TEL; t.textContent = PHONE_TXT;
+      a.replaceWith(t);
+    });
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var n;
+    while ((n = w.nextNode())){
+      if (/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(n.nodeValue)){
+        n.nodeValue = n.nodeValue.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, PHONE_TXT);
+      }
+      n.nodeValue = n.nodeValue
+        .replace(/email us at \(402\) 979-6583/gi, 'call us at ' + PHONE_TXT)
+        .replace(/\bE-?mail\s*:\s*\(402\) 979-6583/gi, 'Phone: ' + PHONE_TXT);
+    }
+  }
   function fix(){
     var f = document.getElementById('shopify-section-footer');
     if (f){
@@ -73,6 +96,7 @@
     }
     rebrand(document.querySelector('#shopify-section-footer + .base-font'));
     rebrand(document.getElementById('content'));
+    unmail(document.getElementById('content'));
     if (/North[\s ]*Cove/i.test(document.title)){
       document.title = document.title
         .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'PocketEra')
