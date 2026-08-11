@@ -38,10 +38,11 @@ body.template-cart,body.template-cart #content,body.template-cart main{
 .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{color:#E4D9F0 !important}
 .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#C79BEA !important}
 #pgh .pgh-trust{background:rgba(255,255,255,.04) !important;border-color:rgba(168,120,214,.18) !important;color:#C1B4D2 !important}
-/* logo art is dark on a baked in white box; invert it and screen the box away */
+/* the dark-mode logo asset is neon line art on a solid black square;
+   screen blending drops the black box, no color filtering needed. */
 .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{
   mix-blend-mode:screen !important;
-  filter:invert(1) hue-rotate(180deg) saturate(1.2) brightness(1.18) !important;
+  filter:none !important;
 }
 .pgh-cart-n{background:#C79BEA !important;color:#1A0B28 !important;border-color:#8B44BE !important}
 /* person and bag glyphs: light strokes so they read on the black header */

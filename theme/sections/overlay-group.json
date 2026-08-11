@@ -76,14 +76,14 @@
     "pg-drawer": {
       "type": "pg-drawer",
       "settings": {
-        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "keep_match": "data-frog"
       }
     },
     "pg-footer": {
       "type": "pg-footer",
       "settings": {
-        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "tagline": "Retro gaming, pocket-sized."
       }
     }

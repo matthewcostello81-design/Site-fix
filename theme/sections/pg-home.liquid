@@ -273,12 +273,10 @@
   if (window.pghAtc) return; window.pghAtc = 1;
   /* Inline-important pill styling: the theme's global button CSS keeps
      winning the cascade, so the Sale-badge look is stamped per element. */
-  var BASE = {'position': 'absolute', 'left': 'auto', 'right': '12px', 'top': '12px', 'bottom': 'auto', 'transform': 'none', 'background-color': '#fff', 'background-image': 'none', 'color': '#121212', 'border': '1px solid #e2e2e2', 'border-radius': '999px', 'font-size': '12.5px', 'font-weight': '500', 'line-height': '1.4', 'padding': '5px 16px', 'margin': '0', 'width': 'auto', 'min-width': '0', 'height': 'auto', 'min-height': '0', 'text-transform': 'none', 'letter-spacing': '0', 'box-shadow': '0 6px 16px -8px rgba(0,0,0,.35)', 'animation': 'none', 'font-family': "'Poppins','Segoe UI',Helvetica,Arial,sans-serif"};
+  var BASE = {'position': 'static', 'left': 'auto', 'right': 'auto', 'top': 'auto', 'bottom': 'auto', 'transform': 'none', 'display': 'block', 'background-color': '#7A2FA2', 'color': '#fff', 'border': '0', 'border-radius': '999px', 'font-size': '13.5px', 'font-weight': '700', 'line-height': '1.4', 'padding': '12px 16px', 'margin': '6px 14px 16px', 'width': 'calc(100% - 28px)', 'min-width': '0', 'height': 'auto', 'min-height': '0', 'text-transform': 'uppercase', 'letter-spacing': '.06em', 'text-align': 'center', 'box-shadow': '0 10px 22px -10px rgba(122,47,162,.6)', 'animation': 'none', 'cursor': 'pointer', 'font-family': "'Poppins','Segoe UI',Helvetica,Arial,sans-serif"};
   function paint(b, hov){
     for (var k in BASE) b.style.setProperty(k, BASE[k], 'important');
-    b.style.setProperty('background-color', hov ? '#7A2FA2' : '#fff', 'important');
-    b.style.setProperty('color', hov ? '#fff' : '#121212', 'important');
-    b.style.setProperty('border-color', hov ? '#7A2FA2' : '#e2e2e2', 'important');
+    b.style.setProperty('background-image', hov ? 'linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%)' : 'linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%)', 'important');
   }
   function styleAtc(){
     document.querySelectorAll('.pgh-atc').forEach(function(b){

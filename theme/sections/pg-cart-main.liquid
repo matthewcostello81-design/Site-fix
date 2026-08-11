@@ -10,8 +10,12 @@
 {%- assign eligible = 0 -%}
 {%- assign compare_savings = 0 -%}
 {%- assign visible_count = 0 -%}
+{%- assign has_case_gift = false -%}
+{%- assign has_cards_gift = false -%}
 {%- for item in cart.items -%}
   {%- assign h = item.product.handle -%}
+  {%- if h == 'r36s-protective-case-free-gift' -%}{%- assign has_case_gift = true -%}{%- endif -%}
+  {%- if h == '25-pokemon-cards-free-gift' -%}{%- assign has_cards_gift = true -%}{%- endif -%}
   {%- unless h contains sp_handle -%}{%- assign visible_count = visible_count | plus: item.quantity -%}{%- endunless -%}
   {%- unless h contains gift_handle or h contains sp_handle -%}
     {%- assign eligible = eligible | plus: item.quantity -%}
@@ -107,7 +111,7 @@
 {%- if cart.item_count == 0 -%}
   <div class="pgm-empty">
     <b style="font-size:22px">Your cart is empty</b>
-    <div style="color:#666;margin-top:6px">Add something to get the free case.</div>
+    <div style="color:#666;margin-top:6px">Add something to unlock your free gift.</div>
     <a href="{{ routes.root_url }}">Continue shopping</a>
   </div>
 {%- else -%}
@@ -157,7 +161,8 @@
       </div>
       <div class="pgm-right">
         {%- if is_gift -%}
-          <div class="pgm-was">{{ 1999 | money }}</div>
+          {%- assign gift_was = item.variant.compare_at_price | default: 1999 -%}
+          <div class="pgm-was">{{ gift_was | money }}</div>
           <div class="pgm-price">FREE</div>
         {%- else -%}
           {%- if line_was > item.final_line_price -%}
@@ -199,7 +204,8 @@
       <div class="pgm-row hl"><span>Total Savings:</span><span>-{{ total_savings | money }}</span></div>
     {%- endif -%}
     <div class="pgm-row hl"><span>Shipping:</span><span>FREE</span></div>
-    <div class="pgm-row hl"><span>R36S Protective Case:</span><span>FREE</span></div>
+    {%- if has_case_gift -%}<div class="pgm-row hl"><span>R36S Protective Case:</span><span>FREE</span></div>{%- endif -%}
+    {%- if has_cards_gift -%}<div class="pgm-row hl"><span>25 Pokemon Cards:</span><span>FREE</span></div>{%- endif -%}
     <div class="pgm-row tot"><span>Total</span><span>{{ cart.total_price | money }}</span></div>
     <form action="{{ routes.cart_url }}" method="post">
       <button class="pgm-co" type="submit" name="checkout">&#128274; Secure Checkout</button>

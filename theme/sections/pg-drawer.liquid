@@ -172,10 +172,15 @@
     }).catch(function(){});
     return box;
   }
-  /* Free gift: the R36S protective case is auto-added at $0 whenever the cart
-     holds a paid item, always re-added if removed, and auto-removed when the
-     cart empties. */
-  var GIFT_ID = 49623692247268, GIFT_HANDLE = 'r36s-protective-case-free-gift';
+  /* Free gifts, one per trigger product:
+     - R36S console (handle handheld-game-console) -> free protective case
+     - Crystal poke ball (handle contains crystal-ball) -> free 25 Pokemon Cards
+     Each gift is auto-added at $0 while its trigger is in the cart, re-added
+     if removed, held at qty 1, and auto-removed when its trigger leaves. */
+  var GIFTS = [
+    {id: 49623692247268, handle: 'r36s-protective-case-free-gift', trigger: 'handheld-game-console'},
+    {id: 49633084539108, handle: '25-pokemon-cards-free-gift', trigger: 'crystal-ball'}
+  ];
   var giftBusy = false;
   function giftDone(r){
     giftBusy = false;
@@ -189,19 +194,23 @@
     if (giftBusy) return;
     giftBusy = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
-      var gift = null, paid = 0;
-      c.items.forEach(function(it){
-        if (it.id === GIFT_ID || it.handle === GIFT_HANDLE) gift = it;
-        else if (it.handle !== 'shipping-protection') paid += it.quantity;
-      });
-      if (paid > 0 && !gift){
-        return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: GIFT_ID, quantity: 1}]})}).then(giftDone);
-      }
-      if (gift && paid === 0){
-        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 0}})}).then(giftDone);
-      }
-      if (gift && gift.quantity !== 1){
-        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 1}})}).then(giftDone);
+      for (var i = 0; i < GIFTS.length; i++){
+        var g = GIFTS[i], inCart = null, wanted = false;
+        c.items.forEach(function(it){
+          if (it.id === g.id || it.handle === g.handle) inCart = it;
+          else if (it.handle !== 'shipping-protection' && it.handle.indexOf('free-gift') === -1 && it.handle.indexOf(g.trigger) !== -1) wanted = true;
+        });
+        if (wanted && !inCart){
+          return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: g.id, quantity: 1}]})}).then(giftDone);
+        }
+        if (inCart && !wanted){
+          var offU = {}; offU[String(g.id)] = 0;
+          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: offU})}).then(giftDone);
+        }
+        if (inCart && inCart.quantity !== 1){
+          var oneU = {}; oneU[String(g.id)] = 1;
+          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: oneU})}).then(giftDone);
+        }
       }
       giftBusy = false;
     }).catch(function(){ giftBusy = false; });
