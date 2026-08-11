@@ -43,6 +43,8 @@
   /* Premium polish, sitewide */
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   ::selection{background:#7A2FA2;color:#fff}
+  button[name="checkout"]{background:#121212 !important;background-image:none !important;background-color:#121212 !important;color:#fff !important;border:none !important;border-radius:10px !important;font-weight:700 !important;letter-spacing:.03em !important}
+  button[name="checkout"]:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important}
 
   /* NC header/tabs are gone everywhere; PG headers or the fallback below replace them */
   .shopify-section-header,
@@ -60,13 +62,17 @@
 
   /* Homepage: centered, balanced layout */
   #pgh .pgh-eyebrow,#pgh .pgh-h2{text-align:center}
+  /* Hero: contained width, rounded, no CTA button */
+  #pgh .pgh-hero-btn{display:none !important}
+  #pgh .pgh-hero{max-width:1232px;margin:24px auto 0;border-radius:20px;height:54vh;min-height:360px;max-height:560px;box-shadow:0 30px 70px -45px rgba(18,4,28,.6)}
+  @media(max-width:1280px){#pgh .pgh-hero{margin-left:16px;margin-right:16px}}
   #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
-  #pgh .pgh-grid .pgh-card{width:300px;max-width:100%}
-  #pgh .pgh-tiles{display:flex !important;flex-wrap:wrap;justify-content:center;gap:20px}
-  #pgh .pgh-tiles .pgh-tile{width:420px;max-width:100%}
+  #pgh .pgh-grid .pgh-card{width:calc(50% - 11px);max-width:100%}
+  #pgh .pgh-card-t,#pgh .pgh-card-p{text-align:center}
+  /* Collections tiles removed per request */
+  #pgh .pgh-wrap:has(.pgh-tiles){display:none !important}
   @media(max-width:900px){
     #pgh .pgh-grid .pgh-card{width:calc(50% - 11px)}
-    #pgh .pgh-tiles .pgh-tile{width:100%}
   }
   .pgx-announce,.pgc-announce{background:linear-gradient(90deg,#4A1C66,#7A2FA2 50%,#4A1C66) !important;text-transform:uppercase;letter-spacing:.08em;font-size:12px !important;font-weight:600}
   #pgx .pgx-hero{border-radius:16px}
@@ -85,11 +91,17 @@
   #pgx .pgx-card{border-radius:14px;box-shadow:0 12px 30px -24px rgba(18,4,28,.4)}
   .pgu-card{box-shadow:0 16px 38px -28px rgba(74,28,102,.5)}
 
+  /* Header: full-width bar, larger search + icons pushed to the edges */
+  .pgh-head-in,.pgx-head-in,.pgc-head-in{max-width:none !important;padding-left:40px !important;padding-right:40px !important}
+  .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:27px !important;height:27px !important}
+  .pgh-cart-n{min-width:18px !important;height:18px !important;line-height:18px !important;font-size:11px !important}
+
   /* Inline header search box with product dropdown (replaces the /search link) */
-  .pg-search{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:9px 16px;width:220px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-search{position:relative;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:12px 18px;width:300px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
   .pg-search:focus-within{border-color:#7A2FA2;box-shadow:0 0 0 3px rgba(122,47,162,.12)}
-  .pg-search svg{width:17px;height:17px;stroke:#555;fill:none;stroke-width:1.8;flex:none}
-  .pg-search input{border:none !important;outline:none !important;background:transparent !important;font-size:13.5px;width:100%;padding:0 !important;margin:0 !important;color:#121212;box-shadow:none !important;min-height:0 !important;height:auto !important}
+  .pg-search svg{width:19px;height:19px;stroke:#555;fill:none;stroke-width:1.8;flex:none}
+  .pg-search input{border:none !important;outline:none !important;background:transparent !important;font-size:14.5px;width:100%;padding:0 !important;margin:0 !important;color:#121212;box-shadow:none !important;min-height:0 !important;height:auto !important}
   .pg-search-dd{display:none;position:absolute;top:calc(100% + 8px);left:0;width:330px;max-width:82vw;background:#fff;border:1px solid #e9dcf3;border-radius:14px;box-shadow:0 24px 54px -24px rgba(18,4,28,.45);padding:8px;z-index:99}
   .pg-search-dd.on{display:block}
   .pg-search-dd a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;text-decoration:none;color:#121212}
@@ -184,7 +196,7 @@
       d.setAttribute('data-pgf-head', '1');
       d.innerHTML = '<div class="pgf-announce">Free shipping on all orders</div>'
         + '<div class="pgf-head"><a href="/"><img src="https://cdn.shopify.com/s/files/1/0815/5706/1860/files/Gemini_Generated_Image_utaycgutaycgutay.png" alt="PocketEra"></a></div>'
-        + '<nav class="pgf-nav"><a href="/">Home</a><a href="/products/handheld-game-console">Shop</a><a href="/pages/track-order">Track your order</a><a href="/pages/contact">Contact</a></nav>';
+        + '<nav class="pgf-nav"><a href="/">Home</a><a href="/pages/track-order">Track your order</a><a href="/pages/contact">Contact</a></nav>';
       c.insertBefore(d, c.firstChild);
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();

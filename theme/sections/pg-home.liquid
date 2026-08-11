@@ -151,8 +151,6 @@
     </div>
     <nav class="pgh-nav">
       <a class="pgh-on" href="{{ routes.root_url }}">Home</a>
-      <a href="{{ section.settings.shop_url }}">Shop</a>
-      <a href="{{ section.settings.shop_url }}#pg-reviews">Reviews</a>
       <a href="/pages/track-order">Track your order</a>
       <a href="/pages/contact">Contact</a>
     </nav>
@@ -169,7 +167,7 @@
   </div>
   {%- endif -%}
 
-  <div class="pgh-wrap">
+  <div class="pgh-wrap" id="pg-shop">
     <div class="pgh-eyebrow">{{ section.settings.grid_eyebrow }}</div>
     <h2 class="pgh-h2">{{ section.settings.grid_title }}</h2>
     <div class="pgh-grid">

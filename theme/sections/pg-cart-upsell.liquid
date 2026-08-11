@@ -1,82 +1,52 @@
 {%- comment -%}
-  PG Cart Upsell: single cross-sell card on the cart page. Offers only the
-  configured product (the R36S protective case). Replaces the theme's
-  recently-viewed rail so no other catalog products are offered.
+  PG Cart Upsell: free-gift banner on the cart page. The R36S protective case
+  is auto-added at $0 by pg-drawer whenever the cart holds a paid item, so this
+  card only announces the gift. No add button, no other catalog products.
 {%- endcomment -%}
 {%- assign case = section.settings.case_product -%}
-{%- if case != blank and case.available -%}
-{%- assign in_cart = false -%}
-{%- for item in cart.items -%}
-  {%- if item.product_id == case.id -%}{%- assign in_cart = true -%}{%- endif -%}
-{%- endfor -%}
+{%- if cart.item_count > 0 -%}
 
 <style>
   .pgu{max-width:1280px;margin:0 auto;padding:10px 24px 60px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
   .pgu-h{display:flex;align-items:center;gap:16px;color:#7A2FA2;font-size:14px;letter-spacing:.18em;font-weight:600;margin-bottom:14px;text-transform:uppercase}
   .pgu-h:before,.pgu-h:after{content:"";height:1px;background:#7A2FA2;flex:1}
-  .pgu-card{display:flex;align-items:center;gap:18px;border:1px solid #e0cdee;border-radius:12px;padding:16px 18px;background:#fdfbfe;max-width:640px;margin:0 auto}
+  .pgu-card{display:flex;align-items:center;gap:18px;border:1px solid #e0cdee;border-radius:14px;padding:16px 18px;background:linear-gradient(120deg,#fdfbfe,#f6effb);box-shadow:0 16px 38px -30px rgba(74,28,102,.5);max-width:640px;margin:0 auto}
   .pgu-card img{width:84px;height:84px;border-radius:10px;object-fit:cover;flex:none}
   .pgu-name{font-weight:700;font-size:16.5px;color:#121212}
-  .pgu-sub{font-size:13px;color:#7A2FA2;font-weight:600;margin-top:3px}
-  .pgu-price{margin-top:5px;font-size:16px;font-weight:700;color:#121212}
-  .pgu-price s{color:#8a8a8a;font-weight:400;font-size:13.5px;margin-left:7px}
-  .pgu-btn{margin-left:auto;flex:none;border:0;background:#121212 !important;background-color:#121212 !important;color:#fff;font-size:14.5px;font-weight:600;padding:12px 26px;border-radius:6px;cursor:pointer;font-family:'Poppins',sans-serif}
-  .pgu-btn:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important}
-  .pgu-btn[disabled]{opacity:.55;cursor:default}
+  .pgu-sub{font-size:13px;color:#555;margin-top:3px}
+  .pgu-price{margin-top:6px;font-size:16px;font-weight:700;color:#121212;display:flex;align-items:center;gap:9px}
+  .pgu-price s{color:#8a8a8a;font-weight:400;font-size:13.5px}
+  .pgu-free{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);color:#fff;font-size:12px;font-weight:700;letter-spacing:.08em;padding:4px 12px;border-radius:999px;text-transform:uppercase}
+  .pgu-check{margin-left:auto;flex:none;width:42px;height:42px;border-radius:50%;background:#7A2FA2;display:flex;align-items:center;justify-content:center}
+  .pgu-check svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:2.4}
   @media (max-width: 640px){
     .pgu{padding:6px 16px 44px}
     .pgu-card{flex-wrap:wrap}
-    .pgu-btn{margin-left:0;width:100%}
+    .pgu-check{margin-left:0}
   }
 </style>
 
 <div class="pgu" data-pgu>
-  <div class="pgu-h">Complete your setup</div>
+  <div class="pgu-h">Free gift included</div>
   <div class="pgu-card">
-    <img src="{{ case.featured_image | image_url: width: 168 }}" alt="{{ section.settings.display_title | escape }}">
-    <div>
-      <div class="pgu-name">{{ section.settings.display_title | default: case.title }}</div>
-      <div class="pgu-sub">2+ items unlock 10% OFF automatically at checkout</div>
-      <div class="pgu-price">
-        {{ case.price | money }}
-        {%- if case.compare_at_price > case.price -%}<s>{{ case.compare_at_price | money }}</s>{%- endif -%}
-      </div>
-    </div>
-    {%- if in_cart -%}
-      <button type="button" class="pgu-btn" disabled>Added &#10003;</button>
-    {%- else -%}
-      <button type="button" class="pgu-btn" id="pgu-add" data-variant="{{ case.selected_or_first_available_variant.id }}">Add</button>
+    {%- if case != blank and case.featured_image -%}
+      <img src="{{ case.featured_image | image_url: width: 168 }}" alt="{{ section.settings.display_title | escape }}">
     {%- endif -%}
+    <div>
+      <div class="pgu-name">{{ section.settings.display_title | default: 'R36S Protective Case' }}</div>
+      <div class="pgu-sub">Added to your cart automatically with any order</div>
+      <div class="pgu-price"><span class="pgu-free">Free</span><s>{{ 1999 | money }}</s></div>
+    </div>
+    <div class="pgu-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></div>
   </div>
 </div>
-
-<script>
-(function(){
-  var btn = document.getElementById('pgu-add');
-  if (!btn || btn.dataset.pguInit) return;
-  btn.dataset.pguInit = '1';
-  btn.addEventListener('click', function(){
-    btn.disabled = true; btn.textContent = 'Adding...';
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({items: [{id: parseInt(btn.dataset.variant, 10), quantity: 1}]})
-    }).then(function(r){
-      if (!r.ok) throw new Error('add failed');
-      window.location.reload();
-    }).catch(function(){
-      btn.disabled = false; btn.textContent = 'Add';
-    });
-  });
-})();
-</script>
 {%- endif -%}
 
 {% schema %}
 {
   "name": "PG Cart Upsell",
   "settings": [
-    {"type": "product", "id": "case_product", "label": "Cross-sell product"},
+    {"type": "product", "id": "case_product", "label": "Gift product (image source)"},
     {"type": "text", "id": "display_title", "label": "Display title", "default": "R36S Protective Case"}
   ]
 }

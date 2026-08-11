@@ -7,7 +7,7 @@
           "type": "product",
           "settings": {
             "product": "handheld-game-console",
-            "label": "R36S"
+            "label": "R36S - Handheld Gaming Console"
           }
         },
         "prod2": {
@@ -51,11 +51,11 @@
         "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
         "logo_text": "PocketEra",
         "announce_text": "Free shipping on all orders",
-        "shop_url": "/products/handheld-game-console",
-        "hero_image": "shopify://shop_images/hf_20260810_233020_29816057-5371-443f-93a2-c7a484ec9364.png",
+        "shop_url": "/#pg-shop",
+        "hero_image": "shopify://shop_images/pg-hero-4k.png",
         "hero_title": "Special Offers on New Arrivals",
         "hero_cta": "Shop Now",
-        "hero_url": "/products/handheld-game-console",
+        "hero_url": "/#pg-shop",
         "grid_title": "Best Sellers",
         "split_title": "Built for real gamers.",
         "split_line1": "Your favourite classics. Now in your pocket.",

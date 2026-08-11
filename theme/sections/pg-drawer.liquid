@@ -2,10 +2,9 @@
   PG Drawer: Pocketera overrides for the cart drawer (and cart page bars) built by
   nc-cartfix / nc-recs. Loads LAST in overlay-group so its rules win. Swaps the
   drawer logo to the Pocketera logo, recolors the NC green/orange accents to
-  purple and black, and hides every recommendation row except the product whose
-  URL matches the keep filter (the R36S protective case).
+  purple and black, hides the recommendation rails, and auto-adds the free
+  R36S protective case whenever the cart holds a paid item.
 {%- endcomment -%}
-{%- assign keep = section.settings.keep_match | default: 'data-frog' -%}
 <style>
   /* Drawer top: logo + free-shipping pill */
   #cart#cart#cart img.nc-dlogo{height:110px !important;max-width:300px !important;margin:-6px auto 2px !important;object-fit:contain !important}
@@ -40,10 +39,10 @@
   #cart#cart#cart .nc-recs-panel{background:linear-gradient(120deg,#F8F3FC,#F1E7F8) !important;border:1px solid rgba(122,47,162,.2) !important}
   #cart#cart#cart .nc-rec:hover{background:rgba(122,47,162,.06) !important}
 
-  /* Only the protective case may appear as a recommendation */
-  #cart .nc-rec:not(:has(a[href*="{{ keep }}"])):not([href*="{{ keep }}"]){display:none !important}
-  #cart .nc-recs:not(:has([href*="{{ keep }}"])){display:none !important}
-  #cart .nc-recs-panel:not(:has([href*="{{ keep }}"])){display:none !important}
+  /* The case is now a free auto-added gift, so no recommendation rails at all */
+  #cart .nc-rec,
+  #cart .nc-recs,
+  #cart .nc-recs-panel{display:none !important}
 
   /* Free shipping bar, savings chips, count badge, stepper, upsell note */
   #cart#cart#cart .nc-lsave-off{background:linear-gradient(120deg,#7A2FA2,#9B4BC4) !important;color:#fff !important}
@@ -68,6 +67,11 @@
   .pg-sp[data-busy]{opacity:.55;pointer-events:none}
   #cart .l4ca > li:has(a[href*="shipping-protection"]),
   body.template-cart .form-cart .l4ca > li:has(a[href*="shipping-protection"]){display:none !important}
+
+  /* Free gift line: FREE tag replaces $0.00, stepper locked */
+  #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
+  body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:hidden !important}
+  .pg-free-tag{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:11.5px;font-weight:700;letter-spacing:.08em;padding:3px 10px;border-radius:999px;text-transform:uppercase}
 
   /* "Shipped for free" bars anywhere (drawer, cart page, express checkout):
      nc-cartfix also paints the gradient on the ::before pseudo, so both layers
@@ -138,6 +142,63 @@
     }).catch(function(){});
     return box;
   }
+  /* Free gift: the R36S protective case is auto-added at $0 whenever the cart
+     holds a paid item, and auto-removed when the cart empties. Respects a
+     manual removal for the rest of the session. */
+  var GIFT_ID = 49623692247268, GIFT_HANDLE = 'r36s-protective-case-free-gift';
+  var giftBusy = false;
+  function giftDone(r){
+    giftBusy = false;
+    if (r && r.ok){
+      spCount();
+      if (document.getElementById('cart')) spRefreshDrawer();
+      if (document.querySelector('body.template-cart')) location.reload();
+    }
+  }
+  function giftSync(){
+    if (giftBusy) return;
+    giftBusy = true;
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      var gift = null, paid = 0;
+      c.items.forEach(function(it){
+        if (it.id === GIFT_ID || it.handle === GIFT_HANDLE) gift = it;
+        else if (it.handle !== 'shipping-protection') paid += it.quantity;
+      });
+      if (!gift && paid > 0 && sessionStorage.getItem('pgGiftIn')){
+        sessionStorage.setItem('pgGiftOff', '1');
+        sessionStorage.removeItem('pgGiftIn');
+      }
+      if (gift) sessionStorage.setItem('pgGiftIn', '1');
+      if (paid === 0) sessionStorage.removeItem('pgGiftOff');
+      if (paid > 0 && !gift && !sessionStorage.getItem('pgGiftOff')){
+        return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: GIFT_ID, quantity: 1}]})}).then(giftDone);
+      }
+      if (gift && paid === 0){
+        sessionStorage.removeItem('pgGiftIn');
+        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 0}})}).then(giftDone);
+      }
+      if (gift && gift.quantity !== 1){
+        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 1}})}).then(giftDone);
+      }
+      giftBusy = false;
+    }).catch(function(){ giftBusy = false; });
+  }
+  function giftTag(root){
+    root.querySelectorAll('.l4ca > li').forEach(function(li){
+      var a = li.querySelector('a[href*="free-gift"]');
+      if (!a || li.dataset.pgFree) return;
+      li.dataset.pgFree = '1';
+      var done = false;
+      li.querySelectorAll('*').forEach(function(el){
+        if (done || el.children.length) return;
+        if (/^\$?0[.,]00$/.test(el.textContent.trim())){
+          el.innerHTML = '<span class="pg-free-tag">Free</span>';
+          done = true;
+        }
+      });
+      if (!done) a.insertAdjacentHTML('beforeend', ' <span class="pg-free-tag">Free</span>');
+    });
+  }
   function spInject(){
     var c = document.getElementById('cart');
     if (c){
@@ -148,6 +209,7 @@
       c.querySelectorAll('.l4ca > li').forEach(function(li){
         if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
       });
+      giftTag(c);
     }
     var form = document.querySelector('body.template-cart .form-cart');
     if (form){
@@ -158,17 +220,24 @@
       form.querySelectorAll('.l4ca > li').forEach(function(li){
         if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
       });
+      giftTag(form);
     }
+  }
+  var giftTimer;
+  function giftQueue(){
+    clearTimeout(giftTimer);
+    giftTimer = setTimeout(giftSync, 600);
   }
   function bind(){
     fix();
     spInject();
+    giftQueue();
     var c = document.getElementById('cart');
-    if (c){ try { new MutationObserver(function(){ fix(); spInject(); }).observe(c, {childList: true, subtree: true}); } catch(e){} }
+    if (c){ try { new MutationObserver(function(){ fix(); spInject(); giftQueue(); }).observe(c, {childList: true, subtree: true}); } catch(e){} }
   }
   if (document.readyState !== 'loading') bind(); else document.addEventListener('DOMContentLoaded', bind);
   setTimeout(function(){ fix(); spInject(); }, 400);
-  setTimeout(function(){ fix(); spInject(); }, 1200);
+  setTimeout(function(){ fix(); spInject(); giftQueue(); }, 1200);
   setTimeout(function(){ fix(); spInject(); }, 3000);
 })();
 </script>
