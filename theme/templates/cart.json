@@ -1,0 +1,65 @@
+{
+  "sections": {
+    "pg_cart_header": {
+      "type": "pg-cart-header",
+      "settings": {
+        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "announce_text": "Free shipping on all orders"
+      }
+    },
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": false
+      }
+    },
+    "main-cart": {
+      "type": "main-cart",
+      "blocks": {
+        "0d49aad6-ec66-45c2-873e-bb9e4b2bebd4": {
+          "type": "shipping_timer",
+          "settings": {}
+        },
+        "3a97b7e1-261c-47a9-abb2-762eb658f4dd": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p>Free shipping on <strong>every order</strong></p>"
+          }
+        },
+        "0de7a67d-1bf0-4afd-a266-123b54034a66": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p>30-day <strong>money-back</strong> guarantee</p>"
+          }
+        }
+      },
+      "block_order": [
+        "0d49aad6-ec66-45c2-873e-bb9e4b2bebd4",
+        "3a97b7e1-261c-47a9-abb2-762eb658f4dd",
+        "0de7a67d-1bf0-4afd-a266-123b54034a66"
+      ],
+      "settings": {
+        "show_dynamic_buybutton": true,
+        "enable_discount_tab": true,
+        "show_payment_methods": true,
+        "show_order_notes": false,
+        "order_notes_alignment": "right",
+        "enable_terms_checkbox": false,
+        "terms_text": "<p>I accept the <a href='/policies/privacy-policy' title='Privacy Policy'>privacy policy</a>"
+      }
+    },
+    "pg_cart_upsell": {
+      "type": "pg-cart-upsell",
+      "settings": {
+        "case_product": "data-frog-protective-bag-for-r36s-retro-video-game-bags-olig-cover-case-for-rg35xx-r35s",
+        "display_title": "R36S Protective Case"
+      }
+    }
+  },
+  "order": [
+    "pg_cart_header",
+    "breadcrumbs",
+    "main-cart",
+    "pg_cart_upsell"
+  ]
+}
