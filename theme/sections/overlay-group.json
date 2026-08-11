@@ -83,6 +83,13 @@
         "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
         "keep_match": "data-frog"
       }
+    },
+    "pg-footer": {
+      "type": "pg-footer",
+      "settings": {
+        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "tagline": "Retro gaming, pocket-sized."
+      }
     }
   },
   "order": [
@@ -103,6 +110,7 @@
     "nc-navsale-first",
     "nc-birch-copy",
     "nc-cart-tweaks",
-    "pg-drawer"
+    "pg-drawer",
+    "pg-footer"
   ]
 }

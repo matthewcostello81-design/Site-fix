@@ -1,0 +1,84 @@
+{%- comment -%}
+  PG Footer: Pocketera overrides for the nc-footer brand injection. Loads after
+  nc-footer in overlay-group so it wins order ties. Swaps the injected brand
+  lockup (emblem image, NORTH COVE wordmark, wellness tagline) to Pocketera,
+  fixes the copyright line, and recolors the band and newsletter button from
+  teal/orange to purple/black.
+{%- endcomment -%}
+<style>
+  /* Band + bottom bar: purple */
+  .shopify-section-footer{background:linear-gradient(115deg,#2E1140 0%,#54187A 46%,#7A2FA2 100%) !important}
+  #shopify-section-footer + .base-font{background:#2E1140 !important;border-top:1px solid rgba(255,255,255,.14) !important}
+
+  /* Orange hovers and underlines: light purple */
+  #shopify-section-footer a:hover{color:#E9D5F7 !important}
+  #shopify-section-footer .nc-foot-links a:hover{color:#E9D5F7 !important}
+  #shopify-section-footer + .base-font a:hover{color:#fff !important}
+  #shopify-section-footer .title-underline-none::after,
+  #shopify-section-footer [class*="title-underline"]::after{background:#C79BE3 !important}
+
+  /* Subscribe button: black with purple glow, no orange animation */
+  #shopify-section-footer #newsletter-footer button,
+  #shopify-section-footer #newsletter-footer [type="submit"],
+  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+    background:#121212 !important;background-image:none !important;animation:none !important;
+    box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
+  }
+  #shopify-section-footer #newsletter-footer button:hover,
+  #shopify-section-footer #newsletter-footer [type="submit"]:hover,
+  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only:hover{
+    background:#7A2FA2 !important;filter:none !important;
+  }
+  @media(max-width:760px){
+    #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+      background:#121212 !important;background-image:none !important;animation:none !important;
+      box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
+    }
+  }
+</style>
+<script>
+(function(){
+  if (window.pgFooter) return; window.pgFooter = 1;
+  var LOGO = {{ section.settings.logo_image | image_url: width: 420 | json }};
+  function fix(){
+    var f = document.getElementById('shopify-section-footer');
+    if (f){
+      var img = f.querySelector('img.nc-foot-emblem');
+      if (img && img.dataset.pgf !== '1'){ img.dataset.pgf = '1'; if (LOGO) img.src = LOGO; img.alt = 'Pocketera'; }
+      var w = f.querySelector('.nc-foot-word');
+      if (w && w.dataset.pgf !== '1'){ w.dataset.pgf = '1'; w.innerHTML = 'POCKETERA'; }
+      var tag = f.querySelector('.nc-foot-tag');
+      if (tag && /Drug-free/i.test(tag.textContent)) tag.textContent = {{ section.settings.tagline | json }};
+    }
+    var base = document.querySelector('#shopify-section-footer + .base-font');
+    if (base){
+      var walker = document.createTreeWalker(base, NodeFilter.SHOW_TEXT);
+      var n;
+      while ((n = walker.nextNode())){
+        if (/North[\s ]*Cove/i.test(n.nodeValue)){
+          n.nodeValue = n.nodeValue
+            .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'Pocketera')
+            .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'Pocketera')
+            .replace(/North[\s ]*Cove/gi, 'Pocketera');
+        }
+      }
+    }
+  }
+  function bind(){
+    fix();
+    var wrap = document.querySelector('.shopify-section-footer') || document.body;
+    try { new MutationObserver(fix).observe(wrap, {childList: true, subtree: true}); } catch(e){}
+  }
+  if (document.readyState !== 'loading') bind(); else document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(fix, 500); setTimeout(fix, 1200); setTimeout(fix, 2200); setTimeout(fix, 3500);
+})();
+</script>
+{% schema %}
+{
+  "name": "PG Footer",
+  "settings": [
+    {"type": "image_picker", "id": "logo_image", "label": "Footer logo image"},
+    {"type": "text", "id": "tagline", "label": "Brand tagline", "default": "Retro gaming, pocket-sized."}
+  ]
+}
+{% endschema %}
