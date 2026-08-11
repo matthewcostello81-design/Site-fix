@@ -47,7 +47,7 @@
   /* Best sellers grid */
   .pgh-wrap{max-width:1280px;margin:0 auto;padding:56px 24px 10px}
   .pgh-h2{font-size:30px;font-weight:600;margin:0 0 26px}
-  .pgh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:1280px}
+  .pgh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;max-width:1280px}
   .pgh-card{display:block}
   .pgh-card-img{position:relative;background:#f6f6f6;border-radius:4px;overflow:hidden}
   .pgh-card-img img{aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .25s ease}
@@ -70,7 +70,8 @@
   .pgh-split-r img{width:100%;height:100%;object-fit:cover}
 
   /* Tiles */
-  .pgh-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .pgh-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,300px));gap:20px;justify-content:start}
+  @media (min-width: 901px){.pgh-tiles{grid-template-columns:repeat(3,1fr)}}
   .pgh-tile{position:relative;border-radius:6px;overflow:hidden;display:block}
   .pgh-tile img{aspect-ratio:4/3;object-fit:cover;width:100%;transition:transform .25s ease}
   .pgh-tile:hover img{transform:scale(1.04)}
