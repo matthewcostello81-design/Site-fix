@@ -40,6 +40,22 @@
   }
   #content [id*="main-cart"] .old-price{color:#8a8a8a}
   #content [id*="breadcrumbs"] a{color:#7A2FA2}
+
+  /* Premium cart page: white canvas, card items, black checkout */
+  body.template-cart,
+  body.template-cart #content,
+  body.template-cart main{background:#faf9fc !important}
+  body.template-cart .form-cart .l4ca > li{background:#fff !important;border:1px solid #e6dcf0 !important;border-radius:16px !important;box-shadow:0 16px 38px -30px rgba(74,28,102,.5) !important}
+  body.template-cart button[name="checkout"],
+  body.template-cart .checkout-button,
+  body.template-cart [class*="checkout"] button{background:#121212 !important;background-image:none !important;background-color:#121212 !important;color:#fff !important;border:none !important;border-radius:10px !important;box-shadow:0 16px 34px -16px rgba(18,18,18,.5) !important;font-weight:700 !important;letter-spacing:.03em !important}
+  body.template-cart button[name="checkout"]:hover,
+  body.template-cart .checkout-button:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important}
+  body.template-cart ul.l4al li.overlay-lime{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important;border-radius:12px !important;opacity:1 !important}
+  body.template-cart ul.l4al li.overlay-lime,
+  body.template-cart ul.l4al li.overlay-lime *{color:#fff !important;-webkit-text-fill-color:#fff !important;font-weight:600 !important}
+  body.template-cart .l4tt li.strong{font-weight:700 !important;font-size:17px !important}
+  body.template-cart .f8vl{border-radius:16px}
 </style>
 
 <div class="pgc-announce">{{ section.settings.announce_text }}</div>

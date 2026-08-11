@@ -51,6 +51,24 @@
   #cart#cart#cart .semantic-amount .decr,#cart#cart#cart .semantic-amount .incr{color:#7A2FA2 !important}
   #cart#cart#cart .nc-upsell-note{color:#7A2FA2 !important;background:rgba(122,47,162,.1) !important}
 
+  /* Shipping Protection: rendered as a service toggle, raw line item hidden */
+  .pg-sp{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:13px 14px;margin:12px 0;box-shadow:0 12px 30px -24px rgba(74,28,102,.4);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-sp-ic{flex:none;width:42px;height:42px;border-radius:50%;background:#f5eefa;display:flex;align-items:center;justify-content:center}
+  .pg-sp-ic svg{width:22px;height:22px;stroke:#7A2FA2;fill:none;stroke-width:1.8}
+  .pg-sp-t{flex:1;min-width:0}
+  .pg-sp-t b{display:block;font-size:14.5px;color:#121212 !important}
+  .pg-sp-t small{display:block;font-size:12px;color:#6a6a6a !important;margin-top:1px}
+  .pg-sp-price{font-weight:700;font-size:14.5px;color:#7A2FA2 !important;margin-right:2px}
+  .pg-sp-sw{position:relative;display:inline-block;width:46px;height:26px;flex:none;cursor:pointer}
+  .pg-sp-sw input{opacity:0;width:0;height:0;position:absolute}
+  .pg-sp-sw i{position:absolute;inset:0;background:#d6d6d6;border-radius:999px;transition:background .2s ease}
+  .pg-sp-sw i:before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s ease;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .pg-sp-sw input:checked + i{background:#7A2FA2}
+  .pg-sp-sw input:checked + i:before{transform:translateX(20px)}
+  .pg-sp[data-busy]{opacity:.55;pointer-events:none}
+  #cart .l4ca > li:has(a[href*="shipping-protection"]),
+  body.template-cart .form-cart .l4ca > li:has(a[href*="shipping-protection"]){display:none !important}
+
   /* "Shipped for free" bars anywhere (drawer, cart page, express checkout):
      nc-cartfix also paints the gradient on the ::before pseudo, so both layers
      must be recolored. Global on purpose - every lime status bar goes purple. */
@@ -76,13 +94,82 @@
     var t = c.querySelector('.nc-dlogo-txt');
     if (t && t.textContent !== 'POCKETERA') t.textContent = 'POCKETERA';
   }
+  /* Shipping Protection service toggle */
+  var SP_ID = 49529437028580;
+  function spRefreshDrawer(){
+    return fetch('/', {headers: {'X-Requested-With': 'XMLHttpRequest'}}).then(function(r){ return r.text(); }).then(function(t){
+      var doc = new DOMParser().parseFromString(t, 'text/html');
+      var fresh = doc.querySelector('#cart');
+      var cur = document.getElementById('cart');
+      if (fresh && cur){ cur.innerHTML = fresh.innerHTML; }
+    }).catch(function(){});
+  }
+  function spCount(){
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      document.querySelectorAll('.cart-count,[data-cart-count]').forEach(function(el){ el.textContent = c.item_count; });
+    }).catch(function(){});
+  }
+  function spBox(){
+    var box = document.createElement('div');
+    box.className = 'pg-sp'; box.setAttribute('data-pg-sp', '1');
+    box.innerHTML = '<div class="pg-sp-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></div>'
+      + '<div class="pg-sp-t"><b>Shipping Protection</b><small>Protect your order against loss or damage in transit</small></div>'
+      + '<span class="pg-sp-price">$2.99</span>'
+      + '<label class="pg-sp-sw"><input type="checkbox" aria-label="Add shipping protection"><i></i></label>';
+    var input = box.querySelector('input');
+    input.addEventListener('change', function(){
+      box.setAttribute('data-busy', '1');
+      var req = input.checked
+        ? fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: SP_ID, quantity: 1}]})})
+        : fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49529437028580": 0}})});
+      req.then(function(r){
+        if (!r.ok) throw 0;
+        spCount();
+        var c = document.getElementById('cart');
+        if (c && c.contains(box)) return spRefreshDrawer();
+        location.reload();
+      }).catch(function(){
+        input.checked = !input.checked;
+        box.removeAttribute('data-busy');
+      });
+    });
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      input.checked = c.items.some(function(it){ return it.id === SP_ID || it.handle === 'shipping-protection'; });
+    }).catch(function(){});
+    return box;
+  }
+  function spInject(){
+    var c = document.getElementById('cart');
+    if (c){
+      var items = c.querySelector('.l4ca:not(.in-panel)');
+      if (items && !c.querySelector('[data-pg-sp]')){
+        items.parentNode.insertBefore(spBox(), items.nextSibling);
+      }
+      c.querySelectorAll('.l4ca > li').forEach(function(li){
+        if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
+      });
+    }
+    var form = document.querySelector('body.template-cart .form-cart');
+    if (form){
+      var list = form.querySelector('.l4ca');
+      if (list && !form.querySelector('[data-pg-sp]')){
+        list.parentNode.insertBefore(spBox(), list.nextSibling);
+      }
+      form.querySelectorAll('.l4ca > li').forEach(function(li){
+        if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
+      });
+    }
+  }
   function bind(){
     fix();
+    spInject();
     var c = document.getElementById('cart');
-    if (c){ try { new MutationObserver(fix).observe(c, {childList: true, subtree: true}); } catch(e){} }
+    if (c){ try { new MutationObserver(function(){ fix(); spInject(); }).observe(c, {childList: true, subtree: true}); } catch(e){} }
   }
   if (document.readyState !== 'loading') bind(); else document.addEventListener('DOMContentLoaded', bind);
-  setTimeout(fix, 400); setTimeout(fix, 1200); setTimeout(fix, 3000);
+  setTimeout(function(){ fix(); spInject(); }, 400);
+  setTimeout(function(){ fix(); spInject(); }, 1200);
+  setTimeout(function(){ fix(); spInject(); }, 3000);
 })();
 </script>
 {% schema %}
