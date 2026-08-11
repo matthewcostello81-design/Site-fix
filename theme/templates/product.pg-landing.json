@@ -1,0 +1,89 @@
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {
+          "type": "review",
+          "settings": {
+            "name": "Karos",
+            "stars": 5,
+            "text": "Legit arkos 2.0 having a great time playing so far feels like i stepped into a time machine"
+          }
+        },
+        "rev2": {
+          "type": "review",
+          "settings": {
+            "name": "Barny",
+            "stars": 5,
+            "text": "Pokemon games are insane goodd"
+          }
+        },
+        "rev3": {
+          "type": "review",
+          "settings": {
+            "name": "Anita",
+            "stars": 5,
+            "text": "Love the games. 5 stars"
+          }
+        },
+        "rev4": {
+          "type": "review",
+          "settings": {
+            "name": "Nika",
+            "stars": 5,
+            "text": "Pokemon games letsgooo"
+          }
+        },
+        "rev5": {
+          "type": "review",
+          "settings": {
+            "name": "Nj",
+            "stars": 5,
+            "text": "Overall just a really solid product, very happy"
+          }
+        },
+        "rev6": {
+          "type": "review",
+          "settings": {
+            "name": "Hans",
+            "stars": 5,
+            "text": "Perfect 5 stars, good quality"
+          }
+        },
+        "rev7": {
+          "type": "review",
+          "settings": {
+            "name": "Mathias",
+            "stars": 5,
+            "text": "Amazing"
+          }
+        },
+        "rev8": {
+          "type": "review",
+          "settings": {
+            "name": "Cynthia M.",
+            "stars": 5,
+            "text": "love the pokemon games"
+          }
+        }
+      },
+      "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6", "rev7", "rev8"],
+      "settings": {
+        "product": "handheld-game-console",
+        "display_title": "R36S",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 12 customers",
+        "review_total": 12,
+        "default_size": "64G",
+        "show_bundle": true,
+        "bundle_title": "Bundle Deal: 2x R36S",
+        "bundle_pct": 10
+      }
+    }
+  },
+  "order": ["pg_landing"]
+}

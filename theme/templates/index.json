@@ -1,89 +1,70 @@
 {
   "sections": {
-    "pg_landing": {
-      "type": "pg-landing",
+    "pg_home": {
+      "type": "pg-home",
       "blocks": {
-        "rev1": {
-          "type": "review",
+        "prod1": {
+          "type": "product",
           "settings": {
-            "name": "Karos",
-            "stars": 5,
-            "text": "Legit arkos 2.0 having a great time playing so far feels like i stepped into a time machine"
+            "product": "handheld-game-console",
+            "label": "R36S"
           }
         },
-        "rev2": {
-          "type": "review",
+        "prod2": {
+          "type": "product",
           "settings": {
-            "name": "Barny",
-            "stars": 5,
-            "text": "Pokemon games are insane goodd"
+            "product": "data-frog-protective-bag-for-r36s-retro-video-game-bags-olig-cover-case-for-rg35xx-r35s",
+            "label": "R36S Protective Case"
           }
         },
-        "rev3": {
-          "type": "review",
+        "acc1": {
+          "type": "accordion",
           "settings": {
-            "name": "Anita",
-            "stars": 5,
-            "text": "Love the games. 5 stars"
+            "title": "About Us",
+            "text": "<p>PocketEra brings the golden age of gaming back to your pocket. We are a small US-based team of retro gamers on a mission to make the classics playable anywhere.</p>"
           }
         },
-        "rev4": {
-          "type": "review",
+        "acc2": {
+          "type": "accordion",
           "settings": {
-            "name": "Nika",
-            "stars": 5,
-            "text": "Pokemon games letsgooo"
+            "title": "Delivery Time",
+            "text": "<p>Orders are processed within 1 to 2 business days. Estimated delivery is 7 to 14 business days after processing. Tracking is emailed as soon as your order ships.</p>"
           }
         },
-        "rev5": {
-          "type": "review",
+        "acc3": {
+          "type": "accordion",
           "settings": {
-            "name": "Nj",
-            "stars": 5,
-            "text": "Overall just a really solid product, very happy"
+            "title": "Reviews",
+            "text": "<p>Rated 5.0 by our customers. <a href=\"/products/handheld-game-console#pg-reviews\">Read the reviews</a>.</p>"
           }
         },
-        "rev6": {
-          "type": "review",
+        "acc4": {
+          "type": "accordion",
           "settings": {
-            "name": "Hans",
-            "stars": 5,
-            "text": "Perfect 5 stars, good quality"
-          }
-        },
-        "rev7": {
-          "type": "review",
-          "settings": {
-            "name": "Mathias",
-            "stars": 5,
-            "text": "Amazing"
-          }
-        },
-        "rev8": {
-          "type": "review",
-          "settings": {
-            "name": "Cynthia M.",
-            "stars": 5,
-            "text": "love the pokemon games"
+            "title": "Customer Service",
+            "text": "<p>Call us at (402) 979-6583 with questions or order concerns. If we miss your call, we will call you back as soon as possible.</p>"
           }
         }
       },
-      "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6", "rev7", "rev8"],
+      "block_order": ["prod1", "prod2", "acc1", "acc2", "acc3", "acc4"],
       "settings": {
-        "product": "handheld-game-console",
-        "display_title": "R36S",
-        "announce_text": "Free shipping on all orders",
         "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
         "logo_text": "PocketEra",
-        "rating_value": "5.0",
-        "rating_label": "Trusted by over 12 customers",
-        "review_total": 12,
-        "default_size": "64G",
-        "show_bundle": true,
-        "bundle_title": "Bundle Deal: 2x R36S",
-        "bundle_pct": 10
+        "announce_text": "Free shipping on all orders",
+        "shop_url": "/products/handheld-game-console",
+        "hero_image": "shopify://shop_images/hf_20260810_233020_29816057-5371-443f-93a2-c7a484ec9364.png",
+        "hero_title": "Special Offers on New Arrivals",
+        "hero_cta": "Shop Now",
+        "hero_url": "/products/handheld-game-console",
+        "grid_title": "Best Sellers",
+        "split_title": "Built for real gamers.",
+        "split_line1": "Your favourite classics. Now in your pocket.",
+        "split_line2": "15,000+ retro games, ready to play anywhere.",
+        "split_cta": "Shop now",
+        "split_image": "shopify://shop_images/hf_20260810_233020_a2474415-ccf9-497d-8bb6-6dafee6297a0.png",
+        "tiles_title": "Collections"
       }
     }
   },
-  "order": ["pg_landing"]
+  "order": ["pg_home"]
 }

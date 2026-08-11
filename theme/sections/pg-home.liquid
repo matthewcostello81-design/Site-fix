@@ -1,0 +1,290 @@
+{%- comment -%}
+  PG Home: PocketEra homepage in the Sleek Mood homepage layout, purple/black.
+  Announcement bar + centered-logo header, full-bleed hero with CTA, Best
+  Sellers product grid (blocks), split promo banner, image tiles, accordion
+  FAQ, and a trust icon row. The site footer renders below as usual.
+{%- endcomment -%}
+
+<style>
+  .shopify-section-header,
+  #shopify-section-header,
+  .shopify-section[id*="__header"],
+  .shopify-section[id*="nc_announce"],
+  .shopify-section[id*="nc-announce"],
+  .shopify-section[id*="newsletter-popup"],
+  [id*="sticky-add-to-cart"]{display:none !important}
+  #content{padding-top:0 !important}
+
+  #pgh{--p:#7A2FA2;--pd:#4A1C66;--ink:#121212;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:var(--ink);background:#fff}
+  #pgh *{box-sizing:border-box}
+  #pgh img{max-width:100%;display:block}
+  #pgh a{text-decoration:none;color:inherit}
+
+  .pgh-announce{background:var(--p);color:#fff;text-align:center;font-size:13.5px;letter-spacing:.02em;padding:10px 16px}
+  .pgh-head{background:#fff;border-bottom:1px solid #e9dcf3}
+  .pgh-head-in{max-width:1280px;margin:0 auto;padding:18px 24px 10px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+  .pgh-head svg{width:22px;height:22px;stroke:#121212;fill:none;stroke-width:1.6}
+  .pgh-logo{justify-self:center}
+  .pgh-logo img{max-height:120px;width:auto;margin:0 auto}
+  .pgh-logo-text{font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:42px;line-height:1}
+  .pgh-ic{display:flex;gap:18px;justify-self:end;align-items:center}
+  .pgh-cart{position:relative}
+  .pgh-cart-n{position:absolute;top:-7px;right:-9px;background:var(--p);color:#fff;border-radius:999px;font-size:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px}
+  .pgh-nav{display:flex;justify-content:center;gap:34px;padding:12px 16px 16px;flex-wrap:wrap}
+  .pgh-nav a{font-size:15px;color:#2b2b2b;text-underline-offset:5px}
+  .pgh-nav a:hover{text-decoration:underline;color:var(--p)}
+  .pgh-nav a.pgh-on{text-decoration:underline}
+
+  /* Hero */
+  .pgh-hero{position:relative;overflow:hidden;min-height:420px;height:66vh;max-height:760px}
+  .pgh-hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .pgh-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(26,7,38,.25),rgba(26,7,38,.5));z-index:1}
+  .pgh-hero-in{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;padding:0 20px}
+  .pgh-hero h1{color:#fff;font-size:44px;font-weight:700;margin:0;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+  .pgh-hero-btn{display:inline-block;border:1.5px solid #fff;color:#fff;font-size:15.5px;font-weight:600;padding:14px 34px;background:rgba(0,0,0,.15);transition:background .15s ease,color .15s ease}
+  .pgh-hero-btn:hover{background:#fff;color:#121212}
+
+  /* Best sellers grid */
+  .pgh-wrap{max-width:1280px;margin:0 auto;padding:56px 24px 10px}
+  .pgh-h2{font-size:30px;font-weight:600;margin:0 0 26px}
+  .pgh-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;max-width:1280px}
+  .pgh-card{display:block}
+  .pgh-card-img{position:relative;background:#f6f6f6;border-radius:4px;overflow:hidden}
+  .pgh-card-img img{aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .25s ease}
+  .pgh-card:hover .pgh-card-img img{transform:scale(1.04)}
+  .pgh-badge{position:absolute;left:12px;bottom:12px;background:#fff;border:1px solid #e2e2e2;border-radius:999px;font-size:12.5px;padding:5px 14px}
+  .pgh-card-t{font-size:16px;margin:12px 0 4px;color:#1c1c1c}
+  .pgh-card:hover .pgh-card-t{text-decoration:underline;text-underline-offset:4px}
+  .pgh-card-p{font-size:16px;font-weight:600;color:var(--p)}
+  .pgh-card-p s{color:#8a8a8a;font-weight:400;font-size:14px;margin-right:8px}
+
+  /* Split banner */
+  .pgh-split{max-width:1280px;margin:56px auto 0;display:grid;grid-template-columns:44% 1fr;border-radius:6px;overflow:hidden}
+  .pgh-split-l{background:#121212;color:#fff;padding:72px 56px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+  .pgh-split-l h2{font-size:42px;font-weight:700;margin:0}
+  .pgh-split-l .l1{font-weight:600;font-size:16.5px}
+  .pgh-split-l .l2{color:#c9c9c9;font-size:15.5px;margin-top:4px}
+  .pgh-split-btn{display:inline-block;background:#fff;color:#121212;font-weight:600;font-size:15px;padding:14px 30px;border-radius:4px;width:max-content;transition:background .15s ease,color .15s ease}
+  .pgh-split-btn:hover{background:var(--p);color:#fff}
+  .pgh-split-r{min-height:380px}
+  .pgh-split-r img{width:100%;height:100%;object-fit:cover}
+
+  /* Tiles */
+  .pgh-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .pgh-tile{position:relative;border-radius:6px;overflow:hidden;display:block}
+  .pgh-tile img{aspect-ratio:4/3;object-fit:cover;width:100%;transition:transform .25s ease}
+  .pgh-tile:hover img{transform:scale(1.04)}
+  .pgh-tile:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(18,4,28,0) 45%,rgba(18,4,28,.72))}
+  .pgh-tile span{position:absolute;left:22px;bottom:18px;color:#fff;font-size:24px;font-weight:700;z-index:1}
+
+  /* Accordions */
+  .pgh-acc{max-width:880px;margin:26px auto 0;padding:0 24px}
+  .pgh-acc details{border-bottom:1px solid #e5e5e5}
+  .pgh-acc summary{list-style:none;display:flex;align-items:center;font-size:17px;padding:20px 4px;cursor:pointer}
+  .pgh-acc summary::-webkit-details-marker{display:none}
+  .pgh-acc summary:after{content:"\2304";margin-left:auto;color:var(--p);font-size:18px;line-height:0;transition:transform .15s ease}
+  .pgh-acc details[open] summary:after{transform:rotate(180deg)}
+  .pgh-acc-body{font-size:15px;line-height:1.65;color:#3a3a3a;padding:0 4px 20px}
+  .pgh-acc-body a{color:var(--p);text-decoration:underline;text-underline-offset:3px}
+
+  /* Trust row */
+  .pgh-trust{max-width:1280px;margin:0 auto;padding:56px 24px 64px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;text-align:center}
+  .pgh-trust svg{width:44px;height:44px;stroke:var(--p);fill:none;stroke-width:1.5;margin:0 auto 12px}
+  .pgh-trust b{display:block;font-size:16px;margin-bottom:5px}
+  .pgh-trust span{font-size:14px;color:#5c5c5c}
+
+  @media (max-width: 900px){
+    .pgh-logo img{max-height:84px}
+    .pgh-logo-text{font-size:34px}
+    .pgh-nav{gap:20px;padding-top:8px}
+    .pgh-hero{height:56vh;min-height:340px}
+    .pgh-hero h1{font-size:30px}
+    .pgh-wrap{padding:38px 16px 8px}
+    .pgh-h2{font-size:24px}
+    .pgh-grid{grid-template-columns:1fr 1fr;gap:14px}
+    .pgh-split{grid-template-columns:1fr;margin-top:38px}
+    .pgh-split-l{padding:40px 26px}
+    .pgh-split-l h2{font-size:30px}
+    .pgh-split-r{min-height:240px}
+    .pgh-trust{grid-template-columns:1fr;gap:30px;padding:40px 16px 48px}
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div id="pgh">
+  <div class="pgh-announce">{{ section.settings.announce_text }}</div>
+
+  <header class="pgh-head">
+    <div class="pgh-head-in">
+      <a href="{{ routes.search_url }}" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
+      </a>
+      <a class="pgh-logo" href="{{ routes.root_url }}" aria-label="Home">
+        {%- if section.settings.logo_image -%}
+          <img src="{{ section.settings.logo_image | image_url: width: 600 }}" alt="{{ shop.name }}">
+        {%- else -%}
+          <span class="pgh-logo-text">{{ section.settings.logo_text }}</span>
+        {%- endif -%}
+      </a>
+      <div class="pgh-ic">
+        <a href="{{ routes.account_url }}" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        </a>
+        <a class="pgh-cart" href="{{ routes.cart_url }}" aria-label="Cart">
+          <svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          {%- if cart.item_count > 0 -%}<span class="pgh-cart-n">{{ cart.item_count }}</span>{%- endif -%}
+        </a>
+      </div>
+    </div>
+    <nav class="pgh-nav">
+      <a class="pgh-on" href="{{ routes.root_url }}">Home</a>
+      <a href="{{ section.settings.shop_url }}">Shop</a>
+      <a href="{{ section.settings.shop_url }}#pg-reviews">Reviews</a>
+      <a href="/pages/track-order">Track your order</a>
+      <a href="/pages/contact">Contact</a>
+    </nav>
+  </header>
+
+  {%- if section.settings.hero_image -%}
+  <div class="pgh-hero">
+    <img src="{{ section.settings.hero_image | image_url: width: 2200 }}" alt="{{ section.settings.hero_title | escape }}">
+    <div class="pgh-hero-in">
+      <h1>{{ section.settings.hero_title }}</h1>
+      <a class="pgh-hero-btn" href="{{ section.settings.hero_url }}">{{ section.settings.hero_cta }}</a>
+    </div>
+  </div>
+  {%- endif -%}
+
+  <div class="pgh-wrap">
+    <h2 class="pgh-h2">{{ section.settings.grid_title }}</h2>
+    <div class="pgh-grid">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'product' -%}
+          {%- assign bp = block.settings.product -%}
+          {%- if bp != blank -%}
+          <a class="pgh-card" href="{{ bp.url }}" {{ block.shopify_attributes }}>
+            <div class="pgh-card-img">
+              <img src="{{ bp.featured_image | image_url: width: 700 }}" alt="{{ block.settings.label | default: bp.title | escape }}" loading="lazy">
+              {%- if bp.compare_at_price > bp.price -%}<span class="pgh-badge">Sale</span>{%- endif -%}
+            </div>
+            <div class="pgh-card-t">{{ block.settings.label | default: bp.title }}</div>
+            <div class="pgh-card-p">
+              {%- if bp.compare_at_price > bp.price -%}<s>{{ bp.compare_at_price | money }}</s>{%- endif -%}
+              {%- if bp.price_varies -%}From {% endif %}{{ bp.price | money }}
+            </div>
+          </a>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    <div class="pgh-split">
+      <div class="pgh-split-l">
+        <h2>{{ section.settings.split_title }}</h2>
+        <div>
+          <div class="l1">{{ section.settings.split_line1 }}</div>
+          <div class="l2">{{ section.settings.split_line2 }}</div>
+        </div>
+        <a class="pgh-split-btn" href="{{ section.settings.shop_url }}">{{ section.settings.split_cta }}</a>
+      </div>
+      <div class="pgh-split-r">
+        {%- if section.settings.split_image -%}
+          <img src="{{ section.settings.split_image | image_url: width: 1400 }}" alt="{{ section.settings.split_title | escape }}" loading="lazy">
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+
+  <div class="pgh-wrap">
+    <h2 class="pgh-h2">{{ section.settings.tiles_title }}</h2>
+    <div class="pgh-tiles">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'product' -%}
+          {%- assign bp = block.settings.product -%}
+          {%- if bp != blank -%}
+          <a class="pgh-tile" href="{{ bp.url }}">
+            {%- assign tile_img = block.settings.tile_image | default: bp.featured_image -%}
+            <img src="{{ tile_img | image_url: width: 1000 }}" alt="{{ block.settings.label | default: bp.title | escape }}" loading="lazy">
+            <span>{{ block.settings.label | default: bp.title }}</span>
+          </a>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+
+  <div class="pgh-acc">
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'accordion' -%}
+      <details {{ block.shopify_attributes }}>
+        <summary>{{ block.settings.title }}</summary>
+        <div class="pgh-acc-body">{{ block.settings.text }}</div>
+      </details>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  <div class="pgh-trust">
+    <div>
+      <svg viewBox="0 0 24 24"><path d="M2 7h12v10H2z"/><path d="M14 10h4l4 4v3h-8"/><circle cx="6" cy="18" r="1.7"/><circle cx="18" cy="18" r="1.7"/></svg>
+      <b>Free Shipping</b>
+      <span>Free tracked shipping on every order</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg>
+      <b>30-Day Guarantee</b>
+      <span>Money back, no hassle</span>
+    </div>
+    <div>
+      <svg viewBox="0 0 24 24"><rect x="3.5" y="11" width="17" height="10" rx="2.5"/><path d="M7.5 11V7.5a4.5 4.5 0 0 1 9 0V11"/></svg>
+      <b>Secure Checkout</b>
+      <span>SSL encrypted payment</span>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "PG Home",
+  "settings": [
+    {"type": "image_picker", "id": "logo_image", "label": "Logo image"},
+    {"type": "text", "id": "logo_text", "label": "Logo text (used when no image)", "default": "PocketEra"},
+    {"type": "text", "id": "announce_text", "label": "Announcement text", "default": "Free shipping on all orders"},
+    {"type": "url", "id": "shop_url", "label": "Shop link (nav, buttons)"},
+    {"type": "image_picker", "id": "hero_image", "label": "Hero image"},
+    {"type": "text", "id": "hero_title", "label": "Hero title", "default": "Special Offers on New Arrivals"},
+    {"type": "text", "id": "hero_cta", "label": "Hero button text", "default": "Shop Now"},
+    {"type": "url", "id": "hero_url", "label": "Hero button link"},
+    {"type": "text", "id": "grid_title", "label": "Product grid title", "default": "Best Sellers"},
+    {"type": "text", "id": "split_title", "label": "Banner title", "default": "Built for real gamers."},
+    {"type": "text", "id": "split_line1", "label": "Banner line 1", "default": "Your favourite classics. Now in your pocket."},
+    {"type": "text", "id": "split_line2", "label": "Banner line 2", "default": "15,000+ retro games, ready to play anywhere."},
+    {"type": "text", "id": "split_cta", "label": "Banner button text", "default": "Shop now"},
+    {"type": "image_picker", "id": "split_image", "label": "Banner image"},
+    {"type": "text", "id": "tiles_title", "label": "Tiles title", "default": "Collections"}
+  ],
+  "blocks": [
+    {
+      "type": "product",
+      "name": "Product",
+      "settings": [
+        {"type": "product", "id": "product", "label": "Product"},
+        {"type": "text", "id": "label", "label": "Display name"},
+        {"type": "image_picker", "id": "tile_image", "label": "Tile image (optional)"}
+      ]
+    },
+    {
+      "type": "accordion",
+      "name": "Accordion",
+      "settings": [
+        {"type": "text", "id": "title", "label": "Title", "default": "About Us"},
+        {"type": "richtext", "id": "text", "label": "Content", "default": "<p>Content</p>"}
+      ]
+    }
+  ],
+  "presets": [{"name": "PG Home"}]
+}
+{% endschema %}
