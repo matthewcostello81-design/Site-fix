@@ -26,9 +26,12 @@
 <style>
   .pgm{max-width:760px;margin:0 auto;padding:26px 18px 70px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:#121212}
   .pgm *{box-sizing:border-box}
-  .pgm-h1{display:flex;align-items:baseline;gap:12px;margin:0 0 2px}
-  .pgm-h1 b{font-size:30px;font-weight:700}
-  .pgm-h1 span{font-size:14px;color:#666}
+  .pgm-top{position:sticky;top:0;z-index:7;display:flex;align-items:center;gap:13px;background:rgba(248,243,253,.94);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:10px 4px;margin:0 0 4px;border-bottom:1px solid rgba(122,47,162,.15)}
+  .pgm-bag{position:relative;flex:none;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#9B4BC4,#7A2FA2 60%,#4A1C66);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 20px -12px rgba(74,28,102,.65)}
+  .pgm-bag svg{width:22px;height:22px;stroke:#fff;fill:none;stroke-width:1.9}
+  .pgm-bag i{position:absolute;top:-4px;right:-6px;background:#fff;color:#4A1C66;border:1.5px solid #7A2FA2;border-radius:999px;min-width:18px;height:18px;line-height:15px;font-size:11px;font-weight:700;text-align:center;font-style:normal;padding:0 3px}
+  .pgm-top-t b{display:block;font-size:26px;font-weight:700;line-height:1.1}
+  .pgm-top-t small{font-size:13px;color:#666}
   .pgm-stars{font-size:13.5px;color:#3a3a3a;margin:4px 0 14px;font-weight:600}
   .pgm-stars i{color:#F5A623;font-style:normal;letter-spacing:1px}
   .pgm-ship{background:linear-gradient(120deg,#F6EFFB,#EEE0F7);border:1px solid rgba(122,47,162,.25);color:#4A1C66;border-radius:12px;text-align:center;font-size:14px;font-weight:600;padding:12px 14px;margin-bottom:12px}
@@ -99,7 +102,10 @@
     <a href="{{ routes.root_url }}">Continue shopping</a>
   </div>
 {%- else -%}
-  <div class="pgm-h1"><b>Your Cart</b><span>{{ visible_count }} item{% if visible_count != 1 %}s{% endif %} in cart</span></div>
+  <div class="pgm-top">
+    <span class="pgm-bag"><svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><i>{{ visible_count }}</i></span>
+    <span class="pgm-top-t"><b>Your Cart</b><small>{{ visible_count }} item{% if visible_count != 1 %}s{% endif %} in cart</small></span>
+  </div>
   <div class="pgm-stars"><i>&#9733;&#9733;&#9733;&#9733;&#9733;</i> 10,000+ happy customers</div>
   <div class="pgm-ship">FREE Shipping included</div>
 
@@ -173,7 +179,7 @@
     <img src="{{ orb.featured_image | image_url: width: 148 }}" alt="Pokemon Crystal Ball">
     <div class="pgm-rec-mid">
       <div class="pgm-rec-t">Pokemon Crystal Ball</div>
-      <div class="pgm-rec-p"><s>{{ orb.compare_at_price | money }}</s>{{ orb.price | money }}<span class="pgm-rec-off">10% off your order</span></div>
+      <div class="pgm-rec-p"><s>{{ orb.compare_at_price | money }}</s>{{ orb.price | money }}<span class="pgm-rec-off">Save 10%</span></div>
     </div>
     <button type="button" class="pgm-rec-add" data-variant="{{ orb.selected_or_first_available_variant.id }}">ADD</button>
   </div>
@@ -186,9 +192,6 @@
     {%- endif -%}
     <div class="pgm-row hl"><span>Shipping:</span><span>FREE</span></div>
     <div class="pgm-row hl"><span>R36S Protective Case:</span><span>FREE</span></div>
-    {%- if eligible >= 2 -%}
-      <div class="pgm-row hl"><span>Bundle discount:</span><span>{% if eligible >= 3 %}15%{% else %}10%{% endif %} off at checkout</span></div>
-    {%- endif -%}
     <div class="pgm-row tot"><span>Total</span><span>{{ cart.total_price | money }}</span></div>
     <form action="{{ routes.cart_url }}" method="post">
       <button class="pgm-co" type="submit" name="checkout">&#128274; Secure Checkout</button>
