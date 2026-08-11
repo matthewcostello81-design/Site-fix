@@ -57,13 +57,14 @@
   .pgh-card-img img{aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .25s ease}
   .pgh-card:hover .pgh-card-img img{transform:scale(1.04)}
   .pgh-badge{position:absolute;left:12px;top:12px;background:#fff;border:1px solid #e2e2e2;border-radius:999px;font-size:12.5px;padding:5px 14px}
-  .pgh-atc{position:absolute;right:12px;top:12px;background:#fff;color:#121212;border:0;font-family:inherit;font-size:12.5px;font-weight:500;letter-spacing:0;padding:5px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px -8px rgba(0,0,0,.35);transition:background .15s ease,color .15s ease}
-  .pgh-atc:hover{background:#7A2FA2;color:#fff}
+  .pgh-atc{display:block;width:calc(100% - 28px);margin:6px 14px 16px;background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%);color:#fff;border:0;font-family:inherit;font-size:13.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:12px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 10px 22px -10px rgba(122,47,162,.6);transition:filter .15s ease}
+  .pgh-atc:hover{filter:brightness(1.1)}
   .pgh-atc[disabled]{opacity:.6;cursor:default}
   .pgh-card-t{font-size:16px;font-weight:500;margin:14px 0 4px;color:#1c1c1c}
   .pgh-card:hover .pgh-card-t{text-decoration:underline;text-underline-offset:4px}
-  .pgh-card-p{font-size:16px;font-weight:600;color:var(--p)}
+  .pgh-card-p{display:flex;align-items:baseline;font-size:16px;font-weight:600;color:var(--p)}
   .pgh-card-p s{color:#8a8a8a;font-weight:400;font-size:14px;margin-right:8px}
+  .pgh-card-pr{margin-left:auto}
 
   /* Split banner */
   .pgh-split{max-width:1280px;margin:64px auto 0;display:grid;grid-template-columns:44% 1fr;border-radius:20px;overflow:hidden;box-shadow:0 30px 70px -45px rgba(18,4,28,.6)}
@@ -185,13 +186,13 @@
                 {%- assign pgh_pct = bp.compare_at_price | minus: bp.price | times: 100 | divided_by: bp.compare_at_price -%}
                 <span class="pgh-badge">Sale {{ pgh_pct }}% Off</span>
               {%- endif -%}
-              <button type="button" class="pgh-atc" data-variant="{{ bp.selected_or_first_available_variant.id }}">Add to Cart</button>
             </div>
             <div class="pgh-card-t">{{ block.settings.label | default: bp.title }}</div>
             <div class="pgh-card-p">
               {%- if bp.compare_at_price > bp.price -%}<s>{{ bp.compare_at_price | money }}</s>{%- endif -%}
-              {%- if bp.price_varies -%}From {% endif %}{{ bp.price | money }}
+              <span class="pgh-card-pr">{% if bp.price_varies %}From {% endif %}{{ bp.price | money }}</span>
             </div>
+            <button type="button" class="pgh-atc" data-variant="{{ bp.selected_or_first_available_variant.id }}">Add to Cart</button>
           </a>
           {%- endif -%}
         {%- endif -%}
