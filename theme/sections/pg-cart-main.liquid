@@ -32,11 +32,6 @@
   .pgm-stars{font-size:13.5px;color:#3a3a3a;margin:4px 0 14px;font-weight:600}
   .pgm-stars i{color:#F5A623;font-style:normal;letter-spacing:1px}
   .pgm-ship{background:linear-gradient(120deg,#F6EFFB,#EEE0F7);border:1px solid rgba(122,47,162,.25);color:#4A1C66;border-radius:12px;text-align:center;font-size:14px;font-weight:600;padding:12px 14px;margin-bottom:12px}
-  .pgm-tiers{background:linear-gradient(120deg,#F6EFFB,#EEE0F7);border:1px solid rgba(122,47,162,.25);border-radius:14px;padding:14px 16px 16px;margin-bottom:16px}
-  .pgm-tiers-msg{text-align:center;font-size:13.5px;font-weight:600;color:#2b2b2b;margin-bottom:10px}
-  .pgm-tiers-msg b{color:#7A2FA2}
-  .pgm-track{position:relative;height:6px;border-radius:999px;background:#e3d4ef}
-  .pgm-track i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:linear-gradient(90deg,#9B4BC4,#7A2FA2)}
   .pgm-card{background:#fff;border:1px solid #e0cdee;border-radius:14px;box-shadow:0 12px 30px -24px rgba(74,28,102,.4);display:flex;align-items:center;gap:14px;padding:12px 14px;margin-bottom:12px;position:relative}
   .pgm-card img{width:82px;height:82px;object-fit:cover;border-radius:10px;flex:none;background:#f4f4f4}
   .pgm-mid{flex:1;min-width:0}
@@ -107,19 +102,6 @@
   <div class="pgm-h1"><b>Your Cart</b><span>{{ visible_count }} item{% if visible_count != 1 %}s{% endif %} in cart</span></div>
   <div class="pgm-stars"><i>&#9733;&#9733;&#9733;&#9733;&#9733;</i> 10,000+ happy customers</div>
   <div class="pgm-ship">FREE Shipping included</div>
-
-  <div class="pgm-tiers">
-    {%- if eligible >= 3 -%}
-      <div class="pgm-tiers-msg">Max Savings Unlocked <b>Extra 15% Off is applied at checkout!</b></div>
-      <div class="pgm-track"><i style="width:100%"></i></div>
-    {%- elsif eligible == 2 -%}
-      <div class="pgm-tiers-msg"><b>10% Off applied at checkout.</b> Add 1 more item for 15% Off!</div>
-      <div class="pgm-track"><i style="width:66%"></i></div>
-    {%- else -%}
-      <div class="pgm-tiers-msg">Add 1 more item to unlock <b>10% Off your order</b></div>
-      <div class="pgm-track"><i style="width:33%"></i></div>
-    {%- endif -%}
-  </div>
 
   {%- for item in cart.items -%}
     {%- assign h = item.product.handle -%}
