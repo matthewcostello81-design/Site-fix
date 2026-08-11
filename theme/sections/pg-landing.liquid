@@ -503,7 +503,8 @@
       body: JSON.stringify({items: items})
     }).then(function(r){
       if (!r.ok) throw new Error('add failed');
-      window.location.href = '{{ routes.cart_url }}';
+      atc.disabled = false; atc.firstElementChild.textContent = 'Add to cart';
+      if (window.pgOpenCart) { window.pgOpenCart(); } else { window.location.href = '{{ routes.cart_url }}'; }
     }).catch(function(){
       atc.disabled = false; atc.firstElementChild.textContent = 'Add to cart';
       err.textContent = 'Could not add to cart. Please try again.'; err.style.display = 'block';
