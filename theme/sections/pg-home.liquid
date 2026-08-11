@@ -56,9 +56,9 @@
   .pgh-card-img{position:relative;background:#f6f6f6;border-radius:14px;overflow:hidden;box-shadow:0 16px 38px -26px rgba(18,4,28,.5)}
   .pgh-card-img img{aspect-ratio:1/1;object-fit:cover;width:100%;transition:transform .25s ease}
   .pgh-card:hover .pgh-card-img img{transform:scale(1.04)}
-  .pgh-badge{position:absolute;left:12px;bottom:12px;background:#fff;border:1px solid #e2e2e2;border-radius:999px;font-size:12.5px;padding:5px 14px}
-  .pgh-atc{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);background:#fff;color:#121212;border:0;font-family:inherit;font-size:14.5px;font-weight:600;letter-spacing:.02em;padding:13px 30px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);transition:background .15s ease,color .15s ease,transform .15s ease}
-  .pgh-atc:hover{background:#7A2FA2;color:#fff;transform:translateX(-50%) translateY(-1px)}
+  .pgh-badge{position:absolute;left:12px;top:12px;background:#fff;border:1px solid #e2e2e2;border-radius:999px;font-size:12.5px;padding:5px 14px}
+  .pgh-atc{position:absolute;right:12px;top:12px;background:#fff;color:#121212;border:0;font-family:inherit;font-size:12.5px;font-weight:500;letter-spacing:0;padding:5px 16px;border-radius:999px;cursor:pointer;white-space:nowrap;box-shadow:0 6px 16px -8px rgba(0,0,0,.35);transition:background .15s ease,color .15s ease}
+  .pgh-atc:hover{background:#7A2FA2;color:#fff}
   .pgh-atc[disabled]{opacity:.6;cursor:default}
   .pgh-card-t{font-size:16px;font-weight:500;margin:14px 0 4px;color:#1c1c1c}
   .pgh-card:hover .pgh-card-t{text-decoration:underline;text-underline-offset:4px}
@@ -104,7 +104,7 @@
   .pgh-stars.r{right:0}
   .pgh-stars i{position:absolute;display:block;background:#C9A6E8;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pghTwinkle 3.6s ease-in-out infinite;opacity:.2}
   @keyframes pghTwinkle{0%,100%{opacity:.1;transform:scale(.65)}50%{opacity:.85;transform:scale(1.15)}}
-  @media(max-width:1500px){.pgh-stars{display:none}}
+  @media(max-width:1100px){.pgh-stars{display:none}}
 
   /* Trust row */
   .pgh-trust{max-width:1232px;margin:56px auto 72px;padding:46px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;text-align:center;background:#faf7fc;border:1px solid #efe3f8;border-radius:20px}
@@ -297,6 +297,26 @@
 <script>
 (function(){
   if (window.pghAtc) return; window.pghAtc = 1;
+  /* Inline-important pill styling: the theme's global button CSS keeps
+     winning the cascade, so the Sale-badge look is stamped per element. */
+  var BASE = {'position': 'absolute', 'left': 'auto', 'right': '12px', 'top': '12px', 'bottom': 'auto', 'transform': 'none', 'background-color': '#fff', 'background-image': 'none', 'color': '#121212', 'border': '1px solid #e2e2e2', 'border-radius': '999px', 'font-size': '12.5px', 'font-weight': '500', 'line-height': '1.4', 'padding': '5px 16px', 'margin': '0', 'width': 'auto', 'min-width': '0', 'height': 'auto', 'min-height': '0', 'text-transform': 'none', 'letter-spacing': '0', 'box-shadow': '0 6px 16px -8px rgba(0,0,0,.35)', 'animation': 'none', 'font-family': "'Poppins','Segoe UI',Helvetica,Arial,sans-serif"};
+  function paint(b, hov){
+    for (var k in BASE) b.style.setProperty(k, BASE[k], 'important');
+    b.style.setProperty('background-color', hov ? '#7A2FA2' : '#fff', 'important');
+    b.style.setProperty('color', hov ? '#fff' : '#121212', 'important');
+    b.style.setProperty('border-color', hov ? '#7A2FA2' : '#e2e2e2', 'important');
+  }
+  function styleAtc(){
+    document.querySelectorAll('.pgh-atc').forEach(function(b){
+      if (b.dataset.pgStyled) return;
+      b.dataset.pgStyled = '1';
+      paint(b, false);
+      b.addEventListener('mouseenter', function(){ paint(b, true); });
+      b.addEventListener('mouseleave', function(){ paint(b, false); });
+    });
+  }
+  if (document.readyState !== 'loading') styleAtc(); else document.addEventListener('DOMContentLoaded', styleAtc);
+  setTimeout(styleAtc, 600);
   document.addEventListener('click', function(e){
     var b = e.target.closest('.pgh-atc');
     if (!b) return;

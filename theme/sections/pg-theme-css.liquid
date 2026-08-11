@@ -43,8 +43,8 @@
   /* Premium polish, sitewide */
   body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
   ::selection{background:#7A2FA2;color:#fff}
-  button[name="checkout"]{background:#121212 !important;background-image:none !important;background-color:#121212 !important;color:#fff !important;border:none !important;border-radius:10px !important;font-weight:700 !important;letter-spacing:.03em !important}
-  button[name="checkout"]:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important}
+  button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.05em !important;text-transform:uppercase !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.6) !important}
+  button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
 
   /* NC header/tabs are gone everywhere; PG headers or the fallback below replace them */
   .shopify-section-header,
@@ -68,9 +68,10 @@
   #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
   #pgh .pgh-grid .pgh-card{width:calc(50% - 11px);max-width:100%}
   #pgh .pgh-card-t,#pgh .pgh-card-p{text-align:center}
-  /* Card ATC: same pill look as the Sale badge, sitting on the badge line */
-  #pgh .pgh-atc{position:absolute !important;left:50% !important;top:auto !important;bottom:12px !important;transform:translateX(-50%) !important;background:#fff !important;background-color:#fff !important;background-image:none !important;color:#121212 !important;border:1px solid #e2e2e2 !important;border-radius:999px !important;font-size:12.5px !important;font-weight:500 !important;line-height:1.4 !important;padding:5px 16px !important;margin:0 !important;width:auto !important;min-width:0 !important;height:auto !important;min-height:0 !important;text-transform:none !important;letter-spacing:0 !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.35) !important;animation:none !important}
-  #pgh .pgh-atc:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important;color:#fff !important;border-color:#7A2FA2 !important;transform:translateX(-50%) !important}
+  /* Card ATC: same pill look as the Sale badge, top right of the image */
+  #pgh .pgh-badge{top:12px !important;bottom:auto !important}
+  #pgh .pgh-atc{position:absolute !important;left:auto !important;right:12px !important;top:12px !important;bottom:auto !important;transform:none !important;background:#fff !important;background-color:#fff !important;background-image:none !important;color:#121212 !important;border:1px solid #e2e2e2 !important;border-radius:999px !important;font-size:12.5px !important;font-weight:500 !important;line-height:1.4 !important;padding:5px 16px !important;margin:0 !important;width:auto !important;min-width:0 !important;height:auto !important;min-height:0 !important;text-transform:none !important;letter-spacing:0 !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.35) !important;animation:none !important}
+  #pgh .pgh-atc:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important;color:#fff !important;border-color:#7A2FA2 !important;transform:none !important}
   /* Banner Shop now button removed per request */
   #pgh .pgh-split-btn{display:none !important}
   /* Collections tiles removed per request */
@@ -106,6 +107,14 @@
   .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
   .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:27px !important;height:27px !important}
   .pgh-cart-n{min-width:18px !important;height:18px !important;line-height:18px !important;font-size:11px !important}
+
+  /* Side stars: light purple, fading, on every PG page */
+  .pgf-stars{position:fixed;top:0;bottom:0;width:230px;pointer-events:none;z-index:4}
+  .pgf-stars.l{left:0}
+  .pgf-stars.r{right:0}
+  .pgf-stars i{position:absolute;display:block;background:#C9A6E8;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pgfTwinkle 3.6s ease-in-out infinite;opacity:.2}
+  @keyframes pgfTwinkle{0%,100%{opacity:.1;transform:scale(.65)}50%{opacity:.85;transform:scale(1.15)}}
+  @media(max-width:1100px){.pgf-stars{display:none}}
 
   /* Inline header search box with product dropdown (replaces the /search link) */
   .pg-search{position:relative;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:12px 18px;width:300px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
@@ -194,6 +203,28 @@
     }
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', widget); else widget();
     setTimeout(widget, 900);
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgStars) return; window.pgStars = 1;
+    function stars(){
+      if (document.querySelector('.pgh-stars,.pgf-stars')) return;
+      var L = [[14,34,9,0],[22,62,5,.6],[31,20,7,1.4],[40,52,11,2.1],[49,30,5,.9],[58,64,8,1.8],[67,24,6,.3],[76,50,10,2.6],[85,34,6,1.1]];
+      var R = [[16,56,8,.4],[25,26,5,1.6],[34,66,10,2.3],[43,36,6,.8],[52,60,5,1.9],[61,28,9,.1],[70,58,6,2.8],[79,32,11,1.2],[88,56,6,.5]];
+      var cols = ['#C9A6E8', '#D9BCF2', '#B98FD9'];
+      function side(cls, arr){
+        var d = document.createElement('div');
+        d.className = 'pgf-stars ' + cls;
+        d.setAttribute('aria-hidden', 'true');
+        d.innerHTML = arr.map(function(s, i){
+          return '<i style="top:' + s[0] + '%;left:' + s[1] + '%;width:' + s[2] + 'px;height:' + s[2] + 'px;animation-delay:' + s[3] + 's;background:' + cols[i % 3] + '"></i>';
+        }).join('');
+        document.body.appendChild(d);
+      }
+      side('l', L); side('r', R);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stars); else stars();
   })();
 </script>
 <script>

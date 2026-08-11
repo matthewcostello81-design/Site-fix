@@ -2,8 +2,9 @@
   PG Drawer: Pocketera overrides for the cart drawer (and cart page bars) built by
   nc-cartfix / nc-recs. Loads LAST in overlay-group so its rules win. Swaps the
   drawer logo to the Pocketera logo, recolors the NC green/orange accents to
-  purple and black, hides the recommendation rails, and auto-adds the free
-  R36S protective case whenever the cart holds a paid item.
+  purple and black gradients, limits the Better together rail to the crystal
+  orbs, and auto-adds the free R36S protective case whenever the cart holds a
+  paid item.
 {%- endcomment -%}
 <style>
   /* Drawer top: logo + free-shipping pill */
@@ -12,9 +13,9 @@
   #cart#cart#cart .nc-dtrust span{color:#7A2FA2 !important}
   #cart#cart#cart .nc-dtrust svg{stroke:#7A2FA2 !important}
 
-  /* Checkout button: black, purple hover */
-  #cart#cart#cart button[name="checkout"]{background:#121212 !important;background-image:none !important;background-color:#121212 !important;animation:none !important;box-shadow:0 12px 26px -12px rgba(18,18,18,.55) !important;border-radius:10px !important}
-  #cart#cart#cart button[name="checkout"]:hover{background:#7A2FA2 !important;background-color:#7A2FA2 !important}
+  /* Checkout button: purple gradient */
+  #cart#cart#cart button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;animation:none !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.65) !important;border-radius:999px !important;text-transform:uppercase !important;letter-spacing:.05em !important;font-weight:700 !important}
+  #cart#cart#cart button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
 
   /* Discount tier progress: purple */
   #cart#cart#cart .nc-tiers{background:linear-gradient(120deg,#F6EFFB,#EEE0F7) !important;border:1px solid rgba(122,47,162,.25) !important}
@@ -34,15 +35,16 @@
   #cart#cart#cart .nc-rec-price{color:#7A2FA2 !important}
   #cart#cart#cart .nc-rec-was{color:#8a8a8a !important}
   #cart#cart#cart .nc-rec-off{background:#7A2FA2 !important;color:#fff !important}
-  #cart#cart#cart .nc-rec-add,#cart#cart#cart .nc-recs-panel .nc-rec-add{background:#121212 !important;background-image:none !important;animation:none !important;color:#fff !important;border:none !important}
-  #cart#cart#cart .nc-rec-add:hover,#cart#cart#cart .nc-recs-panel .nc-rec-add:hover{background:#7A2FA2 !important;color:#fff !important;filter:none !important}
   #cart#cart#cart .nc-recs-panel{background:linear-gradient(120deg,#F8F3FC,#F1E7F8) !important;border:1px solid rgba(122,47,162,.2) !important}
   #cart#cart#cart .nc-rec:hover{background:rgba(122,47,162,.06) !important}
 
-  /* The case is now a free auto-added gift, so no recommendation rails at all */
-  #cart .nc-rec,
-  #cart .nc-recs,
-  #cart .nc-recs-panel{display:none !important}
+  /* Better together: only the crystal orbs may appear as a recommendation */
+  #cart .nc-rec:not(:has(a[href*="crystal"])):not([href*="crystal"]){display:none !important}
+  #cart .nc-recs:not(:has([href*="crystal"])){display:none !important}
+  #cart .nc-recs-panel:not(:has([href*="crystal"])){display:none !important}
+  /* Rec ADD buttons: outlined purple pill, gradient on hover */
+  #cart#cart#cart .nc-rec-add,#cart#cart#cart .nc-recs-panel .nc-rec-add{background:#fff !important;background-image:none !important;animation:none !important;color:#7A2FA2 !important;border:1.5px solid #7A2FA2 !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.04em !important}
+  #cart#cart#cart .nc-rec-add:hover,#cart#cart#cart .nc-recs-panel .nc-rec-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important;border-color:#7A2FA2 !important;filter:none !important}
 
   /* Free shipping bar, savings chips, count badge, stepper, upsell note */
   #cart#cart#cart .nc-lsave-off{background:linear-gradient(120deg,#7A2FA2,#9B4BC4) !important;color:#fff !important}
@@ -143,8 +145,8 @@
     return box;
   }
   /* Free gift: the R36S protective case is auto-added at $0 whenever the cart
-     holds a paid item, and auto-removed when the cart empties. Respects a
-     manual removal for the rest of the session. */
+     holds a paid item, always re-added if removed, and auto-removed when the
+     cart empties. */
   var GIFT_ID = 49623692247268, GIFT_HANDLE = 'r36s-protective-case-free-gift';
   var giftBusy = false;
   function giftDone(r){
@@ -164,17 +166,10 @@
         if (it.id === GIFT_ID || it.handle === GIFT_HANDLE) gift = it;
         else if (it.handle !== 'shipping-protection') paid += it.quantity;
       });
-      if (!gift && paid > 0 && sessionStorage.getItem('pgGiftIn')){
-        sessionStorage.setItem('pgGiftOff', '1');
-        sessionStorage.removeItem('pgGiftIn');
-      }
-      if (gift) sessionStorage.setItem('pgGiftIn', '1');
-      if (paid === 0) sessionStorage.removeItem('pgGiftOff');
-      if (paid > 0 && !gift && !sessionStorage.getItem('pgGiftOff')){
+      if (paid > 0 && !gift){
         return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: GIFT_ID, quantity: 1}]})}).then(giftDone);
       }
       if (gift && paid === 0){
-        sessionStorage.removeItem('pgGiftIn');
         return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 0}})}).then(giftDone);
       }
       if (gift && gift.quantity !== 1){

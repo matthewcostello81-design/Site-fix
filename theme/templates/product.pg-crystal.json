@@ -2,12 +2,66 @@
   "sections": {
     "pg_landing": {
       "type": "pg-landing",
+      "blocks": {
+        "rev1": {
+          "type": "review",
+          "settings": {
+            "name": "Tyler",
+            "stars": 5,
+            "text": "The glow is unreal at night, got Gengar and it looks insane on my shelf"
+          }
+        },
+        "rev2": {
+          "type": "review",
+          "settings": {
+            "name": "Maddie",
+            "stars": 5,
+            "text": "Bought Pikachu for my son's birthday, he loves the color changing base"
+          }
+        },
+        "rev3": {
+          "type": "review",
+          "settings": {
+            "name": "Chris",
+            "stars": 5,
+            "text": "Way heavier and better quality glass than I expected"
+          }
+        },
+        "rev4": {
+          "type": "review",
+          "settings": {
+            "name": "Elena",
+            "stars": 5,
+            "text": "The engraving detail is crazy, you can see every line on Charizard"
+          }
+        },
+        "rev5": {
+          "type": "review",
+          "settings": {
+            "name": "Jordan",
+            "stars": 5,
+            "text": "Arrived fast and packed really well, base and ball both perfect"
+          }
+        },
+        "rev6": {
+          "type": "review",
+          "settings": {
+            "name": "Sam",
+            "stars": 5,
+            "text": "Getting a second one, the night light mode is so calming"
+          }
+        }
+      },
+      "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6"],
       "settings": {
         "product": "pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift",
         "display_title": "Pokemon Crystal Ball",
         "announce_text": "Free shipping on all orders",
         "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
         "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 10,000 customers",
+        "review_total": 6,
         "default_size": "01 Pikachu",
         "show_bundle": true,
         "bundle_title": "Bundle Deal: 2x Crystal Balls",

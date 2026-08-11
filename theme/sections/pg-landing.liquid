@@ -463,10 +463,11 @@
     if (dNow){
       var a = bySize(val('d1')), b = bySize(val('d2'));
       var full = a.price + b.price;
+      var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
       var disc = Math.round(full * (100 - BUNDLE_PCT) / 100);
       dNow.textContent = money(disc);
       var dWas = root.querySelector('[data-pgx-double-was]');
-      if (dWas) dWas.textContent = money(full);
+      if (dWas) dWas.textContent = money(retail);
     }
   }
   root.querySelectorAll('[data-pgx-size]').forEach(function(s){ s.addEventListener('change', paint); });
