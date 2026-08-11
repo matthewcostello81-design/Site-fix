@@ -1,0 +1,108 @@
+{
+  "type": "custom.overlay",
+  "name": "Overlay",
+  "sections": {
+    "side-cart": {
+      "type": "side-cart",
+      "settings": {}
+    },
+    "shop-the-look-drawer": {
+      "type": "shop-the-look-drawer",
+      "settings": {
+        "shop_the_look_title": "<h2>Shop the look</h2>",
+        "shop_the_look_subtitle": "",
+        "shop_the_look_items": 5
+      }
+    },
+    "newsletter-popup": {
+      "type": "newsletter-popup",
+      "disabled": true,
+      "settings": {}
+    },
+    "age-verify-popup": {
+      "type": "age-verify-popup",
+      "disabled": true,
+      "settings": {}
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "disabled": true,
+      "settings": {}
+    },
+    "nc-pdp3": {
+      "type": "nc-pdp3",
+      "settings": {}
+    },
+    "nc-popfix": {
+      "type": "nc-popfix",
+      "settings": {}
+    },
+    "nc-cartfix": {
+      "type": "nc-cartfix",
+      "settings": {}
+    },
+    "nc-footer": {
+      "type": "nc-footer",
+      "settings": {}
+    },
+    "nc-express": {
+      "type": "nc-express",
+      "settings": {}
+    },
+    "nc-recs": {
+      "type": "nc-recs",
+      "settings": {}
+    },
+    "nc-linesave": {
+      "type": "nc-linesave",
+      "settings": {}
+    },
+    "nc-cartcount": {
+      "type": "nc-cartcount",
+      "settings": {}
+    },
+    "nc-woodroller": {
+      "type": "nc-woodroller",
+      "settings": {}
+    },
+    "nc-navsale-first": {
+      "type": "nc-navsale-first",
+      "settings": {}
+    },
+    "nc-birch-copy": {
+      "type": "nc-birch-copy",
+      "settings": {}
+    },
+    "nc-cart-tweaks": {
+      "type": "nc-cart-tweaks",
+      "settings": {}
+    },
+    "pg-drawer": {
+      "type": "pg-drawer",
+      "settings": {
+        "logo_image": "shopify://shop_images/Gemini_Generated_Image_utaycgutaycgutay.png",
+        "keep_match": "data-frog"
+      }
+    }
+  },
+  "order": [
+    "side-cart",
+    "shop-the-look-drawer",
+    "newsletter-popup",
+    "age-verify-popup",
+    "cookie-banner",
+    "nc-pdp3",
+    "nc-popfix",
+    "nc-cartfix",
+    "nc-footer",
+    "nc-express",
+    "nc-recs",
+    "nc-linesave",
+    "nc-cartcount",
+    "nc-woodroller",
+    "nc-navsale-first",
+    "nc-birch-copy",
+    "nc-cart-tweaks",
+    "pg-drawer"
+  ]
+}
