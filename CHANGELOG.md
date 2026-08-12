@@ -1,3 +1,27 @@
+# Pocket Era: footer band regression cleanup
+
+## Problem
+The footer band regressed to a broken mix: the newsletter/support blocks
+rendered as white cards on the near-black band, and the Help/Policies
+links kept their dark inline colors (unreadable). The base theme's light
+color-scheme styling was winning over the dark-skin overrides.
+
+## Fix (`sections/pg-dark.liquid`)
+New "footer band cleanup" block with html body + doubled-id specificity so
+it beats every other layer regardless of load order:
+- All footer blocks (.strong, .m6cn, fieldset, palette wrappers, direct
+  children) forced transparent, no shadows - kills the white cards.
+- All footer text forced light (#F1EDF7), links #C9BFD6 with white hover,
+  Help/Policies headings white, brand tagline muted lavender.
+- Newsletter input forced dark (#16101F, purple border, light text);
+  Subscribe button forced to the purple gradient pill.
+
+## Applied to
+Shopify draft theme `162727330020` via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-dark.liquid
+
+---
+
 # Pocket Era: center the "Keep exploring / You may also like" rail
 
 ## Problem

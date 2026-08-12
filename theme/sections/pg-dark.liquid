@@ -174,6 +174,60 @@ html body .pgx-opt.has-select select option{background:#16101F !important;color:
   background-color:#8B44BE !important;border-color:transparent !important;color:#fff !important;
 }
 
+/* ---------- footer band cleanup: no light module cards, readable text ----------
+   The base theme's light color scheme paints the newsletter/support blocks as
+   white cards and leaves the Help/Policies links in their dark inline colors.
+   Force every block transparent on the dark band and lift all text/links. */
+html body #shopify-section-footer#shopify-section-footer,
+html body #shopify-section-footer#shopify-section-footer > div,
+html body #shopify-section-footer#shopify-section-footer > nav,
+html body #shopify-section-footer#shopify-section-footer .strong,
+html body #shopify-section-footer#shopify-section-footer .m6cn,
+html body #shopify-section-footer#shopify-section-footer fieldset,
+html body #shopify-section-footer#shopify-section-footer [class*='palette-'],
+html body #shopify-section-footer#shopify-section-footer .module-color-palette{
+  background:transparent !important;background-color:transparent !important;
+  background-image:none !important;box-shadow:none !important;
+}
+html body #shopify-section-footer#shopify-section-footer h1,
+html body #shopify-section-footer#shopify-section-footer h2,
+html body #shopify-section-footer#shopify-section-footer h3,
+html body #shopify-section-footer#shopify-section-footer h4,
+html body #shopify-section-footer#shopify-section-footer h5,
+html body #shopify-section-footer#shopify-section-footer p,
+html body #shopify-section-footer#shopify-section-footer li,
+html body #shopify-section-footer#shopify-section-footer span,
+html body #shopify-section-footer#shopify-section-footer label,
+html body #shopify-section-footer#shopify-section-footer legend,
+html body #shopify-section-footer#shopify-section-footer strong,
+html body #shopify-section-footer#shopify-section-footer div{color:#F1EDF7 !important}
+html body #shopify-section-footer#shopify-section-footer a{color:#C9BFD6 !important}
+html body #shopify-section-footer#shopify-section-footer a:hover{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-h{color:#fff !important;opacity:1 !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#C9BFD6 !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-word{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-tag{color:#A296B4 !important}
+html body #shopify-section-footer#shopify-section-footer input[type='email'],
+html body #shopify-section-footer#shopify-section-footer input[type='text'],
+html body #shopify-section-footer#shopify-section-footer input:not([type='hidden']):not([type='checkbox']):not([type='radio']):not([type='submit']){
+  background:#16101F !important;background-color:#16101F !important;
+  color:#EFE8F7 !important;border:1px solid rgba(168,120,214,.28) !important;border-radius:10px !important;
+}
+html body #shopify-section-footer#shopify-section-footer input::placeholder{color:#9384A8 !important}
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer button,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer [type='submit'],
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+  background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;background-color:#8B44BE !important;
+  background-size:100% 100% !important;animation:none !important;
+  color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;
+  box-shadow:0 10px 24px -10px rgba(139,68,190,.6) !important;
+}
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer button:hover,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer [type='submit']:hover{
+  background:linear-gradient(120deg,#7A2FA2,#4A1C66) !important;filter:none !important;
+}
+
 /* ---------- footer bottom bar: dark, payment icons centered ----------
    The base theme leaves the copyright + payment strip (div.base-font) on its
    light scheme and floats the l4pm icon list to the right. Selectors are
