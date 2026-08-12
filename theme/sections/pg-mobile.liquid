@@ -204,10 +204,16 @@
     var el = document.createElement('div');
     el.className = 'pgx-case';
     el.innerHTML = '<span class="pgx-case-b"></span>'
+      + '<img alt="R36S protective case" src="" style="visibility:hidden">'
       + '<div class="pgx-case-t"><b>Add an extra protective case</b><small>Keep a spare, or gift one &mdash; ships with your order</small></div>'
       + '<span class="pgx-case-p">$13.99</span>';
     atc.parentNode.insertBefore(el, atc);
     el.addEventListener('click', function(){ el.classList.toggle('on'); });
+    fetch('/products/r36s-protective-case-free-gift.js').then(function(r){ return r.json(); }).then(function(p2){
+      var src = p2.featured_image || (p2.images && p2.images[0]);
+      var im = el.querySelector('img');
+      if (src && im){ im.src = src.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); im.style.visibility = 'visible'; }
+    }).catch(function(){});
   }
   /* Capture-phase so it still runs when the tile handlers stopPropagation */
   document.addEventListener('click', function(e){
