@@ -16,6 +16,22 @@ html body a.pg-wordmark,.pg-wordmark{display:block !important;text-align:center;
    and left the page horizontally scrollable. Clip it to the header box. */
 .pgx-head,.pgh-head,.pgc-head,.pgf-head{overflow:hidden !important;max-width:100% !important}
 html body a.pg-wordmark{max-width:100% !important}
+/* Content templates (track order, contact, policies) render their body text
+   flush against the left edge of the viewport, with the first character
+   clipped, because the page header replaces the native one and the content
+   wrapper loses its container. Give it the same centred column the footer uses. */
+html body[class*="template-page"] #content{
+  max-width:1120px !important;margin-left:auto !important;margin-right:auto !important;
+  padding-left:24px !important;padding-right:24px !important;box-sizing:border-box !important
+}
+@media(max-width:760px){
+  html body[class*="template-page"] #content{padding-left:16px !important;padding-right:16px !important}
+}
+/* The wordmark is drawn at 2.6x scale, which overflowed its 210px box and
+   painted over the nav row beneath it. Give the mark room and float the nav
+   above it so the links are never covered. */
+html body .pgc-logo,html body .pgh-logo,html body .pgx-logo{min-height:252px !important}
+html body .pgc-nav,html body .pgh-nav,html body .pgx-nav,html body .pgf-nav{position:relative !important;z-index:3 !important}
 /* Nav links in the same pixel face as the wordmark. Press Start 2P runs very
    wide, so it is set well below the Roboto Slab size it replaces. */
 html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{
@@ -84,6 +100,15 @@ html body .base-font .l4pm ~ .l4pm{display:none !important}
    the stepper must work. */
 #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
 body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:visible !important}
+/* ...but the badged gift line is fixed at one unit — the discount covers
+   exactly one case. Leaving a stepper there let the shopper raise a line
+   labelled FREE GIFT into units they were charged for, and a remove button
+   that giftSync immediately undoes reads as a broken cart. Extra cases are
+   bought on the ordinary case line below. */
+#cart .l4ca > li:has(.pg-free-tag) .semantic-amount,
+#cart .l4ca > li:has(.pg-free-tag) .input-amount,
+#cart .l4ca > li:has(.pg-free-tag) .remove,
+#cart .l4ca > li:has(.pg-free-tag) .remove-from-cart-link{display:none !important}
 /* Cart: retire the old 1/2/3+ item 10%/15% tier ladder everywhere */
 #cart .nc-tiers,body.template-cart .nc-tiers,.nc-tiers{display:none !important}
 /* Footer bottom strip: the light band under the footer was still theme-default */
@@ -254,7 +279,7 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
     var el = document.createElement('div');
     el.className = 'pgx-case';
     el.innerHTML = '<img alt="R36S protective case" src="" style="visibility:hidden">'
-      + '<div class="pgx-case-t"><b>Add an extra protective case</b><small>Keep a spare, or gift one &mdash; ships with your order</small></div>'
+      + '<div class="pgx-case-t"><b>Add a spare protective case</b><small>One case already comes free with your console. This adds a second for $13.99.</small></div>'
       + '<span class="pgx-case-p">$13.99</span>'
       + '<button type="button" class="pgx-case-add">ADD</button>';
     atc.parentNode.insertBefore(el, atc);
@@ -282,7 +307,12 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
         if (window.pgOpenCart) window.pgOpenCart();
         setTimeout(function(){ btn.textContent = 'ADD'; caseBusy = false; }, 2500);
       })
-      .catch(function(){ btn.textContent = 'ADD'; caseBusy = false; });
+      .catch(function(){
+        /* Silently reverting to ADD looked like a dead button. Say it failed. */
+        btn.textContent = 'TRY AGAIN';
+        setTimeout(function(){ btn.textContent = 'ADD'; }, 2000);
+        caseBusy = false;
+      });
   }, true);
   /* Description / Features / Shipping sit under the gallery, not the buy box */
   function accLeft(){

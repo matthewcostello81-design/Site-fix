@@ -88,14 +88,31 @@
      drop the rest, whatever container they landed in. */
   function onePayRow(){
     var rows = document.querySelectorAll('.base-font .l4pm, [id*="footer"] .l4pm');
-    var kept = false;
+    var kept = null;
     rows.forEach(function(ul){
       if (ul.closest('#cart')) return;
-      if (!kept){ kept = true; ul.removeAttribute('data-pg-dupe'); return; }
+      if (!kept){ kept = ul; ul.removeAttribute('data-pg-dupe'); return; }
       if (ul.getAttribute('data-pg-dupe') === '1') return;
       ul.setAttribute('data-pg-dupe', '1');
       ul.style.setProperty('display', 'none', 'important');
     });
+    /* The copyright + payment strip stayed on the theme's light scheme on the
+       content templates: the dark-skin CSS keys off the section id, which is
+       not "shopify-section-footer" there. Paint the band from whatever element
+       actually holds the row, so the structure does not matter. */
+    if (!kept) return;
+    var band = kept.closest('.base-font') || kept.parentElement;
+    if (!band || band.getAttribute('data-pg-band') === '1') return;
+    band.setAttribute('data-pg-band', '1');
+    band.style.setProperty('background', '#0E0914', 'important');
+    band.style.setProperty('background-color', '#0E0914', 'important');
+    band.style.setProperty('border-top', '1px solid rgba(168,120,214,.20)', 'important');
+    band.style.setProperty('text-align', 'center', 'important');
+    band.querySelectorAll('p,span,small,div').forEach(function(el){
+      if (el.closest('.l4pm')) return;
+      el.style.setProperty('color', '#A296B4', 'important');
+    });
+    band.querySelectorAll('a').forEach(function(a){ a.style.setProperty('color', '#C6B6DA', 'important'); });
   }
   function fix(){
     onePayRow();

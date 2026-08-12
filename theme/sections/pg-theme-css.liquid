@@ -198,6 +198,9 @@
   .pgx-duo-px b{display:block;font-size:19px;font-weight:800}
   .pgx-duo-px s{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400}
   .pgx-duo-body{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(139,68,190,.4);border-radius:12px;margin-top:14px;overflow:visible}
+  /* Collapsed until the tile is chosen, matching the ladder tiles on the orb
+     and wall-art pages, where the picker only opens on the selected option. */
+  #pgx .pgx-tile.pgx-duo:not(.pgx-sel) .pgx-duo-body{display:none !important}
   .pgx-duo-u{padding:14px 10px;text-align:center}
   .pgx-duo-u:first-child{border-right:1px solid rgba(139,68,190,.35)}
   .pgx-duo-u img{width:74px;height:74px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 8px}
@@ -940,8 +943,11 @@
       var host = first.parentElement;
       var natives = Array.prototype.slice.call(host.querySelectorAll('.pgx-tile:not(.pgx-lad)'));
       natives.forEach(function(t){ t.style.setProperty('display', 'none', 'important'); });
+      /* The free LED base ships with the crystal orb only. On any other product
+         — wall art especially — it promised something the order never contains. */
+      var SUB1 = m[1].indexOf('pokemon-crystal') !== -1 ? 'Standard price + FREE LED Base' : 'Standard price';
       var TIERS = [
-        {n: 1, f: 0, bases: 1, badge: '', title: 'Buy 1', sub: 'Standard price + FREE LED Base'},
+        {n: 1, f: 0, bases: 1, badge: '', title: 'Buy 1', sub: SUB1},
         {n: 1, f: 0, h: 1, hp: 0.25, bases: 2, badge: 'Most Popular &#128293;', title: 'Duo Pack &mdash; 2nd 25% OFF', sub: ''},
         {n: 2, f: 0, h: 1, hp: 0.5, bases: 3, badge: '', title: 'Trio Pack &mdash; 3rd 50% OFF', sub: ''},
         {n: 4, f: 1, bases: 5, badge: 'Best Deal!', title: 'Quad Pack &mdash; +1 FREE', sub: ''}
