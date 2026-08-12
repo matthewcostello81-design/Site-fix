@@ -78,6 +78,12 @@ html body a.pg-wordmark.pg-wordmark{
   transform:scaleY(2.21) !important;
   white-space:nowrap !important;
   font-size:clamp(36px,4.14vw,70px) !important;
+  /* 4. Press Start 2P draws a full-cell space, so at this size the gap between
+        POCKET and ERA came out wider than a whole glyph -- the T and the E read
+        as belonging to two separate words rather than one mark. Pulling the
+        space back to roughly half a cell closes it without letting the T and
+        the E touch. The footer wordmark carries the same value. */
+  word-spacing:-0.55em !important;
 }
 @media(min-width:1440px){
   html body a.pg-wordmark.pg-wordmark{font-size:70px !important}

@@ -1,0 +1,284 @@
+{%- comment -%}
+  PG Footer: PocketEra overrides for the nc-footer brand injection, plus sitewide
+  rebranding. Loads after nc-footer in overlay-group so it wins order ties.
+  Swaps the injected brand lockup (emblem image, NORTH COVE wordmark, wellness
+  tagline) to PocketEra, rewrites any visible "North Cove" text in the page
+  content, footer, bottom bar and document title, and recolors the band and
+  newsletter button from teal/orange to purple/black. The underlying store data
+  (shop name, CMS pages) is untouched so the live North Cove site is unaffected.
+
+  THE FOOTER MARK. nc-footer builds its lockup as an emblem image plus a
+  separate wordmark span, and this file used to fill those with the round badge
+  and the run-together text "POCKETERA" -- a pairing that appears nowhere else
+  on the site. The brand mark everywhere else is the pixel wordmark: pg-mobile
+  hides the header logo art and promotes an injected `a.pg-wordmark` in Press
+  Start 2P, which is what a shopper reads as the logo at the top of every page.
+
+  So the badge is hidden and the wordmark span is styled to match that mark --
+  same face, same glow, same vertical stretch, same "POCKET ERA" with the space
+  in it -- just sized for a footer. The stretch needs vertical room, so the span
+  is given line-height and its container overflow:visible rather than being
+  allowed to clip.
+
+  THE PAYMENT ICONS. The theme drops its payment-icon list into the brand
+  column, where it sat above the wordmark and pushed the mark down the page.
+  It belongs with the newsletter block -- payment methods and the signup are
+  both "before you go" trust content -- so the surviving row is relocated into
+  the Stay Up To Date card.
+
+  That move is why band painting no longer keys off the payment row. It used to
+  find the bottom bar with `kept.closest('.base-font')`, which only worked while
+  the row happened to live there; once relocated, that lookup would have found
+  the newsletter card and painted it near-black. The bar is now located on its
+  own, by the copyright text it contains.
+{%- endcomment -%}
+<style>
+  /* Band + bottom bar: purple */
+  .shopify-section-footer{background:linear-gradient(115deg,#2E1140 0%,#54187A 46%,#7A2FA2 100%) !important}
+  #shopify-section-footer + .base-font{background:#2E1140 !important;border-top:1px solid rgba(255,255,255,.14) !important}
+
+  /* Orange hovers and underlines: light purple */
+  #shopify-section-footer a:hover{color:#E9D5F7 !important}
+  #shopify-section-footer .nc-foot-links a:hover{color:#E9D5F7 !important}
+  #shopify-section-footer + .base-font a:hover{color:#fff !important}
+  #shopify-section-footer .title-underline-none::after,
+  #shopify-section-footer [class*="title-underline"]::after{background:#C79BE3 !important}
+
+  /* ---------------- the footer mark ----------------
+     The round badge goes; the wordmark carries the brand, as it does in the
+     header. Written one level more specific than pe-logo's `html body
+     img.nc-foot-emblem` rule so the hide beats its content:url swap. */
+  html body #shopify-section-footer img.nc-foot-emblem{display:none !important}
+
+  html body #shopify-section-footer .nc-foot-word{
+    display:inline-block !important;
+    font-family:'Press Start 2P','Courier New',monospace !important;
+    font-weight:400 !important;
+    font-size:20px !important;
+    letter-spacing:0 !important;
+    /* Press Start 2P draws a full-cell space, so "POCKET ERA" opens a gap
+       wider than a whole glyph between the T and the E and reads as two
+       separate words. Pulled back to roughly half a cell. */
+    word-spacing:-0.55em !important;
+    line-height:2.4 !important;
+    white-space:nowrap !important;
+    color:#F6DBFF !important;
+    transform:scaleY(1.9) !important;
+    transform-origin:left center !important;
+    text-shadow:0 0 6px rgba(246,219,255,.5),
+                0 0 17px rgba(199,155,234,.38),
+                0 0 40px rgba(139,68,190,.26) !important;
+    /* the mark starts on the same left edge as the tagline and the HELP column
+       below it -- the lockup was a flex row of emblem + word, and with the
+       emblem hidden the row's gap and padding left the word inset */
+    margin-left:0 !important;
+    padding-left:0 !important;
+    text-indent:0 !important;
+  }
+  @media(max-width:760px){
+    html body #shopify-section-footer .nc-foot-word{font-size:15px !important}
+  }
+  @media(max-width:430px){
+    html body #shopify-section-footer .nc-foot-word{font-size:12px !important}
+  }
+
+  /* ---------------- relocated payment icons ---------------- */
+  html body .l4pm.pg-pay-moved{
+    display:flex !important;
+    flex-wrap:wrap !important;
+    gap:8px !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    list-style:none !important;
+    margin:16px 0 2px !important;
+    padding:14px 0 0 !important;
+    border-top:1px solid rgba(168,120,214,.20) !important;
+    float:none !important;
+    width:100% !important;
+  }
+  html body .l4pm.pg-pay-moved li{margin:0 !important;padding:0 !important;list-style:none !important}
+  html body .l4pm.pg-pay-moved img,
+  html body .l4pm.pg-pay-moved svg{height:24px !important;width:auto !important;display:block !important}
+
+  /* Subscribe button: black with purple glow, no orange animation */
+  #shopify-section-footer #newsletter-footer button,
+  #shopify-section-footer #newsletter-footer [type="submit"],
+  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+    background:#121212 !important;background-image:none !important;animation:none !important;
+    box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
+  }
+  #shopify-section-footer #newsletter-footer button:hover,
+  #shopify-section-footer #newsletter-footer [type="submit"]:hover,
+  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only:hover{
+    background:#7A2FA2 !important;filter:none !important;
+  }
+  @media(max-width:760px){
+    #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+      background:#121212 !important;background-image:none !important;animation:none !important;
+      box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
+    }
+  }
+
+  /* Content pages (policies, about, track order): purple links to match the theme */
+  body[class*="template-page"] #content a:not([class*="button"]):not(.pgc-x){color:#7A2FA2}
+  body[class*="template-page"] #content a:not([class*="button"]):hover{color:#4A1C66}
+</style>
+<script>
+(function(){
+  if (window.pgFooter) return; window.pgFooter = 1;
+  function rebrand(root){
+    if (!root) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var n;
+    while ((n = walker.nextNode())){
+      if (/North[\s ]*Cove/i.test(n.nodeValue)){
+        n.nodeValue = n.nodeValue
+          .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*(&|and)[\s ]*Care/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'PocketEra')
+          .replace(/North[\s ]*Cove/gi, 'PocketEra');
+      }
+    }
+  }
+  var PHONE_TXT = '(402) 979-6583';
+  var PHONE_TEL = 'tel:+14029796583';
+  function unmail(root){
+    if (!root) return;
+    root.querySelectorAll('a[href^="mailto:"]').forEach(function(a){
+      var li = a.closest('li');
+      var list = a.closest('ul,ol');
+      if (li && list && list.querySelector('a[href^="tel:"]')){ li.remove(); return; }
+      var t = document.createElement('a');
+      t.href = PHONE_TEL; t.textContent = PHONE_TXT;
+      a.replaceWith(t);
+    });
+    var w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    var n;
+    while ((n = w.nextNode())){
+      if (/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/.test(n.nodeValue)){
+        n.nodeValue = n.nodeValue.replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, PHONE_TXT);
+      }
+      n.nodeValue = n.nodeValue
+        .replace(/email us at \(402\) 979-6583/gi, 'call us at ' + PHONE_TXT)
+        .replace(/\bE-?mail\s*:\s*\(402\) 979-6583/gi, 'Phone: ' + PHONE_TXT);
+    }
+  }
+
+  /* The footer area renders the payment-icon list more than once on the page
+     templates (contact, track order, policies), once per bottom bar. Keep the
+     first, drop the rest, and move the survivor under the newsletter signup --
+     the theme parks it in the brand column, where it sat on top of the
+     wordmark. */
+  function onePayRow(){
+    var rows = document.querySelectorAll('.base-font .l4pm, [id*="footer"] .l4pm');
+    var kept = null;
+    rows.forEach(function(ul){
+      if (ul.closest('#cart')) return;
+      if (!kept){ kept = ul; ul.removeAttribute('data-pg-dupe'); return; }
+      if (ul.getAttribute('data-pg-dupe') === '1') return;
+      ul.setAttribute('data-pg-dupe', '1');
+      ul.style.setProperty('display', 'none', 'important');
+    });
+    if (!kept || kept.getAttribute('data-pg-moved') === '1') return;
+
+    /* the Stay Up To Date card, identified by the signup form it contains */
+    var news = document.getElementById('newsletter-footer');
+    var host = news ? (news.parentElement || news) : null;
+    if (!host) return;
+    kept.setAttribute('data-pg-moved', '1');
+    kept.classList.add('pg-pay-moved');
+    host.appendChild(kept);
+  }
+
+  /* The copyright strip stayed on the theme's light scheme on the content
+     templates: the dark-skin CSS keys off the section id, which is not
+     "shopify-section-footer" there. This finds the bar by the text it carries
+     rather than by its position relative to the payment row, which used to
+     anchor it and no longer can now that the row has moved. */
+  function paintBand(){
+    var band = document.querySelector('#shopify-section-footer + .base-font');
+    if (!band){
+      var bars = document.querySelectorAll('.base-font, [id*="footer"] .base-font');
+      for (var i = 0; i < bars.length; i++){
+        if (bars[i].closest('#cart')) continue;
+        if (/Powered by Shopify|©|©/i.test(bars[i].textContent || '')){ band = bars[i]; break; }
+      }
+    }
+    if (!band || band.getAttribute('data-pg-band') === '1') return;
+    band.setAttribute('data-pg-band', '1');
+    band.style.setProperty('background', '#0E0914', 'important');
+    band.style.setProperty('background-color', '#0E0914', 'important');
+    band.style.setProperty('border-top', '1px solid rgba(168,120,214,.20)', 'important');
+    band.style.setProperty('text-align', 'center', 'important');
+    band.querySelectorAll('p,span,small,div').forEach(function(el){
+      if (el.closest('.l4pm')) return;
+      el.style.setProperty('color', '#A296B4', 'important');
+    });
+    band.querySelectorAll('a').forEach(function(a){ a.style.setProperty('color', '#C6B6DA', 'important'); });
+  }
+
+  function fix(){
+    onePayRow();
+    paintBand();
+    var f = document.getElementById('shopify-section-footer');
+    if (f){
+      /* the badge is retired -- the wordmark is the mark. pe-logo re-asserts
+         this image's src on a delay, so it is hidden rather than removed. */
+      var img = f.querySelector('img.nc-foot-emblem');
+      if (img && img.dataset.pgf !== '2'){
+        img.dataset.pgf = '2';
+        img.style.setProperty('display', 'none', 'important');
+      }
+      var w = f.querySelector('.nc-foot-word');
+      if (w && w.dataset.pgf !== '2'){
+        w.dataset.pgf = '2';
+        w.textContent = 'POCKET ERA';
+        var box = w.parentElement;
+        if (box){
+          /* the vertical stretch needs somewhere to go */
+          box.style.setProperty('overflow', 'visible', 'important');
+          /* and the lockup must not inset the word: it was laid out as a flex
+             row of emblem + word, so with the emblem hidden its gap, padding
+             and any centring left the mark sitting right of the tagline and
+             the HELP column that follow it */
+          box.style.setProperty('justify-content', 'flex-start', 'important');
+          box.style.setProperty('align-items', 'center', 'important');
+          box.style.setProperty('text-align', 'left', 'important');
+          box.style.setProperty('gap', '0', 'important');
+          box.style.setProperty('column-gap', '0', 'important');
+          box.style.setProperty('padding-left', '0', 'important');
+          box.style.setProperty('margin-left', '0', 'important');
+        }
+      }
+      var tag = f.querySelector('.nc-foot-tag');
+      if (tag && /Drug-free/i.test(tag.textContent)) tag.textContent = {{ section.settings.tagline | json }};
+      rebrand(f);
+    }
+    rebrand(document.querySelector('#shopify-section-footer + .base-font'));
+    rebrand(document.getElementById('content'));
+    unmail(document.getElementById('content'));
+    if (/North[\s ]*Cove/i.test(document.title)){
+      document.title = document.title
+        .replace(/North[\s ]*Cove[\s ]*Wellness[\s ]*LLC/gi, 'PocketEra')
+        .replace(/North[\s ]*Cove[\s ]*Wellness/gi, 'PocketEra')
+        .replace(/North[\s ]*Cove/gi, 'PocketEra');
+    }
+  }
+  function bind(){
+    fix();
+    var wrap = document.querySelector('.shopify-section-footer') || document.body;
+    try { new MutationObserver(fix).observe(wrap, {childList: true, subtree: true}); } catch(e){}
+  }
+  if (document.readyState !== 'loading') bind(); else document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(fix, 500); setTimeout(fix, 1200); setTimeout(fix, 2200); setTimeout(fix, 3500);
+})();
+</script>
+{% schema %}
+{
+  "name": "PG Footer",
+  "settings": [
+    {"type": "image_picker", "id": "logo_image", "label": "Footer logo image"},
+    {"type": "text", "id": "tagline", "label": "Brand tagline", "default": "Retro gaming, pocket-sized."}
+  ]
+}
+{% endschema %}
