@@ -56,6 +56,9 @@
 #cart .pg-bar .pg-bar-dot.on,body.template-cart .pg-bar .pg-bar-dot.on{background:#7A2FA2 !important;border-color:#7A2FA2 !important;box-shadow:0 0 0 4px rgba(122,47,162,.22) !important}
 #cart .pg-bar .pg-bar-lbl span,body.template-cart .pg-bar .pg-bar-lbl span{color:#7B6A8E !important}
 #cart .pg-bar .pg-bar-lbl span.on,body.template-cart .pg-bar .pg-bar-lbl span.on{color:#7A2FA2 !important}
+/* Buy tile showed two MSRP strikethroughs (a stale one plus the live
+   variant's); keep only the last, which tracks the selected variant */
+#pgx .pgx-tile-price .pgx-p-was:not(:last-child){display:none !important}
 /* Accordions: same width and gutters as the split banner above them */
 #pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
 /* Best Sellers heading: matching soft purple letter glow */
