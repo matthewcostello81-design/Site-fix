@@ -48,9 +48,9 @@
      The round badge goes; the wordmark carries the brand, as it does in the
      header. Written one level more specific than pe-logo's `html body
      img.nc-foot-emblem` rule so the hide beats its content:url swap. */
-  html body #shopify-section-footer img.nc-foot-emblem{display:none !important}
+  html body img.nc-foot-emblem.nc-foot-emblem{display:none !important}
 
-  html body #shopify-section-footer .nc-foot-word{
+  html body .nc-foot-word{
     display:inline-block !important;
     font-family:'Press Start 2P','Courier New',monospace !important;
     font-weight:400 !important;
@@ -61,8 +61,8 @@
        POCKE / TERA. letter-spacing binds the T to POCKET; word-spacing leaves
        ERA a break wider than any letter gap. The header carries the same
        values. */
-    letter-spacing:-0.06em !important;
-    word-spacing:-0.5em !important;
+    letter-spacing:-0.10em !important;
+    word-spacing:-0.40em !important;
     line-height:2.4 !important;
     white-space:nowrap !important;
     color:#F6DBFF !important;
@@ -79,10 +79,10 @@
     text-indent:0 !important;
   }
   @media(max-width:760px){
-    html body #shopify-section-footer .nc-foot-word{font-size:15px !important}
+    html body .nc-foot-word{font-size:15px !important}
   }
   @media(max-width:430px){
-    html body #shopify-section-footer .nc-foot-word{font-size:12px !important}
+    html body .nc-foot-word{font-size:12px !important}
   }
 
   /* ---------------- relocated payment icons ---------------- */
@@ -184,8 +184,18 @@
     });
     if (!kept || kept.getAttribute('data-pg-moved') === '1') return;
 
-    /* the Stay Up To Date card, identified by the signup form it contains */
-    var news = document.getElementById('newsletter-footer');
+    /* The Stay Up To Date card. Located by the signup form where the theme
+       gives it an id, and by the newsletter form or its heading where it does
+       not -- the content templates render this block without that id, which is
+       the same trap the section-id scoping fell into. */
+    var news = document.getElementById('newsletter-footer')
+            || document.querySelector('form[action*="/contact#newsletter"], form[action*="customer_posted"]');
+    if (!news){
+      var heads = document.querySelectorAll('#shopify-section-footer h2, #shopify-section-footer h3, [id*="footer"] h2, [id*="footer"] h3');
+      for (var j = 0; j < heads.length; j++){
+        if (/stay up to date|newsletter|sign up/i.test(heads[j].textContent || '')){ news = heads[j]; break; }
+      }
+    }
     var host = news ? (news.parentElement || news) : null;
     if (!host) return;
     kept.setAttribute('data-pg-moved', '1');
@@ -220,43 +230,52 @@
     band.querySelectorAll('a').forEach(function(a){ a.style.setProperty('color', '#C6B6DA', 'important'); });
   }
 
+  /* The brand lockup. Queried from the document rather than from
+     #shopify-section-footer: that id only exists on the storefront templates,
+     and on the content pages (contact, track order, policies) the footer
+     section carries a different id -- which is why the mark used to update
+     everywhere except exactly the pages that were reported as broken. */
+  function mark(){
+    /* the badge is retired -- the wordmark is the mark. pe-logo re-asserts
+       this image's src on a delay, so it is hidden rather than removed. */
+    document.querySelectorAll('img.nc-foot-emblem').forEach(function(img){
+      if (img.dataset.pgf === '2') return;
+      img.dataset.pgf = '2';
+      img.style.setProperty('display', 'none', 'important');
+    });
+
+    document.querySelectorAll('.nc-foot-word').forEach(function(w){
+      if (w.dataset.pgf === '2') return;
+      w.dataset.pgf = '2';
+      w.textContent = 'POCKET ERA';
+      var box = w.parentElement;
+      if (!box) return;
+      /* the vertical stretch needs somewhere to go */
+      box.style.setProperty('overflow', 'visible', 'important');
+      /* and the lockup must not inset the word: it was laid out as a flex row
+         of emblem + word, so with the emblem hidden its gap, padding and any
+         centring left the mark sitting right of the tagline and the HELP
+         column that follow it */
+      box.style.setProperty('justify-content', 'flex-start', 'important');
+      box.style.setProperty('align-items', 'center', 'important');
+      box.style.setProperty('text-align', 'left', 'important');
+      box.style.setProperty('gap', '0', 'important');
+      box.style.setProperty('column-gap', '0', 'important');
+      box.style.setProperty('padding-left', '0', 'important');
+      box.style.setProperty('margin-left', '0', 'important');
+    });
+
+    document.querySelectorAll('.nc-foot-tag').forEach(function(tag){
+      if (/Drug-free/i.test(tag.textContent)) tag.textContent = {{ section.settings.tagline | json }};
+    });
+  }
+
   function fix(){
     onePayRow();
     paintBand();
+    mark();
     var f = document.getElementById('shopify-section-footer');
-    if (f){
-      /* the badge is retired -- the wordmark is the mark. pe-logo re-asserts
-         this image's src on a delay, so it is hidden rather than removed. */
-      var img = f.querySelector('img.nc-foot-emblem');
-      if (img && img.dataset.pgf !== '2'){
-        img.dataset.pgf = '2';
-        img.style.setProperty('display', 'none', 'important');
-      }
-      var w = f.querySelector('.nc-foot-word');
-      if (w && w.dataset.pgf !== '2'){
-        w.dataset.pgf = '2';
-        w.textContent = 'POCKET ERA';
-        var box = w.parentElement;
-        if (box){
-          /* the vertical stretch needs somewhere to go */
-          box.style.setProperty('overflow', 'visible', 'important');
-          /* and the lockup must not inset the word: it was laid out as a flex
-             row of emblem + word, so with the emblem hidden its gap, padding
-             and any centring left the mark sitting right of the tagline and
-             the HELP column that follow it */
-          box.style.setProperty('justify-content', 'flex-start', 'important');
-          box.style.setProperty('align-items', 'center', 'important');
-          box.style.setProperty('text-align', 'left', 'important');
-          box.style.setProperty('gap', '0', 'important');
-          box.style.setProperty('column-gap', '0', 'important');
-          box.style.setProperty('padding-left', '0', 'important');
-          box.style.setProperty('margin-left', '0', 'important');
-        }
-      }
-      var tag = f.querySelector('.nc-foot-tag');
-      if (tag && /Drug-free/i.test(tag.textContent)) tag.textContent = {{ section.settings.tagline | json }};
-      rebrand(f);
-    }
+    if (f) rebrand(f);
     rebrand(document.querySelector('#shopify-section-footer + .base-font'));
     rebrand(document.getElementById('content'));
     unmail(document.getElementById('content'));

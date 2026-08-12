@@ -93,11 +93,14 @@ html body a.pg-wordmark.pg-wordmark{
         T and binding the T to POCKET. word-spacing then leaves ERA a gap that
         is clearly wider than any letter gap without being a whole cell.
 
+        The two move together: tightening letter-spacing also drags ERA left,
+        so word-spacing is eased by the same amount to hold the break open.
+
         Tuning: less negative letter-spacing loosens POCKET; less negative
-        word-spacing widens the break before ERA. The theme's original -0.11em
-        tracking was too tight and collided the glyphs. */
-  letter-spacing:-0.06em !important;
-  word-spacing:-0.5em !important;
+        word-spacing widens the break before ERA. -0.11em was the theme's
+        original tracking and is the floor -- past that the glyphs collide. */
+  letter-spacing:-0.10em !important;
+  word-spacing:-0.40em !important;
 }
 @media(min-width:1440px){
   html body a.pg-wordmark.pg-wordmark{font-size:70px !important}
