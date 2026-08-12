@@ -60,6 +60,14 @@ html body .pgc-logo img{display:none !important}
       el.dataset.pgMark = '1';
       for (var k in MARK) el.style.setProperty(k, MARK[k], 'important');
     });
+    /* neither the logo anchor nor the grid row should ever carry a fill */
+    document.querySelectorAll('.pgc-logo, .pgc-head-in').forEach(function(el){
+      if (el.dataset.pgClear) return;
+      el.dataset.pgClear = '1';
+      el.style.setProperty('background', 'none', 'important');
+      el.style.setProperty('background-color', 'transparent', 'important');
+      el.style.setProperty('background-image', 'none', 'important');
+    });
   }
 
   function nearBlack(el){
@@ -87,9 +95,12 @@ html body .pgc-logo img{display:none !important}
         }
         return;
       }
-      /* a bar carries no text of its own */
-      if ((el.textContent || '').trim().length) return;
-      if (el.querySelector && el.querySelector('a,svg,img,input,button')) return;
+      /* Skip only the things a bar can never be: the header bar itself, the
+         nav, and any box holding the wordmark. An earlier pass also skipped
+         anything containing text or a link, which was wrong -- the logo anchor
+         holds both, so a black background on IT was never even tested. */
+      if (el === head) return;
+      if (el.tagName === 'NAV' || (el.closest && el.closest('nav'))) return;
 
       var r = el.getBoundingClientRect();
       var top = r.top + window.scrollY;
