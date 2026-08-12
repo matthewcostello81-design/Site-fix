@@ -263,7 +263,28 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
       if (h.indexOf('r36s-protective-case') !== -1) a.style.setProperty('display', 'none', 'important');
     });
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); }
+  /* The footer's bottom strip (copyright + payment icons) is painted by a
+     theme colour scheme, so no stable class to target. Find any light
+     element inside the footer section and repaint it. */
+  function footDark(){
+    var f = document.querySelector('#shopify-section-footer, .shopify-section[id$="__footer"]');
+    if (!f) return;
+    var all = f.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++){
+      var el = all[i];
+      var bg = getComputedStyle(el).backgroundColor || '';
+      var m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (!m) continue;
+      var lum = (parseInt(m[1],10) * 299 + parseInt(m[2],10) * 587 + parseInt(m[3],10) * 114) / 1000;
+      if (lum > 140){
+        el.style.setProperty('background', '#0E0914', 'important');
+        el.style.setProperty('background-color', '#0E0914', 'important');
+        el.style.setProperty('color', '#B9A8CE', 'important');
+      }
+    }
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); footDark(); }
+  setTimeout(footDark, 1500); setTimeout(footDark, 3200);
   setInterval(ymlTrim, 1500);
   setTimeout(caseReconcile, 1200); setTimeout(caseReconcile, 3000);
   setInterval(accLeft, 1500);
