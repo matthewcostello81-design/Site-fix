@@ -89,47 +89,48 @@
            '</span><span>' + value + '</span></div>';
   }
 
-  /* The sticky footer sat on a black ground: something between the pane and
-     #cart paints a dark background, and the cart is otherwise white. Rather
-     than guess which wrapper it is -- the class names differ by breakpoint --
-     this walks up from the pane and repaints only the elements that actually
-     compute to a dark fill, leaving anything already light alone. The pane's
-     own siblings get the same test, since the payment-icon strip below it sits
-     on the same dark ground. */
+  /* The sticky footer sat on a black ground while the rest of the cart is
+     white. The class names of the wrappers differ by breakpoint, so rather
+     than name one this walks up from the pane to #cart and paints the whole
+     chain white, along with the pane's siblings -- the payment-icon strip and
+     the bottom bar sit on the same ground.
+
+     Two things this deliberately does NOT do. It does not test whether an
+     element is currently dark before repainting: an earlier version painted
+     once per element and the black came straight back, because the theme
+     re-stamps its own inline background afterwards. Running every pass means
+     the last write is always ours. And it only ever touches ancestors and
+     siblings, never descendants of the pane, so the lavender totals box, the
+     purple checkout button and the shipping-protection card keep their own
+     fills. */
   function lightenBottom(){
     var pane = document.querySelector('#cart .sticky-in-panel');
     var cart = document.getElementById('cart');
     if (!pane || !cart) return;
 
-    var seen = [];
+    var targets = [];
     for (var el = pane; el && el !== document.body; el = el.parentNode){
-      seen.push(el);
+      targets.push(el);
       if (el === cart) break;
     }
     if (pane.parentNode){
       Array.prototype.forEach.call(pane.parentNode.children, function(sib){
-        if (seen.indexOf(sib) < 0) seen.push(sib);
+        if (targets.indexOf(sib) < 0) targets.push(sib);
       });
     }
 
-    seen.forEach(function(el){
-      if (el.nodeType !== 1 || el.dataset.pgLit) return;
-      var bg = getComputedStyle(el).backgroundColor || '';
-      var m = bg.match(/rgba?\(([^)]+)\)/);
-      if (!m) return;
-      var p = m[1].split(',').map(parseFloat);
-      if (p.length > 3 && p[3] < 0.05) return;              /* transparent, skip */
-      var lum = (0.299 * p[0] + 0.587 * p[1] + 0.114 * p[2]) / 255;
-      if (lum > 0.6) return;                                 /* already light */
-      el.dataset.pgLit = '1';
+    targets.forEach(function(el){
+      if (el.nodeType !== 1) return;
       el.style.setProperty('background-color', '#FFFFFF', 'important');
       el.style.setProperty('background-image', 'none', 'important');
     });
   }
 
   function render(){
-    if (!VMAP) return;
+    /* ahead of the VMAP guard: the background must go white even if the
+       product feed never loads */
     lightenBottom();
+    if (!VMAP) return;
     var pane = document.querySelector('#cart .sticky-in-panel');
     if (!pane) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
