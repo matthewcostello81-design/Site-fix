@@ -80,8 +80,11 @@
     html body .nc-foot-word{font-size:12px !important}
   }
 
-  /* ---------------- relocated payment icons ---------------- */
-  html body .l4pm.pg-pay-moved{
+  /* ---------------- relocated payment icons ----------------
+     Keyed on .pg-pay-moved alone, NOT .l4pm.pg-pay-moved: the row that wins the
+     keeper slot may be the brand column's list, which does not carry .l4pm --
+     that is the whole reason the duplicate survived. */
+  html body .pg-pay-moved{
     display:flex !important;
     flex-wrap:wrap !important;
     gap:8px !important;
@@ -94,11 +97,11 @@
     float:none !important;
     width:100% !important;
   }
-  html body .l4pm.pg-pay-moved li{margin:0 !important;padding:0 !important;list-style:none !important}
-  html body .l4pm.pg-pay-moved img,
-  html body .l4pm.pg-pay-moved svg{height:24px !important;width:auto !important;display:block !important}
+  html body .pg-pay-moved li{margin:0 !important;padding:0 !important;list-style:none !important}
+  html body .pg-pay-moved img,
+  html body .pg-pay-moved svg{height:24px !important;width:auto !important;display:block !important}
   /* a duplicate row that lost the race stays hidden even if something repaints it */
-  html body .l4pm[data-pg-dupe="1"]{display:none !important}
+  html body [data-pg-dupe="1"]{display:none !important}
 
   /* Subscribe button: black with purple glow, no orange animation */
   #shopify-section-footer #newsletter-footer button,
@@ -169,17 +172,69 @@
      first, drop the rest, and move the survivor under the newsletter signup --
      the theme parks it in the brand column, where it sat on top of the
      wordmark. */
+  /* Payment rows, found by CONTENT rather than by class.
+
+     The first attempt matched `.l4pm` only, and the footer renders TWO
+     different payment lists: the bottom bar's (which carries that class) and
+     the brand column's (which does not). So the code moved the bar's row into
+     the newsletter card and left the brand column's sitting above the wordmark
+     -- two rows on screen, which is exactly what was reported. Their icon sets
+     even differ slightly, which is what gave it away.
+
+     Anything holding four or more recognisable payment brand marks counts as a
+     row, whatever it is called. Ancestors that merely contain such a row are
+     dropped so only the innermost container is treated as the row itself. The
+     search is scoped to the footer region so it is not walking the whole
+     document every tick. */
+  var BRAND = /(visa|mastercard|master ?card|amex|american ?express|discover|diners|paypal|apple ?pay|google ?pay|g ?pay|shop ?pay|amazon|venmo|jcb|maestro|maestro|elo|bancontact|ideal|klarna|afterpay|unionpay|cartes)/i;
+
+  function iconish(el){
+    var title = el.querySelector ? el.querySelector('title') : null;
+    var cls = el.getAttribute && el.getAttribute('class');
+    if (cls && cls.baseVal !== undefined) cls = cls.baseVal;
+    return BRAND.test([
+      el.getAttribute && el.getAttribute('alt') || '',
+      el.getAttribute && el.getAttribute('aria-label') || '',
+      cls || '',
+      title ? title.textContent : ''
+    ].join(' '));
+  }
+
+  function footerScopes(){
+    var out = [];
+    ['#shopify-section-footer', '.shopify-section-footer', '[id*="footer"]', '.base-font']
+      .forEach(function(sel){
+        document.querySelectorAll(sel).forEach(function(el){
+          if (!el.closest('#cart') && out.indexOf(el) < 0) out.push(el);
+        });
+      });
+    if (!out.length) out.push(document.body);
+    return out;
+  }
+
+  function payRows(){
+    var found = [];
+    footerScopes().forEach(function(scope){
+      scope.querySelectorAll('ul,ol,div,nav,p').forEach(function(box){
+        if (box.closest('#cart')) return;
+        if (found.indexOf(box) > -1) return;
+        var hits = 0;
+        box.querySelectorAll('img,svg').forEach(function(i){ if (iconish(i)) hits++; });
+        if (hits >= 4) found.push(box);
+      });
+    });
+    /* keep the innermost container only */
+    return found.filter(function(r){
+      return !found.some(function(o){ return o !== r && r.contains(o); });
+    });
+  }
+
   function onePayRow(){
-    /* Every payment row on the page, wherever it ended up. This deliberately
-       does NOT scope to .base-font or [id*="footer"]: once the survivor is
-       moved into the newsletter card it stops matching those, so the next pass
-       found only the OTHER row, adopted it as the keeper and un-hid it. That is
-       how two rows ended up on screen. Matching on .l4pm alone means the moved
-       row is still seen, and the row already carrying data-pg-moved always wins
-       the keeper slot. */
-    var all = [];
+    var all = payRows();
+    /* .l4pm is still honoured directly, in case a row's icons are rendered in
+       some form the content test does not recognise */
     document.querySelectorAll('.l4pm').forEach(function(ul){
-      if (!ul.closest('#cart')) all.push(ul);
+      if (!ul.closest('#cart') && all.indexOf(ul) < 0) all.push(ul);
     });
     if (!all.length) return;
 
@@ -202,17 +257,14 @@
     if (kept.getAttribute('data-pg-moved') === '1') return;
 
     /* The Stay Up To Date card. Located by the signup form where the theme
-       gives it an id, and by the newsletter form or its heading where it does
-       not -- the content templates render this block without that id, which is
-       the same trap the section-id scoping fell into. */
+       gives it an id, and by its heading or the signup field where it does not
+       -- the content templates render this block without that id, and the
+       heading level follows the theme's title_size_blocks setting (h4), which
+       is why an h2/h3-only search used to come back empty and the row never
+       moved at all. */
     var news = document.getElementById('newsletter-footer')
             || document.querySelector('form[action*="/contact#newsletter"], form[action*="customer_posted"]');
     if (!news){
-      /* The heading search used to look at h2 and h3 only. The theme renders
-         this block's title at whatever level its "title_size_blocks" setting
-         says -- it is set to h4 -- so the search found nothing, host stayed
-         null, and the row silently never moved. Every heading level, plus the
-         theme's title/heading class names, are checked now. */
       var scope = document.getElementById('shopify-section-footer')
                || document.querySelector('.shopify-section-footer')
                || document.body;
@@ -221,7 +273,6 @@
         if (cands[j].closest('#cart')) continue;
         if (/stay up to date|newsletter|sign up/i.test(cands[j].textContent || '')){ news = cands[j]; break; }
       }
-      /* last resort: the signup field itself */
       if (!news){
         var mail = scope.querySelector('input[type="email"]');
         if (mail && !mail.closest('#cart')) news = mail.closest('form') || mail;
