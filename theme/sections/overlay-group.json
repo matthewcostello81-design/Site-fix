@@ -1,0 +1,125 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.overlay",
+  "name": "Overlay",
+  "sections": {
+    "side-cart": {
+      "type": "side-cart",
+      "settings": {}
+    },
+    "shop-the-look-drawer": {
+      "type": "shop-the-look-drawer",
+      "settings": {
+        "shop_the_look_title": "<h2>Shop the look</h2>",
+        "shop_the_look_subtitle": "",
+        "shop_the_look_items": 5
+      }
+    },
+    "newsletter-popup": {
+      "type": "newsletter-popup",
+      "disabled": true,
+      "settings": {}
+    },
+    "age-verify-popup": {
+      "type": "age-verify-popup",
+      "disabled": true,
+      "settings": {}
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "disabled": true,
+      "settings": {}
+    },
+    "nc-pdp3": {
+      "type": "nc-pdp3",
+      "settings": {}
+    },
+    "nc-popfix": {
+      "type": "nc-popfix",
+      "settings": {}
+    },
+    "nc-cartfix": {
+      "type": "nc-cartfix",
+      "settings": {}
+    },
+    "nc-footer": {
+      "type": "nc-footer",
+      "settings": {}
+    },
+    "nc-recs": {
+      "type": "nc-recs",
+      "settings": {}
+    },
+    "nc-linesave": {
+      "type": "nc-linesave",
+      "settings": {}
+    },
+    "nc-cartcount": {
+      "type": "nc-cartcount",
+      "settings": {}
+    },
+    "nc-woodroller": {
+      "type": "nc-woodroller",
+      "settings": {}
+    },
+    "nc-navsale-first": {
+      "type": "nc-navsale-first",
+      "settings": {}
+    },
+    "nc-birch-copy": {
+      "type": "nc-birch-copy",
+      "settings": {}
+    },
+    "nc-cart-tweaks": {
+      "type": "nc-cart-tweaks",
+      "settings": {}
+    },
+    "pg-drawer": {
+      "type": "pg-drawer",
+      "settings": {
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "keep_match": "data-frog"
+      }
+    },
+    "pg-footer": {
+      "type": "pg-footer",
+      "settings": {
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "tagline": "Retro gaming, pocket-sized."
+      }
+    },
+    "pg-giftguard": {
+      "type": "pg-giftguard",
+      "settings": {}
+    }
+  },
+  "order": [
+    "side-cart",
+    "shop-the-look-drawer",
+    "newsletter-popup",
+    "age-verify-popup",
+    "cookie-banner",
+    "nc-pdp3",
+    "nc-popfix",
+    "nc-cartfix",
+    "nc-footer",
+    "nc-recs",
+    "nc-linesave",
+    "nc-cartcount",
+    "nc-woodroller",
+    "nc-navsale-first",
+    "nc-birch-copy",
+    "nc-cart-tweaks",
+    "pg-drawer",
+    "pg-footer",
+    "pg-giftguard"
+  ]
+}

@@ -1,0 +1,87 @@
+{%- comment -%}
+  PG Gift Guard: the R36S case is only a free gift when a console earns it.
+
+  pg-drawer's giftTag() decides which cart line wears the FREE GIFT badge in
+  this order: the line Shopify actually discounted to zero (FREE_IDX), else the
+  line this theme auto-added with the _free_gift property (GIFT_IDX), else -- as
+  a "never show nothing" fallback -- simply the first case line on screen.
+
+  That last fallback is wrong on its own. Adding the spare case from the product
+  page (or the cart rail) with no console in the cart produces exactly that
+  state: no discount, no property, one case line. It gets badged FREE GIFT even
+  though the shopper is being charged $13.99, and pg-drawer's
+  `li:has(.pg-free-tag)` rules then hide that line's stepper and remove button,
+  so it cannot be adjusted or taken out.
+
+  This guard runs after pg-drawer (registered last in overlay-group) and strips
+  the badge whenever the cart has not earned a gift -- no console line and no
+  line carrying _free_gift. Setting data-pg-free on the line at the same time is
+  what stops the badge coming straight back: giftTag() returns early on a line
+  already marked, so this is one add/remove, not a flicker loop.
+
+  When a console IS in the cart nothing here fires, and the badge follows
+  pg-drawer's normal money-first logic.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgGiftGuard) return; window.pgGiftGuard = 1;
+
+  var CASE_LINK = 'free-gift';               /* the case handle ends in -free-gift */
+  var CONSOLE_HANDLE = 'handheld-game-console';
+  var LINES = '#cart .l4ca > li, body.template-cart .form-cart .l4ca > li';
+  /* null = not checked yet. The badge is only ever removed on an explicit
+     false, so a failed or pending /cart.js never blanks a legitimate gift. */
+  var earned = null;
+  var busy = false;
+
+  function caseLines(){
+    var out = [];
+    document.querySelectorAll(LINES).forEach(function(li){
+      if (li.querySelector('a[href*="' + CASE_LINK + '"]')) out.push(li);
+    });
+    return out;
+  }
+
+  function apply(){
+    var lis = caseLines();
+    if (!lis.length) return;
+    if (earned === false){
+      lis.forEach(function(li){
+        li.dataset.pgFree = '1';
+        li.querySelectorAll('.pg-free-tag').forEach(function(el){ el.parentNode.removeChild(el); });
+      });
+    } else if (earned === true){
+      /* A line marked as handled but wearing no badge is one this guard
+         cleared earlier. Release it so pg-drawer can badge it again now that
+         the cart qualifies. */
+      lis.forEach(function(li){
+        if (li.dataset.pgFree && !li.querySelector('.pg-free-tag')) delete li.dataset.pgFree;
+      });
+    }
+  }
+
+  function check(){
+    if (busy || !caseLines().length) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        earned = (c.items || []).some(function(it){
+          return it.handle === CONSOLE_HANDLE || (it.properties && it.properties._free_gift);
+        });
+        busy = false;
+        apply();
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  /* apply() is cheap and runs often so the badge never lingers between cart
+     reads; check() re-reads the cart on a slower beat. */
+  setInterval(apply, 250);
+  setInterval(check, 1200);
+  check();
+})();
+</script>
+{% schema %}
+{"name": "PG Gift Guard", "settings": []}
+{% endschema %}

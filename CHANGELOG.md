@@ -1,3 +1,73 @@
+# Pocket Era logo: 15% shorter, one line on mobile
+
+## Problem
+The header "POCKET ERA" mark was too tall, and on narrow phones it wrapped onto
+two lines.
+
+## Cause
+The visible mark is not the logo art. `pg-mobile.liquid` hides every logo image
+(`.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{display:none}`) and
+promotes the injected `a.pg-wordmark` text to be the brand mark, stretching it
+with `transform:scaleY(2.6)`. Its rule is `html body a.pg-wordmark` + `!important`
+and pg-mobile loads last from footer-group, so it was also winning the ties
+against pe-logo's own wordmark rules.
+
+## Fix (`sections/pe-logo.liquid`)
+Repeating the class (`a.pg-wordmark.pg-wordmark`) buys one specificity point,
+which beats source order:
+- `scaleY(2.6)` -> `scaleY(2.21)`: 15% less height. Only the vertical scale
+  changes, so width and letterforms are untouched, just less stretched.
+- `white-space:nowrap`, plus `font-size:min(30px,8.4vw)` under 560px. Nowrap
+  alone would overflow (the header box is `overflow:hidden`); the mark is about
+  9.8em wide, so 8.4vw keeps it near 82% of the screen with room for gutters.
+
+## Applied to
+Shopify draft theme `162746106084` ("Pocket Era Most Recent Draft") on shop
+`www.thepocketera.com`, via the Admin API (themeFilesUpsert).
+Files changed: sections/pe-logo.liquid
+
+---
+
+# Cart: FREE GIFT badge on a case nobody earned
+
+## Problem
+Adding the spare $13.99 protective case with an empty cart (the ADD button on
+the R36S page) produced a cart line badged **FREE GIFT**, with its quantity
+stepper and remove button hidden, even though the shopper was being charged for
+it and had no console in the cart.
+
+## Cause
+`sections/pg-drawer.liquid` -> `giftTag()` picks the line to badge in this order:
+the line Shopify discounted to zero (`FREE_IDX`), else the line the theme
+auto-added with the `_free_gift` property (`GIFT_IDX`), else -- a "never show
+nothing" fallback -- the first case line on screen. A case bought on its own hits
+exactly that fallback: no discount, no property, one case line. pg-drawer's
+`li:has(.pg-free-tag)` rules then hide that line's stepper and remove control.
+
+## Fix (`sections/pg-giftguard.liquid`, new)
+A small guard registered last in `overlay-group.json`, so it runs after
+pg-drawer. It reads `/cart.js` and, when the cart has *not* earned a gift (no
+`handheld-game-console` line and no line carrying `_free_gift`), removes the
+badge from every case line and stamps `data-pg-free` on it -- `giftTag()`
+returns early on a line already marked, so this is a single add/remove rather
+than a flicker loop. With the badge gone the `:has(.pg-free-tag)` rules stop
+applying, so the stepper and remove button come back.
+
+When a console *is* in the cart the guard does nothing and the badge follows
+pg-drawer's normal money-first logic; a line it cleared earlier is released
+(`data-pg-free` dropped) so it can be badged again once the cart qualifies.
+
+The fix is an override rather than an edit to `giftTag()` because pg-drawer is a
+45KB live cart/checkout file that is not tracked in this repo.
+
+## Applied to
+Shopify draft theme `162746106084` via the Admin API (themeFilesUpsert).
+Files changed:
+- sections/pg-giftguard.liquid (new)
+- sections/overlay-group.json (registered the new section, ordered last)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
