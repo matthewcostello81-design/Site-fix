@@ -8,8 +8,8 @@
    The logo art itself is hidden - the wordmark is the brand mark now. */
 .pgx-head,.pgh-head,.pgc-head,.pgf-head{position:relative}
 .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{display:none !important}
-.pgh-logo,.pgx-logo,.pgc-logo{min-height:150px;display:flex;align-items:center;justify-content:center}
-.pg-wordmark{display:block;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(30px,3.4vw,58px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;transform:scaleY(2.15);transform-origin:center;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
+.pgh-logo,.pgx-logo,.pgc-logo{min-height:210px;display:flex;align-items:center;justify-content:center}
+.pg-wordmark{display:block;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(34px,3.8vw,64px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;transform:scaleY(3);transform-origin:center;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
 @media(max-width:560px){.pg-wordmark{font-size:26px}}
 </style>
 <style>
@@ -229,8 +229,9 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
     fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})})
       .then(function(r){
         if (!r.ok) throw 0;
-        btn.textContent = 'ADDED';
-        setTimeout(function(){ btn.textContent = 'ADD'; caseBusy = false; }, 2000);
+        btn.innerHTML = 'ADDED \u2713';
+        if (window.pgOpenCart) window.pgOpenCart();
+        setTimeout(function(){ btn.textContent = 'ADD'; caseBusy = false; }, 2500);
       })
       .catch(function(){ btn.textContent = 'ADD'; caseBusy = false; });
   }, true);
