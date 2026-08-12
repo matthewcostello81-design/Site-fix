@@ -962,10 +962,20 @@
           + '<div class="pgx-lad-picks"><div class="lbl">' + (m[1].indexOf('wall-art') !== -1 ? 'Choose your prints' : 'Choose your Poke Balls') + '</div></div>';
         var picks = tile.querySelector('.pgx-lad-picks');
         var total = T.n + T.f + half;
-        for (var i = 0; i < total; i++){
+        /* One design to choose from means one picker with a x N badge, not
+           N identical dropdowns. */
+        var rows = VOPTS.length > 1 ? total : 1;
+        tile.dataset.pgMul = String(rows === 1 ? total : 1);
+        for (var i = 0; i < rows; i++){
           var row = document.createElement('div');
           row.className = 'pgx-lad-row';
           row.appendChild(window.pgDrop(VOPTS, VOPTS[i % VOPTS.length].id, null));
+          if (rows === 1 && total > 1){
+            var xb = document.createElement('b');
+            xb.textContent = '\u00d7' + total;
+            xb.style.cssText = 'margin-left:10px;font-size:15px;font-weight:700;color:#C79BEA;align-self:center';
+            row.appendChild(xb);
+          }
           picks.appendChild(row);
         }
         host.insertBefore(tile, first);
@@ -985,9 +995,10 @@
         e.stopPropagation();
         BUSY = true;
         var counts = {};
+        var mul = parseInt(sel.dataset.pgMul || '1', 10) || 1;
         sel.querySelectorAll('.pgx-lad-picks .pg-drop').forEach(function(d2){
           var vv = d2.pgValue();
-          counts[vv] = (counts[vv] || 0) + 1;
+          counts[vv] = (counts[vv] || 0) + mul;
         });
         var items = Object.keys(counts).map(function(k){ return {id: parseInt(k, 10), quantity: counts[k]}; });
         fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: items})})
