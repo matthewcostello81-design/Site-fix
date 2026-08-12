@@ -37,11 +37,20 @@
   The unit added is the same variant already in the cart, so the shopper gets
   another of the thing they chose rather than the product default.
 
-  NOTE for whoever picks this up: Shopify applies only ONE automatic discount to
-  an order. These ladders cannot stack with each other or with the free-case
-  BXGY, so a cart holding a console and two orbs gets the single best one, not
-  both. The copy here deliberately says "applied at checkout" for the rung being
-  offered and never claims a total.
+  STACKING. Every one of these BXGYs used to carry combinesWith.productDiscounts
+  = false, which is the setting behind the old "only one automatic discount per
+  order" behaviour -- a cart with a console and four orbs got whichever single
+  discount was worth most, and the other rungs silently did nothing. All eight
+  ladder discounts are now marked combinable (product, order and shipping), so a
+  free 5th orb, a free 5th print, a free case and 25% off a second console can
+  all land on the same order.
+
+  The blanket "10% Off (2+ Items)" discount is deliberately NOT combinable. It
+  applies to everything in the cart, so stacking it on top of every ladder rung
+  compounds fast; left as it is, Shopify picks between it and the ladders.
+
+  The copy here still says "applied at checkout" for the rung being offered and
+  never claims a total, which stays correct either way.
 {%- endcomment -%}
 <style>
   #cart .pg-unlock{
