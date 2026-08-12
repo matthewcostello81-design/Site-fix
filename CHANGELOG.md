@@ -1,3 +1,39 @@
+# Pocket Era: product page for Heroic 3D Wall Art
+
+## What
+New product page for "Heroic 3D Wall Art" (anime/Pokemon lenticular 3D
+posters, $36.99), copying the format of the store's other product pages
+(R36S console and 3D Crystal Poke Ball): a dedicated `product.pg-*.json`
+template running the `pg-landing` one-page landing section.
+
+## How
+- **`templates/product.pg-wallart.json`** (new): `pg-landing` section
+  configured with the product handle, display title "Heroic 3D Wall Art",
+  the PocketEra logo/announcement header, a Bundle Deal 2x tile (10%, same
+  automatic discount the other pages use), six product-specific review
+  blocks, a Features accordion (lenticular 3D effect, 12 x 16 in size,
+  easy hang, no batteries), and the standard shipping/returns copy.
+- **`sections/pg-theme-css.liquid`**: added the wall art handle to the
+  header search widget's ALLOW list so the product appears in search
+  results (the widget filters suggestions to hand-picked purchasable
+  products).
+- **Product record**: set `templateSuffix` to `pg-wallart` and published
+  the product to the Online Store channel (it was unpublished, so its URL
+  404'd).
+
+The product's supplier import left `compareAtPrice` ($13.74) below the
+selling price ($36.99); the landing section ignores inverted compare-at
+values, so no strikethrough shows. Left as-is.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") on shop
+thepocketera.com via the Admin API (themeFilesUpsert + productUpdate +
+publishablePublish).
+Files changed: templates/product.pg-wallart.json (new),
+sections/pg-theme-css.liquid
+
+---
+
 # Pocket Era: dark footer payment bar + on-theme contact card
 
 ## Problem
