@@ -242,6 +242,11 @@
         <span>{{ section.settings.rating_label }}</span>
       </div>
 
+      <div class="pgx-risk">
+        <div class="pgx-risk-h"><i></i> Sellout risk: High</div>
+        <div class="pgx-risk-b">High demand right now. <b>Some variants are likely to sell out today.</b></div>
+      </div>
+
       <div class="pgx-quote">
         <img src="{{ prod.featured_image | image_url: width: 128 }}" alt="{{ prod.title | escape }}">
         <div>
@@ -251,11 +256,6 @@
         <button type="button" class="pgx-quote-next" id="pgx-quote-next" aria-label="Next review">&#8250;</button>
       </div>
       {%- endif -%}
-
-      <div class="pgx-risk">
-        <div class="pgx-risk-h"><i></i> Sellout risk: High</div>
-        <div class="pgx-risk-b">High demand right now. <b>Some variants are likely to sell out today.</b></div>
-      </div>
 
       <div class="pgx-divider">BUNDLE &amp; SAVE</div>
 
