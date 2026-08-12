@@ -5,15 +5,19 @@
   real offer rather than invented copy:
 
     PokeOrb  - 2nd Orb 25% Off ......... buy 1, next 1 at 25% off
-    PokeOrb  - Buy 2 Get 1 Free ........ buy 2, next 1 free
+    PokeOrb  - 3rd Orb 50% Off ......... buy 2, next 1 at 50% off
     PokeOrb  - Buy 4 Get 1 Free ........ buy 4, next 1 free
     Wall Art - 2nd Print 25% Off ....... buy 1, next 1 at 25% off
     Wall Art - 3rd Print 50% Off ....... buy 2, next 1 at 50% off
     Wall Art - Buy 4 Get 1 Free ........ buy 4, next 1 free
     R36S     - 2nd Console 25% Off ..... buy 1, next 1 at 25% off
 
-  (PokeOrb also has a 3rd-at-50%-off, but Buy 2 Get 1 Free covers the same rung
-  at 100% off, so the free one is what gets offered there.)
+  Both ladders now read 25 / 50 / free-at-the-5th, which is what the product
+  pages advertise. A second orb discount, "Buy 2 Get 1 Free - Crystal PokeOrb",
+  used to sit on the SAME rung as the 3rd-at-50% and paid out more, and since
+  Shopify applies only one automatic discount and takes the largest, checkout
+  handed the 3rd orb over free no matter what this row said. That discount has
+  been deactivated so the offer here and the charge at checkout agree.
 
   A row only appears when adding exactly ONE more unit earns a discount on that
   unit -- the rung is reachable in a single click, so the prompt is never a
@@ -71,7 +75,7 @@
   var LADDERS = {
     'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
       name: 'Crystal PokeOrb',
-      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 100, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
+      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 50, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
     },
     'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {
       name: 'Holographic Wall Art',

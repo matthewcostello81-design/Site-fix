@@ -1,18 +1,56 @@
 {%- comment -%}
-  PG Tile Copy: the first bundle tile reads "Single Item" rather than "Buy 1".
+  PG Tile Copy: bundle tile wording and pricing.
 
-  The Buy 1 / Duo / Trio / Quad ladder is assembled at runtime by one of the
-  large pg-* layers, so this relabels the rendered tile instead of editing the
-  builder. It is deliberately narrow:
+  1. The first tile reads "Single Item" rather than "Buy 1". The Buy 1 / Duo /
+     Trio / Quad ladder is assembled at runtime by one of the large pg-* layers,
+     so this relabels the rendered tile rather than rewriting the builder. It is
+     deliberately narrow: only text nodes inside #pgx bundle tiles whose entire
+     trimmed value is exactly "Buy 1", so prices, chips and sentences that merely
+     contain those characters are untouched.
 
-  - only inside #pgx, and only within a bundle tile (.pgx-tile / .pgx-lad*),
-  - only TEXT NODES whose entire trimmed content is exactly "Buy 1", so a price,
-    a chip, or any sentence that merely contains those characters is untouched,
-  - each swapped tile is marked, so repeated passes cost nothing.
+  2. The 2-pack tile is restated as the offer that actually exists.
 
-  A MutationObserver plus a slow interval keeps the label correct if the ladder
-  is re-rendered (variant change, cart update).
+     pg-landing prices that tile from a single `bundle_pct` setting -- a flat
+     percentage off the pair, set to 10 -- and captions it "10% OFF". No such
+     discount exists. What the shop actually runs is a BXGY on every one of
+     these products: the SECOND unit at 25% off, which is 12.5% off the pair,
+     and which is also what the cart's upsell row offers. The tile was quoting
+     a worse deal than the shopper gets, in different words from the cart.
+
+     So the caption becomes "2nd one 25% OFF" and the price is recomputed as
+     one unit at full price plus one at 25% off, read from the tile's own size
+     selects so it stays correct when the two units are different variants.
+
+     SECOND_PCT is 25 because all three ladders (PokeOrb, Wall Art, R36S) open
+     at 25% off the second unit. If a product's ladder ever differs, this needs
+     to become per-handle rather than one constant.
+
+     The proper home for this is pg-landing's own paint(), replacing bundle_pct
+     with a second-unit percentage. It lives here because pg-landing is a 35KB
+     shared section and this is the same class of override the file already does.
+
+  3. A one-line qualifier under the tiles.
+
+     Shopify applies only ONE automatic discount per order, so a cart that also
+     earns a bigger discount elsewhere (four orbs triggering Buy 4 Get 1, say)
+     gets that one instead and the pair stays at full price. Rather than water
+     down the prices, the note says how the discounts actually behave: the best
+     available one is applied at checkout. The cart's own breakdown then shows
+     exactly what landed, so the two never disagree.
+
+     Remove this note if the ladders are ever moved to a Shopify Function, which
+     is what would let every product's ladder apply independently.
 {%- endcomment -%}
+<style>
+  #pgx .pgx-deal-note{
+    margin:2px 0 12px !important;
+    font-size:12.5px;
+    line-height:1.45;
+    color:#A99BC0;
+    text-align:center;
+  }
+  #pgx .pgx-deal-note b{color:#C79BEA;font-weight:700}
+</style>
 <script>
 (function(){
   if (window.pgTileCopy) return; window.pgTileCopy = 1;
@@ -21,6 +59,7 @@
   var TO = 'Single Item';
   var TILES = '#pgx .pgx-tile, #pgx [class*="pgx-lad"]';
   var NOTE = 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+  var SECOND_PCT = 25;
 
   function swapIn(root){
     if (!root || root.nodeType !== 1) return;
@@ -33,11 +72,80 @@
     return hits.length > 0;
   }
 
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  var variants = null;
+  function vdata(){
+    if (variants) return variants;
+    var el = document.getElementById('pgx-vdata');
+    if (!el) return null;
+    try { variants = JSON.parse(el.textContent); } catch(e){ variants = null; }
+    return variants;
+  }
+
+  function bySize(sz){
+    var vs = vdata();
+    if (!vs || !vs.length) return null;
+    for (var i = 0; i < vs.length; i++){ if (vs[i].size === sz) return vs[i]; }
+    return vs[0];
+  }
+
+  function pickedIn(tile, name){
+    var s = tile.querySelector('[data-pgx-size="' + name + '"]');
+    var vs = vdata();
+    return bySize(s ? s.value : (vs && vs[0] ? vs[0].size : null));
+  }
+
+  /* Only writes when the value actually changes, so the MutationObserver that
+     calls back into pass() cannot drive this into a loop. */
+  function put(el, text){
+    if (el && el.textContent !== text) el.textContent = text;
+  }
+
+  function bundle(){
+    var tile = document.querySelector('#pgx [data-pgx-tile="double"]');
+    if (!tile) return;
+    var a = pickedIn(tile, 'd1'), b = pickedIn(tile, 'd2');
+    if (!a || !b) return;
+
+    var disc = a.price + Math.round(b.price * (100 - SECOND_PCT) / 100);
+    var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
+
+    put(tile.querySelector('.pgx-tile-sub'),
+        '2nd one ' + SECOND_PCT + '% OFF, applied automatically at checkout');
+    put(tile.querySelector('[data-pgx-double-now]'), money(disc));
+    put(tile.querySelector('[data-pgx-double-was]'), money(retail));
+
+    if (!tile.dataset.pgBundle){
+      tile.dataset.pgBundle = '1';
+      tile.querySelectorAll('[data-pgx-size]').forEach(function(s){
+        /* pg-landing's own paint() also fires on change and would put the flat
+           bundle_pct price back, so re-run after it */
+        s.addEventListener('change', function(){ setTimeout(bundle, 0); });
+      });
+    }
+  }
+
+  function note(){
+    var root = document.getElementById('pgx');
+    if (!root || root.querySelector('.pgx-deal-note')) return;
+    /* only where a ladder is actually offered */
+    if (!root.querySelector('.pgx-tile, [class*="pgx-lad"]')) return;
+    var atc = root.querySelector('.pgx-atc');
+    if (!atc || !atc.parentNode) return;
+    var p = document.createElement('p');
+    p.className = 'pgx-deal-note';
+    p.innerHTML = NOTE;
+    atc.parentNode.insertBefore(p, atc);
+  }
+
   function pass(){
     document.querySelectorAll(TILES).forEach(function(tile){
       if (tile.dataset.pgCopy) return;
       if (swapIn(tile)) tile.dataset.pgCopy = '1';
     });
+    bundle();
+    note();
   }
 
   function boot(){
