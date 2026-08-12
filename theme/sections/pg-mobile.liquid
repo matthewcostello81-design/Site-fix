@@ -4,25 +4,13 @@
 {%- endcomment -%}
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
-/* Neon "Pocket Era" wordmarks flanking the logo, one per empty header zone,
-   evenly spaced (centers at 23% and 77%) with a staggered neon flash */
+/* Single neon "POCKET ERA" wordmark, centred where the logo image was.
+   The logo art itself is hidden - the wordmark is the brand mark now. */
 .pgx-head,.pgh-head,.pgc-head,.pgf-head{position:relative}
-.pg-wordmark{position:absolute;top:44px;z-index:5;width:30%;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(18px,1.7vw,30px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
-/* aligned to the 1280px content column, not the viewport edges */
-.pg-wordmark{width:auto;text-align:left}
-.pg-wm-l{left:max(24px, calc((100% - 1280px) / 2 + 24px))}
-.pg-wm-r{left:auto;right:max(24px, calc((100% - 1280px) / 2 + 24px));text-align:right;animation-delay:1.6s}
-@keyframes pgFlash{
-  0%,100%{opacity:1}
-  6%{opacity:.45}
-  8%{opacity:1}
-  11%{opacity:.7}
-  13%{opacity:1}
-  46%{opacity:1}
-  48%{opacity:.55}
-  50%{opacity:1}
-}
-@media(max-width:1100px){.pg-wordmark{display:none}}
+.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{display:none !important}
+.pgh-logo,.pgx-logo,.pgc-logo{min-height:64px;display:flex;align-items:center;justify-content:center}
+.pg-wordmark{display:block;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(20px,2vw,34px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
+@media(max-width:560px){.pg-wordmark{font-size:19px}}
 </style>
 <style>
 /* ---------- sitewide hotfixes (not mobile-specific) ---------- */
@@ -178,11 +166,10 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
   function wordmark(){
     document.querySelectorAll('.pgx-head,.pgh-head,.pgc-head,.pgf-head').forEach(function(h){
       if (h.querySelector('.pg-wordmark')) return;
-      ['pg-wm-l','pg-wm-r'].forEach(function(side){
-        var a = document.createElement('a');
-        a.className = 'pg-wordmark ' + side; a.href = '/'; a.textContent = 'Pocket Era';
-        h.appendChild(a);
-      });
+      var a = document.createElement('a');
+      a.className = 'pg-wordmark'; a.href = '/'; a.textContent = 'Pocket Era';
+      var logo = h.querySelector('.pgh-logo,.pgx-logo,.pgc-logo');
+      (logo || h).appendChild(a);
     });
   }
   /* Storage options read "64G"; show them as "64GB" (display only) */
