@@ -56,10 +56,12 @@
     font-weight:400 !important;
     font-size:20px !important;
     letter-spacing:0 !important;
-    /* Press Start 2P draws a full-cell space, so "POCKET ERA" opens a gap
-       wider than a whole glyph between the T and the E and reads as two
-       separate words. Pulled back to roughly half a cell. */
-    word-spacing:-0.55em !important;
+    /* Press Start 2P is monospaced and draws the space as a full 1em cell, so
+       "POCKET ERA" opened a gap a whole glyph wide and the T read as belonging
+       to ERA rather than to POCKET. -1em cancels that advance exactly, leaving
+       the T and the following E on the same rhythm as every other letter pair.
+       The header wordmark carries the same value. */
+    word-spacing:-1em !important;
     line-height:2.4 !important;
     white-space:nowrap !important;
     color:#F6DBFF !important;
