@@ -1,0 +1,47 @@
+{%- comment -%}
+  PG Page Logo: make the wordmark on the page templates (Track Your Order,
+  Contact, policies) match the one on the homepage and PDP.
+
+  Two things are wrong there. The mark renders purple and blurry instead of the
+  near-white #F6DBFF with a tight glow, and a solid black bar sits directly
+  under it.
+
+  The black bar is almost certainly the retired logo art. pe-logo swaps every
+  header <img> to the vector badge and sets mix-blend-mode:normal -- correct for
+  a transparent SVG, but the old raster asset had a black box baked in, and
+  pg-dark was relying on mix-blend-mode:screen to knock that black out. Any
+  header image on these templates that pg-mobile's display:none list misses
+  therefore paints its black box. These templates use the wordmark as the brand
+  mark, so the images are hidden outright here.
+
+  The colour is restated with -webkit-text-fill-color as well as color, because
+  a gradient text-fill anywhere up the chain would otherwise win, and the glow
+  is set to pe-logo's tighter three-stop shadow rather than the wide 12px/.9
+  alpha one, which is what reads as blur.
+
+  Scoped to body.template-page* so the homepage, PDP and cart are untouched.
+{%- endcomment -%}
+<style>
+/* the wordmark: same white and same glow as everywhere else */
+html body[class*="template-page"] a.pg-wordmark.pg-wordmark,
+html body[class*="template-page"] .pgc-logo a.pg-wordmark.pg-wordmark{
+  color:#F6DBFF !important;
+  -webkit-text-fill-color:#F6DBFF !important;
+  background:none !important;
+  background-image:none !important;
+  text-shadow:0 0 6px rgba(246,219,255,.5),0 0 17px rgba(199,155,234,.38),0 0 40px rgba(139,68,190,.26) !important;
+  filter:none !important;
+}
+
+/* the black bar: retired logo art with its black box no longer knocked out */
+html body[class*="template-page"] .pgc-logo img,
+html body[class*="template-page"] .pgc-head img,
+html body[class*="template-page"] .pgf-head img,
+html body[class*="template-page"] .pgh-logo img,
+html body[class*="template-page"] .pgx-logo img{
+  display:none !important;
+}
+</style>
+{% schema %}
+{"name": "PG Page Logo", "settings": []}
+{% endschema %}
