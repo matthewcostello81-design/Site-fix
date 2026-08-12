@@ -1,0 +1,43 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {"type": "review", "settings": {"name": "Marcus", "stars": 5, "text": "The 3D effect is unreal, Charizard literally shifts and moves when you walk past it"}},
+        "rev2": {"type": "review", "settings": {"name": "Ava", "stars": 5, "text": "Got one for my son's room and he stares at it every night, way cooler in person"}},
+        "rev3": {"type": "review", "settings": {"name": "Devon", "stars": 5, "text": "Print quality is great, colors are super vivid and it was really easy to hang"}},
+        "rev4": {"type": "review", "settings": {"name": "Priya", "stars": 5, "text": "Perfect size for my game corner, the depth on this thing is honestly wild"}},
+        "rev5": {"type": "review", "settings": {"name": "Cole", "stars": 5, "text": "Arrived fast and flat with no bends, already ordered a second design"}},
+        "rev6": {"type": "review", "settings": {"name": "Lena", "stars": 5, "text": "Everyone who comes over asks where I got it, the holographic motion is such a cool touch"}}
+      },
+      "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6"],
+      "settings": {
+        "product": "anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame",
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 10,000 customers",
+        "review_total": 6,
+        "default_size": "P-P7",
+        "gallery_video_url": "https://cdn.shopify.com/videos/c/o/v/9c3c46ce1e164dd88e4995bd84eea3a5.mp4",
+        "show_bundle": true,
+        "bundle_title": "Bundle Deal: 2x Holographic Wall Art",
+        "bundle_pct": 10,
+        "features_text": "<p>True lenticular 3D print, the artwork shifts and moves as your viewing angle changes<br>Deep layered holographic motion effect, no power or batteries needed<br>Vivid, fade-resistant colors on a durable high-quality print<br>Lightweight and easy to hang in a bedroom, dorm, office or game corner<br>Perfect display size: 12 x 16 in (30 x 40 cm), ships without frame</p>",
+        "shipping_text": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+      }
+    }
+  },
+  "order": ["pg_landing"]
+}
