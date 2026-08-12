@@ -1,3 +1,32 @@
+# Pocket Era: looping demo video on the Heroic 3D Wall Art page
+
+## What
+Added the user's lenticular-flip demo video (person tilting the poster so
+the print morphs between card artworks) to the wall art product page. It
+autoplays muted and loops continuously in the gallery, right under the
+hero image (desktop) / as the second card in the swipe strip (mobile).
+
+## How
+- Uploaded the video to Shopify Files via stagedUploadsCreate + fileCreate
+  (Video gid://shopify/Video/71926820143332); Shopify transcoded it to
+  480p/720p/1080p renditions on cdn.shopify.com.
+- **`sections/pg-landing.liquid`**: new optional `gallery_video_url`
+  section setting. When set, the gallery renders
+  `<video autoplay muted loop playsinline>` in a `.pgx-vid` tile between
+  the hero and the thumbnails. Empty for the console/crystal templates,
+  so nothing changes there. Mobile CSS sizes the tile to match the
+  swipe-strip cards from pg-theme-css.
+- **`templates/product.pg-wallart.json`**: set `gallery_video_url` to the
+  1080p mp4 rendition URL.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") via the
+Admin API (stagedUploadsCreate + fileCreate + themeFilesUpsert).
+Files changed: sections/pg-landing.liquid (now tracked in full),
+templates/product.pg-wallart.json
+
+---
+
 # Pocket Era: stop hardcoding the PokeOrb name (was showing "Pokemon Crystal Ball")
 
 ## Problem

@@ -1,0 +1,558 @@
+{%- comment -%}
+  PG Landing: one-page Sleek Mood style product landing for the PixelGlow Site Build theme.
+  Renders its own announcement bar + header on the homepage and hides the native theme
+  header/announcement there. Product, rating text, bundle discount and reviews are editable
+  in the theme editor (section settings + review blocks).
+{%- endcomment -%}
+
+{%- assign prod = section.settings.product -%}
+{%- assign bundle_pct = section.settings.bundle_pct -%}
+
+<style>
+  /* Hide native chrome on this template only (this section only renders on the homepage) */
+  .shopify-section-header,
+  #shopify-section-header,
+  .shopify-section[id*="__header"],
+  .shopify-section[id*="nc_announce"],
+  .shopify-section[id*="nc-announce"],
+  .shopify-section[id*="newsletter-popup"],
+  [id*="sticky-add-to-cart"]{display:none !important}
+  #content{padding-top:0 !important}
+
+  #pgx{--pgx-ink:#121212;--pgx-mut:#5c5c5c;--pgx-line:#e5e5e5;--pgx-purple:#7A2FA2;--pgx-purple-dk:#4A1C66;--pgx-red:#c62828;
+    --pgx-green-bg:#e9f6ec;--pgx-green:#1e7c3c;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:var(--pgx-ink);background:#fff}
+  #pgx *{box-sizing:border-box}
+  #pgx img{max-width:100%;display:block}
+  #pgx a{text-decoration:none;color:inherit}
+
+  /* Announcement */
+  .pgx-announce{background:var(--pgx-purple);color:#fff;text-align:center;font-size:13.5px;letter-spacing:.02em;padding:10px 16px}
+
+  /* Header */
+  .pgx-head{background:#fff;border-bottom:1px solid #e9dcf3}
+  .pgx-head-in{max-width:1280px;margin:0 auto;padding:18px 24px 10px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center}
+  .pgx-head svg{width:22px;height:22px;stroke:#121212;fill:none;stroke-width:1.6}
+  .pgx-logo{justify-self:center;text-align:center}
+  .pgx-logo img{max-height:120px;width:auto;margin:0 auto}
+  .pgx-logo-text{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-weight:700;font-size:42px;line-height:1}
+  .pgx-ic{display:flex;gap:18px;justify-self:end;align-items:center}
+  .pgx-cart{position:relative}
+  .pgx-cart-n{position:absolute;top:-7px;right:-9px;background:var(--pgx-purple);color:#fff;border-radius:999px;font-size:10px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px}
+  .pgx-nav{display:flex;justify-content:center;gap:34px;padding:12px 16px 16px;flex-wrap:wrap}
+  .pgx-nav a{font-size:15px;color:#2b2b2b;text-underline-offset:5px}
+  .pgx-nav a:hover{text-decoration:underline;color:var(--pgx-purple)}
+
+  /* Layout */
+  .pgx-main{max-width:1280px;margin:0 auto;padding:34px 24px 10px;display:grid;grid-template-columns:56% 1fr;gap:52px;align-items:start}
+
+  /* Gallery */
+  .pgx-hero{border-radius:10px;overflow:hidden;background:#f6f6f6}
+  .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+  .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
+  .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
+  .pgx-vid{margin-top:14px;border-radius:10px;overflow:hidden;background:#0d0d0d}
+  .pgx-vid video{width:100%;display:block}
+
+  /* Buy column */
+  .pgx-title{font-family:'Roboto Slab',Georgia,serif;font-size:46px;font-weight:600;line-height:1.05;margin:6px 0 10px}
+  .pgx-rating{display:flex;align-items:center;gap:8px;font-family:'Roboto Slab',Georgia,serif;font-size:17px;margin-bottom:14px}
+  .pgx-stars{color:var(--pgx-purple);font-size:18px;letter-spacing:2px}
+  .pgx-stars.pgx-pur{color:var(--pgx-purple)}
+
+  .pgx-quote{display:flex;gap:14px;align-items:center;background:#faf7fc;border:1px solid #e9dcf3;border-radius:12px;padding:14px 16px;margin-bottom:20px}
+  .pgx-quote img{width:64px;height:64px;border-radius:8px;object-fit:cover;flex:none}
+  .pgx-quote-name{font-weight:600;font-size:15px}
+  .pgx-quote-name span{color:var(--pgx-purple);letter-spacing:1.5px;margin-left:6px;font-size:13px}
+  .pgx-quote-txt{font-size:14.5px;color:#333;margin-top:3px;line-height:1.45}
+  .pgx-quote-next{flex:none;margin-left:auto;border:0;background:none;font-size:22px;cursor:pointer;color:#555;padding:6px}
+
+  .pgx-divider{display:flex;align-items:center;gap:16px;margin:6px 0 14px;color:var(--pgx-purple);font-size:14px;letter-spacing:.18em;font-weight:600}
+  .pgx-divider:before,.pgx-divider:after{content:"";height:1px;background:var(--pgx-purple);flex:1}
+
+  .pgx-tile{border:1px solid #cfcfcf;border-radius:12px;padding:16px;margin-bottom:12px;cursor:pointer;background:#fff;transition:border-color .15s ease, background .15s ease}
+  .pgx-tile.pgx-sel{border:2px solid var(--pgx-purple);background:#fdfbfe;padding:15px}
+  .pgx-tile-row{display:flex;align-items:flex-start;gap:12px}
+  .pgx-radio{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid #9a9a9a;margin-top:2px;position:relative}
+  .pgx-sel .pgx-radio{border-color:var(--pgx-purple)}
+  .pgx-sel .pgx-radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--pgx-purple)}
+  .pgx-tile-name{font-weight:700;font-size:17px}
+  .pgx-tile-sub{font-size:13.5px;color:var(--pgx-purple);font-weight:600;margin-top:2px}
+  .pgx-tile-price{margin-left:auto;text-align:right}
+  .pgx-p-now{font-family:'Roboto Slab',Georgia,serif;font-size:21px;font-weight:700}
+  .pgx-p-was{font-size:14px;color:#8a8a8a;text-decoration:line-through}
+  .pgx-tile-opts{display:flex;gap:14px;margin-top:12px;padding-left:34px;flex-wrap:wrap}
+  .pgx-opt{display:flex;flex-direction:column;align-items:center;gap:6px}
+  .pgx-opt img{width:58px;height:58px;border-radius:8px;object-fit:cover;border:1px solid var(--pgx-line)}
+  .pgx-opt select{border:1px solid #bbb;border-radius:8px;padding:7px 10px;font-size:13.5px;background:#fff;max-width:190px}
+  .pgx-plus{align-self:center;font-size:20px;color:#777}
+
+  .pgx-atc{display:block;width:100%;border:0;background:#111 !important;background-color:#111 !important;color:#fff;font-size:16px;font-weight:600;letter-spacing:.02em;padding:17px;border-radius:6px;cursor:pointer;margin:16px 0 6px;font-family:'Poppins',sans-serif;transition:opacity .15s ease}
+  .pgx-atc:hover{background:var(--pgx-purple) !important;background-color:var(--pgx-purple) !important}
+  .pgx-atc[disabled]{opacity:.5;cursor:default}
+  .pgx-err{display:none;color:var(--pgx-red);font-size:14px;margin:4px 0 8px}
+
+  .pgx-info{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--pgx-line);border-radius:12px;margin:16px 0;overflow:hidden}
+  .pgx-info-c{padding:20px 10px;text-align:center;border-left:1px solid var(--pgx-line)}
+  .pgx-info-c:first-child{border-left:0}
+  .pgx-info-ic{width:52px;height:52px;border-radius:50%;background:#f5eefa;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
+  .pgx-info-ic svg{width:26px;height:26px;stroke:var(--pgx-purple);fill:none;stroke-width:1.6}
+  .pgx-info-ic img{width:26px;height:26px;border-radius:50%}
+  .pgx-info-h{font-weight:700;font-size:15px;margin-bottom:6px}
+  .pgx-info-t{font-family:'Roboto Slab',Georgia,serif;font-size:14px;letter-spacing:.06em;color:#333}
+  .pgx-info-t a{text-decoration:underline;text-underline-offset:3px}
+
+  .pgx-pay{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
+  .pgx-pay svg{height:26px;width:auto}
+
+  .pgx-guar{display:flex;align-items:center;gap:10px;background:var(--pgx-green-bg);border-radius:8px;padding:13px 16px;color:var(--pgx-green);font-size:15px;margin:12px 0 4px}
+  .pgx-guar:before{content:"";width:10px;height:10px;border-radius:50%;background:var(--pgx-green);flex:none}
+
+  .pgx-acc{border-top:1px solid var(--pgx-line);margin-top:14px}
+  .pgx-acc details{border-bottom:1px solid var(--pgx-line)}
+  .pgx-acc summary{list-style:none;display:flex;align-items:center;gap:10px;font-family:'Roboto Slab',Georgia,serif;font-size:19px;font-weight:600;padding:18px 4px;cursor:pointer}
+  .pgx-acc summary::-webkit-details-marker{display:none}
+  .pgx-acc summary:after{content:"\25B8";margin-left:auto;font-size:14px;color:var(--pgx-purple);transition:transform .15s ease}
+  .pgx-acc details[open] summary:after{transform:rotate(90deg)}
+  .pgx-acc-body{font-family:'Roboto Slab',Georgia,serif;font-size:15.5px;line-height:1.65;color:#333;padding:0 4px 20px}
+  .pgx-acc-body a{text-decoration:underline;text-underline-offset:3px}
+
+  /* Reviews */
+  .pgx-rev{max-width:1280px;margin:0 auto;padding:30px 24px 60px}
+  .pgx-rev-head{display:flex;align-items:center;gap:40px;flex-wrap:wrap;margin-bottom:34px}
+  .pgx-rev-score{display:flex;align-items:center;gap:14px}
+  .pgx-rev-star{color:var(--pgx-purple);font-size:52px;line-height:1}
+  .pgx-rev-num{font-size:56px;font-weight:600}
+  .pgx-rev-count{font-size:19px;color:#333;margin-top:6px}
+  .pgx-hist{flex:1;min-width:260px;max-width:520px}
+  .pgx-hist-row{display:flex;align-items:center;gap:12px;margin:6px 0}
+  .pgx-hist-row .pgx-stars{font-size:15px}
+  .pgx-bar{flex:1;height:9px;border-radius:6px;background:#ececec;overflow:hidden}
+  .pgx-bar i{display:block;height:100%;background:var(--pgx-purple)}
+  .pgx-hist-n{font-size:14px;color:#555;width:36px}
+  .pgx-write{margin-left:auto}
+  .pgx-write a{display:inline-block;border:1px solid var(--pgx-purple);color:var(--pgx-purple);border-radius:4px;padding:13px 26px;font-size:15.5px}
+  .pgx-cards{columns:4 260px;column-gap:16px}
+  .pgx-card{break-inside:avoid;border:1px solid #ececec;border-radius:10px;padding:18px;margin-bottom:16px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .pgx-card-name{font-weight:700;font-size:16px;margin-bottom:6px}
+  .pgx-card .pgx-stars{font-size:15px}
+  .pgx-card-txt{font-size:15px;color:#2f2f2f;line-height:1.5;margin-top:8px}
+
+  @media (max-width: 900px){
+    .pgx-main{grid-template-columns:1fr;gap:26px;padding-top:18px}
+    .pgx-title{font-size:34px}
+    .pgx-nav{gap:20px;padding-top:8px}
+    .pgx-logo-text{font-size:34px}
+    .pgx-logo img{max-height:84px}
+    .pgx-head-in{padding:14px 16px 6px}
+    .pgx-thumbs{grid-template-columns:1fr 1fr;gap:10px}
+    .pgx-vid{flex:0 0 88%;scroll-snap-align:center;margin-top:0}
+    .pgx-vid video{aspect-ratio:1/1;object-fit:cover;height:auto}
+    .pgx-rev-head{gap:22px}
+    .pgx-rev-num{font-size:44px}
+    .pgx-rev-star{font-size:42px}
+    .pgx-write{margin-left:0}
+    .pgx-cards{columns:1}
+    .pgx-info-h{font-size:13.5px}
+    .pgx-info-t{font-size:12.5px}
+  }
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Roboto+Slab:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<div id="pgx" data-pgx>
+  <div class="pgx-announce">{{ section.settings.announce_text }}</div>
+
+  <header class="pgx-head">
+    <div class="pgx-head-in">
+      <a href="{{ routes.search_url }}" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
+      </a>
+      <a class="pgx-logo" href="{{ routes.root_url }}" aria-label="Home">
+        {%- if section.settings.logo_image -%}
+          <img src="{{ section.settings.logo_image | image_url: width: 600 }}" alt="{{ shop.name }}">
+        {%- else -%}
+          <span class="pgx-logo-text">{{ section.settings.logo_text }}</span>
+        {%- endif -%}
+      </a>
+      <div class="pgx-ic">
+        <a href="{{ routes.account_url }}" aria-label="Account">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+        </a>
+        <a class="pgx-cart" href="{{ routes.cart_url }}" aria-label="Cart">
+          <svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          {%- if cart.item_count > 0 -%}<span class="pgx-cart-n">{{ cart.item_count }}</span>{%- endif -%}
+        </a>
+      </div>
+    </div>
+    <nav class="pgx-nav">
+      <a href="{{ routes.root_url }}">Home</a>
+      <a href="/pages/track-order">Track your order</a>
+      <a href="/pages/contact">Contact</a>
+    </nav>
+  </header>
+
+  {%- if prod == blank -%}
+    <div class="pgx-main"><p>Select a product for this section in the theme editor.</p></div>
+  {%- else -%}
+
+  {%- assign imgs = prod.images -%}
+  <div class="pgx-main">
+    <div class="pgx-gallery">
+      <div class="pgx-hero">
+        <img id="pgx-hero-img" src="{{ imgs.first | image_url: width: 1400 }}" alt="{{ prod.title | escape }}" width="1400" height="1400" style="width:100%;height:auto">
+      </div>
+      {%- if section.settings.gallery_video_url != blank -%}
+      <div class="pgx-vid">
+        <video src="{{ section.settings.gallery_video_url }}" autoplay muted loop playsinline preload="metadata" aria-label="{{ prod.title | escape }} product video"></video>
+      </div>
+      {%- endif -%}
+      {%- if imgs.size > 1 -%}
+      <div class="pgx-thumbs">
+        {%- for image in imgs offset: 1 -%}
+          <button type="button" data-pgx-thumb="{{ image | image_url: width: 1400 }}" aria-label="View image {{ forloop.index | plus: 1 }}">
+            <img src="{{ image | image_url: width: 700 }}" alt="{{ prod.title | escape }} view {{ forloop.index | plus: 1 }}" loading="lazy">
+          </button>
+        {%- endfor -%}
+      </div>
+      {%- endif -%}
+    </div>
+
+    <div class="pgx-buy">
+      <h1 class="pgx-title">{{ section.settings.display_title | default: prod.title }}</h1>
+
+      {%- assign quote_blocks = section.blocks | where: "type", "review" -%}
+      {%- if quote_blocks.size > 0 -%}
+      <div class="pgx-rating">
+        <span class="pgx-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        <strong>{{ section.settings.rating_value }}</strong>
+        <span>&bull;</span>
+        <span>{{ section.settings.rating_label }}</span>
+      </div>
+
+      <div class="pgx-quote">
+        <img src="{{ prod.featured_image | image_url: width: 128 }}" alt="{{ prod.title | escape }}">
+        <div>
+          <div class="pgx-quote-name" id="pgx-quote-name"></div>
+          <div class="pgx-quote-txt" id="pgx-quote-txt"></div>
+        </div>
+        <button type="button" class="pgx-quote-next" id="pgx-quote-next" aria-label="Next review">&#8250;</button>
+      </div>
+      {%- endif -%}
+
+      <div class="pgx-divider">BUNDLE &amp; SAVE</div>
+
+      {%- for option in prod.options_with_values -%}
+        {%- if option.name == 'Size' and option.values.size > 1 -%}{%- assign size_opt = option -%}{%- endif -%}
+      {%- endfor -%}
+      {%- if size_opt == blank -%}
+        {%- for option in prod.options_with_values -%}
+          {%- if size_opt == blank and option.values.size > 1 -%}{%- assign size_opt = option -%}{%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
+      {%- assign vpos = 0 -%}
+      {%- if size_opt -%}{%- assign vpos = size_opt.position | minus: 1 -%}{%- endif -%}
+
+      <div class="pgx-tile pgx-sel" data-pgx-tile="single" role="radio" aria-checked="true" tabindex="0">
+        <div class="pgx-tile-row">
+          <span class="pgx-radio"></span>
+          <div>
+            <div class="pgx-tile-name">{{ section.settings.display_title | default: prod.title }}</div>
+            <div class="pgx-tile-sub" data-pgx-single-sub></div>
+          </div>
+          <div class="pgx-tile-price">
+            <div class="pgx-p-now" data-pgx-single-now></div>
+            <div class="pgx-p-was" data-pgx-single-was></div>
+          </div>
+        </div>
+        {%- if size_opt -%}
+        <div class="pgx-tile-opts">
+          <div class="pgx-opt">
+            <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
+              {%- for value in size_opt.values -%}
+                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+        </div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.show_bundle -%}
+      <div class="pgx-tile" data-pgx-tile="double" role="radio" aria-checked="false" tabindex="0">
+        <div class="pgx-tile-row">
+          <span class="pgx-radio"></span>
+          <div>
+            <div class="pgx-tile-name">{{ section.settings.bundle_title }}</div>
+            <div class="pgx-tile-sub">{{ bundle_pct }}% OFF, applied automatically at checkout</div>
+          </div>
+          <div class="pgx-tile-price">
+            <div class="pgx-p-now" data-pgx-double-now></div>
+            <div class="pgx-p-was" data-pgx-double-was></div>
+          </div>
+        </div>
+        <div class="pgx-tile-opts">
+          <div class="pgx-opt">
+            <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
+            {%- if size_opt -%}
+            <select data-pgx-size="d1" aria-label="{{ size_opt.name | escape }} for unit 1">
+              {%- for value in size_opt.values -%}
+                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
+              {%- endfor -%}
+            </select>
+            {%- endif -%}
+          </div>
+          <span class="pgx-plus">+</span>
+          <div class="pgx-opt">
+            <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
+            {%- if size_opt -%}
+            <select data-pgx-size="d2" aria-label="{{ size_opt.name | escape }} for unit 2">
+              {%- for value in size_opt.values -%}
+                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
+              {%- endfor -%}
+            </select>
+            {%- endif -%}
+          </div>
+        </div>
+      </div>
+      {%- endif -%}
+
+      <button type="button" class="pgx-atc" id="pgx-atc"><span>Add to cart</span></button>
+      <p class="pgx-err" id="pgx-err"></p>
+
+      <div class="pgx-info">
+        <div class="pgx-info-c">
+          <div class="pgx-info-ic"><svg viewBox="0 0 24 24"><path d="M3 7h11v10H3z"/><path d="M14 10h4l3 3v4h-7"/><circle cx="7" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg></div>
+          <div class="pgx-info-h">Ships By</div>
+          <div class="pgx-info-t" id="pgx-shipdate"></div>
+        </div>
+        <div class="pgx-info-c">
+          <div class="pgx-info-ic"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v4h-4"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-4h4"/></svg></div>
+          <div class="pgx-info-h">Easy Returns</div>
+          <div class="pgx-info-t">30-Day Returns</div>
+        </div>
+        <div class="pgx-info-c">
+          <div class="pgx-info-ic"><img src="{{ 'flag-us.svg' | asset_url }}" alt="United States flag"></div>
+          <div class="pgx-info-h">Free Shipping</div>
+          <div class="pgx-info-t">TO <a href="/pages/shipping-policy">UNITED STATES</a></div>
+        </div>
+      </div>
+
+      <div class="pgx-pay">
+        {%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}
+      </div>
+
+      <div class="pgx-guar">30-day money back guarantee</div>
+
+      <div class="pgx-acc" id="pgx-desc">
+        <details open>
+          <summary>&#128377;&#65039; Description</summary>
+          <div class="pgx-acc-body">{{ prod.description }}</div>
+        </details>
+        <details>
+          <summary>&#128640; Features</summary>
+          <div class="pgx-acc-body">{{ section.settings.features_text }}</div>
+        </details>
+        <details>
+          <summary>&#128666; Shipping</summary>
+          <div class="pgx-acc-body">{{ section.settings.shipping_text }}</div>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  {%- if quote_blocks.size > 0 -%}
+  <section class="pgx-rev" id="pg-reviews">
+    <div class="pgx-rev-head">
+      <div class="pgx-rev-score">
+        <span class="pgx-rev-star">&#9733;</span>
+        <div>
+          <div class="pgx-rev-num">{{ section.settings.rating_value }}</div>
+          <div class="pgx-rev-count">{{ section.settings.review_total }} Reviews</div>
+        </div>
+      </div>
+      <div class="pgx-hist">
+        {%- for i in (1..5) -%}
+          {%- assign stars_n = 6 | minus: i -%}
+          {%- if stars_n == 5 -%}{%- assign row_count = section.settings.review_total -%}{%- assign row_fill = 100 -%}{%- else -%}{%- assign row_count = 0 -%}{%- assign row_fill = 0 -%}{%- endif -%}
+          <div class="pgx-hist-row">
+            <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= stars_n -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+            <div class="pgx-bar"><i style="width:{{ row_fill }}%"></i></div>
+            <span class="pgx-hist-n">({{ row_count }})</span>
+          </div>
+        {%- endfor -%}
+      </div>
+      <div class="pgx-write"><a href="/pages/contact">Write a review</a></div>
+    </div>
+
+    <div class="pgx-cards">
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'review' -%}
+        <div class="pgx-card" {{ block.shopify_attributes }}>
+          <div class="pgx-card-name">{{ block.settings.name }}</div>
+          <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= block.settings.stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+          <div class="pgx-card-txt">{{ block.settings.text }}</div>
+        </div>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </section>
+  {%- endif -%}
+
+  <script type="application/json" id="pgx-vdata">
+    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
+  </script>
+
+  {%- endif -%}
+</div>
+
+<script>
+(function(){
+  var root = document.querySelector('[data-pgx]');
+  if (!root || root.dataset.pgxInit) return;
+  root.dataset.pgxInit = '1';
+
+  /* Gallery */
+  var hero = document.getElementById('pgx-hero-img');
+  root.querySelectorAll('[data-pgx-thumb]').forEach(function(btn){
+    btn.addEventListener('click', function(){ if (hero) hero.src = btn.getAttribute('data-pgx-thumb'); });
+  });
+
+  /* Review quote carousel */
+  var quotes = [
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'review' -%}
+        {name: {{ block.settings.name | json }}, text: {{ block.settings.text | json }}}{%- unless forloop.last -%},{%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  ];
+  var qi = 0, qName = document.getElementById('pgx-quote-name'), qTxt = document.getElementById('pgx-quote-txt');
+  function showQuote(){
+    if (!qName || !quotes.length) return;
+    qName.innerHTML = quotes[qi].name + '<span>&#9733;&#9733;&#9733;&#9733;&#9733;</span>';
+    qTxt.textContent = '"' + quotes[qi].text + '"';
+  }
+  showQuote();
+  var qNext = document.getElementById('pgx-quote-next');
+  function nextQuote(){ qi = (qi + 1) % quotes.length; showQuote(); }
+  if (qNext) qNext.addEventListener('click', nextQuote);
+  if (quotes.length > 1) setInterval(nextQuote, 6000);
+
+  /* Ships-by date: today + 2 days, skip Sunday */
+  var d = new Date(); d.setDate(d.getDate() + 2);
+  if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+  var el = document.getElementById('pgx-shipdate');
+  if (el) el.textContent = d.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}).toUpperCase();
+
+  /* Variants + bundle pricing */
+  var vEl = document.getElementById('pgx-vdata');
+  if (!vEl) return;
+  var variants = JSON.parse(vEl.textContent);
+  var BUNDLE_PCT = {{ section.settings.bundle_pct | default: 10 }};
+  function bySize(sz){
+    for (var i = 0; i < variants.length; i++){ if (variants[i].size === sz) return variants[i]; }
+    return variants[0];
+  }
+  function sel(name){ return root.querySelector('[data-pgx-size="' + name + '"]'); }
+  function val(name){ var s = sel(name); return s ? s.value : (variants[0] && variants[0].size); }
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  var mode = 'single';
+
+  function paint(){
+    var v1 = bySize(val('s1'));
+    var now1 = root.querySelector('[data-pgx-single-now]');
+    var was1 = root.querySelector('[data-pgx-single-was]');
+    var sub1 = root.querySelector('[data-pgx-single-sub]');
+    if (now1) now1.textContent = money(v1.price);
+    if (was1) was1.textContent = v1.cap > v1.price ? money(v1.cap) : '';
+    if (sub1) sub1.textContent = v1.cap > v1.price ? (Math.round((1 - v1.price / v1.cap) * 100) + '% OFF today') : '';
+    var dNow = root.querySelector('[data-pgx-double-now]');
+    if (dNow){
+      var a = bySize(val('d1')), b = bySize(val('d2'));
+      var full = a.price + b.price;
+      var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
+      var disc = Math.round(full * (100 - BUNDLE_PCT) / 100);
+      dNow.textContent = money(disc);
+      var dWas = root.querySelector('[data-pgx-double-was]');
+      if (dWas) dWas.textContent = money(retail);
+    }
+  }
+  root.querySelectorAll('[data-pgx-size]').forEach(function(s){ s.addEventListener('change', paint); });
+  paint();
+
+  /* Tile selection */
+  var tiles = root.querySelectorAll('[data-pgx-tile]');
+  tiles.forEach(function(t){
+    function pick(){
+      tiles.forEach(function(x){ x.classList.remove('pgx-sel'); x.setAttribute('aria-checked', 'false'); });
+      t.classList.add('pgx-sel'); t.setAttribute('aria-checked', 'true');
+      mode = t.getAttribute('data-pgx-tile');
+    }
+    t.addEventListener('click', function(e){ if (e.target.tagName !== 'SELECT' && e.target.tagName !== 'OPTION') pick(); });
+    t.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); pick(); } });
+  });
+
+  /* Add to cart */
+  var atc = document.getElementById('pgx-atc'), err = document.getElementById('pgx-err');
+  if (atc) atc.addEventListener('click', function(){
+    var items = [];
+    if (mode === 'double'){
+      var a = bySize(val('d1')), b = bySize(val('d2'));
+      if (a.id === b.id) items.push({id: a.id, quantity: 2});
+      else { items.push({id: a.id, quantity: 1}); items.push({id: b.id, quantity: 1}); }
+    } else {
+      items.push({id: bySize(val('s1')).id, quantity: 1});
+    }
+    atc.disabled = true; atc.firstElementChild.textContent = 'Adding...'; err.style.display = 'none';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: items})
+    }).then(function(r){
+      if (!r.ok) throw new Error('add failed');
+      atc.disabled = false; atc.firstElementChild.textContent = 'Add to cart';
+      if (window.pgOpenCart) { window.pgOpenCart(); } else { window.location.href = '{{ routes.cart_url }}'; }
+    }).catch(function(){
+      atc.disabled = false; atc.firstElementChild.textContent = 'Add to cart';
+      err.textContent = 'Could not add to cart. Please try again.'; err.style.display = 'block';
+    });
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "PG Landing",
+  "settings": [
+    {"type": "product", "id": "product", "label": "Product"},
+    {"type": "text", "id": "display_title", "label": "Display title", "default": "R36S"},
+    {"type": "text", "id": "announce_text", "label": "Announcement text", "default": "Free shipping on all orders"},
+    {"type": "image_picker", "id": "logo_image", "label": "Logo image"},
+    {"type": "text", "id": "logo_text", "label": "Logo text (used when no image)", "default": "SM"},
+    {"type": "text", "id": "rating_value", "label": "Rating value", "default": "5.0"},
+    {"type": "text", "id": "rating_label", "label": "Rating label", "default": "Trusted by over 12 customers"},
+    {"type": "number", "id": "review_total", "label": "Total review count", "default": 12},
+    {"type": "text", "id": "default_size", "label": "Default selected size", "default": "64G"},
+    {"type": "text", "id": "gallery_video_url", "label": "Gallery video URL (autoplays and loops)"},
+    {"type": "checkbox", "id": "show_bundle", "label": "Show 2-pack bundle tile", "default": true},
+    {"type": "text", "id": "bundle_title", "label": "Bundle tile title", "default": "Bundle Deal: 2x R36S"},
+    {"type": "range", "id": "bundle_pct", "label": "Bundle discount percent (must match a live automatic discount)", "min": 0, "max": 50, "step": 1, "default": 10},
+    {"type": "richtext", "id": "features_text", "label": "Features content", "default": "<p>15,000+ classic games preloaded, spanning 21+ retro systems from NES and SNES to Game Boy, PS1 and PSP<br>Bright 3.5 inch IPS screen (640x480) with classic D-pad controls<br>RK3326 quad-core chip and 1GB RAM for smooth emulation<br>Expandable storage via MicroSD up to 256GB<br>Custom firmware friendly (ArkOS) with USB-C Wi-Fi dongle support for multiplayer<br>3200mAh battery for around 6 hours of play</p>"},
+    {"type": "richtext", "id": "shipping_text", "label": "Shipping content", "default": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"}
+  ],
+  "blocks": [
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        {"type": "text", "id": "name", "label": "Customer name", "default": "Customer"},
+        {"type": "range", "id": "stars", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5},
+        {"type": "textarea", "id": "text", "label": "Review text", "default": "Great product"}
+      ]
+    }
+  ],
+  "presets": [{"name": "PG Landing"}]
+}
+{% endschema %}
