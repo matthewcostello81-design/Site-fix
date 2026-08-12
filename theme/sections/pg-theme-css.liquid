@@ -774,8 +774,8 @@
   var VARS = null, BUSY = false;
   function money(n){ return '$' + n.toFixed(2); }
   function duoDisc(p1, p2, v1, v2){
-    if (v1 === v2){ return Math.floor((p1 + p2) * 10) / 100; }
-    return (Math.floor(p1 * 10) + Math.floor(p2 * 10)) / 100;
+    /* 2nd console 25% off, matching the "R36S - 2nd Console 25% Off" automatic discount */
+    return Math.round(p2 * 25) / 100;
   }
   function calc(tile){
     if (!VARS) return;
@@ -817,7 +817,7 @@
       tile.setAttribute('tabindex', '0');
       tile.innerHTML = '<span class="pgx-duo-ribbon">Limited Time Deal</span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
-        + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small>2nd R36S = Extra 20% OFF!</small></div>'
+        + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small>2nd R36S = Extra 25% OFF!</small></div>'
         + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
         + '<div class="pgx-duo-body" style="border:1px solid rgba(139,68,190,.5);border-radius:12px"><span class="pgx-duo-plus">+</span>'
         + '<div class="pgx-duo-u" style="border-right:1px solid rgba(139,68,190,.45)"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version 1">' + opts + '</select></div>'
@@ -937,13 +937,14 @@
       natives.forEach(function(t){ t.style.setProperty('display', 'none', 'important'); });
       var TIERS = [
         {n: 1, f: 0, bases: 1, badge: '', title: 'Buy 1', sub: 'Standard price + FREE LED Base'},
-        {n: 2, f: 1, bases: 3, badge: 'Most Popular &#128293;', title: 'Buy 2, Get 1 FREE', sub: ''},
-        {n: 4, f: 2, bases: 6, badge: '', title: 'Buy 4, Get 2 FREE', sub: ''},
-        {n: 6, f: 3, bases: 9, badge: 'Best Deal!', title: 'Buy 6, Get 3 FREE', sub: ''}
+        {n: 2, f: 0, h: 1, bases: 2, badge: 'Most Popular &#128293;', title: 'Buy 2, 2nd 50% OFF', sub: ''},
+        {n: 4, f: 1, bases: 5, badge: '', title: 'Buy 4, Get 1 FREE', sub: ''},
+        {n: 6, f: 2, bases: 8, badge: 'Best Deal!', title: 'Buy 6, Get 2 FREE', sub: ''}
       ];
       var tiles = [];
       TIERS.forEach(function(T, ti){
-        var pay = T.n * unit, save = T.f * unit, full = (T.n + T.f) * unit;
+        var half = T.h || 0;
+        var pay = (T.n - half * 0.5) * unit, save = (T.f + half * 0.5) * unit, full = (T.n + T.f) * unit;
         var pct = Math.round(save / full * 100);
         var tile = document.createElement('div');
         tile.className = 'pgx-tile pgx-lad' + (ti === 0 ? ' pgx-sel' : '');
@@ -951,12 +952,12 @@
         tile.setAttribute('aria-checked', ti === 0 ? 'true' : 'false');
         tile.setAttribute('tabindex', '0');
         tile.setAttribute('data-pg-tier', String(ti));
-        var chips = T.f > 0 ? '<span class="pgx-lad-chip">+' + T.bases + ' FREE LED Bases</span>' : '';
-        var saveLn = T.f > 0 ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
+        var chips = T.bases > 1 ? '<span class="pgx-lad-chip">+' + T.bases + ' FREE LED Bases</span>' : '';
+        var saveLn = (T.f > 0 || half > 0) ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
         tile.innerHTML = (T.badge ? '<span class="pgx-lad-badge">' + T.badge + '</span>' : '')
           + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
           + '<div class="pgx-lad-t"><b>' + T.title + '</b>' + chips + saveLn + '</div>'
-          + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + (T.f > 0 ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
+          + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + ((T.f > 0 || half > 0) ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
           + '<div class="pgx-lad-picks"><div class="lbl">Choose your Poke Balls</div></div>';
         var picks = tile.querySelector('.pgx-lad-picks');
         var total = T.n + T.f;
