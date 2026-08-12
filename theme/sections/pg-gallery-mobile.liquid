@@ -1,0 +1,84 @@
+{%- comment -%}
+  PG Gallery Mobile: give the phone the same thumbnail carousel as desktop.
+
+  pg-landing builds the carousel only above 900px:
+
+    @media (min-width: 901px){ .pgx-thumbwrap .pgx-thumbs{display:flex;...
+                               overflow-x:auto;scroll-snap-type:x mandatory} }
+    @media (max-width: 900px){ .pgx-thumbwrap{display:contents}
+                               html body .pgx-tharrow{display:none !important} }
+
+  With `display:contents` the wrapper disappears and `.pgx-thumbs` falls back to
+  its base rule -- a two-column grid that just keeps growing downwards -- and the
+  arrows are hidden outright.
+
+  This section restores the carousel under 900px. Every rule is anchored on the
+  #pgx id so it outranks pg-landing's `html body .pgx-tharrow` !important rules
+  (an id beats three elements/classes) without needing to load in any particular
+  order.
+
+  The arrows keep their meaning: pg-landing's thUpd() only ever un-hides them
+  above 901px, so the script below re-runs the same scrollWidth test for small
+  screens and manages the [hidden] attribute itself. thUpd() runs on init, on
+  resize and once at 600ms -- not on an interval -- so this settles rather than
+  fights, and it is re-applied on the same events plus a couple of late passes.
+{%- endcomment -%}
+<style>
+@media (max-width:900px){
+  /* Bring the wrapper back so the arrows have something to anchor to. */
+  #pgx .pgx-thumbwrap{display:block !important;position:relative !important;margin-top:14px !important}
+
+  /* Same horizontal, snapping, two-up strip as desktop. */
+  #pgx .pgx-thumbwrap .pgx-thumbs{
+    display:flex !important;flex-wrap:nowrap !important;
+    overflow-x:auto !important;scroll-behavior:smooth;
+    scroll-snap-type:x mandatory;
+    scrollbar-width:none;-ms-overflow-style:none;
+    gap:10px !important;margin-top:0 !important;
+    -webkit-overflow-scrolling:touch
+  }
+  #pgx .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
+  #pgx .pgx-thumbwrap .pgx-thumbs button{
+    flex:0 0 calc(50% - 5px) !important;scroll-snap-align:start
+  }
+
+  /* Arrows: visible again, and a touch smaller than the 48px desktop pair so
+     they sit inside a phone-width thumb without covering it. */
+  #pgx .pgx-thumbwrap .pgx-tharrow{
+    display:flex !important;width:40px !important;height:40px !important;
+    font-size:24px !important
+  }
+  #pgx .pgx-thumbwrap .pgx-tharrow.prev{left:8px !important}
+  #pgx .pgx-thumbwrap .pgx-tharrow.next{right:8px !important}
+  /* ...but a strip that does not overflow still shows none. */
+  #pgx .pgx-thumbwrap .pgx-tharrow[hidden]{display:none !important}
+}
+</style>
+<script>
+(function(){
+  if (window.pgGalMob) return; window.pgGalMob = 1;
+
+  function upd(){
+    var tw = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!tw) return;
+    if (!window.matchMedia('(max-width: 900px)').matches) return;
+    var th = tw.querySelector('.pgx-thumbs');
+    if (!th) return;
+    var can = th.scrollWidth > th.clientWidth + 4;
+    tw.querySelectorAll('.pgx-tharrow').forEach(function(a){ a.hidden = !can; });
+  }
+
+  function boot(){
+    upd();
+    window.addEventListener('resize', upd);
+    /* pg-landing's own thUpd() re-hides them at 600ms on its init pass; these
+       land after it. */
+    [300, 800, 1600, 3000].forEach(function(t){ setTimeout(upd, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Gallery Mobile", "settings": []}
+{% endschema %}
