@@ -115,6 +115,10 @@
     "pg-cart-variants": {
       "type": "pg-cart-variants",
       "settings": {}
+    },
+    "pg-unlock": {
+      "type": "pg-unlock",
+      "settings": {}
     }
   },
   "order": [
@@ -140,6 +144,7 @@
     "pg-chips",
     "pg-cart-mobile",
     "pg-no-promo",
-    "pg-cart-variants"
+    "pg-cart-variants",
+    "pg-unlock"
   ]
 }

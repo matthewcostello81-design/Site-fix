@@ -1,0 +1,190 @@
+{%- comment -%}
+  PG Unlock: cart prompt for the next rung of a product's own BXGY ladder.
+
+  Read from the shop's live automatic discounts, so every message below is a
+  real offer rather than invented copy:
+
+    PokeOrb  - 2nd Orb 25% Off ......... buy 1, next 1 at 25% off
+    PokeOrb  - Buy 2 Get 1 Free ........ buy 2, next 1 free
+    PokeOrb  - Buy 4 Get 1 Free ........ buy 4, next 1 free
+    Wall Art - 2nd Print 25% Off ....... buy 1, next 1 at 25% off
+    Wall Art - 3rd Print 50% Off ....... buy 2, next 1 at 50% off
+    Wall Art - Buy 4 Get 1 Free ........ buy 4, next 1 free
+    R36S     - 2nd Console 25% Off ..... buy 1, next 1 at 25% off
+
+  (PokeOrb also has a 3rd-at-50%-off, but Buy 2 Get 1 Free covers the same rung
+  at 100% off, so the free one is what gets offered there.)
+
+  A row only appears when adding exactly ONE more unit earns a discount on that
+  unit -- the rung is reachable in a single click, so the prompt is never a
+  promise about something two steps away. At quantities between rungs no row is
+  drawn at all.
+
+  The unit added is the same variant already in the cart, so the shopper gets
+  another of the thing they chose rather than the product default.
+
+  NOTE for whoever picks this up: Shopify applies only ONE automatic discount to
+  an order. These ladders cannot stack with each other or with the free-case
+  BXGY, so a cart holding a console and two orbs gets the single best one, not
+  both. The copy here deliberately says "applied at checkout" for the rung being
+  offered and never claims a total.
+{%- endcomment -%}
+<style>
+  #cart .pg-unlock{
+    display:flex;align-items:center;gap:12px;
+    margin:10px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  #cart .pg-unlock img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock-t{flex:1;min-width:0}
+  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-tag{
+    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
+  }
+  #cart .pg-unlock-add{
+    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    background-image:none !important;color:#7A2FA2 !important;
+    border-radius:999px !important;padding:9px 18px !important;
+    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    animation:none !important;transition:background .15s ease,color .15s ease;
+  }
+  #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
+  #cart .pg-unlock-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
+  #cart .pg-unlock-add[disabled]{opacity:.6;cursor:default}
+  @media(max-width:600px){
+    #cart .pg-unlock{flex-wrap:wrap;gap:10px}
+    #cart .pg-unlock-t{flex:1 1 60%}
+    #cart .pg-unlock-add{flex:1 1 auto;order:4}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgUnlock) return; window.pgUnlock = 1;
+
+  /* handle -> { name, rungs: { qtyAlreadyInCart: {pct, nth} } } */
+  var LADDERS = {
+    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
+      name: 'Crystal PokeOrb',
+      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 100, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
+    },
+    'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {
+      name: 'Holographic Wall Art',
+      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 50, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
+    },
+    'handheld-game-console': {
+      name: 'PocketBoy R36',
+      rungs: {1: {pct: 25, nth: '2nd'}}
+    }
+  };
+
+  var busy = false;
+  var lastKey = '';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* One row per ladder product sitting on a rung. Returns the offers to draw. */
+  function offers(cart){
+    var byHandle = {};
+    (cart.items || []).forEach(function(it){
+      if (!LADDERS[it.handle]) return;
+      /* the free gift line is not a purchased unit and must not count */
+      if (it.properties && it.properties._free_gift) return;
+      var h = byHandle[it.handle] || (byHandle[it.handle] = {qty: 0, item: it});
+      h.qty += it.quantity;
+    });
+    var out = [];
+    Object.keys(byHandle).forEach(function(handle){
+      var rec = byHandle[handle];
+      var rung = LADDERS[handle].rungs[rec.qty];
+      if (!rung) return;
+      out.push({
+        handle: handle,
+        name: LADDERS[handle].name,
+        variant: rec.item.variant_id,
+        image: rec.item.image,
+        price: rec.item.price,
+        rung: rung
+      });
+    });
+    return out;
+  }
+
+  function row(o){
+    var el = document.createElement('div');
+    el.className = 'pg-unlock';
+    el.setAttribute('data-pg-unlock', o.handle);
+    var free = o.rung.pct === 100;
+    var after = free ? 'free' : money(Math.round(o.price * (100 - o.rung.pct) / 100));
+    var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
+    el.innerHTML =
+      '<img alt="" src="' + img + '">' +
+      '<div class="pg-unlock-t">' +
+        '<b>Add a ' + o.rung.nth + ' ' + o.name + '</b>' +
+        '<small>' + (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
+        ', applied at checkout</small>' +
+        '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
+      '</div>' +
+      '<button type="button" class="pg-unlock-add" data-v="' + o.variant + '">Add</button>';
+    return el;
+  }
+
+  function render(){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return;
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var offs = offers(cart);
+      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.variant; }).join('|');
+      if (key === lastKey && c.querySelector('.pg-unlock')) return;
+      lastKey = key;
+      c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
+      if (!offs.length) return;
+      /* directly under the cart items, above the recommendation rail */
+      var anchor = c.querySelector('.nc-recs') || list.nextSibling;
+      offs.forEach(function(o){
+        var el = row(o);
+        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor);
+        else list.parentNode.appendChild(el);
+      });
+    }).catch(function(){});
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.pg-unlock-add');
+    if (!btn || busy) return;
+    e.preventDefault(); e.stopPropagation();
+    busy = true;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: parseInt(btn.getAttribute('data-v'), 10), quantity: 1}]})
+    }).then(function(r){
+      if (!r.ok) throw 0;
+      lastKey = '';
+      busy = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).then(function(){
+      render();
+    }).catch(function(){
+      busy = false;
+      btn.disabled = false;
+      btn.textContent = 'Try again';
+    });
+  }, true);
+
+  setInterval(render, 900);
+  render();
+})();
+</script>
+{% schema %}
+{"name": "PG Unlock", "settings": []}
+{% endschema %}
