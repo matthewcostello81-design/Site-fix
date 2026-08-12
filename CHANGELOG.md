@@ -1,3 +1,29 @@
+# Pocket Era: re-apply wall art Best Sellers block + strikethrough price
+
+## What
+The wall art card wasn't showing on the homepage: a theme-editor save of
+`templates/index.json` (it also reworded the Reviews accordion) landed after
+our update and was based on the older version, dropping the `prod3` block.
+Re-applied the block on top of the current file, preserving the newer
+accordion copy. Also, the product had been edited down to a single variant
+("Legendary Poke Trio", $39.99) still carrying the supplier's inverted
+$13.74 compare-at, so no strikethrough could render.
+
+## How
+- **`templates/index.json`**: re-added the `prod3` product block and
+  `block_order` entry on top of the live file content.
+- **Product record**: set `compareAtPrice` to $79.99 on the variant via
+  `productVariantsBulkUpdate`, which renders as a $79.99 strikethrough and
+  a "Sale 50% Off" badge on the homepage card and the % OFF note on the
+  product page, matching the other two products.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") via the
+Admin API (themeFilesUpsert + productVariantsBulkUpdate).
+Files changed: templates/index.json
+
+---
+
 # Pocket Era: Heroic 3D Wall Art added to homepage Best Sellers
 
 ## What
