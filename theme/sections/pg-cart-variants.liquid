@@ -1,0 +1,55 @@
+{%- comment -%}
+  PG Cart Variants: make the console's storage picker in the cart look like a
+  picker.
+
+  pg-drawer already builds one. Its `vsel()` puts a <select> of every
+  handheld-game-console variant on the cart line and, on change, zeroes the old
+  variant and adds the new one at the same quantity, then refreshes the drawer.
+  The control works -- it just does not read as a control: it is styled as a
+  small bordered box with no chevron, 96px wide, sitting where a variant label
+  would normally go, so it looks like a static "64G" chip and nobody thinks to
+  click it.
+
+  This gives it the affordance: a chevron, room for it, a slightly larger hit
+  area and a pointer cursor. No behaviour is touched -- the swap is still
+  pg-drawer's.
+
+  The chevron is an inline data: URI so it needs no asset and cannot 404.
+{%- endcomment -%}
+<style>
+#cart .l4ca .pg-vsel,
+body.template-cart .form-cart .pg-vsel{
+  -webkit-appearance:none !important;
+  -moz-appearance:none !important;
+  appearance:none !important;
+  height:30px !important;
+  max-width:132px !important;
+  padding:2px 26px 2px 10px !important;
+  font-size:13px !important;
+  font-weight:700 !important;
+  color:#4A1C66 !important;
+  background-color:#fff !important;
+  background-image:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;
+  background-position:right 9px center !important;
+  border:1.5px solid rgba(122,47,162,.45) !important;
+  border-radius:9px !important;
+  cursor:pointer !important;
+  box-shadow:0 2px 8px -4px rgba(74,28,102,.4) !important;
+}
+#cart .l4ca .pg-vsel:hover,
+body.template-cart .form-cart .pg-vsel:hover{
+  border-color:#7A2FA2 !important;
+  background-color:#FBF7FE !important;
+}
+#cart .l4ca .pg-vsel:focus,
+body.template-cart .form-cart .pg-vsel:focus{
+  outline:none !important;
+  border-color:#7A2FA2 !important;
+  box-shadow:0 0 0 3px rgba(122,47,162,.18) !important;
+}
+#cart .l4ca .pg-vsel[disabled]{opacity:.55 !important;cursor:default !important}
+</style>
+{% schema %}
+{"name": "PG Cart Variants", "settings": []}
+{% endschema %}
