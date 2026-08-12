@@ -110,32 +110,6 @@ html body .pgf-nav{
   padding-right:16px !important;
   float:none !important;
 }
-
-/* ---------------- wordmark tracking (the tuning knob) ----------------
-   The header mark's spacing lives in pe-logo and the footer mark's in
-   pg-footer, but both of those files are large and a themeFilesUpsert rewrites
-   a whole file, so tuning two numbers meant re-sending ~23KB per pass. This
-   block overrides both from one small file.
-
-   It wins on specificity, not source order: pe-logo already doubles its class
-   (a.pg-wordmark.pg-wordmark) and pg-footer uses a single .nc-foot-word, so
-   tripling and doubling respectively beats each of them wherever they load.
-
-   The two values move together. letter-spacing pulls every glyph left of its
-   cell, which is what binds the T to POCKET -- Press Start 2P draws T as a bar
-   over a centred stem, so it carries empty space on both sides and drifts
-   toward ERA without this. Tightening also drags ERA left, so word-spacing is
-   eased by roughly the same amount to hold the word break open.
-
-   Tuning: more negative letter-spacing = tighter POCKET and a T bound harder
-   to it; less negative word-spacing = a wider break before ERA. The theme's
-   original tracking was -0.11em and was described as colliding the glyphs, so
-   past about -0.18em check that no two letters touch at the 70px breakpoint. */
-html body a.pg-wordmark.pg-wordmark.pg-wordmark,
-html body .nc-foot-word.nc-foot-word{
-  letter-spacing:-0.17em !important;
-  word-spacing:-0.22em !important;
-}
 </style>
 {% schema %}
 {"name": "PG Nav", "settings": []}
