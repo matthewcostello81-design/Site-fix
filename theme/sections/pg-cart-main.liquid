@@ -12,11 +12,9 @@
 {%- assign gift_savings = 0 -%}
 {%- assign visible_count = 0 -%}
 {%- assign has_case_gift = false -%}
-{%- assign has_cards_gift = false -%}
 {%- for item in cart.items -%}
   {%- assign h = item.product.handle -%}
   {%- if h == 'r36s-protective-case-free-gift' -%}{%- assign has_case_gift = true -%}{%- endif -%}
-  {%- if h == '25-pokemon-cards-free-gift' -%}{%- assign has_cards_gift = true -%}{%- endif -%}
   {%- if h contains gift_handle -%}
     {%- assign gw = item.variant.compare_at_price | default: 1999 -%}
     {%- assign gift_savings = gift_savings | plus: gw -%}
@@ -138,7 +136,11 @@
     <div class="pgm-card{% if is_gift %} is-gift{% endif %}">
       <img src="{{ item.image | image_url: width: 208 }}" alt="{{ item.product.title | escape }}">
       <div class="pgm-mid">
-        <a class="pgm-t" href="{% if is_gift %}#{% else %}{{ item.url }}{% endif %}">{{ item.product.title | remove: ' (FREE Gift)' | remove: '(FREE Gift)' }}</a>
+        {%- if is_gift -%}
+          <span class="pgm-t">{{ item.product.title | remove: ' (FREE Gift)' | remove: '(FREE Gift)' }}</span>
+        {%- else -%}
+          <a class="pgm-t" href="{{ item.url }}">{{ item.product.title | remove: ' (FREE Gift)' | remove: '(FREE Gift)' }}</a>
+        {%- endif -%}
         {%- if is_gift -%}
           <span class="pgm-lab">Free Gift</span>
         {%- elsif line_was > item.final_line_price -%}
@@ -210,7 +212,6 @@
     {%- endif -%}
     <div class="pgm-row hl"><span>Shipping:</span><span>FREE</span></div>
     {%- if has_case_gift -%}<div class="pgm-row hl"><span>R36S Protective Case:</span><span>FREE</span></div>{%- endif -%}
-    {%- if has_cards_gift -%}<div class="pgm-row hl"><span>25 Pokemon Cards:</span><span>FREE</span></div>{%- endif -%}
     <div class="pgm-row tot"><span>Total</span><span>{{ cart.total_price | money }}</span></div>
     <form action="{{ routes.cart_url }}" method="post">
       <button class="pgm-co" type="submit" name="checkout">&#128274; Secure Checkout</button>

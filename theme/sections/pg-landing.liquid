@@ -51,6 +51,8 @@
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
+  .pgx-vid{border-radius:10px;overflow:hidden;background:#000;margin-top:14px}
+  .pgx-vid video{display:block;width:100%;max-height:600px;object-fit:contain;background:#000}
 
   /* Buy column */
   .pgx-title{font-family:'Roboto Slab',Georgia,serif;font-size:46px;font-weight:600;line-height:1.05;margin:6px 0 10px}
@@ -200,6 +202,16 @@
       <div class="pgx-hero">
         <img id="pgx-hero-img" src="{{ imgs.first | image_url: width: 1400 }}" alt="{{ prod.title | escape }}" width="1400" height="1400" style="width:100%;height:auto">
       </div>
+      {%- assign pvid = blank -%}
+      {%- for m in prod.media -%}{%- if m.media_type == 'video' and pvid == blank -%}{%- assign pvid = m -%}{%- endif -%}{%- endfor -%}
+      {%- if pvid != blank -%}
+      <div class="pgx-vid">
+        <video autoplay muted loop playsinline controls preload="metadata" poster="{{ pvid.preview_image | image_url: width: 900 }}">
+          {%- for s in pvid.sources -%}{%- if s.mime_type == 'video/mp4' and s.url contains '720p' -%}<source src="{{ s.url }}" type="video/mp4">{%- endif -%}{%- endfor -%}
+          {%- for s in pvid.sources -%}{%- unless s.url contains '720p' -%}{%- if s.mime_type == 'video/mp4' -%}<source src="{{ s.url }}" type="video/mp4">{%- endif -%}{%- endunless -%}{%- endfor -%}
+        </video>
+      </div>
+      {%- endif -%}
       {%- if imgs.size > 1 -%}
       <div class="pgx-thumbs">
         {%- for image in imgs offset: 1 -%}
@@ -245,6 +257,12 @@
       {%- endif -%}
       {%- assign vpos = 0 -%}
       {%- if size_opt -%}{%- assign vpos = size_opt.position | minus: 1 -%}{%- endif -%}
+      {%- assign color_opt = blank -%}
+      {%- for option in prod.options_with_values -%}
+        {%- if option.name == 'Color' and option.values.size > 1 -%}{%- assign color_opt = option -%}{%- endif -%}
+      {%- endfor -%}
+      {%- assign cpos = 0 -%}
+      {%- if color_opt -%}{%- assign cpos = color_opt.position | minus: 1 -%}{%- endif -%}
 
       <div class="pgx-tile pgx-sel" data-pgx-tile="single" role="radio" aria-checked="true" tabindex="0">
         <div class="pgx-tile-row">
@@ -258,8 +276,18 @@
             <div class="pgx-p-was" data-pgx-single-was></div>
           </div>
         </div>
-        {%- if size_opt -%}
+        {%- if size_opt or color_opt -%}
         <div class="pgx-tile-opts">
+          {%- if color_opt -%}
+          <div class="pgx-opt">
+            <select data-pgx-color="s1" aria-label="{{ color_opt.name | escape }}">
+              {%- for value in color_opt.values -%}
+                <option value="{{ value | escape }}">{{ value }}</option>
+              {%- endfor -%}
+            </select>
+          </div>
+          {%- endif -%}
+          {%- if size_opt -%}
           <div class="pgx-opt">
             <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
               {%- for value in size_opt.values -%}
@@ -267,6 +295,7 @@
               {%- endfor -%}
             </select>
           </div>
+          {%- endif -%}
         </div>
         {%- endif -%}
       </div>
@@ -287,6 +316,13 @@
         <div class="pgx-tile-opts">
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
+            {%- if color_opt -%}
+            <select data-pgx-color="d1" aria-label="{{ color_opt.name | escape }}">
+              {%- for value in color_opt.values -%}
+                <option value="{{ value | escape }}">{{ value }}</option>
+              {%- endfor -%}
+            </select>
+            {%- endif -%}
             {%- if size_opt -%}
             <select data-pgx-size="d1" aria-label="{{ size_opt.name | escape }} for unit 1">
               {%- for value in size_opt.values -%}
@@ -298,6 +334,13 @@
           <span class="pgx-plus">+</span>
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
+            {%- if color_opt -%}
+            <select data-pgx-color="d2" aria-label="{{ color_opt.name | escape }}">
+              {%- for value in color_opt.values -%}
+                <option value="{{ value | escape }}">{{ value }}</option>
+              {%- endfor -%}
+            </select>
+            {%- endif -%}
             {%- if size_opt -%}
             <select data-pgx-size="d2" aria-label="{{ size_opt.name | escape }} for unit 2">
               {%- for value in size_opt.values -%}
@@ -393,7 +436,7 @@
   {%- endif -%}
 
   <script type="application/json" id="pgx-vdata">
-    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
+    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"color":{{ v.options[cpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
   </script>
 
   {%- endif -%}
@@ -442,17 +485,21 @@
   if (!vEl) return;
   var variants = JSON.parse(vEl.textContent);
   var BUNDLE_PCT = {{ section.settings.bundle_pct | default: 10 }};
-  function bySize(sz){
-    for (var i = 0; i < variants.length; i++){ if (variants[i].size === sz) return variants[i]; }
+  function byOpts(sz, col){
+    for (var i = 0; i < variants.length; i++){
+      var v = variants[i];
+      if ((sz == null || v.size === sz) && (col == null || v.color === col)) return v;
+    }
     return variants[0];
   }
   function sel(name){ return root.querySelector('[data-pgx-size="' + name + '"]'); }
   function val(name){ var s = sel(name); return s ? s.value : (variants[0] && variants[0].size); }
+  function cval(name){ var c = root.querySelector('[data-pgx-color="' + name + '"]'); return c ? c.value : null; }
   function money(c){ return '$' + (c / 100).toFixed(2); }
   var mode = 'single';
 
   function paint(){
-    var v1 = bySize(val('s1'));
+    var v1 = byOpts(val('s1'), cval('s1'));
     var now1 = root.querySelector('[data-pgx-single-now]');
     var was1 = root.querySelector('[data-pgx-single-was]');
     var sub1 = root.querySelector('[data-pgx-single-sub]');
@@ -461,7 +508,7 @@
     if (sub1) sub1.textContent = v1.cap > v1.price ? (Math.round((1 - v1.price / v1.cap) * 100) + '% OFF today') : '';
     var dNow = root.querySelector('[data-pgx-double-now]');
     if (dNow){
-      var a = bySize(val('d1')), b = bySize(val('d2'));
+      var a = byOpts(val('d1'), cval('d1')), b = byOpts(val('d2'), cval('d2'));
       var full = a.price + b.price;
       var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
       var disc = Math.round(full * (100 - BUNDLE_PCT) / 100);
@@ -470,7 +517,7 @@
       if (dWas) dWas.textContent = money(retail);
     }
   }
-  root.querySelectorAll('[data-pgx-size]').forEach(function(s){ s.addEventListener('change', paint); });
+  root.querySelectorAll('[data-pgx-size],[data-pgx-color]').forEach(function(s){ s.addEventListener('change', paint); });
   paint();
 
   /* Tile selection */
@@ -490,11 +537,11 @@
   if (atc) atc.addEventListener('click', function(){
     var items = [];
     if (mode === 'double'){
-      var a = bySize(val('d1')), b = bySize(val('d2'));
+      var a = byOpts(val('d1'), cval('d1')), b = byOpts(val('d2'), cval('d2'));
       if (a.id === b.id) items.push({id: a.id, quantity: 2});
       else { items.push({id: a.id, quantity: 1}); items.push({id: b.id, quantity: 1}); }
     } else {
-      items.push({id: bySize(val('s1')).id, quantity: 1});
+      items.push({id: byOpts(val('s1'), cval('s1')).id, quantity: 1});
     }
     atc.disabled = true; atc.firstElementChild.textContent = 'Adding...'; err.style.display = 'none';
     fetch('/cart/add.js', {

@@ -178,9 +178,10 @@
      Each gift is auto-added at $0 while its trigger is in the cart, re-added
      if removed, held at qty 1, and auto-removed when its trigger leaves. */
   var GIFTS = [
-    {id: 49623692247268, handle: 'r36s-protective-case-free-gift', trigger: 'handheld-game-console'},
-    {id: 49633084539108, handle: '25-pokemon-cards-free-gift', trigger: 'crystal-ball'}
+    {id: 49623692247268, handle: 'r36s-protective-case-free-gift', trigger: 'handheld-game-console'}
   ];
+  /* Gifts that were offered before and later withdrawn: always removed on sight */
+  var GIFTS_RETIRED = [49633084539108];
   var giftBusy = false;
   function giftDone(r){
     giftBusy = false;
@@ -194,6 +195,12 @@
     if (giftBusy) return;
     giftBusy = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      for (var r0 = 0; r0 < c.items.length; r0++){
+        if (GIFTS_RETIRED.indexOf(c.items[r0].id) !== -1){
+          var rmU = {}; rmU[String(c.items[r0].id)] = 0;
+          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: rmU})}).then(giftDone);
+        }
+      }
       for (var i = 0; i < GIFTS.length; i++){
         var g = GIFTS[i], inCart = null, wanted = false;
         c.items.forEach(function(it){

@@ -381,6 +381,8 @@
     #pgx .pgx-hero{flex:0 0 88%;scroll-snap-align:center;border-radius:14px}
     #pgx .pgx-hero img{aspect-ratio:1/1;object-fit:cover;width:100%;height:auto}
     #pgx .pgx-thumbs{display:contents !important}
+    #pgx .pgx-vid{flex:0 0 88%;scroll-snap-align:center;border-radius:14px;margin-top:0;display:flex;align-items:center}
+    #pgx .pgx-vid video{max-height:none;aspect-ratio:1/1;object-fit:contain;width:100%}
     #pgx .pgx-thumbs button{flex:0 0 88%;scroll-snap-align:center;border-radius:14px;margin:0}
     #pgx .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
   }
@@ -487,7 +489,7 @@
       if(!window.matchMedia||!window.matchMedia('(max-width: 900px)').matches)return;
       var g=document.querySelector('#pgx .pgx-gallery');
       if(!g||g.dataset.pgGal)return; g.dataset.pgGal='1';
-      var n=g.querySelectorAll('.pgx-hero,[data-pgx-thumb]').length;
+      var n=g.querySelectorAll('.pgx-hero,.pgx-vid,[data-pgx-thumb]').length;
       if(n<2)return;
       var c=document.createElement('div'); c.className='pgx-gal-n'; c.textContent='1 / '+n;
       g.parentNode.insertBefore(c,g.nextSibling);
@@ -506,7 +508,7 @@
       });
     },900);
     /* Announcement bar: continuous sideways marquee of the offer messages */
-    var MSGS=['Free shipping on all orders','30-day money back guarantee','Free R36S case with purchase of device','Free 25 Pokemon cards with glass orb purchase','15,000+ classic games preloaded'];
+    var MSGS=['Free shipping on all orders','30-day money back guarantee','Free R36S case with purchase of device','15,000+ classic games preloaded'];
     function marq(){
       document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
         if(el.dataset.pgMarq)return; el.dataset.pgMarq='1';
