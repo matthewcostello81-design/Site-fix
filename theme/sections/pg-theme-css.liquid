@@ -158,6 +158,12 @@
   .pgh-ic a:hover svg,.pgx-ic a:hover svg,.pgc-ic a:hover svg{stroke:#7A2FA2 !important}
   .pgh-cart-n{background:#fff !important;color:#4A1C66 !important;border:1.5px solid #7A2FA2;min-width:18px !important;height:18px !important;line-height:15px !important;font-size:11px !important;font-weight:700}
 
+  /* Split banner: cap the height, the natural image ratio made it enormous */
+  #pgh .pgh-split-r{min-height:0 !important;height:420px !important;overflow:hidden}
+  #pgh .pgh-split-r img{width:100% !important;height:100% !important;object-fit:cover !important}
+  #pgh .pgh-split-l{padding:48px 48px !important}
+  @media(max-width:760px){#pgh .pgh-split-r{height:240px !important}}
+
   /* Kill the theme's dark button overlay pseudo-elements on all PG buttons */
   html body .pgh-atc::before,html body .pgh-atc::after,
   html body .pgm-qty button::before,html body .pgm-qty button::after,
