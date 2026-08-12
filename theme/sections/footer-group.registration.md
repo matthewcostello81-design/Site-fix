@@ -53,3 +53,16 @@ Scoped to `template.suffix == 'pg-crystal'` and to widths above 900px only.
 Below that, pg-gallery-mobile deliberately sets these images to
 `aspect-ratio:auto` / `object-fit:contain` — that is the fix for the mobile
 hero being cropped square, so this must not reach it.
+
+## sections/footer-group.json — `pg-page-style`
+
+Registered last, after `pg-form`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_page_style` | pg-page-style | card layout + accents for Contact and Track Your Order |
+
+Gated in Liquid on `page.handle` (`contact`, `track-order`, `track-your-order`)
+rather than by CSS, so it cannot reach product pages or the cart. It styles
+layout only — field glow, focus states and the Send gradient stay owned by
+`pg-form`, which stamps them per element.

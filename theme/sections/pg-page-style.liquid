@@ -1,0 +1,160 @@
+{%- comment -%}
+  PG Page Style: give the Contact and Track Your Order pages a designed layout.
+
+  Both pages were rendering as raw theme output on a flat near-black field: a
+  plain white H1, unstyled labels, and the form pinned to a narrow left column
+  with the right half of a wide monitor left empty. Nothing tied them to the
+  storefront the shopper had just come from.
+
+  What this adds:
+
+  - A centred content column with a real maximum width, so the page stops
+    hugging the left edge on a wide screen.
+  - The form sits in a card -- dark violet gradient, purple hairline border,
+    soft outer glow -- so it reads as a panel rather than text floating on
+    black. A radial purple wash sits behind it for depth.
+  - An eyebrow above the H1 and a gradient rule beneath it, borrowing the
+    accent treatment the product pages use for section headings.
+  - Labels become small uppercase lavender captions; fields get room to
+    breathe; the Yes/No checkboxes get the purple accent they were missing and
+    stop rendering as bare white squares.
+  - The submit button is centred on its own row at a comfortable size.
+
+  Field glow, focus states and the Send gradient itself live in pg-form, which
+  stamps them per element -- this file deliberately does not restate them, so
+  there is one place that owns them.
+
+  SCOPING. Gated in Liquid on the page handle rather than by CSS, so nothing
+  here can reach the product pages or the cart. `#content` is the wrapper
+  theme.liquid renders page templates into.
+{%- endcomment -%}
+{%- assign pg_h = page.handle | default: '' -%}
+{%- if pg_h == 'contact' or pg_h == 'track-order' or pg_h == 'track-your-order' -%}
+<style>
+  /* ---------------- the field the card sits on ---------------- */
+  html body #content{
+    position:relative;
+    background:
+      radial-gradient(900px 460px at 50% 0%, rgba(139,68,190,.20), rgba(139,68,190,0) 70%),
+      radial-gradient(700px 400px at 15% 60%, rgba(90,40,140,.14), rgba(90,40,140,0) 70%);
+  }
+
+  /* centred column, generous vertical rhythm */
+  html body #content > *{
+    max-width:1000px;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
+  html body #content{padding:52px 20px 76px !important}
+
+  /* ---------------- the card ---------------- */
+  html body #content form[action*='contact'],
+  html body #content .pgp-card{
+    background:linear-gradient(165deg,#170E22 0%,#120B1B 55%,#0D0813 100%) !important;
+    border:1px solid rgba(139,68,190,.34) !important;
+    border-radius:20px !important;
+    padding:34px 34px 30px !important;
+    box-shadow:0 34px 90px -46px rgba(139,68,190,.75),
+               0 0 0 1px rgba(255,255,255,.02) inset !important;
+  }
+  @media(max-width:600px){
+    html body #content form[action*='contact']{padding:22px 18px 20px !important}
+    html body #content{padding:34px 14px 54px !important}
+  }
+
+  /* ---------------- heading ---------------- */
+  html body #content h1{
+    position:relative;
+    font-size:clamp(30px,4.2vw,44px) !important;
+    line-height:1.12 !important;
+    color:#F6DBFF !important;
+    margin:0 0 30px !important;
+    padding-top:26px !important;
+    letter-spacing:.005em !important;
+    text-shadow:0 0 26px rgba(139,68,190,.42);
+  }
+  /* eyebrow, in the pixel face the brand mark uses */
+  html body #content h1::before{
+    content:"POCKET ERA";
+    position:absolute;
+    top:0;
+    left:0;
+    font-family:'Press Start 2P','Courier New',monospace;
+    font-size:10px;
+    letter-spacing:.16em;
+    color:#B478E0;
+    text-shadow:0 0 14px rgba(139,68,190,.6);
+  }
+  /* gradient rule under the heading */
+  html body #content h1::after{
+    content:"";
+    display:block;
+    width:76px;
+    height:3px;
+    margin-top:14px;
+    border-radius:999px;
+    background:linear-gradient(90deg,#C79BEA,#8B44BE 55%,rgba(139,68,190,0));
+  }
+
+  html body #content h2,
+  html body #content h3{color:#EFE4FA !important}
+
+  html body #content p{color:#B9AACB !important;line-height:1.65 !important}
+
+  /* ---------------- labels ---------------- */
+  html body #content form[action*='contact'] label{
+    display:inline-block;
+    font-size:11.5px !important;
+    font-weight:700 !important;
+    letter-spacing:.11em !important;
+    text-transform:uppercase !important;
+    color:#C2AEDC !important;
+    margin-bottom:8px !important;
+  }
+
+  /* ---------------- fields ----------------
+     Colour, glow and focus belong to pg-form, which stamps them inline. Only
+     the sizing lives here. */
+  html body #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='hidden']),
+  html body #content form[action*='contact'] textarea{
+    width:100% !important;
+    padding:13px 15px !important;
+    font-size:15px !important;
+  }
+  html body #content form[action*='contact'] textarea{min-height:172px !important}
+
+  /* ---------------- Yes / No ---------------- */
+  html body #content form[action*='contact'] input[type='checkbox'],
+  html body #content form[action*='contact'] input[type='radio']{
+    accent-color:#8B44BE !important;
+    width:18px !important;
+    height:18px !important;
+    vertical-align:middle !important;
+    margin-right:8px !important;
+  }
+  /* the label beside a box is a value, not a field caption */
+  html body #content form[action*='contact'] input[type='checkbox'] + label,
+  html body #content form[action*='contact'] input[type='radio'] + label,
+  html body #content form[action*='contact'] label:has(input[type='checkbox']),
+  html body #content form[action*='contact'] label:has(input[type='radio']){
+    text-transform:none !important;
+    letter-spacing:.01em !important;
+    font-size:14px !important;
+    font-weight:500 !important;
+    color:#E4DCF0 !important;
+    margin-bottom:0 !important;
+  }
+
+  /* ---------------- submit row ----------------
+     The gradient and the white lettering are pg-form's; this places it. */
+  html body #content form[action*='contact'] button,
+  html body #content form[action*='contact'] input[type='submit']{
+    display:block !important;
+    margin:26px auto 4px !important;
+    min-width:210px !important;
+  }
+</style>
+{%- endif -%}
+{% schema %}
+{"name": "PG Page Style", "settings": []}
+{% endschema %}
