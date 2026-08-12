@@ -46,18 +46,16 @@
 #shopify-section-footer .footer-bottom,#shopify-section-footer [class*="bottom"],
 .shopify-section[id$="__footer"] .footer-bottom{background:#0E0914 !important;background-color:#0E0914 !important;color:#B9A8CE !important;border-top:1px solid rgba(168,120,214,.14) !important}
 #shopify-section-footer .footer-bottom a,.shopify-section[id$="__footer"] .footer-bottom a{color:#C6B6DA !important}
-/* Cart goal bar: removed at owner's request */
-#cart .pg-bar,body.template-cart .pg-bar{display:none !important}
-/* Cart goal bar in theme purple */
-#cart .pg-bar,body.template-cart .pg-bar{background:linear-gradient(120deg,#2A1140,#4A1C66 55%,#2A1140) !important;border:1px solid rgba(168,120,214,.35) !important;border-radius:14px !important;box-shadow:0 12px 30px -22px rgba(0,0,0,.9) !important}
-#cart .pg-bar .pg-bar-t,body.template-cart .pg-bar .pg-bar-t{color:#EFE4FB !important}
-#cart .pg-bar .pg-bar-t b,body.template-cart .pg-bar .pg-bar-t b{color:#E9C6FF !important}
-#cart .pg-bar .pg-bar-track,body.template-cart .pg-bar .pg-bar-track{background:rgba(255,255,255,.16) !important}
-#cart .pg-bar .pg-bar-fill,body.template-cart .pg-bar .pg-bar-fill{background:linear-gradient(90deg,#B478E0,#8B44BE 60%,#C79BEA) !important}
-#cart .pg-bar .pg-bar-dot,body.template-cart .pg-bar .pg-bar-dot{background:#2A1140 !important;border-color:rgba(199,155,234,.55) !important}
-#cart .pg-bar .pg-bar-dot.on,body.template-cart .pg-bar .pg-bar-dot.on{background:#8B44BE !important;border-color:#C79BEA !important;box-shadow:0 0 0 4px rgba(139,68,190,.28) !important}
-#cart .pg-bar .pg-bar-lbl span,body.template-cart .pg-bar .pg-bar-lbl span{color:#B9A8CE !important}
-#cart .pg-bar .pg-bar-lbl span.on,body.template-cart .pg-bar .pg-bar-lbl span.on{color:#E9C6FF !important}
+/* Cart unlock bar: light purple gradient */
+#cart .pg-bar,body.template-cart .pg-bar{background:linear-gradient(120deg,#F6EFFB,#EADCF8 55%,#F3E7FC) !important;border:1px solid rgba(122,47,162,.28) !important;border-radius:14px !important;box-shadow:0 10px 26px -20px rgba(74,28,102,.45) !important}
+#cart .pg-bar .pg-bar-t,body.template-cart .pg-bar .pg-bar-t{color:#3B1553 !important}
+#cart .pg-bar .pg-bar-t b,body.template-cart .pg-bar .pg-bar-t b{color:#7A2FA2 !important}
+#cart .pg-bar .pg-bar-track,body.template-cart .pg-bar .pg-bar-track{background:#E1CFF0 !important}
+#cart .pg-bar .pg-bar-fill,body.template-cart .pg-bar .pg-bar-fill{background:linear-gradient(90deg,#B478E0,#8B44BE 60%,#7A2FA2) !important}
+#cart .pg-bar .pg-bar-dot,body.template-cart .pg-bar .pg-bar-dot{background:#fff !important;border-color:#CBA8E0 !important}
+#cart .pg-bar .pg-bar-dot.on,body.template-cart .pg-bar .pg-bar-dot.on{background:#7A2FA2 !important;border-color:#7A2FA2 !important;box-shadow:0 0 0 4px rgba(122,47,162,.22) !important}
+#cart .pg-bar .pg-bar-lbl span,body.template-cart .pg-bar .pg-bar-lbl span{color:#7B6A8E !important}
+#cart .pg-bar .pg-bar-lbl span.on,body.template-cart .pg-bar .pg-bar-lbl span.on{color:#7A2FA2 !important}
 /* Accordions: same width and gutters as the split banner above them */
 #pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
 /* Best Sellers heading: matching soft purple letter glow */
@@ -166,7 +164,24 @@
       });
     });
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); }
+  /* Storage options read "64G"; show them as "64GB" (display only) */
+  function gbLabels(){
+    document.querySelectorAll('#pgx select option, #pgx .pg-drop, #pgx .pg-drop *, .pgx-tile-color, .pgm-v').forEach(function(el){
+      if (el.children && el.children.length) return;
+      var t = el.textContent;
+      if (t && /\d+G(?![B\w])/.test(t)) el.textContent = t.replace(/(\d+)G(?![B\w])/g, '$1GB');
+    });
+  }
+  /* Review quote belongs directly under the 5.0 star line */
+  function quoteUp(){
+    var q = document.querySelector('#pgx .pgx-quote'), r = document.querySelector('#pgx .pgx-rating');
+    if (!q || !r) return;
+    if (r.nextElementSibling !== q) r.parentNode.insertBefore(q, r.nextSibling);
+    q.style.setProperty('position','static','important');
+    q.style.setProperty('margin','0 0 16px','important');
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); }
+  setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   setTimeout(boot, 1400);
   setTimeout(boot, 2600);
