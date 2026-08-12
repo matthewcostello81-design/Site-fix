@@ -83,7 +83,22 @@
         .replace(/\bE-?mail\s*:\s*\(402\) 979-6583/gi, 'Phone: ' + PHONE_TXT);
     }
   }
+  /* The footer area renders the payment-icon list twice on the page templates
+     (contact, track order, policies), once per bottom bar. Keep the first and
+     drop the rest, whatever container they landed in. */
+  function onePayRow(){
+    var rows = document.querySelectorAll('.base-font .l4pm, [id*="footer"] .l4pm');
+    var kept = false;
+    rows.forEach(function(ul){
+      if (ul.closest('#cart')) return;
+      if (!kept){ kept = true; ul.removeAttribute('data-pg-dupe'); return; }
+      if (ul.getAttribute('data-pg-dupe') === '1') return;
+      ul.setAttribute('data-pg-dupe', '1');
+      ul.style.setProperty('display', 'none', 'important');
+    });
+  }
   function fix(){
+    onePayRow();
     var f = document.getElementById('shopify-section-footer');
     if (f){
       var img = f.querySelector('img.nc-foot-emblem');

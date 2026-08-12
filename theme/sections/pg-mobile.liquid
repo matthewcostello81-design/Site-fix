@@ -11,6 +11,48 @@
 .pgh-logo,.pgx-logo,.pgc-logo{min-height:210px;display:flex;align-items:center;justify-content:center}
 html body a.pg-wordmark,.pg-wordmark{display:block !important;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(40px,4.6vw,78px) !important;line-height:1.15 !important;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;transform:scaleY(2.6) !important;transform-origin:center !important;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
 @media(max-width:560px){html body a.pg-wordmark{font-size:30px !important}}
+/* The wordmark is scaled up 2.6x, which on the narrow page-template header
+   (contact, track order, policies) pushed the header wider than the viewport
+   and left the page horizontally scrollable. Clip it to the header box. */
+.pgx-head,.pgh-head,.pgc-head,.pgf-head{overflow:hidden !important;max-width:100% !important}
+html body a.pg-wordmark{max-width:100% !important}
+/* Nav links in the same pixel face as the wordmark. Press Start 2P runs very
+   wide, so it is set well below the Roboto Slab size it replaces. */
+html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{
+  font-family:'Press Start 2P',monospace !important;font-size:11px !important;
+  font-weight:400 !important;letter-spacing:.02em !important;line-height:1.9 !important;
+  text-transform:uppercase !important;text-shadow:0 0 10px rgba(199,110,255,.45)
+}
+@media(max-width:760px){
+  html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{font-size:9px !important}
+}
+/* Footer bottom strip on the page templates: the section id there is not
+   plain "shopify-section-footer", so the dark-skin rules in pg-dark missed it
+   and the copyright + payment band rendered on the theme's light scheme. */
+html body .shopify-section[id*="footer"] ~ .base-font,
+html body .shopify-section[id*="footer"] .base-font{
+  background:#0E0914 !important;background-color:#0E0914 !important;
+  border-top:1px solid rgba(168,120,214,.20) !important;text-align:center !important
+}
+html body .shopify-section[id*="footer"] ~ .base-font p,
+html body .shopify-section[id*="footer"] ~ .base-font span,
+html body .shopify-section[id*="footer"] .base-font p,
+html body .shopify-section[id*="footer"] .base-font span{color:#A296B4 !important}
+html body .shopify-section[id*="footer"] ~ .base-font a,
+html body .shopify-section[id*="footer"] .base-font a{color:#C6B6DA !important}
+html body .base-font .l4pm{
+  display:flex !important;flex-wrap:wrap !important;justify-content:center !important;
+  align-items:center !important;gap:8px !important;width:100% !important;
+  margin:2px auto 0 !important;padding:0 !important;float:none !important;list-style:none !important
+}
+html body .base-font .l4pm li{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  background:#EDE2F8 !important;border:1px solid rgba(168,120,214,.35) !important;
+  border-radius:8px !important;padding:4px 7px !important;margin:0 !important
+}
+/* Two payment rows rendered on the page templates; the extra one is hidden by
+   pg-footer at runtime, this is the no-JS backstop for adjacent duplicates. */
+html body .base-font .l4pm ~ .l4pm{display:none !important}
 </style>
 <style>
 /* ---------- sitewide hotfixes (not mobile-specific) ---------- */
