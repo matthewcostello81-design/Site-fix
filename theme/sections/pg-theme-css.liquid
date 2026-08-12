@@ -363,6 +363,10 @@
   @media(max-width:700px){.pgst-t{display:none}.pgst-in{gap:10px}.pgst-b{flex:1 1 auto;padding:14px 10px}.pgst-p{font-size:16px}}
   /* You may also like: centered rail at the bottom of the product page */
   .pgu-yml{margin:10px auto 64px;padding:0 20px;max-width:1100px;width:100%;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  /* centering must survive wherever the rail lands in the DOM */
+  html body .pgu-yml{display:block !important;width:100% !important;max-width:1100px !important;margin-left:auto !important;margin-right:auto !important;float:none !important;position:static !important}
+  html body .pgu-yml .pgu-yml-grid{display:flex !important;flex-wrap:wrap !important;justify-content:center !important}
+  html body .pgu-yml h3,html body .pgu-yml .pgu-yml-eye{text-align:center !important}
   .pgu-yml-eye{color:#7A2FA2;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;text-align:center;margin-bottom:6px}
   .pgu-yml h3{font-size:26px;font-weight:700;color:#121212;margin:0 0 18px;text-align:center}
   .pgu-yml-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
@@ -477,7 +481,11 @@
             var now=parseFloat(v.price||0), was=parseFloat(v.compare_at_price||0);
             return '<a href="/products/'+p.handle+'"><img loading="lazy" src="'+p.images[0].src+'" alt=""><div class="t">'+p.title+'</div><div class="p">'+(was>now?'<s>$'+was.toFixed(2)+'</s>':'')+'$'+now.toFixed(2)+'</div></a>';
           }).join('')+'</div>';
-        (document.getElementById('pgx')||gal).appendChild(d);
+        /* Insert at the #pgx page root (never inside the gallery column) so
+           margin:auto centering works; keep it above the reviews section. */
+        var host=document.getElementById('pgx')||gal.parentNode||gal;
+        var rev=host.querySelector?host.querySelector('.pgx-rev'):null;
+        if(rev&&rev.parentNode===host){host.insertBefore(d,rev);}else{host.appendChild(d);}
       }).catch(function(){});
     }
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',yml);else yml();

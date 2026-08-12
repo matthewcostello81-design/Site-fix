@@ -1,3 +1,29 @@
+# Pocket Era: center the "Keep exploring / You may also like" rail
+
+## Problem
+On product pages the injected "Keep exploring / You may also like" rail
+(.pgu-yml, built by the yml() script in pg-theme-css) rendered off-center
+- the whole block (eyebrow, heading, cards) sat left of the page center.
+
+## Fix (`sections/pg-theme-css.liquid`)
+- yml() now inserts the rail at the #pgx page root, before the reviews
+  section (never inside the 56%-wide gallery column), so its
+  margin:auto centering is relative to the full page width.
+- Added belt-and-suspenders CSS: `html body .pgu-yml` forced to
+  display:block, width:100%, max-width:1100px, margin-inline auto,
+  float:none, position:static; the grid forced to flex + centered; the
+  heading/eyebrow text-align:center - all !important so no later layer
+  can knock it off-center.
+
+Applies to every pg-landing product page (console, PokeOrb, wall art)
+since they share this injection.
+
+## Applied to
+Shopify draft theme `162727330020` via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-theme-css.liquid
+
+---
+
 # Pocket Era: console + wall art pages follow the live product titles
 
 ## Problem
