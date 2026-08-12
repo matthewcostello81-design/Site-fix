@@ -61,8 +61,8 @@
        POCKE / TERA. letter-spacing binds the T to POCKET; word-spacing leaves
        ERA a break wider than any letter gap. The header carries the same
        values. */
-    letter-spacing:-0.10em !important;
-    word-spacing:-0.40em !important;
+    letter-spacing:-0.13em !important;
+    word-spacing:-0.30em !important;
     line-height:2.4 !important;
     white-space:nowrap !important;
     color:#F6DBFF !important;
@@ -102,6 +102,8 @@
   html body .l4pm.pg-pay-moved li{margin:0 !important;padding:0 !important;list-style:none !important}
   html body .l4pm.pg-pay-moved img,
   html body .l4pm.pg-pay-moved svg{height:24px !important;width:auto !important;display:block !important}
+  /* a duplicate row that lost the race stays hidden even if something repaints it */
+  html body .l4pm[data-pg-dupe="1"]{display:none !important}
 
   /* Subscribe button: black with purple glow, no orange animation */
   #shopify-section-footer #newsletter-footer button,
@@ -173,16 +175,36 @@
      the theme parks it in the brand column, where it sat on top of the
      wordmark. */
   function onePayRow(){
-    var rows = document.querySelectorAll('.base-font .l4pm, [id*="footer"] .l4pm');
+    /* Every payment row on the page, wherever it ended up. This deliberately
+       does NOT scope to .base-font or [id*="footer"]: once the survivor is
+       moved into the newsletter card it stops matching those, so the next pass
+       found only the OTHER row, adopted it as the keeper and un-hid it. That is
+       how two rows ended up on screen. Matching on .l4pm alone means the moved
+       row is still seen, and the row already carrying data-pg-moved always wins
+       the keeper slot. */
+    var all = [];
+    document.querySelectorAll('.l4pm').forEach(function(ul){
+      if (!ul.closest('#cart')) all.push(ul);
+    });
+    if (!all.length) return;
+
     var kept = null;
-    rows.forEach(function(ul){
-      if (ul.closest('#cart')) return;
-      if (!kept){ kept = ul; ul.removeAttribute('data-pg-dupe'); return; }
-      if (ul.getAttribute('data-pg-dupe') === '1') return;
+    for (var i = 0; i < all.length; i++){
+      if (all[i].getAttribute('data-pg-moved') === '1'){ kept = all[i]; break; }
+    }
+    if (!kept) kept = all[0];
+
+    all.forEach(function(ul){
+      if (ul === kept){
+        ul.removeAttribute('data-pg-dupe');
+        ul.style.removeProperty('display');
+        return;
+      }
       ul.setAttribute('data-pg-dupe', '1');
       ul.style.setProperty('display', 'none', 'important');
     });
-    if (!kept || kept.getAttribute('data-pg-moved') === '1') return;
+
+    if (kept.getAttribute('data-pg-moved') === '1') return;
 
     /* The Stay Up To Date card. Located by the signup form where the theme
        gives it an id, and by the newsletter form or its heading where it does
