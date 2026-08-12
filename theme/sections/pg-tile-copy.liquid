@@ -1,0 +1,56 @@
+{%- comment -%}
+  PG Tile Copy: the first bundle tile reads "Single Item" rather than "Buy 1".
+
+  The Buy 1 / Duo / Trio / Quad ladder is assembled at runtime by one of the
+  large pg-* layers, so this relabels the rendered tile instead of editing the
+  builder. It is deliberately narrow:
+
+  - only inside #pgx, and only within a bundle tile (.pgx-tile / .pgx-lad*),
+  - only TEXT NODES whose entire trimmed content is exactly "Buy 1", so a price,
+    a chip, or any sentence that merely contains those characters is untouched,
+  - each swapped tile is marked, so repeated passes cost nothing.
+
+  A MutationObserver plus a slow interval keeps the label correct if the ladder
+  is re-rendered (variant change, cart update).
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgTileCopy) return; window.pgTileCopy = 1;
+
+  var FROM = /^buy\s*1$/i;
+  var TO = 'Single Item';
+  var TILES = '#pgx .pgx-tile, #pgx [class*="pgx-lad"]';
+
+  function swapIn(root){
+    if (!root || root.nodeType !== 1) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var hits = [], n;
+    while ((n = walker.nextNode())){
+      if (FROM.test((n.nodeValue || '').trim())) hits.push(n);
+    }
+    hits.forEach(function(t){ t.nodeValue = t.nodeValue.replace(/buy\s*1/i, TO); });
+    return hits.length > 0;
+  }
+
+  function pass(){
+    document.querySelectorAll(TILES).forEach(function(tile){
+      if (tile.dataset.pgCopy) return;
+      if (swapIn(tile)) tile.dataset.pgCopy = '1';
+    });
+  }
+
+  function boot(){
+    pass();
+    var root = document.getElementById('pgx');
+    if (root){
+      try { new MutationObserver(pass).observe(root, {childList: true, subtree: true}); } catch(e){}
+    }
+    setInterval(pass, 1500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Tile Copy", "settings": []}
+{% endschema %}
