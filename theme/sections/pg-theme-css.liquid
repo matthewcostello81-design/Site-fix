@@ -920,7 +920,8 @@
   function money(n){ return '$' + n.toFixed(2); }
   function build(){
     var m = location.pathname.match(/\/products\/([^\/?#]+)/);
-    if (!m || m[1].indexOf('pokemon-crystal') === -1) return;
+    var LADDER = ['pokemon-crystal', 'wall-art'];
+    if (!m || !LADDER.some(function(k){ return m[1].indexOf(k) !== -1; })) return;
     if (!window.pgDrop) return;
     if (document.querySelector('.pgx-lad')) return;
     var first = document.querySelector('#pgx .pgx-tile:not(.pgx-lad)');
@@ -952,13 +953,13 @@
         tile.setAttribute('aria-checked', ti === 0 ? 'true' : 'false');
         tile.setAttribute('tabindex', '0');
         tile.setAttribute('data-pg-tier', String(ti));
-        var chips = T.bases > 1 ? '<span class="pgx-lad-chip">+' + T.bases + ' FREE LED Bases</span>' : '';
+        var chips = T.bases > 1 ? '<span class="pgx-lad-chip">+' + T.bases + (m[1].indexOf('wall-art') !== -1 ? ' PRINTS' : ' FREE LED Bases') + '</span>' : '';
         var saveLn = (T.f > 0 || half > 0) ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
         tile.innerHTML = (T.badge ? '<span class="pgx-lad-badge">' + T.badge + '</span>' : '')
           + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
           + '<div class="pgx-lad-t"><b>' + T.title + '</b>' + chips + saveLn + '</div>'
           + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + ((T.f > 0 || half > 0) ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
-          + '<div class="pgx-lad-picks"><div class="lbl">Choose your Poke Balls</div></div>';
+          + '<div class="pgx-lad-picks"><div class="lbl">' + (m[1].indexOf('wall-art') !== -1 ? 'Choose your prints' : 'Choose your Poke Balls') + '</div></div>';
         var picks = tile.querySelector('.pgx-lad-picks');
         var total = T.n + T.f + half;
         for (var i = 0; i < total; i++){

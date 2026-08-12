@@ -233,7 +233,16 @@
     gal.appendChild(acc);
     acc.style.setProperty('margin-top', '26px', 'important');
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); }
+  /* The case is offered on the R36S page and in the cart, not as a
+     standalone "You may also like" card */
+  function ymlTrim(){
+    document.querySelectorAll('.pgu-yml a, .pgu-yml-grid a').forEach(function(a){
+      var h = a.getAttribute('href') || '';
+      if (h.indexOf('r36s-protective-case') !== -1) a.style.setProperty('display', 'none', 'important');
+    });
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); }
+  setInterval(ymlTrim, 1500);
   setInterval(accLeft, 1500);
   setInterval(caseTile, 1500);
   setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
