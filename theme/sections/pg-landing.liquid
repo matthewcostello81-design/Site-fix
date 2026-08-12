@@ -51,8 +51,41 @@
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
-  .pgx-vid{border-radius:10px;overflow:hidden;background:#000;margin-top:14px}
-  .pgx-vid video{display:block;width:100%;max-height:600px;object-fit:contain;background:#000}
+  /* desktop: thumbnails become a 2-up slider with side arrows instead of a tall grid.
+     The base theme's global button skin paints buttons as black bars with pseudo
+     overlays, so every property is stamped !important and the pseudos are killed. */
+  .pgx-thumbwrap{position:relative;margin-top:14px}
+  html body .pgx-tharrow{
+    position:absolute !important;top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;
+    z-index:5 !important;width:48px !important;height:48px !important;
+    min-width:0 !important;min-height:0 !important;max-width:none !important;
+    padding:0 0 4px !important;margin:0 !important;border:0 !important;border-radius:50% !important;
+    background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;
+    color:#fff !important;font-size:28px !important;line-height:1 !important;font-weight:400 !important;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;
+    text-transform:none !important;letter-spacing:0 !important;text-indent:0 !important;
+    overflow:hidden !important;isolation:isolate !important;cursor:pointer !important;
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.75) !important;
+    animation:none !important;transition:background .15s ease !important;
+  }
+  html body .pgx-tharrow::before,
+  html body .pgx-tharrow::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important;border:0 !important}
+  html body .pgx-tharrow:hover{background:#8B44BE !important;background-color:#8B44BE !important}
+  html body .pgx-tharrow.prev{left:10px !important;right:auto !important}
+  html body .pgx-tharrow.next{right:10px !important;left:auto !important}
+  html body .pgx-tharrow[hidden]{display:none !important}
+  @media (min-width: 901px){
+    .pgx-thumbwrap .pgx-thumbs{display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;gap:14px;margin-top:0;scroll-snap-type:x mandatory}
+    .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
+    .pgx-thumbwrap .pgx-thumbs button{flex:0 0 calc(50% - 7px);scroll-snap-align:start}
+  }
+  @media (max-width: 900px){
+    .pgx-thumbwrap{display:contents}
+    html body .pgx-tharrow{display:none !important}
+  }
+  .pgx-vid{margin-top:14px;border-radius:10px;overflow:hidden;background:#0d0d0d}
+  .pgx-vid video{width:100%;display:block}
 
   /* Buy column */
   .pgx-title{font-family:'Roboto Slab',Georgia,serif;font-size:46px;font-weight:600;line-height:1.05;margin:6px 0 10px}
@@ -67,12 +100,6 @@
   .pgx-quote-txt{font-size:14.5px;color:#333;margin-top:3px;line-height:1.45}
   .pgx-quote-next{flex:none;margin-left:auto;border:0;background:none;font-size:22px;cursor:pointer;color:#555;padding:6px}
 
-  .pgx-risk{border:1px solid rgba(255,107,129,.38);background:rgba(255,80,100,.08);border-radius:12px;padding:13px 16px;margin:0 0 18px}
-  .pgx-risk-h{display:flex;align-items:center;gap:9px;color:#FF7A8C;font-size:13px;font-weight:700;letter-spacing:.09em;text-transform:uppercase}
-  .pgx-risk-h i{width:9px;height:9px;border-radius:50%;background:#FF5064;flex:none;animation:pgxPulse 1.6s ease infinite}
-  @keyframes pgxPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,80,100,.55)}50%{box-shadow:0 0 0 7px rgba(255,80,100,0)}}
-  .pgx-risk-b{margin-top:6px;font-size:13.5px;line-height:1.5;color:#D89AA4}
-  .pgx-risk-b b{color:#FF8B9B}
   .pgx-divider{display:flex;align-items:center;gap:16px;margin:6px 0 14px;color:var(--pgx-purple);font-size:14px;letter-spacing:.18em;font-weight:600}
   .pgx-divider:before,.pgx-divider:after{content:"";height:1px;background:var(--pgx-purple);flex:1}
 
@@ -84,7 +111,6 @@
   .pgx-sel .pgx-radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--pgx-purple)}
   .pgx-tile-name{font-weight:700;font-size:17px}
   .pgx-tile-sub{font-size:13.5px;color:var(--pgx-purple);font-weight:600;margin-top:2px}
-  .pgx-tile-color{font-size:13px;opacity:.78;margin-top:2px}
   .pgx-tile-price{margin-left:auto;text-align:right}
   .pgx-p-now{font-family:'Roboto Slab',Georgia,serif;font-size:21px;font-weight:700}
   .pgx-p-was{font-size:14px;color:#8a8a8a;text-decoration:line-through}
@@ -153,6 +179,8 @@
     .pgx-logo img{max-height:84px}
     .pgx-head-in{padding:14px 16px 6px}
     .pgx-thumbs{grid-template-columns:1fr 1fr;gap:10px}
+    .pgx-vid{flex:0 0 88%;scroll-snap-align:center;margin-top:0}
+    .pgx-vid video{aspect-ratio:1/1;object-fit:cover;height:auto}
     .pgx-rev-head{gap:22px}
     .pgx-rev-num{font-size:44px}
     .pgx-rev-star{font-size:42px}
@@ -209,23 +237,22 @@
       <div class="pgx-hero">
         <img id="pgx-hero-img" src="{{ imgs.first | image_url: width: 1400 }}" alt="{{ prod.title | escape }}" width="1400" height="1400" style="width:100%;height:auto">
       </div>
-      {%- assign pvid = blank -%}
-      {%- for m in prod.media -%}{%- if m.media_type == 'video' and pvid == blank -%}{%- assign pvid = m -%}{%- endif -%}{%- endfor -%}
-      {%- if pvid != blank -%}
+      {%- if section.settings.gallery_video_url != blank -%}
       <div class="pgx-vid">
-        <video autoplay muted loop playsinline controls preload="metadata" poster="{{ pvid.preview_image | image_url: width: 900 }}">
-          {%- for s in pvid.sources -%}{%- if s.mime_type == 'video/mp4' and s.url contains '720p' -%}<source src="{{ s.url }}" type="video/mp4">{%- endif -%}{%- endfor -%}
-          {%- for s in pvid.sources -%}{%- unless s.url contains '720p' -%}{%- if s.mime_type == 'video/mp4' -%}<source src="{{ s.url }}" type="video/mp4">{%- endif -%}{%- endunless -%}{%- endfor -%}
-        </video>
+        <video src="{{ section.settings.gallery_video_url }}" autoplay muted loop playsinline preload="metadata" aria-label="{{ prod.title | escape }} product video"></video>
       </div>
       {%- endif -%}
       {%- if imgs.size > 1 -%}
-      <div class="pgx-thumbs">
-        {%- for image in imgs offset: 1 -%}
-          <button type="button" data-pgx-thumb="{{ image | image_url: width: 1400 }}" aria-label="View image {{ forloop.index | plus: 1 }}">
-            <img src="{{ image | image_url: width: 700 }}" alt="{{ prod.title | escape }} view {{ forloop.index | plus: 1 }}" loading="lazy">
-          </button>
-        {%- endfor -%}
+      <div class="pgx-thumbwrap">
+        <button type="button" class="pgx-tharrow prev" aria-label="Previous images" hidden>&#8249;</button>
+        <div class="pgx-thumbs">
+          {%- for image in imgs offset: 1 -%}
+            <button type="button" data-pgx-thumb="{{ image | image_url: width: 1400 }}" aria-label="View image {{ forloop.index | plus: 1 }}">
+              <img src="{{ image | image_url: width: 700 }}" alt="{{ prod.title | escape }} view {{ forloop.index | plus: 1 }}" loading="lazy">
+            </button>
+          {%- endfor -%}
+        </div>
+        <button type="button" class="pgx-tharrow next" aria-label="Next images" hidden>&#8250;</button>
       </div>
       {%- endif -%}
     </div>
@@ -240,11 +267,6 @@
         <strong>{{ section.settings.rating_value }}</strong>
         <span>&bull;</span>
         <span>{{ section.settings.rating_label }}</span>
-      </div>
-
-      <div class="pgx-risk">
-        <div class="pgx-risk-h"><i></i> Sellout risk: High</div>
-        <div class="pgx-risk-b">High demand right now. <b>Some variants are likely to sell out today.</b></div>
       </div>
 
       <div class="pgx-quote">
@@ -269,21 +291,12 @@
       {%- endif -%}
       {%- assign vpos = 0 -%}
       {%- if size_opt -%}{%- assign vpos = size_opt.position | minus: 1 -%}{%- endif -%}
-      {%- assign color_opt = blank -%}
-      {%- assign single_color = blank -%}
-      {%- for option in prod.options_with_values -%}
-        {%- if option.name == 'Color' and option.values.size > 1 -%}{%- assign color_opt = option -%}{%- endif -%}
-        {%- if option.name == 'Color' and option.values.size == 1 -%}{%- assign single_color = option.values.first -%}{%- endif -%}
-      {%- endfor -%}
-      {%- assign cpos = 0 -%}
-      {%- if color_opt != blank -%}{%- assign cpos = color_opt.position | minus: 1 -%}{%- endif -%}
 
       <div class="pgx-tile pgx-sel" data-pgx-tile="single" role="radio" aria-checked="true" tabindex="0">
         <div class="pgx-tile-row">
           <span class="pgx-radio"></span>
           <div>
             <div class="pgx-tile-name">{{ section.settings.display_title | default: prod.title }}</div>
-            {%- if single_color != blank -%}<div class="pgx-tile-color">Color: {{ single_color }}</div>{%- endif -%}
             <div class="pgx-tile-sub" data-pgx-single-sub></div>
           </div>
           <div class="pgx-tile-price">
@@ -291,18 +304,8 @@
             <div class="pgx-p-was" data-pgx-single-was></div>
           </div>
         </div>
-        {%- if size_opt != blank or color_opt != blank -%}
+        {%- if size_opt -%}
         <div class="pgx-tile-opts">
-          {%- if color_opt != blank -%}
-          <div class="pgx-opt">
-            <select data-pgx-color="s1" aria-label="{{ color_opt.name | escape }}">
-              {%- for value in color_opt.values -%}
-                <option value="{{ value | escape }}">{{ value }}</option>
-              {%- endfor -%}
-            </select>
-          </div>
-          {%- endif -%}
-          {%- if size_opt -%}
           <div class="pgx-opt">
             <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
               {%- for value in size_opt.values -%}
@@ -310,7 +313,6 @@
               {%- endfor -%}
             </select>
           </div>
-          {%- endif -%}
         </div>
         {%- endif -%}
       </div>
@@ -321,7 +323,6 @@
           <span class="pgx-radio"></span>
           <div>
             <div class="pgx-tile-name">{{ section.settings.bundle_title }}</div>
-            {%- if single_color != blank -%}<div class="pgx-tile-color">Color: {{ single_color }}</div>{%- endif -%}
             <div class="pgx-tile-sub">{{ bundle_pct }}% OFF, applied automatically at checkout</div>
           </div>
           <div class="pgx-tile-price">
@@ -332,13 +333,6 @@
         <div class="pgx-tile-opts">
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
-            {%- if color_opt != blank -%}
-            <select data-pgx-color="d1" aria-label="{{ color_opt.name | escape }}">
-              {%- for value in color_opt.values -%}
-                <option value="{{ value | escape }}">{{ value }}</option>
-              {%- endfor -%}
-            </select>
-            {%- endif -%}
             {%- if size_opt -%}
             <select data-pgx-size="d1" aria-label="{{ size_opt.name | escape }} for unit 1">
               {%- for value in size_opt.values -%}
@@ -350,13 +344,6 @@
           <span class="pgx-plus">+</span>
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
-            {%- if color_opt != blank -%}
-            <select data-pgx-color="d2" aria-label="{{ color_opt.name | escape }}">
-              {%- for value in color_opt.values -%}
-                <option value="{{ value | escape }}">{{ value }}</option>
-              {%- endfor -%}
-            </select>
-            {%- endif -%}
             {%- if size_opt -%}
             <select data-pgx-size="d2" aria-label="{{ size_opt.name | escape }} for unit 2">
               {%- for value in size_opt.values -%}
@@ -452,7 +439,7 @@
   {%- endif -%}
 
   <script type="application/json" id="pgx-vdata">
-    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"color":{{ v.options[cpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
+    [{%- for v in prod.variants -%}{"id":{{ v.id }},"size":{{ v.options[vpos] | json }},"price":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"avail":{{ v.available }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]
   </script>
 
   {%- endif -%}
@@ -469,6 +456,33 @@
   root.querySelectorAll('[data-pgx-thumb]').forEach(function(btn){
     btn.addEventListener('click', function(){ if (hero) hero.src = btn.getAttribute('data-pgx-thumb'); });
   });
+
+  /* Thumbnail slider: arrows page two-at-a-time, wrapping at the ends.
+     Arrows only appear when there are more thumbs than fit in view. */
+  var tw = root.querySelector('.pgx-thumbwrap');
+  if (tw){
+    var th = tw.querySelector('.pgx-thumbs');
+    var pv = tw.querySelector('.pgx-tharrow.prev');
+    var nx = tw.querySelector('.pgx-tharrow.next');
+    function thUpd(){
+      var can = th && th.scrollWidth > th.clientWidth + 4 && window.matchMedia('(min-width: 901px)').matches;
+      if (pv) pv.hidden = !can;
+      if (nx) nx.hidden = !can;
+    }
+    if (th && pv && nx){
+      nx.addEventListener('click', function(){
+        if (th.scrollLeft + th.clientWidth >= th.scrollWidth - 10){ th.scrollTo({left: 0, behavior: 'smooth'}); }
+        else { th.scrollBy({left: th.clientWidth + 14, behavior: 'smooth'}); }
+      });
+      pv.addEventListener('click', function(){
+        if (th.scrollLeft <= 10){ th.scrollTo({left: th.scrollWidth, behavior: 'smooth'}); }
+        else { th.scrollBy({left: -(th.clientWidth + 14), behavior: 'smooth'}); }
+      });
+      thUpd();
+      window.addEventListener('resize', thUpd);
+      setTimeout(thUpd, 600);
+    }
+  }
 
   /* Review quote carousel */
   var quotes = [
@@ -501,21 +515,17 @@
   if (!vEl) return;
   var variants = JSON.parse(vEl.textContent);
   var BUNDLE_PCT = {{ section.settings.bundle_pct | default: 10 }};
-  function byOpts(sz, col){
-    for (var i = 0; i < variants.length; i++){
-      var v = variants[i];
-      if ((sz == null || v.size === sz) && (col == null || v.color === col)) return v;
-    }
+  function bySize(sz){
+    for (var i = 0; i < variants.length; i++){ if (variants[i].size === sz) return variants[i]; }
     return variants[0];
   }
   function sel(name){ return root.querySelector('[data-pgx-size="' + name + '"]'); }
   function val(name){ var s = sel(name); return s ? s.value : (variants[0] && variants[0].size); }
-  function cval(name){ var c = root.querySelector('[data-pgx-color="' + name + '"]'); return c ? c.value : null; }
   function money(c){ return '$' + (c / 100).toFixed(2); }
   var mode = 'single';
 
   function paint(){
-    var v1 = byOpts(val('s1'), cval('s1'));
+    var v1 = bySize(val('s1'));
     var now1 = root.querySelector('[data-pgx-single-now]');
     var was1 = root.querySelector('[data-pgx-single-was]');
     var sub1 = root.querySelector('[data-pgx-single-sub]');
@@ -524,7 +534,7 @@
     if (sub1) sub1.textContent = v1.cap > v1.price ? (Math.round((1 - v1.price / v1.cap) * 100) + '% OFF today') : '';
     var dNow = root.querySelector('[data-pgx-double-now]');
     if (dNow){
-      var a = byOpts(val('d1'), cval('d1')), b = byOpts(val('d2'), cval('d2'));
+      var a = bySize(val('d1')), b = bySize(val('d2'));
       var full = a.price + b.price;
       var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
       var disc = Math.round(full * (100 - BUNDLE_PCT) / 100);
@@ -533,7 +543,7 @@
       if (dWas) dWas.textContent = money(retail);
     }
   }
-  root.querySelectorAll('[data-pgx-size],[data-pgx-color]').forEach(function(s){ s.addEventListener('change', paint); });
+  root.querySelectorAll('[data-pgx-size]').forEach(function(s){ s.addEventListener('change', paint); });
   paint();
 
   /* Tile selection */
@@ -553,11 +563,11 @@
   if (atc) atc.addEventListener('click', function(){
     var items = [];
     if (mode === 'double'){
-      var a = byOpts(val('d1'), cval('d1')), b = byOpts(val('d2'), cval('d2'));
+      var a = bySize(val('d1')), b = bySize(val('d2'));
       if (a.id === b.id) items.push({id: a.id, quantity: 2});
       else { items.push({id: a.id, quantity: 1}); items.push({id: b.id, quantity: 1}); }
     } else {
-      items.push({id: byOpts(val('s1'), cval('s1')).id, quantity: 1});
+      items.push({id: bySize(val('s1')).id, quantity: 1});
     }
     atc.disabled = true; atc.firstElementChild.textContent = 'Adding...'; err.style.display = 'none';
     fetch('/cart/add.js', {
@@ -589,6 +599,7 @@
     {"type": "text", "id": "rating_label", "label": "Rating label", "default": "Trusted by over 12 customers"},
     {"type": "number", "id": "review_total", "label": "Total review count", "default": 12},
     {"type": "text", "id": "default_size", "label": "Default selected size", "default": "64G"},
+    {"type": "text", "id": "gallery_video_url", "label": "Gallery video URL (autoplays and loops)"},
     {"type": "checkbox", "id": "show_bundle", "label": "Show 2-pack bundle tile", "default": true},
     {"type": "text", "id": "bundle_title", "label": "Bundle tile title", "default": "Bundle Deal: 2x R36S"},
     {"type": "range", "id": "bundle_pct", "label": "Bundle discount percent (must match a live automatic discount)", "min": 0, "max": 50, "step": 1, "default": 10},

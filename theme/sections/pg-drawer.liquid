@@ -9,7 +9,7 @@
 <style>
   /* Drawer top: logo + free-shipping pill */
   #cart#cart#cart img.nc-dlogo{height:110px !important;max-width:300px !important;margin:-6px auto 2px !important;object-fit:contain !important}
-  #cart#cart#cart .nc-dship{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important;box-shadow:0 10px 22px -12px rgba(122,47,162,.6) !important}
+  #cart#cart#cart .nc-dship{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShift 5s ease-in-out infinite !important;box-shadow:0 10px 22px -12px rgba(122,47,162,.6) !important}
   #cart#cart#cart .nc-dtrust span{color:#7A2FA2 !important}
   #cart#cart#cart .nc-dtrust svg{stroke:#7A2FA2 !important}
 
@@ -39,9 +39,7 @@
   #cart#cart#cart .nc-rec:hover{background:rgba(122,47,162,.06) !important}
 
   /* Better together: only the crystal orbs may appear as a recommendation */
-  #cart .nc-rec:not(:has(a[href*="crystal"])):not([href*="crystal"]){display:none !important}
-  #cart .nc-recs:not(:has([href*="crystal"])){display:none !important}
-  #cart .nc-recs-panel:not(:has([href*="crystal"])){display:none !important}
+  /* upsell panel: all products welcome (crystal-only filter removed) */
   /* Rec ADD buttons: outlined purple pill, gradient on hover */
   #cart#cart#cart .nc-rec-add,#cart#cart#cart .nc-recs-panel .nc-rec-add{background:#fff !important;background-image:none !important;animation:none !important;color:#7A2FA2 !important;border:1.5px solid #7A2FA2 !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.04em !important}
   #cart#cart#cart .nc-rec-add:hover,#cart#cart#cart .nc-recs-panel .nc-rec-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important;border-color:#7A2FA2 !important;filter:none !important}
@@ -73,28 +71,87 @@
   /* Free gift line: FREE tag replaces $0.00, stepper locked */
   #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
   body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:hidden !important}
-  /* Free Gift and Saved % labels: fading purple pill under the title, NC style */
-  .pg-free-tag{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2 55%,#4A1C66);color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 11px;border-radius:999px;text-transform:uppercase;width:max-content;max-width:100%;margin:3px 0 2px;white-space:nowrap}
-  /* North Cove cart-line layout: title top, pill under it, qty left, price right */
-  #cart .l4ca > li section{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;grid-template-areas:"nm nm" "sv sv" "vr vr" "qt pr" !important;align-items:end !important;gap:2px 10px !important;overflow:hidden !important}
+  .pg-free-tag{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:.05em;padding:4px 12px;border-radius:999px;text-transform:uppercase;width:max-content;margin:4px 0 2px}
+  /* North Cove cart-line layout: title top, save chip under it, was/now bottom-right */
+  #cart .l4ca > li section{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;grid-template-areas:"nm nm" "vr vr" "sv sv" "qt pr" !important;align-items:end !important;gap:2px 10px !important;overflow:hidden !important}
   #cart .l4ca > li section > p{grid-area:vr;margin:0 !important;font-size:12.5px;color:#8a8a8a;justify-self:start}
   #cart .l4ca > li section > span.overlay-gray{display:none !important}
   #cart .l4ca > li section .nc-lsave{position:static !important;width:auto !important;max-width:100% !important;margin:0 !important;padding:0 !important}
   #cart .l4ca > li section .cols{display:contents !important}
   #cart .l4ca > li section h2{grid-area:nm !important;border:0 !important;margin:0 !important}
-  #cart .l4ca > li section .pg-save-chip,#cart .l4ca > li section .pg-free-tag{grid-area:sv;justify-self:start;text-align:left}
-  #cart .l4ca > li section footer{grid-area:qt !important;position:static !important;display:flex !important;align-items:center !important;justify-content:flex-start !important;gap:10px !important;width:auto !important}
-  #cart .l4ca > li section footer > *{margin-left:0 !important;margin-right:0 !important;position:static !important}
+  #cart .l4ca > li section .pg-save-chip,#cart .l4ca > li section .pg-free-tag{grid-area:sv;justify-self:start}
+  #cart .l4ca > li section footer{grid-area:qt !important;position:static !important;display:flex !important;align-items:center !important}
   #cart .l4ca > li section .nc-lsave{grid-area:pr !important;display:flex !important;flex-direction:column !important;align-items:flex-end !important;gap:1px !important;justify-self:end;align-self:end}
   #cart .l4ca > li section .cols p.price{display:none !important}
-  #cart .l4ca > li .nc-lsave-was{color:#8a8a8a !important;text-decoration:line-through !important;font-size:12.5px !important;font-weight:400 !important}
-  #cart .l4ca > li .nc-lsave-now{color:#7A2FA2 !important;font-weight:800 !important;font-size:16.5px !important}
+  #cart .l4ca > li .nc-lsave-was{color:#8a8a8a !important;text-decoration:line-through !important;font-size:13.5px !important;font-weight:400 !important}
+  #cart .l4ca > li .nc-lsave-now{color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important}
   #cart .l4ca > li .nc-lsave-off{display:none !important}
   #cart .l4ca > li section > p:empty{display:none !important}
   #cart .l4ca > li:hover,#cart .l4ca > li:hover section,#cart .l4ca > li:hover figure{background:transparent !important;box-shadow:none !important}
   #cart .l4ca > li::before,#cart .l4ca > li::after{display:none !important;content:none !important}
   #cart .l4ca > li section{padding-right:4px !important}
-  .pg-save-chip{display:inline-block;background:linear-gradient(120deg,#9B4BC4,#7A2FA2 55%,#4A1C66);color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:11px;font-weight:700;letter-spacing:.06em;padding:3px 11px;border-radius:999px;text-transform:uppercase;margin:3px 0 2px;width:max-content;max-width:100%;white-space:nowrap}
+  @keyframes pgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  /* round 2: qty, trash, no tints, breakdown, bar, vsel, payments */
+  #cart#cart#cart{width:490px !important;max-width:96vw !important}
+  @media(max-width:600px){#cart#cart#cart{width:100vw !important;max-width:100vw !important}}
+
+  #cart .l4ca > li,#cart .l4ca > li section,#cart .l4ca > li figure{background:transparent !important}
+  #cart .l4ca .input-amount{margin:0 !important}
+  #cart .l4ca .input-amount input{border:1.5px solid rgba(122,47,162,.4) !important;border-radius:10px !important;color:#4A1C66 !important;font-weight:700 !important;width:52px !important;min-width:0 !important;height:36px !important;min-height:0 !important;background:#fff !important;text-align:center !important;font-size:15px !important;padding:0 !important}
+  #cart .l4ca > li section{position:relative !important}
+  #cart .l4ca > li section h2{padding-right:30px !important;font-size:16.5px !important;line-height:1.3 !important}
+  #cart .l4ca > li section footer p:last-child{position:absolute !important;top:0 !important;right:0 !important;margin:0 !important;padding:0 !important}
+  #cart .l4ca a.remove{display:inline-flex !important;width:26px;height:26px;align-items:center;justify-content:center;color:#9a8fa5 !important;text-decoration:none !important}
+  #cart .l4ca a.remove:hover{color:#7A2FA2 !important}
+  #cart .l4ca a.remove .mobile-hide{display:none !important}
+  #cart .l4ca > li section > p:not(.pg-varp){pointer-events:none}
+  #cart .l4ca > li section > p.pg-varp{pointer-events:auto !important}
+  #cart .nc-recs,#cart .nc-recs-panel{margin-top:6px !important}
+  #cart .l4ca{display:flex !important;flex-direction:column !important}
+  #cart .l4ca > li:has(a[href*="free-gift"]){order:-1}
+  #cart .l4ca > li:has(a[href*="free-gift"]) .nc-lsave,#cart .l4ca > li:has(a[href*="free-gift"]) .pg-save-chip{display:none !important}
+  .pg-orbsel{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .pg-orbsel img{width:26px;height:26px;border-radius:6px;object-fit:cover;flex:none;background:#f4f4f4}
+  .pg-orbsel select{font-size:12px;padding:2px 6px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#555;max-width:130px;font-family:inherit}
+  #cart .sticky-in-panel{background:#fff !important;z-index:5 !important;box-shadow:0 -14px 26px -18px rgba(74,28,102,.4) !important;border-top:1px solid rgba(122,47,162,.18) !important;padding-top:5px !important;padding-bottom:6px !important}
+  #cart .sticky-in-panel .offset-dist{display:none !important;height:0 !important}
+  #cart .sticky-in-panel .pg-sp{margin:3px 0 5px !important;padding:7px 10px !important;box-shadow:none !important}
+  #cart .sticky-in-panel .pg-sp-ic{width:28px !important;height:28px !important}
+  #cart .sticky-in-panel .pg-sp-ic svg{width:16px !important;height:16px !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:12.5px !important}
+  #cart .sticky-in-panel .pg-sp-t small{font-size:10.5px !important;line-height:1.25 !important;margin-top:0 !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:12.5px !important}
+  #cart .sticky-in-panel .l4tt{margin:2px 0 !important}
+  #cart .sticky-in-panel .nc-dtrust{margin:3px 0 !important;padding:2px 0 !important}
+  #cart .sticky-in-panel form.f8vl{margin:3px 0 0 !important}
+  #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important;min-height:0 !important}
+  #cart .sticky-in-panel .l4pm{margin:5px 0 0 !important}
+  .pg-cart-top{position:sticky;top:0;z-index:6;background:#fff;display:flex;align-items:center;gap:9px;padding:11px 16px;border-bottom:1px solid rgba(122,47,162,.16);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-weight:800;color:#4A1C66;font-size:15px}
+  .pg-cart-top svg{width:20px;height:20px;stroke:#7A2FA2;fill:none;stroke-width:1.8;flex:none}
+  .pg-cart-top .pg-ct-n{font-weight:600;color:#7A2FA2;font-size:13.5px}
+  .pg-qbtn{width:26px;height:26px;border:1.5px solid rgba(122,47,162,.4);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;color:#7A2FA2;font-weight:800;font-size:16px;line-height:1;cursor:pointer;background:#fff;user-select:none;flex:none}
+  .pg-qbtn:hover{background:#7A2FA2;color:#fff;border-color:#7A2FA2}
+  #cart .pg-vsel{font-size:13.5px;color:#555;border:1px solid #ddd;border-radius:8px;padding:3px 6px;background:#fff;font-family:inherit;max-width:150px}
+  #cart .sticky-in-panel .pg-sp{margin:8px 0 10px}
+  #cart .sticky-in-panel .l4tt li{display:flex !important;justify-content:space-between !important;align-items:baseline !important;font-size:13px;padding:1px 0;line-height:1.35}
+  #cart .l4tt li.pg-drow,#cart .l4tt li.pg-drow *{color:#7A2FA2 !important;font-weight:700 !important;font-size:13.5px !important}
+  #cart .l4tt li.pg-tt,#cart .l4tt li.pg-tt *{font-weight:800 !important;font-size:16px !important;color:#4A1C66 !important}
+  #cart ul.l4al.inline{display:none !important}
+  #cart .sticky-in-panel form.f8vl{margin-bottom:0 !important}
+  #cart .l4pm{display:flex !important;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 0 2px !important;padding:0 !important}
+  #cart .l4pm li{margin:0 !important;padding:0 !important;list-style:none}
+  #cart .l4pm svg{width:36px;height:23px;display:block;border-radius:4px}
+  #cart .sticky-in-panel .l4pm{margin-top:2px !important;padding-top:0 !important}
+  .pg-bar{background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:16px 16px 15px;margin:0 0 12px;box-shadow:0 12px 30px -24px rgba(74,28,102,.4);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-bar-t{font-size:14.5px;font-weight:600;color:#3a2a4a;text-align:center;margin:0 0 12px;line-height:1.5}
+  .pg-bar-t b{color:#7A2FA2}
+  .pg-bar-track{position:relative;height:14px;border-radius:999px;background:#efe4f8;margin:6px 22px 4px}
+  .pg-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;transition:width .5s ease}
+  .pg-bar-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;border:2px solid #cbb3e0;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:#7d6a90;box-shadow:0 4px 12px -4px rgba(74,28,102,.35)}
+  .pg-bar-dot.on{border-color:#7A2FA2;background:#7A2FA2;color:#fff}
+  .pg-bar-lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.04em;color:#7d6a90;margin-top:10px;text-transform:uppercase}
+  .pg-bar-lbl .on{color:#7A2FA2}
+  .pg-save-chip{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:.05em;padding:4px 12px;border-radius:999px;text-transform:uppercase;margin:4px 0 2px;width:max-content}
   s.pg-lwas{color:#8a8a8a !important;font-weight:400;font-size:13px;margin-right:6px}
   #cart .l4ca > li .old-price{display:none !important}
 
@@ -172,16 +229,10 @@
     }).catch(function(){});
     return box;
   }
-  /* Free gifts, one per trigger product:
-     - R36S console (handle handheld-game-console) -> free protective case
-     - Crystal poke ball (handle contains crystal-ball) -> free 25 Pokemon Cards
-     Each gift is auto-added at $0 while its trigger is in the cart, re-added
-     if removed, held at qty 1, and auto-removed when its trigger leaves. */
-  var GIFTS = [
-    {id: 49623692247268, handle: 'r36s-protective-case-free-gift', trigger: 'handheld-game-console'}
-  ];
-  /* Gifts that were offered before and later withdrawn: always removed on sight */
-  var GIFTS_RETIRED = [49633084539108];
+  /* Free gift: the R36S protective case is auto-added at $0 whenever the cart
+     holds a paid item, always re-added if removed, and auto-removed when the
+     cart empties. */
+  var GIFT_ID = 49623692247268, GIFT_HANDLE = 'r36s-protective-case-free-gift';
   var giftBusy = false;
   function giftDone(r){
     giftBusy = false;
@@ -195,29 +246,19 @@
     if (giftBusy) return;
     giftBusy = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
-      for (var r0 = 0; r0 < c.items.length; r0++){
-        if (GIFTS_RETIRED.indexOf(c.items[r0].id) !== -1){
-          var rmU = {}; rmU[String(c.items[r0].id)] = 0;
-          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: rmU})}).then(giftDone);
-        }
+      var gift = null, paid = 0;
+      c.items.forEach(function(it){
+        if (it.id === GIFT_ID || it.handle === GIFT_HANDLE) gift = it;
+        else if (it.handle === 'handheld-game-console') paid += it.quantity;
+      });
+      if (paid > 0 && !gift){
+        return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: GIFT_ID, quantity: 1}]})}).then(giftDone);
       }
-      for (var i = 0; i < GIFTS.length; i++){
-        var g = GIFTS[i], inCart = null, wanted = false;
-        c.items.forEach(function(it){
-          if (it.id === g.id || it.handle === g.handle) inCart = it;
-          else if (it.handle !== 'shipping-protection' && it.handle.indexOf('free-gift') === -1 && it.handle.indexOf(g.trigger) !== -1) wanted = true;
-        });
-        if (wanted && !inCart){
-          return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: g.id, quantity: 1}]})}).then(giftDone);
-        }
-        if (inCart && !wanted){
-          var offU = {}; offU[String(g.id)] = 0;
-          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: offU})}).then(giftDone);
-        }
-        if (inCart && inCart.quantity !== 1){
-          var oneU = {}; oneU[String(g.id)] = 1;
-          return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: oneU})}).then(giftDone);
-        }
+      if (gift && paid === 0){
+        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 0}})}).then(giftDone);
+      }
+      if (gift && gift.quantity !== 1){
+        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 1}})}).then(giftDone);
       }
       giftBusy = false;
     }).catch(function(){ giftBusy = false; });
@@ -225,9 +266,12 @@
   function giftTag(root){
     root.querySelectorAll('.l4ca > li').forEach(function(li){
       var a = li.querySelector('a[href*="free-gift"]');
-      if (!a || li.dataset.pgFree) return;
+      if (!a) return;
+      var tt = li.querySelector('h2 a') || li.querySelector('h2');
+      if (tt && /\(\s*FREE\s*Gift\s*\)/i.test(tt.textContent)) tt.textContent = tt.textContent.replace(/\s*\(\s*FREE\s*Gift\s*\)\s*/i, '');
+      /* visual order handled by CSS flex order; DOM order must stay in cart order */
+      if (li.dataset.pgFree) return;
       li.dataset.pgFree = '1';
-      if (/\(FREE Gift\)/i.test(a.textContent)) a.textContent = a.textContent.replace(/\s*\(FREE Gift\)/i, '');
       li.querySelectorAll('*').forEach(function(el){
         if (el.children.length) return;
         if (/^\$?0[.,]00$/.test(el.textContent.trim())) el.innerHTML = '';
@@ -235,14 +279,25 @@
       var h2g = a.closest('h2');
       if (h2g) h2g.insertAdjacentHTML('afterend', '<span class="pg-free-tag">Free Gift</span>');
       else a.insertAdjacentHTML('afterend', '<span class="pg-free-tag">Free Gift</span>');
+      var ftag = li.querySelector('.pg-free-tag');
+      if (ftag){
+        ['width:fit-content','max-width:100%','justify-self:start','font-size:12px','line-height:1.5','padding:4px 12px','letter-spacing:.05em','border-radius:999px','min-width:0','flex:none'].forEach(function(kv){
+          var p = kv.split(':'); ftag.style.setProperty(p[0], p[1], 'important');
+        });
+      }
     });
   }
   window.pgGiftTag = giftTag;
+  window.pgGiftSync = giftSync;
+  window.pgDrawerRefresh = spRefreshDrawer;
   function spInject(){
     var c = document.getElementById('cart');
     if (c){
       var items = c.querySelector('.l4ca:not(.in-panel)');
-      if (items && !c.querySelector('[data-pg-sp]')){
+      var pane = c.querySelector('.sticky-in-panel');
+      if (pane && !c.querySelector('[data-pg-sp]')){
+        pane.insertBefore(spBox(), pane.querySelector('.l4tt') || pane.firstChild);
+      } else if (!pane && items && !c.querySelector('[data-pg-sp]')){
         items.parentNode.insertBefore(spBox(), items.nextSibling);
       }
       c.querySelectorAll('.l4ca > li').forEach(function(li){
@@ -265,7 +320,7 @@
   var giftTimer;
   function giftQueue(){
     clearTimeout(giftTimer);
-    giftTimer = setTimeout(giftSync, 600);
+    giftTimer = setTimeout(giftSync, 150);
   }
   function bind(){
     fix();
@@ -283,10 +338,17 @@
 <script>
 (function(){
   if (window.pgDeals) return; window.pgDeals = 1;
-  var VMAP = null;
+  var VMAP = null, PRODVARS = null, VSEL_BUSY = false;
   fetch('/products.json?limit=50').then(function(r){return r.json();}).then(function(j){
     VMAP = {};
-    (j.products||[]).forEach(function(p){(p.variants||[]).forEach(function(v){VMAP[v.id]=[parseFloat(v.price||0),parseFloat(v.compare_at_price||0)];});});
+    PRODVARS = {};
+    (j.products||[]).forEach(function(p){
+      PRODVARS[p.handle] = [];
+      (p.variants||[]).forEach(function(v){
+        VMAP[v.id]=[parseFloat(v.price||0),parseFloat(v.compare_at_price||0)];
+        PRODVARS[p.handle].push({id: v.id, t: v.title});
+      });
+    });
   }).catch(function(){});
   function money(n){ return '$' + n.toFixed(2); }
   function pass(){
@@ -306,32 +368,218 @@
           for (var i=0;i<items.length;i++){ if(!used[i] && items[i].handle===h){ it=items[i]; used[i]=1; break; } }
         }
         if (!it) return;
+        if (href.indexOf('handheld-game-console') > -1) vsel(li, it);
         var pc = VMAP[it.variant_id];
-        if (!pc) return;
-        /* True savings: full retail for the line vs what the line actually
-           costs after every discount Shopify applied in the cart. */
-        var wasU = pc[1] > pc[0] ? pc[1] : pc[0];
-        var wasC = Math.round(wasU * 100) * it.quantity;
-        var nowC = (typeof it.final_line_price === 'number') ? it.final_line_price : it.line_price;
-        if (!(wasC > nowC)) return;
-        var key = it.variant_id + ':' + it.quantity + ':' + nowC;
+        if (!pc || !(pc[1] > pc[0])) return;
+        var key = it.variant_id + ':' + it.quantity;
         if (li.getAttribute('data-pg-deal') === key) return;
-        var pct = Math.round((wasC - nowC) / wasC * 100);
+        var pct = Math.round((pc[1]-pc[0]) / pc[1] * 100);
         var h2 = li.querySelector('h2') || a;
         var chip = li.querySelector('.pg-save-chip');
         if (!chip){ chip = document.createElement('span'); chip.className = 'pg-save-chip'; (h2.parentNode||li).insertBefore(chip, h2.nextSibling); }
         chip.textContent = 'Saved ' + pct + '%';
+        ['width:fit-content','max-width:100%','justify-self:start','font-size:12px','line-height:1.5','padding:4px 12px','letter-spacing:.05em','border-radius:999px','min-width:0','flex:none'].forEach(function(kv){
+          var p = kv.split(':'); chip.style.setProperty(p[0], p[1], 'important');
+        });
         var pr = li.querySelector('p.price') || li.querySelector('[class*="price"]');
         if (pr){
           var st = pr.querySelector('s.pg-lwas');
           if (!st){ st = document.createElement('s'); st.className = 'pg-lwas'; pr.insertBefore(st, pr.firstChild); }
-          st.textContent = money(wasC / 100);
+          st.textContent = money(pc[1] * it.quantity);
         }
         li.setAttribute('data-pg-deal', key);
       });
+      try {
+        pgBar(c); pgTotals(c);
+        var ctn = document.querySelector('#cart .pg-ct-n');
+        if (ctn){
+          var n = 0;
+          (c.items || []).forEach(function(it){ if (it.handle !== 'shipping-protection') n += it.quantity; });
+          var t2 = '(' + n + (n === 1 ? ' item)' : ' items)');
+          if (ctn.textContent !== t2) ctn.textContent = t2;
+        }
+      } catch(e){}
     }).catch(function(){});
   }
-  setInterval(function(){ pass(); if (window.pgGiftTag) window.pgGiftTag(document); }, 800);
+  function vsel(li, it){
+    var vars = (PRODVARS && PRODVARS['handheld-game-console']) || [];
+    if (vars.length < 2) return;
+    var sel = li.querySelector('.pg-vsel');
+    if (!sel){
+      var host = li.querySelector('section > p:not(.pg-varp)');
+      if (!host) return;
+      host.classList.add('pg-varp');
+      host.textContent = '';
+      sel = document.createElement('select');
+      sel.className = 'pg-vsel';
+      sel.setAttribute('aria-label', 'Choose version');
+      'height:26px;padding:1px 6px;font-size:12px;line-height:1.2;width:auto;max-width:96px;min-width:0;min-height:0;border-radius:8px;background-color:#fff;color:#555;border:1px solid #ddd;box-shadow:none;margin:0'.split(';').forEach(function(kv){
+        var p = kv.split(':'); sel.style.setProperty(p[0], p[1], 'important');
+      });
+      vars.forEach(function(v){ var o = document.createElement('option'); o.value = v.id; var t = v.t.indexOf('/') > -1 ? v.t.split('/').pop() : v.t; o.textContent = t.replace(/^\s+|\s+$/g, ''); sel.appendChild(o); });
+      host.appendChild(sel);
+      sel.addEventListener('change', function(){
+        if (VSEL_BUSY) return; VSEL_BUSY = true;
+        var oldId = parseInt(sel.getAttribute('data-cur'), 10);
+        var newId = parseInt(sel.value, 10);
+        var q = parseInt(sel.getAttribute('data-q'), 10) || 1;
+        if (!oldId || !newId || oldId === newId){ VSEL_BUSY = false; return; }
+        sel.disabled = true;
+        var u = {}; u[oldId] = 0;
+        fetch('/cart/update.js', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({updates:u})})
+          .then(function(){ return fetch('/cart/add.js', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:[{id:newId,quantity:q}]})}); })
+          .then(function(){ return window.pgDrawerRefresh ? window.pgDrawerRefresh() : null; })
+          .then(function(){ VSEL_BUSY = false; if (window.pgGiftSync) window.pgGiftSync(); })
+          .catch(function(){ VSEL_BUSY = false; if (window.pgDrawerRefresh) window.pgDrawerRefresh(); });
+      });
+    }
+    sel.setAttribute('data-cur', it.variant_id);
+    sel.setAttribute('data-q', it.quantity);
+    if (String(sel.value) !== String(it.variant_id)) sel.value = String(it.variant_id);
+  }
+  function pgBar(c){
+    var ul = document.querySelector('#cart .l4ca:not(.in-panel)');
+    if (!ul) return;
+    var bar = document.querySelector('#cart .pg-bar');
+    if (!bar){
+      bar = document.createElement('div');
+      bar.className = 'pg-bar';
+      bar.innerHTML = '<div class="pg-bar-t"></div><div class="pg-bar-track"><i class="pg-bar-fill"></i><b class="pg-bar-dot d1">&#127873;</b><b class="pg-bar-dot d2">&#127991;&#65039;</b></div><div class="pg-bar-lbl"><span class="s1">Free Case</span><span class="s2">10% Off Order</span></div>';
+      ul.parentNode.insertBefore(bar, ul);
+    }
+    var tot = ((c.items_subtotal_price != null ? c.items_subtotal_price : c.total_price) || 0) / 100, T = 120;
+    var hasDev = (c.items || []).some(function(it){ return it.handle === 'handheld-game-console'; });
+    var msg, w;
+    if (tot <= 0){ msg = 'Add a <b>PocketBoy R36</b> to unlock your <b>FREE case</b> &#127873;'; w = 0; }
+    else if (tot < T){
+      msg = hasDev
+        ? '&#127873; FREE case unlocked! Spend <b>$' + (T - tot).toFixed(2) + '</b> more to get <b>10% OFF</b> your whole order'
+        : '&#127873; Add a <b>PocketBoy R36</b> for a FREE case &mdash; spend <b>$' + (T - tot).toFixed(2) + '</b> more for <b>10% OFF</b>';
+      w = 8 + (tot / T) * 92;
+    }
+    else { msg = '&#127881; <b>10% OFF</b> unlocked &mdash; applied automatically at checkout!'; w = 100; }
+    var t = bar.querySelector('.pg-bar-t');
+    if (t.getAttribute('data-m') !== msg){ t.innerHTML = msg; t.setAttribute('data-m', msg); }
+    bar.querySelector('.pg-bar-fill').style.width = w + '%';
+    var d1 = bar.querySelector('.d1'), d2 = bar.querySelector('.d2');
+    d1.style.left = '8%'; d2.style.left = '100%';
+    d1.className = 'pg-bar-dot d1' + (hasDev ? ' on' : '');
+    d2.className = 'pg-bar-dot d2' + (tot >= T ? ' on' : '');
+    bar.querySelector('.s1').className = 's1' + (hasDev ? ' on' : '');
+    bar.querySelector('.s2').className = 's2' + (tot >= T ? ' on' : '');
+  }
+  function pgTotals(c){
+    var tl = document.querySelector('#cart .sticky-in-panel .l4tt');
+    if (!tl) return;
+    var sp = tl.querySelectorAll('li > span');
+    for (var i = 0; i < sp.length; i++){ if (/\(\d+\)/.test(sp[i].textContent)) sp[i].textContent = 'Subtotal'; }
+    var lis = Array.prototype.slice.call(tl.children);
+    lis.forEach(function(li2){
+      if (li2.className.indexOf('pg-trow') > -1) return;
+      if (/Total/i.test(li2.textContent) && !/Subtotal/i.test(li2.textContent) && li2.className.indexOf('pg-tt') === -1) li2.className += ' pg-tt';
+    });
+    var row = tl.querySelector('.pg-trow');
+    if (row) row.remove();
+    lis.forEach(function(li3){
+      if (li3.className.indexOf('pg-tt') > -1 || li3.className.indexOf('pg-drow') > -1) return;
+      if (/(-\$|\(-|% Off)/i.test(li3.textContent)) li3.className += ' pg-drow';
+    });
+  }
+  function pgStepper(){
+    document.querySelectorAll('#cart .l4ca .input-amount').forEach(function(p){
+      if (p.dataset.pgStep) return;
+      var inp = p.querySelector('input');
+      if (!inp) return;
+      p.dataset.pgStep = '1';
+      function mk(txt, delta){
+        var b = document.createElement('span');
+        b.className = 'pg-qbtn';
+        b.textContent = txt;
+        b.setAttribute('role', 'button');
+        b.tabIndex = 0;
+        b.addEventListener('click', function(e){
+          e.preventDefault(); e.stopPropagation();
+          var v = (parseInt(inp.value, 10) || 1) + delta;
+          if (v < 0) v = 0;
+          inp.value = v;
+          inp.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+        return b;
+      }
+      p.insertBefore(mk('-', -1), inp);
+      p.appendChild(mk('+', 1));
+      p.style.setProperty('display', 'inline-flex', 'important');
+      p.style.setProperty('align-items', 'center', 'important');
+      p.style.setProperty('gap', '5px', 'important');
+    });
+  }
+  var ORB = null, ORB_BUSY = false;
+  function orbData(){
+    if (ORB !== null || !PRODVARS) return;
+    var h = null;
+    for (var k in PRODVARS){ if (k.indexOf('pokemon-crystal') > -1) h = k; }
+    if (!h){ ORB = false; return; }
+    ORB = false;
+    fetch('/products/' + h + '.js').then(function(r){ return r.json(); }).then(function(p){
+      ORB = (p.variants || []).map(function(v){ return {id: v.id, t: v.title, img: (v.featured_image && v.featured_image.src) || (p.images && p.images[0]) || ''}; });
+    }).catch(function(){});
+  }
+  function orbRec(){
+    orbData();
+    if (!ORB || !ORB.length) return;
+    var c = document.getElementById('cart');
+    if (!c) return;
+    c.querySelectorAll('.nc-rec, .nc-recs-panel .nc-rec').forEach(function(rec){
+      if (!rec.querySelector('a[href*="crystal"], a[href*="pokemon-crystal"]')) return;
+      if (rec.querySelector('.pg-orbsel')) return;
+      var addBtn = rec.querySelector('.nc-rec-add');
+      if (!addBtn || !addBtn.parentElement) return;
+      if (!window.pgDrop) return;
+      var w = document.createElement('div');
+      w.className = 'pg-orbsel';
+      w.appendChild(window.pgDrop(ORB, ORB[0].id, null));
+      addBtn.parentElement.insertBefore(w, addBtn);
+      rec.dataset.pgOrb = '1';
+    });
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.nc-rec-add');
+    if (!btn || ORB_BUSY) return;
+    var rec = btn.closest('.nc-rec');
+    var sel = rec ? rec.querySelector('.pg-orbsel .pg-drop') : null;
+    if (!sel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    ORB_BUSY = true;
+    fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: parseInt(sel.pgValue(), 10), quantity: 1}]})})
+      .then(function(){ ORB_BUSY = false; if (window.pgDrawerRefresh) return window.pgDrawerRefresh(); })
+      .catch(function(){ ORB_BUSY = false; });
+  }, true);
+  function pgPane(){
+    var c2 = document.getElementById('cart');
+    if (!c2) return;
+    if (!c2.querySelector('.pg-cart-top')){
+      var tp = document.createElement('div');
+      tp.className = 'pg-cart-top';
+      tp.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span>Your Cart</span><span class="pg-ct-n"></span>';
+      c2.insertBefore(tp, c2.firstChild);
+    }
+    var pane = c2.querySelector('.sticky-in-panel');
+    if (!pane) return;
+    var sp2 = c2.querySelector('[data-pg-sp]');
+    if (sp2 && sp2.parentElement !== pane) pane.insertBefore(sp2, pane.querySelector('.l4tt') || pane.firstChild);
+    var pm = c2.querySelector('.l4pm');
+    if (pm && pm.parentElement !== pane) pane.appendChild(pm);
+    var scEl = null;
+    var cands = c2.querySelectorAll('*');
+    for (var si = 0; si < cands.length; si++){
+      var cs2 = getComputedStyle(cands[si]);
+      if ((cs2.overflowY === 'auto' || cs2.overflowY === 'scroll') && cands[si].scrollHeight > cands[si].clientHeight + 10){ scEl = cands[si]; break; }
+    }
+    if (!scEl && c2.scrollHeight > c2.clientHeight + 10) scEl = c2;
+    if (scEl && scEl.style.paddingBottom !== '34px') scEl.style.setProperty('padding-bottom', '34px', 'important');
+  }
+  setInterval(function(){ pass(); pgPane(); pgStepper(); orbRec(); if (window.pgGiftTag) window.pgGiftTag(document); }, 800);
 })();
 </script>
 {% schema %}
