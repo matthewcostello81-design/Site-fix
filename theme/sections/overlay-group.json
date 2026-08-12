@@ -119,6 +119,10 @@
     "pg-unlock": {
       "type": "pg-unlock",
       "settings": {}
+    },
+    "pg-cart-total": {
+      "type": "pg-cart-total",
+      "settings": {}
     }
   },
   "order": [
@@ -145,6 +149,7 @@
     "pg-cart-mobile",
     "pg-no-promo",
     "pg-cart-variants",
-    "pg-unlock"
+    "pg-unlock",
+    "pg-cart-total"
   ]
 }
