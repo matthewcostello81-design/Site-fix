@@ -10,7 +10,6 @@
 .pg-wordmark{position:absolute;top:44px;z-index:5;width:30%;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(18px,1.7vw,30px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
 .pg-wm-l{left:8%}
 .pg-wm-r{left:62%;animation-delay:1.6s}
-.pg-wm-k{margin-left:-.24em}
 @keyframes pgFlash{
   0%,100%{opacity:1}
   6%{opacity:.45}
@@ -142,7 +141,7 @@
       if (h.querySelector('.pg-wordmark')) return;
       ['pg-wm-l','pg-wm-r'].forEach(function(side){
         var a = document.createElement('a');
-        a.className = 'pg-wordmark ' + side; a.href = '/'; a.innerHTML = 'POCKE<span class="pg-wm-k">TERA</span>';
+        a.className = 'pg-wordmark ' + side; a.href = '/'; a.textContent = 'Pocket Era';
         h.appendChild(a);
       });
     });
