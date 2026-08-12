@@ -83,6 +83,15 @@
   #cart .l4ca > li section footer{grid-area:qt !important;position:static !important;display:flex !important;align-items:center !important}
   #cart .l4ca > li section .nc-lsave{grid-area:pr !important;display:flex !important;flex-direction:column !important;align-items:flex-end !important;gap:1px !important;justify-self:end;align-self:end}
   #cart .l4ca > li section .cols p.price{display:none !important}
+  /* A discounted line gets its price from .nc-lsave, which only exists when
+     there is a discount — so wall art, orbs and a paid case showed no price at
+     all. Put the theme's own line price back in the price cell for those, in
+     the same purple as .nc-lsave-now. The free gift line stays priceless. */
+  #cart .l4ca > li:not(:has(.nc-lsave)):not(:has(.pg-free-tag)) section .cols p.price{
+    display:block !important;grid-area:pr !important;justify-self:end !important;align-self:end !important;
+    margin:0 !important;color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important;
+    white-space:nowrap !important
+  }
   #cart .l4ca > li .nc-lsave-was{color:#8a8a8a !important;text-decoration:line-through !important;font-size:13.5px !important;font-weight:400 !important}
   #cart .l4ca > li .nc-lsave-now{color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important}
   #cart .l4ca > li .nc-lsave-off{display:none !important}
@@ -111,7 +120,10 @@
   /* Only the badged gift line is pinned above "Your Cart". A case the shopper
      paid for is an ordinary line and stays in cart order. */
   #cart .l4ca > li:has(.pg-free-tag){order:-1}
-  #cart .l4ca > li:has(.pg-free-tag) .nc-lsave,#cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:none !important}
+  /* The gift line keeps its .nc-lsave, which is what renders $13.99 struck
+     through and $0.00 beside it — the value of the gift, visible. Only the
+     "Saved 100%" chip is dropped, since FREE GIFT already says it. */
+  #cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:none !important}
   .pg-orbsel{display:flex;align-items:center;gap:6px;margin-top:6px}
   .pg-orbsel img{width:26px;height:26px;border-radius:6px;object-fit:cover;flex:none;background:#f4f4f4}
   .pg-orbsel select{font-size:12px;padding:2px 6px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#555;max-width:130px;font-family:inherit}
@@ -257,6 +269,11 @@
      discounted variant as two cart lines — so the case can legitimately appear
      twice. Exactly one of those lines is the gift, and only it gets the badge. */
   var GIFT_IDX = -1;
+  /* Index of the case line Shopify actually discounted to zero. The BXGY does
+     not necessarily land on the line carrying _free_gift, so the badge follows
+     the money: whichever line is genuinely free is the one labelled FREE GIFT,
+     and the other shows its real price. */
+  var FREE_IDX = -1;
   function giftDone(r){
     giftBusy = false;
     if (r && r.ok){
@@ -271,8 +288,10 @@
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
       var gift = null, paid = 0;
       GIFT_IDX = -1;
+      FREE_IDX = -1;
       c.items.forEach(function(it, i){
         var isCase = (it.id === GIFT_ID || it.handle === GIFT_HANDLE);
+        if (isCase && FREE_IDX < 0 && ((it.line_price || 0) - (it.total_discount || 0)) <= 0) FREE_IDX = i;
         /* Only the line this script added carries _free_gift. A case the
            shopper added themselves has no property, so it is left alone —
            that is what lets someone buy a case without a console. */
@@ -311,7 +330,7 @@
     lis.forEach(function(li, i){
       if (fallback < 0 && li.querySelector('a[href*="free-gift"]')) fallback = i;
     });
-    var giftAt = (GIFT_IDX >= 0) ? GIFT_IDX : fallback;
+    var giftAt = (FREE_IDX >= 0) ? FREE_IDX : ((GIFT_IDX >= 0) ? GIFT_IDX : fallback);
     lis.forEach(function(li, i){
       var a = li.querySelector('a[href*="free-gift"]');
       if (!a) return;
@@ -327,10 +346,9 @@
       li.querySelectorAll('.pg-free-sub').forEach(function(el){ el.parentNode.removeChild(el); });
       if (li.dataset.pgFree) return;
       li.dataset.pgFree = '1';
-      li.querySelectorAll('*').forEach(function(el){
-        if (el.children.length) return;
-        if (/^\$?0[.,]00$/.test(el.textContent.trim())) el.innerHTML = '';
-      });
+      /* The $0.00 is left alone on purpose: the gift line should read
+         $13.99 struck through, then $0.00, so the value of the gift is
+         visible rather than blank. */
       var tagHTML = '<span class="pg-free-tag">Free Gift</span>';
       var h2g = a.closest('h2');
       if (h2g) h2g.insertAdjacentHTML('afterend', tagHTML);
