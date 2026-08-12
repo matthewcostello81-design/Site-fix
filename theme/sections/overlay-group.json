@@ -107,6 +107,10 @@
     "pg-cart-mobile": {
       "type": "pg-cart-mobile",
       "settings": {}
+    },
+    "pg-no-promo": {
+      "type": "pg-no-promo",
+      "settings": {}
     }
   },
   "order": [
@@ -130,6 +134,7 @@
     "pg-footer",
     "pg-giftguard",
     "pg-chips",
-    "pg-cart-mobile"
+    "pg-cart-mobile",
+    "pg-no-promo"
   ]
 }

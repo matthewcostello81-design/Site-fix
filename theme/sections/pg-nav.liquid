@@ -1,0 +1,46 @@
+{%- comment -%}
+  PG Nav: bigger header links.
+
+  pg-mobile sets the nav in Press Start 2P at 11px (9px under 760px), which it
+  chose because that face runs very wide -- it was sized down from the Roboto
+  Slab it replaced. It ended up smaller than the rest of the header reads.
+
+  11px -> 14px, and 9px -> 11px on phones. Press Start 2P is drawn on an 8px
+  grid, so the sizes stay whole pixels rather than fractional ones that get
+  resampled and blur.
+
+  The gaps come in slightly (54px -> 46px, 22px -> 18px) to pay for the extra
+  glyph width, so "TRACK YOUR ORDER" and "CONTACT" still sit on one line at the
+  narrow widths. word-spacing stays as pg-mobile set it: the face draws a
+  full-cell space, so without it a multi-word link reads as separate links.
+
+  Same specificity as pg-mobile's rule and this section loads after it, so it
+  wins on source order.
+{%- endcomment -%}
+<style>
+html body .pgh-nav a,
+html body .pgx-nav a,
+html body .pgc-nav a,
+html body .pgf-nav a{
+  font-size:14px !important;
+  line-height:1.8 !important;
+}
+html body .pgh-nav,
+html body .pgx-nav,
+html body .pgc-nav,
+html body .pgf-nav{gap:46px !important}
+
+@media (max-width:760px){
+  html body .pgh-nav a,
+  html body .pgx-nav a,
+  html body .pgc-nav a,
+  html body .pgf-nav a{font-size:11px !important}
+  html body .pgh-nav,
+  html body .pgx-nav,
+  html body .pgc-nav,
+  html body .pgf-nav{gap:18px !important}
+}
+</style>
+{% schema %}
+{"name": "PG Nav", "settings": []}
+{% endschema %}

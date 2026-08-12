@@ -1,0 +1,69 @@
+{%- comment -%}
+  PG No Promo: stop advertising percentage discounts that no longer exist.
+
+  Checked against the shop's automatic discounts:
+    10% Off (2+ Items) ........ ACTIVE
+    15% Off (3+ Items) ........ EXPIRED (ended 2026-08-11)
+    10% Off Orders Over $120 .. EXPIRED (ended 2026-08-12)
+    BXGY ladders + free case .. ACTIVE
+
+  Two places were still promising the expired ones:
+
+  1. The "Add & Save More" rail. nc-recs.js renders each row as a struck real
+     price, a lower "after discount" price and a "15% off" pill. Nothing applies
+     that 15% at checkout, so a shopper adding the wall art saw $33.99 and would
+     be charged $39.99. The struck figure is the true price, so this promotes it
+     back to being THE price and drops the invented one and the pill.
+
+  2. pg-drawer's progress bar, which counts up to a $120 spend for "10% OFF your
+     whole order" -- that discount expired, and the live 10% is quantity-based
+     (2+ items), not spend-based. The bar is hidden.
+
+  The BXGY ladders are untouched and still real: 2nd item 25% off, 3rd 50% off,
+  buy 4 get 1, and the free R36S case with a console. The free case is still
+  auto-added by pg-drawer's giftSync, which is independent of the bar.
+{%- endcomment -%}
+<style>
+  /* the invented discount, in case the script is slow or blocked */
+  #cart .nc-rec-off,#cart .nc-rec-was,
+  body.template-cart .nc-rec-off,body.template-cart .nc-rec-was{display:none !important}
+  /* the expired spend-based promise */
+  #cart .pg-bar,body.template-cart .pg-bar{display:none !important}
+</style>
+<script>
+(function(){
+  if (window.pgNoPromo) return; window.pgNoPromo = 1;
+
+  /* Rail row: <span class="nc-rec-price">$33.99 <s class="nc-rec-was">$39.99</s>
+     <i class="nc-rec-off">15% off</i></span>. The <s> holds the price actually
+     charged, so it becomes the visible one and the rest goes. */
+  function fix(){
+    document.querySelectorAll('#cart .nc-rec-price, body.template-cart .nc-rec-price').forEach(function(p){
+      if (p.dataset.pgReal) return;
+      var was = p.querySelector('.nc-rec-was');
+      if (was){
+        var real = (was.textContent || '').trim();
+        if (!real) return;
+        /* the fake price is a bare text node alongside the two elements */
+        Array.prototype.slice.call(p.childNodes).forEach(function(n){
+          if (n.nodeType === 3) n.nodeValue = '';
+        });
+        var now = document.createElement('span');
+        now.className = 'pg-rec-now';
+        now.textContent = real;
+        p.insertBefore(now, p.firstChild);
+        was.parentNode.removeChild(was);
+      }
+      var off = p.querySelector('.nc-rec-off');
+      if (off) off.parentNode.removeChild(off);
+      p.dataset.pgReal = '1';
+    });
+  }
+
+  setInterval(fix, 400);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix); else fix();
+})();
+</script>
+{% schema %}
+{"name": "PG No Promo", "settings": []}
+{% endschema %}
