@@ -207,6 +207,12 @@
       <label class="pgm-sw"><input type="checkbox" aria-label="Add shipping protection"><i></i></label>
     </div>
     <div class="pgm-row"><span>Subtotal ({{ visible_count }} item{% if visible_count != 1 %}s{% endif %}):</span><span>{{ cart.original_total_price | money }}</span></div>
+    {%- if compare_savings > 0 -%}
+      <div class="pgm-row hl"><span>Sale Savings (off retail):</span><span>-{{ compare_savings | money }}</span></div>
+    {%- endif -%}
+    {%- if cart.total_discount > 0 -%}
+      <div class="pgm-row hl"><span>Bundle Discount (10% off 2+ items):</span><span>-{{ cart.total_discount | money }}</span></div>
+    {%- endif -%}
     {%- if total_savings > 0 -%}
       <div class="pgm-row hl"><span>Total Savings:</span><span>-{{ total_savings | money }}</span></div>
     {%- endif -%}
