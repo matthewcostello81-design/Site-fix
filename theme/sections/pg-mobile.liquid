@@ -62,8 +62,9 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
 #pgx .pgx-case-t b{display:block;font-size:14.5px;color:#F1EDF7}
 #pgx .pgx-case-t small{display:block;font-size:12.5px;color:#A99BC0;margin-top:2px}
 #pgx .pgx-case-p{font-weight:700;color:#C79BEA;font-size:15px;flex:none}
-#pgx .pgx-case-add{flex:none;border:1.5px solid #8B44BE;background:#1C1428;color:#E9C6FF;font-family:inherit;font-weight:700;font-size:12.5px;letter-spacing:.06em;border-radius:999px;padding:9px 20px;cursor:pointer}
-#pgx .pgx-case-add:hover{background:#8B44BE;color:#fff}
+#pgx .pgx-case-add{flex:none;border:0 !important;background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;background-color:#8B44BE !important;color:#fff !important;font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px !important;padding:11px 26px;cursor:pointer;box-shadow:0 10px 22px -10px rgba(139,68,190,.7) !important;transition:filter .15s ease}
+#pgx .pgx-case-add:hover{filter:brightness(1.1)}
+html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display:none !important;content:none !important;background:none !important}
 #pgx .pgx-case-add[disabled]{opacity:.6;cursor:default}
 /* Accordions: same width and gutters as the split banner above them */
 #pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
