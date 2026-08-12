@@ -18,6 +18,44 @@
   wins on source order.
 {%- endcomment -%}
 <style>
+/* ---------------- header row height ----------------
+   pg-mobile gives the logo box `min-height:252px`, sized for the wordmark at
+   its old 2.6 vertical scale. The mark is now 15% shorter and 10% smaller, so
+   it draws about 178px tall at the widest breakpoint and that 252px is mostly
+   empty space above and below it. The box comes down to 190px, which still
+   clears the mark -- it is drawn with a transform, so it can overflow its line
+   box and the header clips at overflow:hidden.
+
+   Phones get proportionally tighter boxes, and the header/nav padding comes in
+   with them, so the whole bar under the announcement carousel is shorter. */
+html body .pgh-logo,
+html body .pgx-logo,
+html body .pgc-logo{min-height:190px !important}
+html body .pgh-head-in,
+html body .pgx-head-in,
+html body .pgc-head-in{padding-top:10px !important;padding-bottom:4px !important}
+html body .pgh-nav,
+html body .pgx-nav,
+html body .pgc-nav{padding-top:4px !important;padding-bottom:12px !important}
+
+@media (max-width:760px){
+  html body .pgh-logo,
+  html body .pgx-logo,
+  html body .pgc-logo{min-height:140px !important}
+}
+@media (max-width:560px){
+  html body .pgh-logo,
+  html body .pgx-logo,
+  html body .pgc-logo{min-height:104px !important}
+  html body .pgh-head-in,
+  html body .pgx-head-in,
+  html body .pgc-head-in{padding-top:8px !important;padding-bottom:2px !important}
+  html body .pgh-nav,
+  html body .pgx-nav,
+  html body .pgc-nav{padding-top:2px !important;padding-bottom:10px !important}
+}
+
+/* ---------------- nav links ---------------- */
 html body .pgh-nav a,
 html body .pgx-nav a,
 html body .pgc-nav a,

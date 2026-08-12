@@ -65,17 +65,25 @@ html body a.pg-wordmark{
 
    1. 2.6 -> 2.21 makes the mark 15% shorter. Only the vertical scale changes,
       so the width and letterforms are exactly as before, just less stretched.
-   2. white-space:nowrap keeps "Pocket Era" on a single line -- on narrow
+   2. The size then comes down 10% on both axes: pg-mobile's
+      clamp(40px,4.6vw,78px) -> clamp(36px,4.14vw,70px). Scaling the font
+      rather than the transform keeps the height-to-width ratio set above, so
+      the mark simply gets smaller rather than differently proportioned.
+   3. white-space:nowrap keeps "Pocket Era" on a single line -- on narrow
       phones it was wrapping to two. Nowrap alone would overflow (the header
       box is overflow:hidden), so under 560px the size is also capped to a
-      share of the viewport: the mark is ~9.8em wide, and 8.4vw keeps it
-      around 82% of the screen with room for the gutters. */
+      share of the viewport: the mark is ~9.8em wide, and 7.6vw keeps it
+      around 75% of the screen with room for the gutters. */
 html body a.pg-wordmark.pg-wordmark{
   transform:scaleY(2.21) !important;
   white-space:nowrap !important;
+  font-size:clamp(36px,4.14vw,70px) !important;
+}
+@media(min-width:1440px){
+  html body a.pg-wordmark.pg-wordmark{font-size:70px !important}
 }
 @media(max-width:560px){
-  html body a.pg-wordmark.pg-wordmark{font-size:min(30px,8.4vw) !important}
+  html body a.pg-wordmark.pg-wordmark{font-size:min(27px,7.6vw) !important}
 }
 /* the old pgFlash dipped to .45 opacity twice every 3.2s, which read as the
    name blinking out. Same rhythm, much shallower. */
