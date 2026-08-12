@@ -958,7 +958,14 @@
         tile.setAttribute('tabindex', '0');
         tile.setAttribute('data-pg-tier', String(ti));
         var chips = T.bases > 1 ? '<span class="pgx-lad-chip">+' + T.bases + (m[1].indexOf('pokemon-crystal') !== -1 ? ' FREE LED Bases' : (m[1].indexOf('wall-art') !== -1 ? ' PRINTS' : ' ITEMS')) + '</span>' : '';
-        var saveLn = (T.f > 0 || half > 0) ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
+        /* R36S-style phrasing: name the unit that gets the deal, e.g.
+           "2nd Orb = Extra 25% OFF!" rather than a dollar total. */
+        var NOUN = m[1].indexOf('pokemon-crystal') !== -1 ? 'Orb' : (m[1].indexOf('wall-art') !== -1 ? 'Print' : 'Item');
+        function ord(k){ return k + (k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th'); }
+        var note = '';
+        if (half > 0) note = ord(T.n + 1) + ' ' + NOUN + ' = Extra ' + Math.round(hp * 100) + '% OFF!';
+        else if (T.f > 0) note = ord(T.n + 1) + ' ' + NOUN + ' = FREE!';
+        var saveLn = note ? '<div class="pgx-lad-save">' + note + '</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
         tile.innerHTML = (T.badge ? '<span class="pgx-lad-badge">' + T.badge + '</span>' : '')
           + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
           + '<div class="pgx-lad-t"><b>' + T.title + '</b>' + chips + saveLn + '</div>'
