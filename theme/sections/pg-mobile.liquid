@@ -21,7 +21,10 @@ html body a.pg-wordmark{max-width:100% !important}
 html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{
   font-family:'Press Start 2P',monospace !important;font-size:11px !important;
   font-weight:400 !important;letter-spacing:.02em !important;line-height:1.9 !important;
-  text-transform:uppercase !important;text-shadow:0 0 10px rgba(199,110,255,.45)
+  text-transform:uppercase !important;text-shadow:0 0 10px rgba(199,110,255,.45);
+  /* Press Start 2P draws a full-cell space, so multi-word links like
+     "Track your order" read as three separate links. Pull the gaps in. */
+  word-spacing:-.32em !important
 }
 @media(max-width:760px){
   html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{font-size:9px !important}

@@ -129,8 +129,14 @@
   {%- for item in cart.items -%}
     {%- assign h = item.product.handle -%}
     {%- if h contains sp_handle -%}{%- continue -%}{%- endif -%}
+    {%- comment -%}
+      A case line is the gift only when it carries the _free_gift property that
+      pg-drawer stamps on the line it auto-adds (console in cart), or when the
+      line is genuinely free. Matching the handle alone labelled a case the
+      shopper paid for as a FREE GIFT and hid its stepper and remove button.
+    {%- endcomment -%}
     {%- assign is_gift = false -%}
-    {%- if h contains gift_handle -%}{%- assign is_gift = true -%}{%- endif -%}
+    {%- if item.properties._free_gift or item.final_line_price == 0 -%}{%- assign is_gift = true -%}{%- endif -%}
     <div class="pgm-card{% if is_gift %} is-gift{% endif %}">
       <img src="{{ item.image | image_url: width: 164 }}" alt="{{ item.product.title | escape }}">
       <div class="pgm-mid">

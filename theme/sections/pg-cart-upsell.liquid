@@ -4,7 +4,16 @@
   card only announces the gift. No add button, no other catalog products.
 {%- endcomment -%}
 {%- assign case = section.settings.case_product -%}
-{%- if cart.item_count > 0 -%}
+{%- comment -%}
+  The free case comes with the console only — that is how the "Free R36S Case
+  with Console" discount is scoped. Announcing it on any non-empty cart promised
+  a gift that an orb-only or wall-art-only order never receives.
+{%- endcomment -%}
+{%- assign has_console = false -%}
+{%- for line in cart.items -%}
+  {%- if line.product.handle == 'handheld-game-console' -%}{%- assign has_console = true -%}{%- endif -%}
+{%- endfor -%}
+{%- if has_console -%}
 
 <style>
   .pgu{max-width:1280px;margin:0 auto;padding:10px 24px 60px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
@@ -34,7 +43,7 @@
     {%- endif -%}
     <div>
       <div class="pgu-name">{{ section.settings.display_title | default: 'R36S Protective Case' }}</div>
-      <div class="pgu-sub">Added to your cart automatically with any order</div>
+      <div class="pgu-sub">Added to your cart automatically with your PocketBoy R36</div>
       <div class="pgu-price"><span class="pgu-free">Free</span><s>{{ 1999 | money }}</s></div>
     </div>
     <div class="pgu-check"><svg viewBox="0 0 24 24"><path d="M5 13l4 4 10-11"/></svg></div>
