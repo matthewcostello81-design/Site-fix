@@ -10,6 +10,9 @@
 #pgh .pgh-split-l{padding:48px 48px !important}
 /* Gallery video tile: square cover crop, no letterbox bars */
 .pgx-vid video{aspect-ratio:1/1 !important;height:auto !important;max-height:none !important;object-fit:cover !important;width:100% !important}
+/* Product cards: soft purple glow fading outward, brighter on hover */
+#pgh .pgh-card{border-radius:16px;box-shadow:0 0 0 1px rgba(168,120,214,.22),0 0 26px rgba(139,68,190,.26),0 24px 60px -28px rgba(139,68,190,.55) !important;transition:box-shadow .25s ease,transform .25s ease}
+#pgh .pgh-card:hover{box-shadow:0 0 0 1px rgba(199,155,234,.42),0 0 36px rgba(139,68,190,.44),0 26px 70px -24px rgba(139,68,190,.7) !important}
 
 @media(max-width:900px){
   /* iOS ignores background-attachment:fixed and repaints badly; scroll + a
