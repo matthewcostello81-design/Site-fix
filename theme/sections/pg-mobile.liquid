@@ -8,8 +8,10 @@
    evenly spaced (centers at 23% and 77%) with a staggered neon flash */
 .pgx-head,.pgh-head,.pgc-head,.pgf-head{position:relative}
 .pg-wordmark{position:absolute;top:44px;z-index:5;width:30%;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(18px,1.7vw,30px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
-.pg-wm-l{left:8%}
-.pg-wm-r{left:62%;animation-delay:1.6s}
+/* aligned to the 1280px content column, not the viewport edges */
+.pg-wordmark{width:auto;text-align:left}
+.pg-wm-l{left:max(24px, calc((100% - 1280px) / 2 + 24px))}
+.pg-wm-r{left:auto;right:max(24px, calc((100% - 1280px) / 2 + 24px));text-align:right;animation-delay:1.6s}
 @keyframes pgFlash{
   0%,100%{opacity:1}
   6%{opacity:.45}
