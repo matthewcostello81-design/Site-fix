@@ -78,6 +78,38 @@ html body .pgf-nav{gap:46px !important}
   html body .pgc-nav,
   html body .pgf-nav{gap:18px !important}
 }
+
+/* ---------------- nav centring ----------------
+   The nav sat off-centre against the page's own centre line -- the section
+   headings under it ("MOST LOVED" / "Best Sellers") and the product carousel
+   centre on the viewport, and the nav did not line up with them.
+
+   The row is centred within whatever box it is given, so any asymmetry comes
+   from that box rather than from the links: a nav that is not full width, or
+   that inherits one-sided padding or margin from the header layout, centres
+   its links around its own middle instead of the page's. Pinning the row to
+   the full width with symmetric edges puts its centre back on the page's.
+
+   flex-wrap stays on so "TRACK YOUR ORDER" can drop to its own line on a
+   narrow phone rather than overflowing, and the wrapped rows stay centred. */
+html body .pgh-nav,
+html body .pgx-nav,
+html body .pgc-nav,
+html body .pgf-nav{
+  display:flex !important;
+  flex-wrap:wrap !important;
+  justify-content:center !important;
+  align-items:center !important;
+  text-align:center !important;
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+  margin-left:auto !important;
+  margin-right:auto !important;
+  padding-left:16px !important;
+  padding-right:16px !important;
+  float:none !important;
+}
 </style>
 {% schema %}
 {"name": "PG Nav", "settings": []}
