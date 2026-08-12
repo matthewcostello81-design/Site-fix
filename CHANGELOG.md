@@ -1,3 +1,27 @@
+# Pocket Era: sign-in page banner rebranded (was North Cove)
+
+## Problem
+The account sign-in page (profile icon in the header) still showed the
+prebuilt store's "North Cove Wellness & Care" logo/trust banner. That
+image lives in the checkout & accounts branding, which Shopify's API only
+exposes on Plus plans, so the branding setting itself couldn't be edited.
+
+## Fix (no theme files)
+The banner is a single image file in the store's Files library
+(`north_cove_logo_half.png`, MediaImage 70803209814244). Generated a
+Pocket Era version in Higgsfield (same layout: logo left; shield/truck/
+padlock trust badges and "10,000+ Happy Customers" stars right, purple
+accents on white) and replaced the file's contents in place via
+`fileUpdate` + `originalSource`. The sign-in page references the file by
+ID, so it now serves the Pocket Era banner with no branding-API access
+needed. Filename kept as-is so the reference stays intact.
+
+## Applied to
+Store Files library via the Admin API (fileUpdate).
+Files changed: none in the theme.
+
+---
+
 # Pocket Era: slider arrows restyled (base theme was hijacking them)
 
 ## Problem
