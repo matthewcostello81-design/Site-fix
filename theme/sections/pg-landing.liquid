@@ -48,6 +48,12 @@
 
   /* Gallery */
   .pgx-hero{border-radius:10px;overflow:hidden;background:#f6f6f6}
+  {%- if template.suffix == 'pg-wallart' -%}
+  /* Wall art room shot carries a lot of empty bedding under the print. Crop the
+     bottom away instead of letterboxing. Scoped to this template's suffix, so
+     the R36S landing page keeps its square hero. */
+  #pgx .pgx-hero img{aspect-ratio:5/4 !important;object-fit:cover !important;object-position:center top !important;width:100% !important;height:auto !important}
+  {%- endif -%}
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
@@ -82,7 +88,7 @@
   }
   @media (max-width: 900px){
     .pgx-thumbwrap{display:contents}
-    .pgx-tharrow{display:none !important}
+    html body .pgx-tharrow{display:none !important}
   }
   .pgx-vid{margin-top:14px;border-radius:10px;overflow:hidden;background:#0d0d0d}
   .pgx-vid video{width:100%;display:block}
@@ -100,6 +106,11 @@
   .pgx-quote-txt{font-size:14.5px;color:#333;margin-top:3px;line-height:1.45}
   .pgx-quote-next{flex:none;margin-left:auto;border:0;background:none;font-size:22px;cursor:pointer;color:#555;padding:6px}
 
+  .pgx-sellout{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:11px 14px;border-radius:12px;background:linear-gradient(120deg,rgba(200,60,60,.14),rgba(139,68,190,.14));border:1px solid rgba(214,88,88,.38)}
+  .pgx-sellout-ic{font-size:16px;line-height:1;flex:none}
+  .pgx-sellout-t{font-size:14px;font-weight:700;color:#F0E4F7;letter-spacing:.01em}
+  .pgx-sellout-t b{color:#FF8A8A;text-transform:uppercase;letter-spacing:.05em}
+  .pgx-sellout-s{font-size:12.5px;color:#C1B4D2;flex:1 1 100%;line-height:1.4}
   .pgx-divider{display:flex;align-items:center;gap:16px;margin:6px 0 14px;color:var(--pgx-purple);font-size:14px;letter-spacing:.18em;font-weight:600}
   .pgx-divider:before,.pgx-divider:after{content:"";height:1px;background:var(--pgx-purple);flex:1}
 
@@ -170,6 +181,8 @@
   .pgx-card-name{font-weight:700;font-size:16px;margin-bottom:6px}
   .pgx-card .pgx-stars{font-size:15px}
   .pgx-card-txt{font-size:15px;color:#2f2f2f;line-height:1.5;margin-top:8px}
+  .pgx-card-pics{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .pgx-card-pics img{width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.10)}
 
   @media (max-width: 900px){
     .pgx-main{grid-template-columns:1fr;gap:26px;padding-top:18px}
@@ -260,13 +273,28 @@
     <div class="pgx-buy">
       <h1 class="pgx-title">{{ section.settings.display_title | default: prod.title }}</h1>
 
+      {%- comment -%}
+        Reviews come from Judge.me when the app has synced them onto the product
+        (metafield judgeme.review_widget_data). The theme-editor "review" blocks
+        stay as the fallback for products that have not been imported yet.
+      {%- endcomment -%}
+      {%- assign jm = prod.metafields.judgeme.review_widget_data.value -%}
+      {%- assign jm_all = '' | split: '' -%}
+      {%- assign jm_count = 0 -%}
+      {%- assign jm_avg = 0 -%}
+      {%- if jm -%}
+        {%- assign jm_count = jm.number_of_reviews | plus: 0 -%}
+        {%- assign jm_avg = jm.average_rating | plus: 0.0 -%}
+        {%- if jm.reviews -%}{%- assign jm_all = jm_all | concat: jm.reviews -%}{%- endif -%}
+        {%- if jm.photo_gallery -%}{%- assign jm_all = jm_all | concat: jm.photo_gallery -%}{%- endif -%}
+      {%- endif -%}
       {%- assign quote_blocks = section.blocks | where: "type", "review" -%}
-      {%- if quote_blocks.size > 0 -%}
+      {%- if jm_all.size > 0 or quote_blocks.size > 0 -%}
       <div class="pgx-rating">
         <span class="pgx-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
-        <strong>{{ section.settings.rating_value }}</strong>
+        <strong>{%- if jm_count > 0 -%}{{ jm_avg | round: 1 }}{%- else -%}{{ section.settings.rating_value }}{%- endif -%}</strong>
         <span>&bull;</span>
-        <span>{{ section.settings.rating_label }}</span>
+        <span>{%- if jm_count > 0 -%}{{ jm_count }} verified reviews{%- else -%}{{ section.settings.rating_label }}{%- endif -%}</span>
       </div>
 
       <div class="pgx-quote">
@@ -277,6 +305,20 @@
         </div>
         <button type="button" class="pgx-quote-next" id="pgx-quote-next" aria-label="Next review">&#8250;</button>
       </div>
+      {%- endif -%}
+
+      {%- comment -%}
+        Sellout-risk bar under the review carousel. The level is whatever the
+        section setting says — High on every product by default, per the owner.
+        Turn the whole bar off with the "Show sellout risk bar" setting.
+      {%- endcomment -%}
+      {%- if section.settings.show_sellout -%}
+        {%- assign sellout_level = section.settings.sellout_level | default: 'High' -%}
+        <div class="pgx-sellout">
+          <span class="pgx-sellout-ic">&#128293;</span>
+          <span class="pgx-sellout-t">Sellout risk: <b>{{ sellout_level }}</b></span>
+          <span class="pgx-sellout-s">{{ section.settings.sellout_note }}</span>
+        </div>
       {%- endif -%}
 
       <div class="pgx-divider">BUNDLE &amp; SAVE</div>
@@ -400,20 +442,33 @@
     </div>
   </div>
 
-  {%- if quote_blocks.size > 0 -%}
+  {%- if jm_all.size > 0 or quote_blocks.size > 0 -%}
   <section class="pgx-rev" id="pg-reviews">
+    {%- if jm_count > 0 -%}{%- assign rev_total = jm_count -%}{%- else -%}{%- assign rev_total = section.settings.review_total -%}{%- endif -%}
     <div class="pgx-rev-head">
       <div class="pgx-rev-score">
         <span class="pgx-rev-star">&#9733;</span>
         <div>
-          <div class="pgx-rev-num">{{ section.settings.rating_value }}</div>
-          <div class="pgx-rev-count">{{ section.settings.review_total }} Reviews</div>
+          <div class="pgx-rev-num">{%- if jm_count > 0 -%}{{ jm_avg | round: 1 }}{%- else -%}{{ section.settings.rating_value }}{%- endif -%}</div>
+          <div class="pgx-rev-count">{{ rev_total }} Reviews</div>
         </div>
       </div>
       <div class="pgx-hist">
         {%- for i in (1..5) -%}
           {%- assign stars_n = 6 | minus: i -%}
-          {%- if stars_n == 5 -%}{%- assign row_count = section.settings.review_total -%}{%- assign row_fill = 100 -%}{%- else -%}{%- assign row_count = 0 -%}{%- assign row_fill = 0 -%}{%- endif -%}
+          {%- assign row_count = 0 -%}
+          {%- assign row_fill = 0 -%}
+          {%- if jm.histogram -%}
+            {%- for h in jm.histogram -%}
+              {%- if h.rating == stars_n -%}
+                {%- assign row_count = h.frequency -%}
+                {%- assign row_fill = h.percentage -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- elsif stars_n == 5 -%}
+            {%- assign row_count = rev_total -%}
+            {%- assign row_fill = 100 -%}
+          {%- endif -%}
           <div class="pgx-hist-row">
             <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= stars_n -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
             <div class="pgx-bar"><i style="width:{{ row_fill }}%"></i></div>
@@ -425,15 +480,41 @@
     </div>
 
     <div class="pgx-cards">
-      {%- for block in section.blocks -%}
-        {%- if block.type == 'review' -%}
-        <div class="pgx-card" {{ block.shopify_attributes }}>
-          <div class="pgx-card-name">{{ block.settings.name }}</div>
-          <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= block.settings.stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
-          <div class="pgx-card-txt">{{ block.settings.text }}</div>
-        </div>
-        {%- endif -%}
-      {%- endfor -%}
+      {%- if jm_all.size > 0 -%}
+        {%- assign seen = '|' -%}
+        {%- for r in jm_all -%}
+          {%- assign key = '|' | append: r.uuid | append: '|' -%}
+          {%- unless seen contains key -%}
+            {%- assign seen = seen | append: r.uuid | append: '|' -%}
+            {%- assign r_stars = r.rating | plus: 0 -%}
+            {%- if r.body != blank -%}{%- assign r_text = r.body -%}{%- else -%}{%- assign r_text = r.body_html | strip_html | strip -%}{%- endif -%}
+            {%- if r_text != blank -%}
+            <div class="pgx-card">
+              <div class="pgx-card-name">{{ r.reviewer_name | default: 'Verified buyer' }}</div>
+              <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= r_stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+              <div class="pgx-card-txt">{{ r_text }}</div>
+              {%- if r.pictures_urls.size > 0 -%}
+              <div class="pgx-card-pics">
+                {%- for pic in r.pictures_urls limit: 3 -%}
+                  <img src="{{ pic.small | default: pic.original }}" alt="Customer photo" loading="lazy">
+                {%- endfor -%}
+              </div>
+              {%- endif -%}
+            </div>
+            {%- endif -%}
+          {%- endunless -%}
+        {%- endfor -%}
+      {%- else -%}
+        {%- for block in section.blocks -%}
+          {%- if block.type == 'review' -%}
+          <div class="pgx-card" {{ block.shopify_attributes }}>
+            <div class="pgx-card-name">{{ block.settings.name }}</div>
+            <span class="pgx-stars pgx-pur">{%- for s in (1..5) -%}{%- if s <= block.settings.stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+            <div class="pgx-card-txt">{{ block.settings.text }}</div>
+          </div>
+          {%- endif -%}
+        {%- endfor -%}
+      {%- endif -%}
     </div>
   </section>
   {%- endif -%}
@@ -486,12 +567,26 @@
 
   /* Review quote carousel */
   var quotes = [
-    {%- for block in section.blocks -%}
-      {%- if block.type == 'review' -%}
-        {name: {{ block.settings.name | json }}, text: {{ block.settings.text | json }}}{%- unless forloop.last -%},{%- endunless -%}
-      {%- endif -%}
-    {%- endfor -%}
-  ];
+    {%- if jm_all.size > 0 -%}
+      {%- assign qseen = '|' -%}
+      {%- for r in jm_all -%}
+        {%- assign qkey = '|' | append: r.uuid | append: '|' -%}
+        {%- unless qseen contains qkey -%}
+          {%- assign qseen = qseen | append: r.uuid | append: '|' -%}
+          {%- if r.body != blank -%}{%- assign q_text = r.body -%}{%- else -%}{%- assign q_text = r.body_html | strip_html | strip -%}{%- endif -%}
+          {%- if q_text != blank -%}
+            {name: {{ r.reviewer_name | default: 'Verified buyer' | json }}, text: {{ q_text | json }}},
+          {%- endif -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    {%- else -%}
+      {%- for block in section.blocks -%}
+        {%- if block.type == 'review' -%}
+          {name: {{ block.settings.name | json }}, text: {{ block.settings.text | json }}},
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  ].filter(Boolean);
   var qi = 0, qName = document.getElementById('pgx-quote-name'), qTxt = document.getElementById('pgx-quote-txt');
   function showQuote(){
     if (!qName || !quotes.length) return;
@@ -591,6 +686,9 @@
   "name": "PG Landing",
   "settings": [
     {"type": "product", "id": "product", "label": "Product"},
+    {"type": "checkbox", "id": "show_sellout", "label": "Show sellout risk bar", "default": true},
+    {"type": "select", "id": "sellout_level", "label": "Sellout risk level", "default": "High", "options": [{"value": "High", "label": "High"}, {"value": "Moderate", "label": "Moderate"}, {"value": "Low", "label": "Low"}]},
+    {"type": "text", "id": "sellout_note", "label": "Sellout risk note", "default": "Selling faster than we can restock"},
     {"type": "text", "id": "display_title", "label": "Display title", "default": "R36S"},
     {"type": "text", "id": "announce_text", "label": "Announcement text", "default": "Free shipping on all orders"},
     {"type": "image_picker", "id": "logo_image", "label": "Logo image"},

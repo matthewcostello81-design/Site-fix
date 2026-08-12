@@ -1,3 +1,36 @@
+# Pocket Era: product pages show the imported Judge.me reviews
+
+## Problem
+Reviews were imported into Judge.me for all three products, but the product
+pages still rendered the handful of hardcoded "review" blocks from the theme
+editor — wrong names, wrong counts, and a fake 5.0 / all-five-star histogram.
+
+## Fix (`sections/pg-landing.liquid`)
+Reviews now read from the Judge.me product metafield
+(`judgeme.review_widget_data`), keeping the existing card design exactly:
+- Rating strip and summary use the real average and review count.
+- Star histogram uses Judge.me's real per-star frequencies and percentages.
+- Cards render the real reviewers, star ratings and text, deduped by review
+  uuid, with up to three customer photos each (new `.pgx-card-pics` style).
+- The hero quote carousel cycles the same real reviews.
+- Theme-editor review blocks stay as the fallback for any product Judge.me
+  has not synced, so nothing breaks if the app is removed.
+
+Merged on top of two changes made directly in the theme (wall-art hero crop,
+sellout-risk bar) so neither was clobbered.
+
+## Verified on the draft theme
+- Crystal Legends Orb — 4.7, 495 reviews, histogram 400/52/25/5/13, 15 cards
+- Pocket Era R36S — 5.0, 421 reviews, histogram 402/18/1/0/0, 13 cards
+- Holo Legends Wall Art — 4.5, 15 reviews, histogram 13/0/0/0/2, 6 cards
+
+## Applied to
+Shopify draft theme `162746106084` ("Pocket Era Most Recent Draft") — note the
+previous draft `162727330020` no longer exists.
+Files changed: sections/pg-landing.liquid
+
+---
+
 # Pocket Era: sign-in page banner rebranded (was North Cove)
 
 ## Problem
