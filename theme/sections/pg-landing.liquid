@@ -51,6 +51,22 @@
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
+  /* desktop: thumbnails become a 2-up slider with side arrows instead of a tall grid */
+  .pgx-thumbwrap{position:relative;margin-top:14px}
+  .pgx-tharrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:46px;height:46px;border-radius:50%;border:0;background:rgba(122,47,162,.92);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.7);transition:background .15s ease}
+  .pgx-tharrow:hover{background:#8B44BE}
+  .pgx-tharrow.prev{left:10px}
+  .pgx-tharrow.next{right:10px}
+  .pgx-tharrow[hidden]{display:none}
+  @media (min-width: 901px){
+    .pgx-thumbwrap .pgx-thumbs{display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;gap:14px;margin-top:0;scroll-snap-type:x mandatory}
+    .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
+    .pgx-thumbwrap .pgx-thumbs button{flex:0 0 calc(50% - 7px);scroll-snap-align:start}
+  }
+  @media (max-width: 900px){
+    .pgx-thumbwrap{display:contents}
+    .pgx-tharrow{display:none !important}
+  }
   .pgx-vid{margin-top:14px;border-radius:10px;overflow:hidden;background:#0d0d0d}
   .pgx-vid video{width:100%;display:block}
 
@@ -210,12 +226,16 @@
       </div>
       {%- endif -%}
       {%- if imgs.size > 1 -%}
-      <div class="pgx-thumbs">
-        {%- for image in imgs offset: 1 -%}
-          <button type="button" data-pgx-thumb="{{ image | image_url: width: 1400 }}" aria-label="View image {{ forloop.index | plus: 1 }}">
-            <img src="{{ image | image_url: width: 700 }}" alt="{{ prod.title | escape }} view {{ forloop.index | plus: 1 }}" loading="lazy">
-          </button>
-        {%- endfor -%}
+      <div class="pgx-thumbwrap">
+        <button type="button" class="pgx-tharrow prev" aria-label="Previous images" hidden>&#8249;</button>
+        <div class="pgx-thumbs">
+          {%- for image in imgs offset: 1 -%}
+            <button type="button" data-pgx-thumb="{{ image | image_url: width: 1400 }}" aria-label="View image {{ forloop.index | plus: 1 }}">
+              <img src="{{ image | image_url: width: 700 }}" alt="{{ prod.title | escape }} view {{ forloop.index | plus: 1 }}" loading="lazy">
+            </button>
+          {%- endfor -%}
+        </div>
+        <button type="button" class="pgx-tharrow next" aria-label="Next images" hidden>&#8250;</button>
       </div>
       {%- endif -%}
     </div>
@@ -419,6 +439,33 @@
   root.querySelectorAll('[data-pgx-thumb]').forEach(function(btn){
     btn.addEventListener('click', function(){ if (hero) hero.src = btn.getAttribute('data-pgx-thumb'); });
   });
+
+  /* Thumbnail slider: arrows page two-at-a-time, wrapping at the ends.
+     Arrows only appear when there are more thumbs than fit in view. */
+  var tw = root.querySelector('.pgx-thumbwrap');
+  if (tw){
+    var th = tw.querySelector('.pgx-thumbs');
+    var pv = tw.querySelector('.pgx-tharrow.prev');
+    var nx = tw.querySelector('.pgx-tharrow.next');
+    function thUpd(){
+      var can = th && th.scrollWidth > th.clientWidth + 4 && window.matchMedia('(min-width: 901px)').matches;
+      if (pv) pv.hidden = !can;
+      if (nx) nx.hidden = !can;
+    }
+    if (th && pv && nx){
+      nx.addEventListener('click', function(){
+        if (th.scrollLeft + th.clientWidth >= th.scrollWidth - 10){ th.scrollTo({left: 0, behavior: 'smooth'}); }
+        else { th.scrollBy({left: th.clientWidth + 14, behavior: 'smooth'}); }
+      });
+      pv.addEventListener('click', function(){
+        if (th.scrollLeft <= 10){ th.scrollTo({left: th.scrollWidth, behavior: 'smooth'}); }
+        else { th.scrollBy({left: -(th.clientWidth + 14), behavior: 'smooth'}); }
+      });
+      thUpd();
+      window.addEventListener('resize', thUpd);
+      setTimeout(thUpd, 600);
+    }
+  }
 
   /* Review quote carousel */
   var quotes = [

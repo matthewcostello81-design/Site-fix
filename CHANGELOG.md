@@ -1,3 +1,25 @@
+# Pocket Era: product gallery thumbnails become a 2-up slider
+
+## Problem
+On the Crystal PokeOrb page the thumbnail grid rendered all 35 variant
+photos in a two-column stack, making the page scroll enormously far.
+
+## Fix (`sections/pg-landing.liquid`)
+On desktop the thumbnail grid is now a slider: two images visible at a
+time, round purple arrows overlaid mid-left/mid-right, tapping an arrow
+smoothly slides the next pair in (wrapping around at the ends). All images
+live in the slider, so nothing stacks below it. Arrows render only when
+there are more thumbs than fit (so the console and wall art pages, with
+few images, look unchanged). Clicking a thumb still swaps the hero image.
+Mobile keeps the existing swipe-strip gallery (the new wrapper uses
+display:contents there so the strip layout is preserved).
+
+## Applied to
+Shopify draft theme `162727330020` via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-landing.liquid
+
+---
+
 # Pocket Era: footer band regression cleanup
 
 ## Problem
