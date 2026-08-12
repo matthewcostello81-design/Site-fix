@@ -16,16 +16,29 @@
   every /cart/add.js call using them 422s -- which is the "TRY AGAIN" on the
   button, and why the free case stopped appearing.
 
-  pg-mobile's handler is delegated on document and matches `.pgx-case-add`, and
-  it is registered before anything here, so it cannot be out-argued in the
-  event chain. Instead the button is renamed: dropping that class makes
-  pg-mobile's `closest('.pgx-case-add')` miss, and the handler below takes over
-  with the correct variant. The look has to be restated with the class, which is
-  what the CSS here is for.
+  WHY THE RENAME WAS NOT ENOUGH. The first fix here renamed the button so that
+  pg-mobile's delegated `closest('.pgx-case-add')` would miss it. But pg-mobile
+  re-creates the tile on its own interval and this file re-claimed it every
+  500ms, so there was a window -- up to half a second after every rebuild --
+  where the button carried pg-mobile's class again. A click landing in that
+  window went to pg-mobile's handler and posted the dead variant. The button
+  worked most of the time and failed intermittently, which is exactly how it
+  was reported.
+
+  Racing an interval cannot fix that; winning the event has to be structural.
+  pg-mobile listens on `document`, and in the capture phase an ancestor fires
+  BEFORE its descendants, so a capture listener on `window` runs first no
+  matter who registered earlier. It stops propagation there, so the event never
+  reaches document and pg-mobile's handler cannot run at all. The listener
+  matches BOTH class names, so it is correct whether or not the rename has
+  caught up yet.
+
+  The rename now only restyles the button; nothing depends on its timing.
 {%- endcomment -%}
 <style>
   /* lifted from pg-mobile's .pgx-case-add so the renamed button is unchanged */
-  #pgx .pg-case-add2{
+  #pgx .pg-case-add2,
+  #pgx .pgx-case-add{
     flex:none;border:0 !important;
     background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
     background-color:#8B44BE !important;color:#fff !important;
@@ -35,12 +48,17 @@
     box-shadow:0 10px 22px -10px rgba(139,68,190,.7) !important;
     transition:filter .15s ease;
   }
-  #pgx .pg-case-add2:hover{filter:brightness(1.1)}
+  #pgx .pg-case-add2:hover,
+  #pgx .pgx-case-add:hover{filter:brightness(1.1)}
   html body #pgx .pg-case-add2::before,
-  html body #pgx .pg-case-add2::after{display:none !important;content:none !important;background:none !important}
-  #pgx .pg-case-add2[disabled]{opacity:.6;cursor:default}
+  html body #pgx .pg-case-add2::after,
+  html body #pgx .pgx-case-add::before,
+  html body #pgx .pgx-case-add::after{display:none !important;content:none !important;background:none !important}
+  #pgx .pg-case-add2[disabled],
+  #pgx .pgx-case-add[disabled]{opacity:.6;cursor:default}
   @media (max-width:600px){
-    #pgx .pg-case-add2{order:4 !important;flex:1 1 auto !important;padding:13px 20px !important;font-size:13.5px !important}
+    #pgx .pg-case-add2,
+    #pgx .pgx-case-add{order:4 !important;flex:1 1 auto !important;padding:13px 20px !important;font-size:13.5px !important}
   }
 </style>
 <script>
@@ -48,9 +66,11 @@
   if (window.pgCaseAdd) return; window.pgCaseAdd = 1;
 
   var PAID_VARIANT = 49640879063268;   /* $13.99 "Spare case" */
+  var SEL = '.pg-case-add2, .pgx-case-add';
   var busy = false;
 
-  /* Rename the button out from under pg-mobile's delegated handler. */
+  /* Cosmetic only now -- the handler below matches either class, so a click
+     that lands before this runs is still handled correctly. */
   function claim(){
     document.querySelectorAll('#pgx .pgx-case-add').forEach(function(btn){
       btn.classList.remove('pgx-case-add');
@@ -58,32 +78,49 @@
     });
   }
 
-  document.addEventListener('click', function(e){
-    var btn = e.target.closest && e.target.closest('.pg-case-add2');
+  function reset(btn, label, delay){
+    setTimeout(function(){
+      btn.textContent = label;
+      btn.disabled = false;
+      busy = false;
+    }, delay);
+  }
+
+  /* capture on WINDOW: an ancestor's capture listener runs before document's,
+     whoever registered first, so pg-mobile's dead-variant handler never sees
+     this click */
+  window.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest(SEL);
     if (!btn) return;
-    e.preventDefault(); e.stopPropagation();
+    if (!btn.closest('#pgx')) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
     if (busy) return;
+
     busy = true;
+    btn.disabled = true;
     btn.textContent = 'ADDING...';
+
     fetch('/cart/add.js', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({items: [{id: PAID_VARIANT, quantity: 1}]})
     })
       .then(function(r){
-        if (!r.ok) throw 0;
-        btn.innerHTML = 'ADDED ✓';
+        if (!r.ok) throw new Error('add ' + r.status);
+        btn.innerHTML = 'ADDED &#10003;';
         if (window.pgOpenCart) window.pgOpenCart();
-        setTimeout(function(){ btn.textContent = 'ADD'; busy = false; }, 2500);
+        reset(btn, 'ADD', 2500);
       })
       .catch(function(){
         btn.textContent = 'TRY AGAIN';
-        setTimeout(function(){ btn.textContent = 'ADD'; }, 2000);
-        busy = false;
+        reset(btn, 'ADD', 2000);
       });
   }, true);
 
-  /* pg-mobile re-creates the tile on an interval, so re-claim on the same beat */
+  /* pg-mobile re-creates the tile on an interval, so re-style on the same beat */
   setInterval(claim, 500);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', claim); else claim();
 })();
