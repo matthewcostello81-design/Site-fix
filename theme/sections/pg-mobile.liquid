@@ -217,16 +217,31 @@
       if (src && im){ im.src = src.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); im.style.visibility = 'visible'; }
     }).catch(function(){});
   }
-  /* Capture-phase so it still runs when the tile handlers stopPropagation */
-  document.addEventListener('click', function(e){
+  /* The bundle handlers add to the cart and navigate immediately, and two
+     concurrent /cart/add.js calls race (one gets dropped). So: flag the
+     intent on pointerdown (fires before click), then reconcile on the next
+     page load - if the case is not in the cart, add it there. Self-healing,
+     no race. */
+  function caseFlag(v){ try{ v == null ? sessionStorage.removeItem('pgCase') : sessionStorage.setItem('pgCase', v); }catch(e){} }
+  function caseWanted(){ try{ return sessionStorage.getItem('pgCase') === '1'; }catch(e){ return false; } }
+  document.addEventListener('pointerdown', function(e){
     if (!e.target.closest || !e.target.closest('.pgx-atc')) return;
     var c = document.querySelector('#pgx .pgx-case.on');
     if (!c) return;
+    caseFlag('1');
     c.classList.remove('on');
-    /* keepalive so the add still completes when the bundle handler
-       navigates to /cart a moment later; lands as its own line item */
-    fetch('/cart/add.js', {method: 'POST', keepalive: true, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})}).catch(function(){});
   }, true);
+  function caseReconcile(){
+    if (!caseWanted()) return;
+    fetch('/cart.js', {headers: {'Accept': 'application/json'}}).then(function(r){ return r.json(); }).then(function(c){
+      if (!c || !c.items) return;
+      var has = c.items.some(function(it){ return it.id === CASE_VARIANT; });
+      if (has){ caseFlag(null); return; }
+      if (!c.items.length) return; /* nothing added yet, try again later */
+      return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})})
+        .then(function(r){ if (r.ok){ caseFlag(null); if (window.location.pathname.indexOf('/cart') === 0) window.location.reload(); } });
+    }).catch(function(){});
+  }
   /* Description / Features / Shipping sit under the gallery, not the buy box */
   function accLeft(){
     var acc = document.querySelector('#pgx .pgx-acc'), gal = document.querySelector('#pgx .pgx-gallery');
@@ -243,8 +258,9 @@
       if (h.indexOf('r36s-protective-case') !== -1) a.style.setProperty('display', 'none', 'important');
     });
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); }
   setInterval(ymlTrim, 1500);
+  setTimeout(caseReconcile, 1200); setTimeout(caseReconcile, 3000);
   setInterval(accLeft, 1500);
   setInterval(caseTile, 1500);
   setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
