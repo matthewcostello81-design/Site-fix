@@ -40,6 +40,14 @@ html body header.pgc-head a.pg-wordmark.pg-wordmark{
 }
 html body .pgc-head img,
 html body .pgc-logo img{display:none !important}
+html body .pgc-logo,
+html body .pgc-head-in,
+html body .pgc-head a.pg-wordmark,
+html body .pgc-head a.pgc-x{
+  background:none !important;background-color:transparent !important;
+  background-image:none !important;text-decoration:none !important;
+  border:0 !important;box-shadow:none !important;
+}
 </style>
 <script>
 (function(){
@@ -51,7 +59,25 @@ html body .pgc-logo img{display:none !important}
     'background': 'none',
     'background-image': 'none',
     'filter': 'none',
-    'text-shadow': '0 0 6px rgba(246,219,255,.45),0 0 16px rgba(199,155,234,.32),0 0 38px rgba(139,68,190,.22)'
+    'text-shadow': '0 0 6px rgba(246,219,255,.45),0 0 16px rgba(199,155,234,.32),0 0 38px rgba(139,68,190,.22)',
+    /* the bar: a themed link underline on a display:block anchor spans the full
+       width, and scaleY(2.21) stretches it into a slab. Kill every way a theme
+       draws one. */
+    'text-decoration': 'none',
+    'border': '0',
+    'border-bottom': '0',
+    'box-shadow': 'none'
+  };
+
+  /* the same treatment for the anchor the wordmark sits in */
+  var HOST = {
+    'background': 'none',
+    'background-color': 'transparent',
+    'background-image': 'none',
+    'text-decoration': 'none',
+    'border': '0',
+    'border-bottom': '0',
+    'box-shadow': 'none'
   };
 
   function paintMark(){
@@ -60,13 +86,12 @@ html body .pgc-logo img{display:none !important}
       el.dataset.pgMark = '1';
       for (var k in MARK) el.style.setProperty(k, MARK[k], 'important');
     });
-    /* neither the logo anchor nor the grid row should ever carry a fill */
-    document.querySelectorAll('.pgc-logo, .pgc-head-in').forEach(function(el){
+    /* neither the logo anchor nor the grid row should carry a fill, a border
+       or an underline */
+    document.querySelectorAll('.pgc-logo, .pgc-head-in, .pgc-head .pgc-x').forEach(function(el){
       if (el.dataset.pgClear) return;
       el.dataset.pgClear = '1';
-      el.style.setProperty('background', 'none', 'important');
-      el.style.setProperty('background-color', 'transparent', 'important');
-      el.style.setProperty('background-image', 'none', 'important');
+      for (var k in HOST) el.style.setProperty(k, HOST[k], 'important');
     });
   }
 
