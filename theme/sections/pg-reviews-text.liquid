@@ -1,0 +1,42 @@
+{%- comment -%}
+  PG Reviews Text: lift the review copy off the dark canvas.
+
+  pg-landing was written for a white page, so the review block carries light-page
+  colours: `.pgx-card-txt{color:#2f2f2f}`, `.pgx-rev-count{color:#333}`,
+  `.pgx-hist-n{color:#555}`. pg-dark repaints the card surfaces to #16101F but
+  never restates those, so near-black text ends up on a near-black card -- which
+  is why the reviews are the hardest thing on the page to read.
+
+  Review text goes white, names pure white, and the supporting figures (review
+  count, histogram counts) to the same muted lavender the rest of the dark skin
+  uses for secondary copy. The quote carousel above the buy box gets the same
+  treatment so both review surfaces match.
+{%- endcomment -%}
+<style>
+/* review cards */
+html body #pgx .pgx-card-txt,
+html body #pgx .pgx-card-txt *{color:#F1EDF7 !important}
+html body #pgx .pgx-card-name{color:#FFFFFF !important}
+
+/* score block and histogram */
+html body #pgx .pgx-rev-num{color:#FFFFFF !important}
+html body #pgx .pgx-rev-count{color:#D3C9E4 !important}
+html body #pgx .pgx-hist-n{color:#C1B4D2 !important}
+html body #pgx .pgx-bar{background:rgba(255,255,255,.12) !important}
+
+/* "Write a review" */
+html body #pgx .pgx-write a{color:#C79BEA !important;border-color:#8B44BE !important}
+
+/* the quote carousel in the buy column */
+html body #pgx .pgx-quote-txt{color:#F1EDF7 !important}
+html body #pgx .pgx-quote-name{color:#FFFFFF !important}
+html body #pgx .pgx-quote-next{color:#C79BEA !important}
+
+/* the rating line under the title */
+html body #pgx .pgx-rating,
+html body #pgx .pgx-rating strong,
+html body #pgx .pgx-rating span:not(.pgx-stars){color:#F1EDF7 !important}
+</style>
+{% schema %}
+{"name": "PG Reviews Text", "settings": []}
+{% endschema %}
