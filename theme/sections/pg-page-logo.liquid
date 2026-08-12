@@ -1,93 +1,117 @@
 {%- comment -%}
-  PG Page Logo: fix the header on the page templates (Track Your Order,
-  Contact, policies) -- the wordmark colour and the black bar under it.
+  PG Page Logo: fix the header on Track Your Order, Contact and the policy
+  pages -- the wordmark colour and the black bar under it.
 
-  An earlier pass scoped this to `body[class*="template-page"]` and NOTHING
-  applied, which is the tell: this theme does not put that class on the body of
-  those pages. Everything here is anchored on the page header itself
-  (.pgc-head / .pgc-logo), which only exists on these templates, so no body
-  class is involved.
+  Two earlier attempts missed because I was guessing at the markup. The header
+  is `sections/pg-cart-header.liquid`, registered as `pg_header` in
+  templates/page.json and page.contact.json. It renders:
 
-  The wordmark reads pink because pg-mobile paints it #F6DBFF with a wide
-  rgba(246,196,255,.9) bloom. At the smaller size these headers use, the glow
-  overwhelms the letterforms. Restated near-white with the tighter three-stop
-  shadow so it matches the homepage mark.
+      <div class="pgc-announce">…</div>
+      <header class="pgc-head">
+        <div class="pgc-head-in">
+          <a class="pgc-logo pgc-x"><img src="…logo.png"></a>
+          …
+        </div>
+        <nav class="pgc-nav">…</nav>
+      </header>
 
-  The black bar is not identified in the markup -- the header is built by the
-  73KB pg-theme-css layer, which is not tracked here -- so rather than guess a
-  selector, the script finds it by shape: inside the page header, an element
-  that is painted near-black, sits under 60px tall and runs wider than 150px is
-  a bar, not content. Anything holding the wordmark or a link is skipped, so
-  the nav and logo can never be caught. Images in the header are hidden
-  outright: these templates use the wordmark as the brand mark, and the retired
-  logo art carries a baked-in black box that pg-dark used to knock out with
-  mix-blend-mode:screen -- which pe-logo now sets to normal for the vector.
+  pg-mobile then hides `.pgc-logo img` and injects `a.pg-wordmark` into
+  `.pgc-logo`, so the wordmark is the mark on these pages too.
 
-  The bar is made transparent rather than removed, so if it turns out to be a
-  real structural element its layout contribution is unchanged.
+  Why CSS kept losing: pg-mobile paints `.pg-wordmark` with `!important`, and
+  several layers restyle this header, so the winner varies. Rather than fight
+  the cascade again, the colour is stamped INLINE with !important -- an inline
+  declaration outranks every stylesheet, which is the same technique the cart
+  pills needed.
+
+  The black bar has no selector I can name from any file I have read, so it is
+  found by shape and content: an element in the top region of the page that is
+  painted near-black, is short and wide, and contains NO text is a bar, never
+  content. Text, links and the wordmark are all excluded by that test, so the
+  nav and logo cannot be caught. It is made transparent rather than removed, so
+  if it is structural the layout does not shift.
 {%- endcomment -%}
 <style>
-/* the wordmark: near-white, tighter glow, matching the homepage */
-html body .pgc-head a.pg-wordmark.pg-wordmark,
-html body .pgc-logo a.pg-wordmark.pg-wordmark,
-html body .pgf-head a.pg-wordmark.pg-wordmark{
+/* backstop; the inline stamp below is what actually guarantees it */
+html body header.pgc-head a.pg-wordmark.pg-wordmark{
   color:#F8F4FF !important;
   -webkit-text-fill-color:#F8F4FF !important;
-  background:none !important;
-  background-image:none !important;
   text-shadow:0 0 6px rgba(246,219,255,.45),0 0 16px rgba(199,155,234,.32),0 0 38px rgba(139,68,190,.22) !important;
-  filter:none !important;
 }
-
-/* retired logo art with its black box no longer knocked out */
 html body .pgc-head img,
-html body .pgc-logo img,
-html body .pgf-head img{display:none !important}
+html body .pgc-logo img{display:none !important}
 </style>
 <script>
 (function(){
   if (window.pgPageLogo) return; window.pgPageLogo = 1;
 
-  function dark(el){
+  var MARK = {
+    'color': '#F8F4FF',
+    '-webkit-text-fill-color': '#F8F4FF',
+    'background': 'none',
+    'background-image': 'none',
+    'filter': 'none',
+    'text-shadow': '0 0 6px rgba(246,219,255,.45),0 0 16px rgba(199,155,234,.32),0 0 38px rgba(139,68,190,.22)'
+  };
+
+  function paintMark(){
+    document.querySelectorAll('.pgc-head .pg-wordmark').forEach(function(el){
+      if (el.dataset.pgMark) return;
+      el.dataset.pgMark = '1';
+      for (var k in MARK) el.style.setProperty(k, MARK[k], 'important');
+    });
+  }
+
+  function nearBlack(el){
     var cs = window.getComputedStyle(el);
     var m = (cs.backgroundColor || '').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
     if (!m) return false;
     var a = m[4] === undefined ? 1 : parseFloat(m[4]);
     if (a < 0.35) return false;
     var lum = (parseInt(m[1], 10) * 299 + parseInt(m[2], 10) * 587 + parseInt(m[3], 10) * 114) / 1000;
-    return lum < 45;
+    return lum < 50;
   }
 
-  function clean(){
-    document.querySelectorAll('.pgc-head, .pgf-head').forEach(function(head){
-      head.querySelectorAll('*').forEach(function(el){
-        if (el.dataset.pgBar) return;
-        /* never touch the mark, the nav, or anything holding a link */
-        if (el.classList.contains('pg-wordmark')) return;
-        if (el.querySelector && (el.querySelector('.pg-wordmark') || el.querySelector('a'))) return;
-        if (el.closest && el.closest('nav')) return;
+  /* Only on the templates that use this header. */
+  function killBars(){
+    var head = document.querySelector('.pgc-head');
+    if (!head) return;
+    var limit = head.getBoundingClientRect().bottom + window.scrollY + 120;
 
-        if (el.tagName === 'IMG'){
+    document.querySelectorAll('body *').forEach(function(el){
+      if (el.dataset.pgBar) return;
+      if (el.tagName === 'IMG'){
+        if (el.closest('.pgc-head')){
           el.dataset.pgBar = '1';
           el.style.setProperty('display', 'none', 'important');
-          return;
         }
-        var r = el.getBoundingClientRect();
-        if (r.height > 4 && r.height < 60 && r.width > 150 && dark(el)){
-          el.dataset.pgBar = '1';
-          el.style.setProperty('background', 'transparent', 'important');
-          el.style.setProperty('background-color', 'transparent', 'important');
-          el.style.setProperty('box-shadow', 'none', 'important');
-          el.style.setProperty('border', '0', 'important');
-        }
-      });
+        return;
+      }
+      /* a bar carries no text of its own */
+      if ((el.textContent || '').trim().length) return;
+      if (el.querySelector && el.querySelector('a,svg,img,input,button')) return;
+
+      var r = el.getBoundingClientRect();
+      var top = r.top + window.scrollY;
+      if (top > limit) return;
+      if (!(r.height > 3 && r.height < 60 && r.width > 150)) return;
+      if (!nearBlack(el)) return;
+
+      el.dataset.pgBar = '1';
+      el.style.setProperty('background', 'transparent', 'important');
+      el.style.setProperty('background-color', 'transparent', 'important');
+      el.style.setProperty('box-shadow', 'none', 'important');
+      el.style.setProperty('border', '0', 'important');
     });
   }
 
+  function pass(){ paintMark(); killBars(); }
+
   function boot(){
-    clean();
-    [300, 900, 2000].forEach(function(t){ setTimeout(clean, t); });
-    window.addEventListener('resize', clean);
+    pass();
+    [200, 600, 1400, 2600].forEach(function(t){ setTimeout(pass, t); });
+    window.addEventListener('resize', pass);
+    setInterval(pass, 1500);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
