@@ -1,0 +1,75 @@
+{%- comment -%}
+  PG Form: glowing purple inputs on the contact form.
+
+  pg-dark gives these fields a flat #0F0A16 fill and a 24%-alpha lavender
+  border, which on the near-black page reads as almost no box at all -- the
+  fields only announce themselves once you click into one.
+
+  Each field now carries a visible purple edge and a soft outer glow at rest,
+  and lifts to a brighter border plus a wider halo on focus, so the active
+  field is unmistakable. The checkboxes get the same treatment via accent-color
+  so Yes/No stop rendering as bare white squares.
+
+  Scoped to the contact form (`form[action*='contact']`), which is what
+  templates/page.contact.json renders through section-contact-form. The
+  browser's own "Please fill out this field" bubble is native UI and cannot be
+  styled from here.
+{%- endcomment -%}
+<style>
+  /* ---------- text fields and the message box ---------- */
+  html body #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='hidden']),
+  html body #content form[action*='contact'] textarea,
+  html body #content form[action*='contact'] select{
+    background:#140C1E !important;
+    background-color:#140C1E !important;
+    color:#F1EDF7 !important;
+    border:1.5px solid rgba(139,68,190,.55) !important;
+    border-radius:12px !important;
+    box-shadow:0 0 0 1px rgba(139,68,190,.14),
+               0 0 18px -6px rgba(139,68,190,.55) !important;
+    transition:border-color .15s ease, box-shadow .15s ease, background-color .15s ease !important;
+  }
+
+  html body #content form[action*='contact'] input::placeholder,
+  html body #content form[action*='contact'] textarea::placeholder{
+    color:#8E7FA6 !important;
+    opacity:1 !important;
+  }
+
+  /* ---------- the active field ---------- */
+  html body #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='hidden']):focus,
+  html body #content form[action*='contact'] textarea:focus,
+  html body #content form[action*='contact'] select:focus{
+    outline:none !important;
+    background-color:#1A1026 !important;
+    border-color:#C79BEA !important;
+    box-shadow:0 0 0 3px rgba(139,68,190,.28),
+               0 0 28px -4px rgba(199,155,234,.65) !important;
+  }
+
+  /* hovering a field hints at the same glow, at half strength */
+  html body #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='hidden']):hover,
+  html body #content form[action*='contact'] textarea:hover{
+    border-color:rgba(199,155,234,.75) !important;
+    box-shadow:0 0 0 1px rgba(139,68,190,.2),
+               0 0 22px -5px rgba(139,68,190,.7) !important;
+  }
+
+  /* ---------- Yes / No ---------- */
+  html body #content form[action*='contact'] input[type='checkbox'],
+  html body #content form[action*='contact'] input[type='radio']{
+    accent-color:#8B44BE !important;
+    width:18px !important;height:18px !important;
+    border:1.5px solid rgba(139,68,190,.6) !important;
+    border-radius:5px !important;
+    box-shadow:0 0 12px -4px rgba(139,68,190,.7) !important;
+    cursor:pointer !important;
+  }
+  html body #content form[action*='contact'] input[type='radio']{border-radius:50% !important}
+
+  /* labels sit slightly brighter so the pairing reads as one control */
+  html body #content form[action*='contact'] label{color:#E4DCF0 !important}
+</style>
+{% schema %}
+{"name": "PG Form", "settings": []}
+{% endschema %}
