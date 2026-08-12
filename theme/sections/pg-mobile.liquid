@@ -270,7 +270,23 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
       }
     }
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); footDark(); }
+  /* A single case is the free gift; extras are charged. When the line
+     quantity is >1 the FREE GIFT tag is wrong - show the real price. */
+  function caseLine(){
+    document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li').forEach(function(li){
+      var a = li.querySelector('a[href*="free-gift"]');
+      if (!a) return;
+      var q = li.querySelector('input[type="number"], .semantic-amount input');
+      var n = q ? (parseInt(q.value, 10) || 1) : 1;
+      var tag = li.querySelector('.pg-free-tag');
+      li.querySelectorAll('.semantic-amount, .nc-lsave, .cols').forEach(function(el){
+        el.style.setProperty('visibility', 'visible', 'important');
+      });
+      if (tag) tag.style.setProperty('display', n > 1 ? 'none' : 'inline-block', 'important');
+    });
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); footDark(); caseLine(); }
+  setInterval(caseLine, 1200);
   setTimeout(footDark, 1500); setTimeout(footDark, 3200);
   setInterval(ymlTrim, 1500);
   setTimeout(caseReconcile, 1200); setTimeout(caseReconcile, 3000);
