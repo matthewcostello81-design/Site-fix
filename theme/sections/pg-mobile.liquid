@@ -10,6 +10,12 @@
 #pgh .pgh-split-l{padding:48px 48px !important}
 /* Gallery video tile: square cover crop, no letterbox bars */
 .pgx-vid video{aspect-ratio:1/1 !important;height:auto !important;max-height:none !important;object-fit:cover !important;width:100% !important}
+/* Split banner is clickable through to the R36S page */
+#pgh .pgh-split{cursor:pointer}
+/* Accordions: same width and gutters as the split banner above them */
+#pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
+/* Best Sellers heading: matching soft purple letter glow */
+#pgh .pgh-h2{text-shadow:0 0 14px rgba(180,120,224,.6),0 0 34px rgba(139,68,190,.5),0 0 70px rgba(139,68,190,.35) !important}
 /* Product cards: soft purple glow fading outward, brighter on hover */
 #pgh .pgh-card{border-radius:16px;box-shadow:0 0 0 1px rgba(168,120,214,.22),0 0 26px rgba(139,68,190,.26),0 24px 60px -28px rgba(139,68,190,.55) !important;transition:box-shadow .25s ease,transform .25s ease}
 #pgh .pgh-card:hover{box-shadow:0 0 0 1px rgba(199,155,234,.42),0 0 36px rgba(139,68,190,.44),0 26px 70px -24px rgba(139,68,190,.7) !important}
@@ -86,12 +92,13 @@
     var t = Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
     els.forEach(function(e){ e.textContent = t; });
   }
-  /* The split banner is display-only: something deeper in the base theme was
-     hijacking clicks on it and navigating to the product page. Only the
-     explicit Shop-now button may navigate. */
+  /* The whole split banner links to the R36S product page */
   document.addEventListener('click', function(e){
     var sp = e.target.closest('.pgh-split');
-    if (sp && !e.target.closest('a.pgh-split-btn')){ e.preventDefault(); e.stopPropagation(); }
+    if (sp && !e.target.closest('a.pgh-split-btn')){
+      e.preventDefault(); e.stopPropagation();
+      window.location.href = '/products/handheld-game-console';
+    }
   }, true);
   function boot(){ marq(); cd(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
