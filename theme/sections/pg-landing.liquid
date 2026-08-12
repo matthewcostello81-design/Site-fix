@@ -78,6 +78,7 @@
   .pgx-sel .pgx-radio:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--pgx-purple)}
   .pgx-tile-name{font-weight:700;font-size:17px}
   .pgx-tile-sub{font-size:13.5px;color:var(--pgx-purple);font-weight:600;margin-top:2px}
+  .pgx-tile-color{font-size:13px;opacity:.78;margin-top:2px}
   .pgx-tile-price{margin-left:auto;text-align:right}
   .pgx-p-now{font-family:'Roboto Slab',Georgia,serif;font-size:21px;font-weight:700}
   .pgx-p-was{font-size:14px;color:#8a8a8a;text-decoration:line-through}
@@ -258,8 +259,10 @@
       {%- assign vpos = 0 -%}
       {%- if size_opt -%}{%- assign vpos = size_opt.position | minus: 1 -%}{%- endif -%}
       {%- assign color_opt = blank -%}
+      {%- assign single_color = blank -%}
       {%- for option in prod.options_with_values -%}
         {%- if option.name == 'Color' and option.values.size > 1 -%}{%- assign color_opt = option -%}{%- endif -%}
+        {%- if option.name == 'Color' and option.values.size == 1 -%}{%- assign single_color = option.values.first -%}{%- endif -%}
       {%- endfor -%}
       {%- assign cpos = 0 -%}
       {%- if color_opt != blank -%}{%- assign cpos = color_opt.position | minus: 1 -%}{%- endif -%}
@@ -269,6 +272,7 @@
           <span class="pgx-radio"></span>
           <div>
             <div class="pgx-tile-name">{{ section.settings.display_title | default: prod.title }}</div>
+            {%- if single_color != blank -%}<div class="pgx-tile-color">Color: {{ single_color }}</div>{%- endif -%}
             <div class="pgx-tile-sub" data-pgx-single-sub></div>
           </div>
           <div class="pgx-tile-price">
@@ -306,6 +310,7 @@
           <span class="pgx-radio"></span>
           <div>
             <div class="pgx-tile-name">{{ section.settings.bundle_title }}</div>
+            {%- if single_color != blank -%}<div class="pgx-tile-color">Color: {{ single_color }}</div>{%- endif -%}
             <div class="pgx-tile-sub">{{ bundle_pct }}% OFF, applied automatically at checkout</div>
           </div>
           <div class="pgx-tile-price">
