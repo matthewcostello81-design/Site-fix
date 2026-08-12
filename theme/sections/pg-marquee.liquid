@@ -1,0 +1,75 @@
+{%- comment -%}
+  PG Marquee: fill the empty space on the right of the announcement bar.
+
+  pg-mobile's marq() builds the bar as one track of the message list repeated
+  exactly twice:
+
+      var half = MSGS.map(m => '<span>'+m+' ✦</span>').join('');
+      el.innerHTML = '<div class="pg-marq">'+half+half+'</div>';
+
+  Two copies is the minimum a scrolling marquee needs -- it translates by half
+  the track so the second copy takes over seamlessly. But four messages only
+  measure around 1600px, so on a wide monitor one half is narrower than the
+  viewport and the tail of the bar sits empty until the loop comes round.
+
+  The fix keeps the two-half structure the animation depends on and simply
+  makes each half wider: the message set is repeated as many times as it takes
+  for one half to exceed the viewport, then that half is duplicated. The track
+  stays exactly two identical halves, so the existing animation is untouched
+  and still loops seamlessly -- there is just never a gap.
+
+  Re-measured on resize, and guarded so it only rebuilds when the required
+  repeat count actually changes.
+{%- endcomment -%}
+<style>
+  /* the track must be free to exceed the bar width for any of this to matter */
+  .pgh-announce .pg-marq,
+  .pgx-announce .pg-marq,
+  .pgc-announce .pg-marq,
+  .pgf-announce .pg-marq{width:max-content !important}
+</style>
+<script>
+(function(){
+  if (window.pgMarquee) return; window.pgMarquee = 1;
+
+  function fill(track){
+    var kids = Array.prototype.slice.call(track.children);
+    if (kids.length < 2 || kids.length % 2 !== 0) return;   /* not the two-half shape */
+
+    /* one half is the first n/2 spans, as marq() built it */
+    var n = kids.length / 2;
+    var unit = track.dataset.pgUnit;
+    if (!unit){
+      unit = kids.slice(0, n).map(function(el){ return el.outerHTML; }).join('');
+      track.dataset.pgUnit = unit;
+      track.dataset.pgUnitCount = String(n);
+    }
+    var per = kids.slice(0, n).reduce(function(w, el){ return w + el.offsetWidth; }, 0);
+    if (!per) return;
+
+    /* how many copies of the message set one half needs to cover the screen */
+    var need = Math.max(1, Math.ceil((window.innerWidth + 80) / per));
+    if (track.dataset.pgNeed === String(need)) return;
+    track.dataset.pgNeed = String(need);
+
+    var half = new Array(need + 1).join(unit);
+    track.innerHTML = half + half;
+  }
+
+  function pass(){
+    document.querySelectorAll('.pg-marq').forEach(fill);
+  }
+
+  function boot(){
+    pass();
+    /* marq() runs on its own delay, so catch the track once it exists */
+    [300, 900, 1800, 3000].forEach(function(t){ setTimeout(pass, t); });
+    window.addEventListener('resize', pass);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Marquee", "settings": []}
+{% endschema %}

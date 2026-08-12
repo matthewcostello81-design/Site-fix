@@ -1,47 +1,98 @@
 {%- comment -%}
-  PG Page Logo: make the wordmark on the page templates (Track Your Order,
-  Contact, policies) match the one on the homepage and PDP.
+  PG Page Logo: fix the header on the page templates (Track Your Order,
+  Contact, policies) -- the wordmark colour and the black bar under it.
 
-  Two things are wrong there. The mark renders purple and blurry instead of the
-  near-white #F6DBFF with a tight glow, and a solid black bar sits directly
-  under it.
+  An earlier pass scoped this to `body[class*="template-page"]` and NOTHING
+  applied, which is the tell: this theme does not put that class on the body of
+  those pages. Everything here is anchored on the page header itself
+  (.pgc-head / .pgc-logo), which only exists on these templates, so no body
+  class is involved.
 
-  The black bar is almost certainly the retired logo art. pe-logo swaps every
-  header <img> to the vector badge and sets mix-blend-mode:normal -- correct for
-  a transparent SVG, but the old raster asset had a black box baked in, and
-  pg-dark was relying on mix-blend-mode:screen to knock that black out. Any
-  header image on these templates that pg-mobile's display:none list misses
-  therefore paints its black box. These templates use the wordmark as the brand
-  mark, so the images are hidden outright here.
+  The wordmark reads pink because pg-mobile paints it #F6DBFF with a wide
+  rgba(246,196,255,.9) bloom. At the smaller size these headers use, the glow
+  overwhelms the letterforms. Restated near-white with the tighter three-stop
+  shadow so it matches the homepage mark.
 
-  The colour is restated with -webkit-text-fill-color as well as color, because
-  a gradient text-fill anywhere up the chain would otherwise win, and the glow
-  is set to pe-logo's tighter three-stop shadow rather than the wide 12px/.9
-  alpha one, which is what reads as blur.
+  The black bar is not identified in the markup -- the header is built by the
+  73KB pg-theme-css layer, which is not tracked here -- so rather than guess a
+  selector, the script finds it by shape: inside the page header, an element
+  that is painted near-black, sits under 60px tall and runs wider than 150px is
+  a bar, not content. Anything holding the wordmark or a link is skipped, so
+  the nav and logo can never be caught. Images in the header are hidden
+  outright: these templates use the wordmark as the brand mark, and the retired
+  logo art carries a baked-in black box that pg-dark used to knock out with
+  mix-blend-mode:screen -- which pe-logo now sets to normal for the vector.
 
-  Scoped to body.template-page* so the homepage, PDP and cart are untouched.
+  The bar is made transparent rather than removed, so if it turns out to be a
+  real structural element its layout contribution is unchanged.
 {%- endcomment -%}
 <style>
-/* the wordmark: same white and same glow as everywhere else */
-html body[class*="template-page"] a.pg-wordmark.pg-wordmark,
-html body[class*="template-page"] .pgc-logo a.pg-wordmark.pg-wordmark{
-  color:#F6DBFF !important;
-  -webkit-text-fill-color:#F6DBFF !important;
+/* the wordmark: near-white, tighter glow, matching the homepage */
+html body .pgc-head a.pg-wordmark.pg-wordmark,
+html body .pgc-logo a.pg-wordmark.pg-wordmark,
+html body .pgf-head a.pg-wordmark.pg-wordmark{
+  color:#F8F4FF !important;
+  -webkit-text-fill-color:#F8F4FF !important;
   background:none !important;
   background-image:none !important;
-  text-shadow:0 0 6px rgba(246,219,255,.5),0 0 17px rgba(199,155,234,.38),0 0 40px rgba(139,68,190,.26) !important;
+  text-shadow:0 0 6px rgba(246,219,255,.45),0 0 16px rgba(199,155,234,.32),0 0 38px rgba(139,68,190,.22) !important;
   filter:none !important;
 }
 
-/* the black bar: retired logo art with its black box no longer knocked out */
-html body[class*="template-page"] .pgc-logo img,
-html body[class*="template-page"] .pgc-head img,
-html body[class*="template-page"] .pgf-head img,
-html body[class*="template-page"] .pgh-logo img,
-html body[class*="template-page"] .pgx-logo img{
-  display:none !important;
-}
+/* retired logo art with its black box no longer knocked out */
+html body .pgc-head img,
+html body .pgc-logo img,
+html body .pgf-head img{display:none !important}
 </style>
+<script>
+(function(){
+  if (window.pgPageLogo) return; window.pgPageLogo = 1;
+
+  function dark(el){
+    var cs = window.getComputedStyle(el);
+    var m = (cs.backgroundColor || '').match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+    if (!m) return false;
+    var a = m[4] === undefined ? 1 : parseFloat(m[4]);
+    if (a < 0.35) return false;
+    var lum = (parseInt(m[1], 10) * 299 + parseInt(m[2], 10) * 587 + parseInt(m[3], 10) * 114) / 1000;
+    return lum < 45;
+  }
+
+  function clean(){
+    document.querySelectorAll('.pgc-head, .pgf-head').forEach(function(head){
+      head.querySelectorAll('*').forEach(function(el){
+        if (el.dataset.pgBar) return;
+        /* never touch the mark, the nav, or anything holding a link */
+        if (el.classList.contains('pg-wordmark')) return;
+        if (el.querySelector && (el.querySelector('.pg-wordmark') || el.querySelector('a'))) return;
+        if (el.closest && el.closest('nav')) return;
+
+        if (el.tagName === 'IMG'){
+          el.dataset.pgBar = '1';
+          el.style.setProperty('display', 'none', 'important');
+          return;
+        }
+        var r = el.getBoundingClientRect();
+        if (r.height > 4 && r.height < 60 && r.width > 150 && dark(el)){
+          el.dataset.pgBar = '1';
+          el.style.setProperty('background', 'transparent', 'important');
+          el.style.setProperty('background-color', 'transparent', 'important');
+          el.style.setProperty('box-shadow', 'none', 'important');
+          el.style.setProperty('border', '0', 'important');
+        }
+      });
+    });
+  }
+
+  function boot(){
+    clean();
+    [300, 900, 2000].forEach(function(t){ setTimeout(clean, t); });
+    window.addEventListener('resize', clean);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
 {% schema %}
 {"name": "PG Page Logo", "settings": []}
 {% endschema %}
