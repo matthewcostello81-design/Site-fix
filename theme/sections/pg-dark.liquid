@@ -227,6 +227,21 @@ html body #shopify-section-footer#shopify-section-footer #newsletter-footer butt
 html body #shopify-section-footer#shopify-section-footer #newsletter-footer [type='submit']:hover{
   background:linear-gradient(120deg,#7A2FA2,#4A1C66) !important;filter:none !important;
 }
+/* headings + newsletter legend: pure white; defeat gradient text-fill,
+   reveal-fade opacity and any animation the base theme applies */
+html body #shopify-section-footer#shopify-section-footer h1,
+html body #shopify-section-footer#shopify-section-footer h2,
+html body #shopify-section-footer#shopify-section-footer h3,
+html body #shopify-section-footer#shopify-section-footer h4,
+html body #shopify-section-footer#shopify-section-footer h5,
+html body #shopify-section-footer#shopify-section-footer legend,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer legend{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  opacity:1 !important;filter:none !important;
+  background:none !important;background-image:none !important;
+  animation:none !important;
+}
 
 /* ---------- footer bottom bar: dark, payment icons centered ----------
    The base theme leaves the copyright + payment strip (div.base-font) on its
