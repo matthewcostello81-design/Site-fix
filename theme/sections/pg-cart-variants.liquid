@@ -181,8 +181,20 @@
     arm(sel);
   }
 
+  /* A real cart line, not a recommendation row and not the panel's duplicate
+     copy of the items. `.l4ca.in-panel` is that duplicate -- every other
+     section here excludes it, and matching it put a stray picker in the middle
+     of the rail. The quantity stepper is the positive test: only a real line
+     has one. */
+  function isCartLine(li){
+    if (li.closest('.nc-recs, .nc-recs-panel, .pg-unlock')) return false;
+    return !!li.querySelector('.semantic-amount input, .input-amount input');
+  }
+
   function grow(){
-    var lines = document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li');
+    var all = document.querySelectorAll(
+      '#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+    var lines = Array.prototype.filter.call(all, isCartLine);
     if (!lines.length) return;
 
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
@@ -209,7 +221,7 @@
   }
 
   function pass(){
-    document.querySelectorAll('#cart .l4ca .pg-vsel, body.template-cart .form-cart .pg-vsel').forEach(arm);
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) .pg-vsel, body.template-cart .form-cart .pg-vsel').forEach(arm);
     grow();
   }
 

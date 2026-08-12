@@ -1,5 +1,5 @@
 {%- comment -%}
-  PG No Promo: stop advertising percentage discounts that no longer exist.
+  PG No Promo: stop the cart advertising money that is not actually saved.
 
   Checked against the shop's automatic discounts:
     10% Off (2+ Items) ........ ACTIVE
@@ -7,21 +7,33 @@
     10% Off Orders Over $120 .. EXPIRED (ended 2026-08-12)
     BXGY ladders + free case .. ACTIVE
 
-  Two places were still promising the expired ones:
+  Four things were wrong in the recommendation rail and the drawer:
 
-  1. The "Add & Save More" rail. nc-recs.js renders each row as a struck real
-     price, a lower "after discount" price and a "15% off" pill. Nothing applies
-     that 15% at checkout, so a shopper adding the wall art saw $33.99 and would
-     be charged $39.99. The struck figure is the true price, so this promotes it
-     back to being THE price and drops the invented one and the pill.
+  1. The rail rendered each row as a struck real price, a lower "after discount"
+     price and a "15% off" pill. Nothing applies that 15% at checkout, so a
+     shopper adding the wall art saw $33.99 and would be charged $39.99. The
+     struck figure is the true price, so it is promoted back to being THE price
+     and the invented one and the pill are dropped.
 
-  2. pg-drawer's progress bar, which counts up to a $120 spend for "10% OFF your
-     whole order" -- that discount expired, and the live 10% is quantity-based
-     (2+ items), not spend-based. The bar is hidden.
+  2. pg-drawer's progress bar counted up to a $120 spend for "10% OFF your whole
+     order" -- that discount expired, and the live 10% is quantity-based (2+
+     items), not spend-based. The bar is hidden.
+
+  3. The rail was headed "Add & save more". Once (1) removed the fake discounts,
+     nothing in that rail saves anything -- the rows are just products at their
+     normal price. The heading now says "Complete Your Setup", which promises
+     nothing that checkout will not honour. The rail's per-product BXGY ladders
+     are advertised separately by pg-unlock, which quotes real rungs.
+
+  4. The R36S Protective Case showed as $0.00. That product carries two
+     variants -- "Free with console" at $0.00, which pg-giftguard places when a
+     console earns it, and "Spare case" at $13.99 -- and the rail renders the
+     first one it finds. So the rail was offering a free case to anyone, with
+     the Add button wired to the $0.00 variant. The row is corrected to $13.99
+     and its Add button is intercepted to add the spare-case variant instead.
 
   The BXGY ladders are untouched and still real: 2nd item 25% off, 3rd 50% off,
-  buy 4 get 1, and the free R36S case with a console. The free case is still
-  auto-added by pg-drawer's giftSync, which is independent of the bar.
+  buy 4 get 1, and the free R36S case with a console.
 {%- endcomment -%}
 <style>
   /* the invented discount, in case the script is slow or blocked */
@@ -33,6 +45,12 @@
 <script>
 (function(){
   if (window.pgNoPromo) return; window.pgNoPromo = 1;
+
+  var CASE_HANDLE = 'r36s-protective-case-free-gift';
+  var CASE_SPARE = 49640879063268;      /* "Spare case", $13.99 */
+  var CASE_PRICE = '$13.99';
+  var HEAD_FROM = /add\s*&?(amp;)?\s*save/i;
+  var HEAD_TO = 'Complete Your Setup';
 
   /* Rail row: <span class="nc-rec-price">$33.99 <s class="nc-rec-was">$39.99</s>
      <i class="nc-rec-off">15% off</i></span>. The <s> holds the price actually
@@ -60,8 +78,66 @@
     });
   }
 
-  setInterval(fix, 400);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix); else fix();
+  /* nothing in this rail is discounted, so it must not claim to be */
+  function heading(){
+    document.querySelectorAll('#cart .nc-recs-h, body.template-cart .nc-recs-h').forEach(function(h){
+      if (h.dataset.pgHead) return;
+      if (!HEAD_FROM.test(h.textContent || '')) return;
+      h.textContent = HEAD_TO;
+      h.dataset.pgHead = '1';
+    });
+  }
+
+  function isCaseRow(el){
+    if (!el) return false;
+    var row = el.closest ? el.closest('.nc-rec') : null;
+    if (!row) return false;
+    if (row.tagName === 'A' && (row.getAttribute('href') || '').indexOf(CASE_HANDLE) > -1) return true;
+    return !!row.querySelector('a[href*="' + CASE_HANDLE + '"]');
+  }
+
+  /* The case row renders off the $0.00 "Free with console" variant. Show what a
+     spare actually costs. */
+  function casePrice(){
+    document.querySelectorAll('#cart .nc-rec, body.template-cart .nc-rec').forEach(function(row){
+      if (row.dataset.pgCase) return;
+      if (!isCaseRow(row.querySelector('.nc-rec-price') || row)) return;
+      var p = row.querySelector('.nc-rec-price');
+      if (!p) return;
+      p.textContent = CASE_PRICE;
+      row.dataset.pgCase = '1';
+    });
+  }
+
+  /* ...and its Add button must not hand out the free variant */
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.nc-rec-add');
+    if (!btn || !isCaseRow(btn)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (btn.dataset.pgBusy) return;
+    btn.dataset.pgBusy = '1';
+    var label = btn.textContent;
+    btn.textContent = 'Adding...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: CASE_SPARE, quantity: 1}]})
+    }).then(function(r){
+      if (!r.ok) throw 0;
+      btn.textContent = label;
+      delete btn.dataset.pgBusy;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).catch(function(){
+      btn.textContent = 'Try again';
+      delete btn.dataset.pgBusy;
+    });
+  }, true);
+
+  function pass(){ fix(); heading(); casePrice(); }
+
+  setInterval(pass, 400);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass); else pass();
 })();
 </script>
 {% schema %}
