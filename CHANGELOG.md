@@ -1,3 +1,34 @@
+# Cart pills: centred text, slightly larger
+
+## Problem
+The FREE GIFT and SAVED n% pills in the cart drawer read off-centre, and were a
+touch small.
+
+## Cause
+pg-drawer stamps both pills with INLINE `!important` styles the moment it
+creates them (`font-size:12px`, `line-height:1.5`, `padding:4px 12px`). An
+inline `!important` declaration outranks every stylesheet rule, so no CSS
+override can reach them. The 1.5 line box also left the glyphs sitting low in
+the pill, and `letter-spacing:.05em` trails the last letter, pushing the text
+visually left.
+
+## Fix (`sections/pg-chips.liquid`, new)
+Re-stamps the inline properties on an interval (each element once, then
+skipped):
+- `display:inline-flex` with centred alignment and `line-height:1`.
+- `text-indent:.05em` to cancel the trailing letter-spacing gap.
+- 12px -> 13px text, `4px 12px` -> `7px 15px` padding.
+
+A plain CSS backstop covers any pill rendered without the inline styles.
+
+## Applied to
+Shopify draft theme `162746106084` via the Admin API (themeFilesUpsert).
+Files changed:
+- sections/pg-chips.liquid (new)
+- sections/overlay-group.json (registered the new section, ordered last)
+
+---
+
 # Pocket Era logo: 15% shorter, one line on mobile
 
 ## Problem

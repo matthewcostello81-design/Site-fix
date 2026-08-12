@@ -99,6 +99,10 @@
     "pg-giftguard": {
       "type": "pg-giftguard",
       "settings": {}
+    },
+    "pg-chips": {
+      "type": "pg-chips",
+      "settings": {}
     }
   },
   "order": [
@@ -120,6 +124,7 @@
     "nc-cart-tweaks",
     "pg-drawer",
     "pg-footer",
-    "pg-giftguard"
+    "pg-giftguard",
+    "pg-chips"
   ]
 }

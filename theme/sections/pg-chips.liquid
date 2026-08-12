@@ -1,0 +1,67 @@
+{%- comment -%}
+  PG Chips: centre the text in the cart pills and give them a little more room.
+
+  The FREE GIFT pill (pg-drawer's giftTag) and the SAVED n% pill (its pass())
+  are both stamped with INLINE `!important` styles the moment they are created:
+  font-size:12px, line-height:1.5, padding:4px 12px. An inline !important
+  declaration outranks every stylesheet rule, so this cannot be fixed in CSS --
+  the properties have to be re-set on the elements themselves.
+
+  What changes:
+  - display:inline-flex + centred alignment and line-height:1, so the glyphs sit
+    in the middle of the pill instead of riding on a 1.5 line box.
+  - text-indent matching the letter-spacing. Letter-spacing adds its gap AFTER
+    the final letter too, which pushes the visual centre left; indenting by the
+    same amount puts it back.
+  - 12px -> 13px text and 4px 12px -> 7px 15px padding: the same pill, slightly
+    larger.
+
+  pg-drawer only stamps its inline styles when it creates a pill, so re-stamping
+  on an interval is enough to win, and it is cheap: each element is marked once
+  and skipped afterwards.
+{%- endcomment -%}
+<style>
+  /* Backstop for any pill rendered without the inline styles. */
+  #cart .pg-free-tag,#cart .pg-save-chip,
+  body.template-cart .pg-free-tag,body.template-cart .pg-save-chip{
+    display:inline-flex;align-items:center;justify-content:center;text-align:center
+  }
+</style>
+<script>
+(function(){
+  if (window.pgChips) return; window.pgChips = 1;
+
+  var SEL = '.pg-free-tag, .pg-save-chip';
+  var STYLE = {
+    'display': 'inline-flex',
+    'align-items': 'center',
+    'justify-content': 'center',
+    'text-align': 'center',
+    'font-size': '13px',
+    'line-height': '1',
+    'padding': '7px 15px',
+    'letter-spacing': '.05em',
+    /* letter-spacing also trails the last glyph; indent by the same amount so
+       the text reads centred rather than pushed left */
+    'text-indent': '.05em',
+    'border-radius': '999px',
+    'width': 'fit-content',
+    'min-width': '0',
+    'flex': 'none'
+  };
+
+  function stamp(){
+    document.querySelectorAll(SEL).forEach(function(el){
+      if (el.dataset.pgChip) return;
+      el.dataset.pgChip = '1';
+      for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
+    });
+  }
+
+  setInterval(stamp, 300);
+  stamp();
+})();
+</script>
+{% schema %}
+{"name": "PG Chips", "settings": []}
+{% endschema %}
