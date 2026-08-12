@@ -34,21 +34,27 @@
 
   function fill(track){
     var kids = Array.prototype.slice.call(track.children);
-    if (kids.length < 2 || kids.length % 2 !== 0) return;   /* not the two-half shape */
+    if (kids.length < 2) return;
 
-    /* one half is the first n/2 spans, as marq() built it */
-    var n = kids.length / 2;
+    /* Cache the unit markup AND its element count on first sight: after a
+       rebuild neither can be inferred from the DOM, and measuring "half the
+       current children" makes need oscillate between passes. */
     var unit = track.dataset.pgUnit;
+    var unitCount = parseInt(track.dataset.pgUnitCount || '0', 10);
     if (!unit){
-      unit = kids.slice(0, n).map(function(el){ return el.outerHTML; }).join('');
+      if (kids.length % 2 !== 0) return;
+      unitCount = kids.length / 2;
+      unit = kids.slice(0, unitCount).map(function(el){ return el.outerHTML; }).join('');
       track.dataset.pgUnit = unit;
-      track.dataset.pgUnitCount = String(n);
+      track.dataset.pgUnitCount = String(unitCount);
     }
-    var per = kids.slice(0, n).reduce(function(w, el){ return w + el.offsetWidth; }, 0);
+    if (!unitCount || kids.length < unitCount) return;
+
+    var per = 0;
+    for (var i = 0; i < unitCount; i++) per += kids[i].offsetWidth;
     if (!per) return;
 
-    /* how many copies of the message set one half needs to cover the screen */
-    var need = Math.max(1, Math.ceil((window.innerWidth + 80) / per));
+    var need = Math.max(1, Math.ceil((window.innerWidth + 120) / per));
     if (track.dataset.pgNeed === String(need)) return;
     track.dataset.pgNeed = String(need);
 
