@@ -26,8 +26,12 @@ html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-na
      "Track your order" read as three separate links. Pull the gaps in. */
   word-spacing:-.32em !important
 }
+/* Wider gaps between the links themselves, now that the gaps inside a link are
+   tight — otherwise "TRACK YOUR ORDER" and "CONTACT" read as one run of words. */
+html body .pgh-nav,html body .pgx-nav,html body .pgc-nav,html body .pgf-nav{gap:54px !important}
 @media(max-width:760px){
   html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{font-size:9px !important}
+  html body .pgh-nav,html body .pgx-nav,html body .pgc-nav,html body .pgf-nav{gap:22px !important}
 }
 /* Footer bottom strip on the page templates: the section id there is not
    plain "shopify-section-footer", so the dark-skin rules in pg-dark missed it
