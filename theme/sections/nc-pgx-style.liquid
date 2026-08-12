@@ -1,0 +1,139 @@
+{% comment %}nc-pgx-style :: PDP polish overrides for pg-landing{% endcomment %}
+<style>
+:root{--ncp:#7A2FA2;--ncp-d:#63247F;}
+
+/* ========== STORAGE SELECT ==========
+   Real target: a bare <select> (no class) inside .pgx-opt.has-select */
+html body .pgx-tile-opts .pgx-opt select,
+html body .pgx-opt.has-select select,
+html body .pgx-tile .pgx-opt select{
+  -webkit-appearance:none !important; appearance:none !important;
+  box-sizing:border-box !important;
+  border:2px solid #7A2FA2 !important;
+  border-radius:12px !important;
+  height:46px !important;
+  padding:0 30px 0 13px !important;
+  width:auto !important; max-width:100% !important;
+  font-weight:700 !important; font-size:14px !important; letter-spacing:.02em !important;
+  color:#2E1140 !important;
+  background-color:#FFFFFF !important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;
+  background-position:right 10px center !important;
+  background-size:11px 7px !important;
+  box-shadow:0 0 0 4px rgba(122,47,162,.14), 0 2px 9px rgba(122,47,162,.20) !important;
+  cursor:pointer !important;
+  transition:box-shadow .18s ease, border-color .18s ease !important;
+}
+html body .pgx-tile-opts .pgx-opt select:hover,
+html body .pgx-opt.has-select select:hover{
+  border-color:#63247F !important;
+  box-shadow:0 0 0 5px rgba(122,47,162,.22), 0 3px 12px rgba(122,47,162,.30) !important;
+}
+html body .pgx-tile-opts .pgx-opt select:focus,
+html body .pgx-opt.has-select select:focus{
+  outline:none !important;
+  border-color:#63247F !important;
+  box-shadow:0 0 0 5px rgba(122,47,162,.28), 0 3px 14px rgba(122,47,162,.34) !important;
+}
+html body .pgx-tile-opts .pgx-opt select option,
+html body .pgx-opt.has-select select option{
+  font-weight:600 !important; color:#2E1140 !important; background:#FFFFFF !important;
+}
+html body .pgx-opt.has-select, html body .pgx-tile-opts{ overflow:visible !important; }
+
+/* ========== SELECTED TILE GLOW ========== */
+html body .pgx-tile.pgx-sel{
+  box-shadow:0 0 0 4px rgba(122,47,162,.13), 0 6px 20px rgba(122,47,162,.20) !important;
+}
+
+/* ========== ANNOUNCEMENT BAR FULL BLEED ========== */
+html body .pgx-announce{
+  margin-left:-30px !important;
+  margin-right:-30px !important;
+  width:calc(100% + 60px) !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+
+/* ========== REVIEW CAROUSEL NEXT ARROW ========== */
+html body button.pgx-quote-next.pgx-quote-next,
+html body #pgx-quote-next{
+  position:relative !important; display:inline-flex !important;
+  align-items:center !important; justify-content:center !important;
+  width:38px !important; min-width:38px !important; max-width:38px !important;
+  height:38px !important; min-height:38px !important;
+  padding:0 !important; border:0 !important; border-radius:50% !important;
+  background:transparent !important; color:#fff !important; font-size:0 !important;
+  overflow:visible !important; cursor:pointer !important;
+}
+html body button.pgx-quote-next.pgx-quote-next::before,
+html body #pgx-quote-next::before{
+  content:"" !important; position:absolute !important; inset:0 !important;
+  width:38px !important; height:38px !important; border-radius:50% !important;
+  background:#7A2FA2 !important;
+  box-shadow:0 3px 12px rgba(122,47,162,.42) !important;
+  transition:background-color .16s ease, transform .16s ease !important;
+}
+html body button.pgx-quote-next.pgx-quote-next::after,
+html body #pgx-quote-next::after{
+  content:"" !important; position:absolute !important; z-index:2 !important;
+  left:50% !important; top:50% !important;
+  width:9px !important; height:9px !important;
+  margin:-5px 0 0 -3px !important;
+  border-right:2.5px solid #FFFFFF !important;
+  border-top:2.5px solid #FFFFFF !important;
+  transform:rotate(45deg) !important;
+}
+html body button.pgx-quote-next.pgx-quote-next:hover::before,
+html body #pgx-quote-next:hover::before{
+  background:#63247F !important; transform:scale(1.07) !important;
+}
+
+/* ========== PAYMENT BADGE GRID ========== */
+html body .pgx-pay.pgx-pay{
+  display:grid !important;
+  grid-template-columns:repeat(6, minmax(0,1fr)) !important;
+  gap:8px !important;
+  align-items:center !important;
+  justify-items:center !important;
+}
+html body .pgx-pay.pgx-pay img,
+html body .pgx-pay.pgx-pay svg{
+  width:100% !important; max-width:46px !important; height:auto !important;
+}
+@media (max-width:600px){
+  html body .pgx-pay.pgx-pay{ grid-template-columns:repeat(4, minmax(0,1fr)) !important; }
+}
+</style>
+
+<script>
+(function(){
+  function bleed(){
+    var bar = document.querySelector('.pgx-announce');
+    var root = document.getElementById('root');
+    if(!bar || !root) return;
+    var cs = getComputedStyle(root);
+    var pl = parseFloat(cs.paddingLeft) || 0;
+    var pr = parseFloat(cs.paddingRight) || 0;
+    if(pl === 0 && pr === 0) return;
+    bar.style.setProperty('margin-left', (-pl) + 'px', 'important');
+    bar.style.setProperty('margin-right', (-pr) + 'px', 'important');
+    bar.style.setProperty('width', 'calc(100% + ' + (pl + pr) + 'px)', 'important');
+    bar.style.setProperty('max-width', 'none', 'important');
+    bar.style.setProperty('box-sizing', 'border-box', 'important');
+  }
+  function boot(){ bleed(); setTimeout(bleed, 350); setTimeout(bleed, 1200); }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  } else { boot(); }
+  window.addEventListener('resize', bleed);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "NC PGX Style",
+  "settings": []
+}
+{% endschema %}

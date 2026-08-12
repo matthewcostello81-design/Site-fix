@@ -71,7 +71,7 @@
       "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6", "rev7", "rev8"],
       "settings": {
         "product": "handheld-game-console",
-        "display_title": "R36S - Handheld Gaming Console",
+        "display_title": "",
         "announce_text": "Free shipping on all orders",
         "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "logo_text": "PocketEra",
@@ -80,7 +80,7 @@
         "review_total": 12,
         "default_size": "64G",
         "show_bundle": true,
-        "bundle_title": "Bundle Deal: 2x R36S",
+        "bundle_title": "Bundle Deal: 2x PocketBoy R36",
         "bundle_pct": 10
       }
     }

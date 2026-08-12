@@ -7,14 +7,21 @@
           "type": "product",
           "settings": {
             "product": "handheld-game-console",
-            "label": "R36S - Handheld Gaming Console"
+            "label": ""
           }
         },
         "prod2": {
           "type": "product",
           "settings": {
             "product": "pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift",
-            "label": "Pokemon Crystal Ball"
+            "label": ""
+          }
+        },
+        "prod3": {
+          "type": "product",
+          "settings": {
+            "product": "anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame",
+            "label": ""
           }
         },
         "acc1": {
@@ -49,6 +56,7 @@
       "block_order": [
         "prod1",
         "prod2",
+        "prod3",
         "acc1",
         "acc2",
         "acc3",

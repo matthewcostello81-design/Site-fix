@@ -13,6 +13,10 @@
       "type": "nc-gallery-fix",
       "settings": {}
     },
+    "nc-rvw-topup": {
+      "type": "nc-rvw-topup",
+      "settings": {}
+    },
     "main-product": {
       "type": "main-product",
       "blocks": {
@@ -164,7 +168,7 @@
     "recommendations": {
       "type": "product-recommendations",
       "settings": {
-        "recommended_products_qty": 6,
+        "recommended_products_qty": 9,
         "number_of_items": 4,
         "text_alignment": "start",
         "width": "boxed",
@@ -200,6 +204,7 @@
     "breadcrumbs",
     "main-product",
     "nc-gallery-fix",
+    "nc-rvw-topup",
     "judgeme_reviews",
     "recommendations"
   ]

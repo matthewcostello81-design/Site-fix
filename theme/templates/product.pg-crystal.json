@@ -55,7 +55,7 @@
       "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6"],
       "settings": {
         "product": "pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift",
-        "display_title": "Pokemon Crystal Ball",
+        "display_title": "",
         "announce_text": "Free shipping on all orders",
         "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "logo_text": "PocketEra",
@@ -64,7 +64,7 @@
         "review_total": 6,
         "default_size": "01 Pikachu",
         "show_bundle": true,
-        "bundle_title": "Bundle Deal: 2x Crystal Balls",
+        "bundle_title": "Bundle Deal: 2x Crystal PokeOrbs",
         "bundle_pct": 10,
         "features_text": "<p>3D laser-engraved character inside a 50mm glass crystal ball<br>LED lamp base included, with a multi-color automatic gradient glow<br>36 characters to collect, all options include the base<br>Button battery included, simple switch operation<br>Ships protected in a foam box so ball and base arrive intact</p>",
         "shipping_text": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"

@@ -773,9 +773,9 @@
   if (window.pgDuo) return; window.pgDuo = 1;
   var VARS = null, BUSY = false;
   function money(n){ return '$' + n.toFixed(2); }
-  var DUO_PCT = 25;
-  function duoDisc(p1, p2){
-    return Math.round(Math.min(p1, p2) * DUO_PCT) / 100;
+  function duoDisc(p1, p2, v1, v2){
+    if (v1 === v2){ return Math.floor((p1 + p2) * 10) / 100; }
+    return (Math.floor(p1 * 10) + Math.floor(p2 * 10)) / 100;
   }
   function calc(tile){
     if (!VARS) return;
@@ -783,14 +783,16 @@
     var v1 = VARS.filter(function(v){ return String(v.id) === sels[0].value; })[0];
     var v2 = VARS.filter(function(v){ return String(v.id) === sels[1].value; })[0];
     if (!v1 || !v2) return;
-    var disc = duoDisc(v1.p, v2.p);
+    var disc = duoDisc(v1.p, v2.p, v1.id, v2.id);
     var total = v1.p + v2.p - disc;
+    var orig = (v1.c || v1.p) + (v2.c || v2.p);
     tile.querySelector('.pgx-duo-px b').textContent = money(total);
+    tile.querySelector('.pgx-duo-px s').textContent = money(orig);
     var u2 = tile.querySelectorAll('.pgx-duo-u .pp');
-    var cheap2 = (v2.p <= v1.p);
-    u2[0].innerHTML = cheap2 ? money(v1.p) : money(Math.max(0, v1.p - disc)) + '<s>' + money(v1.p) + '</s>';
-    u2[1].innerHTML = cheap2 ? money(Math.max(0, v2.p - disc)) + '<s>' + money(v2.p) + '</s>' : money(v2.p);
-    tile.querySelector('.pgx-duo-t small').textContent = '2nd R36S = Extra ' + DUO_PCT + '% OFF!';
+    u2[0].innerHTML = money(v1.p);
+    u2[1].innerHTML = money(Math.max(0, v2.p - disc)) + '<s>' + money(v2.p) + '</s>';
+    var pct = Math.round(disc / v2.p * 100);
+    tile.querySelector('.pgx-duo-t small').textContent = '2nd R36S = Extra ' + pct + '% OFF!';
   }
   function build(){
     var m = location.pathname.match(/\/products\/([^\/?#]+)/);
@@ -815,8 +817,8 @@
       tile.setAttribute('tabindex', '0');
       tile.innerHTML = '<span class="pgx-duo-ribbon">Limited Time Deal</span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
-        + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small>2nd R36S = Extra 25% OFF!</small></div>'
-        + '<div class="pgx-duo-px"><b></b></div></div>'
+        + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small>2nd R36S = Extra 20% OFF!</small></div>'
+        + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
         + '<div class="pgx-duo-body" style="border:1px solid rgba(139,68,190,.5);border-radius:12px"><span class="pgx-duo-plus">+</span>'
         + '<div class="pgx-duo-u" style="border-right:1px solid rgba(139,68,190,.45)"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version 1">' + opts + '</select></div>'
         + '<div class="pgx-duo-u"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version 2">' + opts + '</select></div></div>';
@@ -837,8 +839,13 @@
           var nm = first.querySelector('.pgx-tile-name') || first.querySelector('.pgx-tile-row b, .pgx-tile-row h3');
           if (nm && !nm.querySelector('.pgx-lad-chip')) nm.insertAdjacentHTML('beforeend', ' <span class="pgx-lad-chip">+ FREE Case</span>');
         }
-        /* the tile already renders one compare-at price; a second injected
-           strike read as a duplicate retail figure, so it is not added. */
+        var priceBox = first.querySelector('.pgx-tile-price');
+        if (priceBox && !priceBox.querySelector('.pgx-sstrike') && VARS[0] && VARS[0].c > VARS[0].p){
+          var ss = document.createElement('s');
+          ss.className = 'pgx-sstrike';
+          ss.textContent = money(VARS[0].c);
+          priceBox.appendChild(ss);
+        }
         var haveSel = first.querySelector('.pgx-tile-opts select');
         var pills = haveSel ? [] : Array.prototype.slice.call(first.querySelectorAll('.pgx-tile-opts button, .pgx-tile-opts [role="button"], .pgx-tile-opts span'));
         if (pills.length > 1 && !first.querySelector('.pgx-storage')){
@@ -929,29 +936,27 @@
       var natives = Array.prototype.slice.call(host.querySelectorAll('.pgx-tile:not(.pgx-lad)'));
       natives.forEach(function(t){ t.style.setProperty('display', 'none', 'important'); });
       var TIERS = [
-        {n: 1, f: 0, half: 0, bases: 1, badge: '', title: 'Buy 1', sub: 'Standard price + FREE LED Base'},
-        {n: 2, f: 0, half: 1, bases: 2, badge: 'Most Popular &#128293;', title: 'Buy 2, 2nd 50% Off', sub: ''},
-        {n: 4, f: 1, half: 0, bases: 5, badge: '', title: 'Buy 4, Get 1 FREE', sub: ''},
-        {n: 6, f: 2, half: 0, bases: 8, badge: 'Best Deal!', title: 'Buy 6, Get 2 FREE', sub: ''}
+        {n: 1, f: 0, bases: 1, badge: '', title: 'Buy 1', sub: 'Standard price + FREE LED Base'},
+        {n: 2, f: 1, bases: 3, badge: 'Most Popular &#128293;', title: 'Buy 2, Get 1 FREE', sub: ''},
+        {n: 4, f: 2, bases: 6, badge: '', title: 'Buy 4, Get 2 FREE', sub: ''},
+        {n: 6, f: 3, bases: 9, badge: 'Best Deal!', title: 'Buy 6, Get 3 FREE', sub: ''}
       ];
       var tiles = [];
       TIERS.forEach(function(T, ti){
-        var full = (T.n + T.f) * unit;
-        var pay = T.n * unit - (T.half || 0) * unit * 0.5;
-        var save = full - pay;
-        var pct = full > 0 ? Math.round(save / full * 100) : 0;
+        var pay = T.n * unit, save = T.f * unit, full = (T.n + T.f) * unit;
+        var pct = Math.round(save / full * 100);
         var tile = document.createElement('div');
         tile.className = 'pgx-tile pgx-lad' + (ti === 0 ? ' pgx-sel' : '');
         tile.setAttribute('role', 'radio');
         tile.setAttribute('aria-checked', ti === 0 ? 'true' : 'false');
         tile.setAttribute('tabindex', '0');
         tile.setAttribute('data-pg-tier', String(ti));
-        var chips = (T.n + T.f) > 1 ? '<span class="pgx-lad-chip">+' + T.bases + ' FREE LED Bases</span>' : '';
-        var saveLn = save > 0 ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
+        var chips = T.f > 0 ? '<span class="pgx-lad-chip">+' + T.bases + ' FREE LED Bases</span>' : '';
+        var saveLn = T.f > 0 ? '<div class="pgx-lad-save">YOU SAVE ' + money(save) + ' (' + pct + '% OFF)</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
         tile.innerHTML = (T.badge ? '<span class="pgx-lad-badge">' + T.badge + '</span>' : '')
           + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
           + '<div class="pgx-lad-t"><b>' + T.title + '</b>' + chips + saveLn + '</div>'
-          + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + (save > 0 ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
+          + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + (T.f > 0 ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
           + '<div class="pgx-lad-picks"><div class="lbl">Choose your Poke Balls</div></div>';
         var picks = tile.querySelector('.pgx-lad-picks');
         var total = T.n + T.f;
