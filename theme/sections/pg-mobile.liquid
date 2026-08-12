@@ -225,7 +225,16 @@
        navigates to /cart a moment later; lands as its own line item */
     fetch('/cart/add.js', {method: 'POST', keepalive: true, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})}).catch(function(){});
   }, true);
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); }
+  /* Description / Features / Shipping sit under the gallery, not the buy box */
+  function accLeft(){
+    var acc = document.querySelector('#pgx .pgx-acc'), gal = document.querySelector('#pgx .pgx-gallery');
+    if (!acc || !gal || acc.parentElement === gal) return;
+    if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+    gal.appendChild(acc);
+    acc.style.setProperty('margin-top', '26px', 'important');
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); }
+  setInterval(accLeft, 1500);
   setInterval(caseTile, 1500);
   setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
