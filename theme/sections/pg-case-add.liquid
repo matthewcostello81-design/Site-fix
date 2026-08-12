@@ -1,0 +1,93 @@
+{%- comment -%}
+  PG Case Add: rewire the spare-case button to the live variant.
+
+  The case product used to have a single "Default Title" variant at $13.99
+  (49623692247268), hardcoded in two places: pg-mobile's CASE_VARIANT for the
+  ADD button on the console page, and pg-drawer's GIFT_ID for the auto-added
+  free case.
+
+  Adding a named variant to that product replaced the default one, so
+  49623692247268 no longer exists. The product now carries two real variants:
+
+      49640846426340  $0.00   "Free with console"   -> the gift
+      49640879063268  $13.99  "Spare case"          -> the paid upsell
+
+  A variant ID cannot be reassigned, so both hardcoded references are dead and
+  every /cart/add.js call using them 422s -- which is the "TRY AGAIN" on the
+  button, and why the free case stopped appearing.
+
+  pg-mobile's handler is delegated on document and matches `.pgx-case-add`, and
+  it is registered before anything here, so it cannot be out-argued in the
+  event chain. Instead the button is renamed: dropping that class makes
+  pg-mobile's `closest('.pgx-case-add')` miss, and the handler below takes over
+  with the correct variant. The look has to be restated with the class, which is
+  what the CSS here is for.
+{%- endcomment -%}
+<style>
+  /* lifted from pg-mobile's .pgx-case-add so the renamed button is unchanged */
+  #pgx .pg-case-add2{
+    flex:none;border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    background-color:#8B44BE !important;color:#fff !important;
+    font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;border-radius:999px !important;
+    padding:11px 26px;cursor:pointer;
+    box-shadow:0 10px 22px -10px rgba(139,68,190,.7) !important;
+    transition:filter .15s ease;
+  }
+  #pgx .pg-case-add2:hover{filter:brightness(1.1)}
+  html body #pgx .pg-case-add2::before,
+  html body #pgx .pg-case-add2::after{display:none !important;content:none !important;background:none !important}
+  #pgx .pg-case-add2[disabled]{opacity:.6;cursor:default}
+  @media (max-width:600px){
+    #pgx .pg-case-add2{order:4 !important;flex:1 1 auto !important;padding:13px 20px !important;font-size:13.5px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCaseAdd) return; window.pgCaseAdd = 1;
+
+  var PAID_VARIANT = 49640879063268;   /* $13.99 "Spare case" */
+  var busy = false;
+
+  /* Rename the button out from under pg-mobile's delegated handler. */
+  function claim(){
+    document.querySelectorAll('#pgx .pgx-case-add').forEach(function(btn){
+      btn.classList.remove('pgx-case-add');
+      btn.classList.add('pg-case-add2');
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest && e.target.closest('.pg-case-add2');
+    if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    if (busy) return;
+    busy = true;
+    btn.textContent = 'ADDING...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: PAID_VARIANT, quantity: 1}]})
+    })
+      .then(function(r){
+        if (!r.ok) throw 0;
+        btn.innerHTML = 'ADDED ✓';
+        if (window.pgOpenCart) window.pgOpenCart();
+        setTimeout(function(){ btn.textContent = 'ADD'; busy = false; }, 2500);
+      })
+      .catch(function(){
+        btn.textContent = 'TRY AGAIN';
+        setTimeout(function(){ btn.textContent = 'ADD'; }, 2000);
+        busy = false;
+      });
+  }, true);
+
+  /* pg-mobile re-creates the tile on an interval, so re-claim on the same beat */
+  setInterval(claim, 500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', claim); else claim();
+})();
+</script>
+{% schema %}
+{"name": "PG Case Add", "settings": []}
+{% endschema %}

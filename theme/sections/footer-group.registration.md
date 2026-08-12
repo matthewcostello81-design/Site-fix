@@ -26,3 +26,17 @@ here. Both live in full on draft theme 162746106084.
 
 Order matters: each of these is written to win on source order or specificity
 against the large pg-* layers it overrides.
+
+## Variant IDs (case product 9185470611684)
+
+The old single "Default Title" variant `49623692247268` no longer exists —
+adding a named variant replaced it. Current, and referenced by the sections:
+
+| variant | price | title | used by |
+|---|---|---|---|
+| `49640846426340` | $0.00 | Free with console | pg-giftguard (the gift) |
+| `49640879063268` | $13.99 | Spare case | pg-case-add (the upsell) |
+
+`pg-drawer` (GIFT_ID) and `pg-mobile` (CASE_VARIANT) still hardcode the dead
+ID. pg-giftguard takes over placing the gift, and pg-case-add renames the
+button out from under pg-mobile's handler. Both large files are untouched.
