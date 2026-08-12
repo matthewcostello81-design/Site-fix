@@ -102,6 +102,75 @@
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
+  /* ---------------- one line per variant ----------------
+
+     A cart can end up holding the same variant on several separate lines --
+     1 + 1 + 2 of the same orb, each with its own stepper and trash can. It
+     happens when units arrive by different routes (the product page's bundle
+     tile, this upsell, a manual add) and the line properties do not match
+     exactly, since Shopify only folds an add into an existing line when the
+     variant AND the properties are identical.
+
+     The ladder was never wrong -- offers() sums across lines, so four orbs
+     counted as four -- but the cart read as though the shopper had bought
+     three unrelated things, and clicking Add grew whichever line happened to
+     be first rather than the one they were looking at.
+
+     So duplicates are merged: the first line takes the combined quantity and
+     the rest are zeroed. Free-gift lines are excluded, because a $0.00 gift is
+     not a purchased unit and merging it would fold a free item into a paid
+     line at full price.
+
+     Guarded by `merging` so the 900ms tick cannot start a second merge while
+     the first is still in flight, and it returns true to tell render() to stop
+     and wait -- drawing rows from a cart that is about to change would flash
+     the wrong offer. */
+  var merging = false;
+
+  function consolidate(cart){
+    if (merging) return false;
+
+    var byVariant = {};
+    (cart.items || []).forEach(function(it){
+      if (it.properties && it.properties._free_gift) return;
+      (byVariant[it.variant_id] = byVariant[it.variant_id] || []).push(it);
+    });
+
+    var dupes = null;
+    Object.keys(byVariant).forEach(function(v){
+      if (!dupes && byVariant[v].length > 1) dupes = byVariant[v];
+    });
+    if (!dupes) return false;
+
+    var total = dupes.reduce(function(n, it){ return n + it.quantity; }, 0);
+    var keep = dupes[0];
+    var drop = dupes.slice(1);
+
+    merging = true;
+    var chain = change(keep.key, total);
+    drop.forEach(function(it){
+      chain = chain.then(function(){ return change(it.key, 0); });
+    });
+    chain.then(function(){
+      merging = false;
+      lastKey = '';
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).then(function(){
+      render();
+    }).catch(function(){
+      merging = false;
+    });
+    return true;
+  }
+
+  function change(key, qty){
+    return fetch('/cart/change.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({id: key, quantity: qty})
+    });
+  }
+
   /* One row per ladder product with a rung still ahead of it. `away` is how
      many more units it takes to reach that rung: 0 means the shopper is on it
      and one click earns the discount. */
@@ -186,6 +255,8 @@
     var list = c.querySelector('.l4ca:not(.in-panel)');
     if (!list) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      /* merge split lines first; if that fires, it re-renders when it lands */
+      if (consolidate(cart)) return;
       var offs = offers(cart);
       /* `away` is part of the key: going from 3 orbs to 4 keeps the same rung
          and variant, and without it the row would keep the "add 1 more" copy
