@@ -25,6 +25,35 @@
 {%- endcomment -%}
 <style>
 @media (max-width:900px){
+  /* ---------------- hero and video: stop the square crop ----------------
+     pg-mobile force-fits both to a 1:1 box with object-fit:cover:
+
+       .pgx-hero img{aspect-ratio:1/1;object-fit:cover}
+       .pgx-vid video{aspect-ratio:1/1;object-fit:cover}
+
+     That was aimed at tall photos towering over the page, but it cuts anything
+     that is not square -- on the PokeOrb the wide product shot loses an orb off
+     each side and the top of the row, and the clip gets cropped into its own
+     subject. Letting them keep their natural ratio shows the whole frame; the
+     media is width-constrained anyway, so nothing towers.
+
+     .pgx-hero's #f6f6f6 backdrop goes transparent with it, since with contain
+     any spare space would otherwise read as light grey bars on the dark page. */
+  #pgx .pgx-hero{background:transparent !important}
+  #pgx .pgx-hero img{
+    aspect-ratio:auto !important;
+    height:auto !important;
+    object-fit:contain !important;
+    width:100% !important
+  }
+  #pgx .pgx-vid video{
+    aspect-ratio:auto !important;
+    height:auto !important;
+    max-height:none !important;
+    object-fit:contain !important;
+    width:100% !important
+  }
+
   /* Bring the wrapper back so the arrows have something to anchor to. */
   #pgx .pgx-thumbwrap{display:block !important;position:relative !important;margin-top:14px !important}
 
