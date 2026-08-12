@@ -1,3 +1,32 @@
+# Pocket Era: console + wall art pages follow the live product titles
+
+## Problem
+Same class of bug fixed earlier for the PokeOrb: the products were renamed
+("PocketBoy R36 - Handheld Game Console", "Heroic Holographic Wall Art")
+but the storefront kept the old names because theme files hardcode them:
+- `templates/index.json` - homepage card labels for both products
+- `templates/product.pg-landing.json` - console display_title + "Bundle
+  Deal: 2x R36S"
+- `templates/product.pg-wallart.json` - wall art display_title + "Bundle
+  Deal: 2x 3D Wall Art"
+
+## Fix
+Cleared labels/display_titles (fall back to the live product title, so all
+future renames propagate automatically - all three storefront products now
+behave this way) and renamed the bundle tiles to "Bundle Deal: 2x
+PocketBoy R36" and "Bundle Deal: 2x Holographic Wall Art".
+
+Note: the announcement marquee still says "Free R36S case with purchase of
+device" (hardcoded in pg-theme-css, and the gift product itself is still
+named "R36S Protective Case (FREE Gift)") - left as-is pending direction.
+
+## Applied to
+Shopify draft theme `162727330020` via the Admin API (themeFilesUpsert).
+Files changed: templates/index.json, templates/product.pg-landing.json
+(now tracked), templates/product.pg-wallart.json
+
+---
+
 # Pocket Era: looping demo video on the Heroic 3D Wall Art page
 
 ## What

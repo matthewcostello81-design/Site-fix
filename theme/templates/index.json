@@ -7,7 +7,7 @@
           "type": "product",
           "settings": {
             "product": "handheld-game-console",
-            "label": "R36S - Handheld Gaming Console"
+            "label": ""
           }
         },
         "prod2": {
@@ -21,7 +21,7 @@
           "type": "product",
           "settings": {
             "product": "anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame",
-            "label": "Heroic 3D Wall Art"
+            "label": ""
           }
         },
         "acc1": {
