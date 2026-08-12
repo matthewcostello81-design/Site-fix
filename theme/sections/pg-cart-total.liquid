@@ -39,7 +39,13 @@
 <style>
   /* pg-drawer's own savings box and the theme's subtotal row are superseded */
   #cart .sticky-in-panel .pg-sav{display:none !important}
-  #cart .sticky-in-panel .l4tt li:not(.pg-tt){display:none !important}
+  /* :has() guard matters. .pg-tt is pg-drawer's render-time class, not ours --
+     nothing in this repo creates it. Written unguarded, this rule hides every
+     row that LACKS the class, so before pg-drawer's pass lands (or if it ever
+     renames it) the entire totals list vanishes and the pane shows savings, a
+     trust row and Checkout with no amount charged anywhere on screen. Guarded,
+     a missing .pg-tt simply leaves the theme's own rows visible. */
+  #cart .sticky-in-panel .l4tt:has(li.pg-tt) li:not(.pg-tt){display:none !important}
 
   #cart .pg-tot{
     margin:2px 0 6px;padding:10px 12px;border-radius:12px;

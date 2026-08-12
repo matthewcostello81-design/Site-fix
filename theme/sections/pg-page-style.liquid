@@ -63,7 +63,8 @@
   }
 
   /* ---------------- heading ---------------- */
-  html body #content h1{
+  html body #content h1,
+  html body #content .pgp-title{
     position:relative;
     font-size:clamp(30px,4.2vw,44px) !important;
     line-height:1.12 !important;
@@ -74,7 +75,8 @@
     text-shadow:0 0 26px rgba(139,68,190,.42);
   }
   /* eyebrow, in the pixel face the brand mark uses */
-  html body #content h1::before{
+  html body #content h1::before,
+  html body #content .pgp-title::before{
     content:"POCKET ERA";
     position:absolute;
     top:0;
@@ -86,7 +88,8 @@
     text-shadow:0 0 14px rgba(139,68,190,.6);
   }
   /* gradient rule under the heading */
-  html body #content h1::after{
+  html body #content h1::after,
+  html body #content .pgp-title::after{
     content:"";
     display:block;
     width:76px;
@@ -154,6 +157,26 @@
     min-width:210px !important;
   }
 </style>
+<script>
+(function(){
+  /* The page title is not guaranteed to be an h1. This theme makes heading
+     level a setting -- templates/product.json ships "title_size": "h2", and the
+     footer's newsletter block follows title_size_blocks, which is h4 and which
+     already broke a lookup in pg-footer. If this page's title renders as h2, h3
+     or a classed div, every rule above matches nothing and the page reads as
+     untouched theme output above the fold.
+
+     So the first heading in the content column is tagged by POSITION rather
+     than by level -- querySelector returns the first match in document order --
+     and the rules match that class as well. */
+  function tag(){
+    var t = document.querySelector('#content h1, #content h2, #content h3, #content h4, #content [class*="page-title"]');
+    if (t && !t.classList.contains('pgp-title')) t.classList.add('pgp-title');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tag); else tag();
+  [200, 800, 1800].forEach(function(ms){ setTimeout(tag, ms); });
+})();
+</script>
 {%- endif -%}
 {% schema %}
 {"name": "PG Page Style", "settings": []}

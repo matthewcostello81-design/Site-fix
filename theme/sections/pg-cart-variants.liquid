@@ -101,6 +101,21 @@
   var PROD = {};      /* handle -> variants, or null while in flight */
   var busy = false;
 
+  /* Products whose variants are an ENTITLEMENT axis, not a style axis.
+
+     The R36S case carries "Free with console" at $0.00 and "Spare case" at
+     $13.99. Both are availableForSale and untracked, so nothing in the generic
+     build() drops either, and the picker happily offered a shopper holding the
+     paid spare a dropdown that swaps it to the free one -- a free case with no
+     console, no badge and no error. It bites the other way too: a console
+     buyer's earned gift could be switched to "Spare case" and silently charged
+     $13.99 for what was advertised as free.
+
+     pg-no-promo intercepts the rail's Add button precisely so that $0.00
+     variant is never handed out, and pg-giftguard strips it when unearned;
+     this picker was quietly re-opening that door. */
+  var NO_PICKER = {'r36s-protective-case-free-gift': 1};
+
   function variantsFor(handle){
     if (PROD.hasOwnProperty(handle)) return PROD[handle];
     PROD[handle] = null;
@@ -204,7 +219,7 @@
       Array.prototype.forEach.call(lines, function(li){
         if (li.querySelector('.pg-vsel')) return;
         var handle = handleOf(li);
-        if (!handle) return;
+        if (!handle || NO_PICKER[handle]) return;
 
         var n = seen[handle] || 0;
         seen[handle] = n + 1;

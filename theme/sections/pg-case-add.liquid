@@ -111,7 +111,16 @@
       .then(function(r){
         if (!r.ok) throw new Error('add ' + r.status);
         btn.innerHTML = 'ADDED &#10003;';
-        if (window.pgOpenCart) window.pgOpenCart();
+        /* pgOpenCart appears exactly once in this theme -- here. Every other
+           override that writes to the cart uses pgDrawerRefresh (pg-unlock,
+           pg-no-promo, pg-cart-variants). If that name was wrong, or the drawer
+           is not mounted on this template, nothing repainted after a SUCCESSFUL
+           add: the button said ADDED, the header count did not move, and the
+           shopper tapped again and again -- arriving at checkout with three
+           cases they did not mean to buy. */
+        if (window.pgDrawerRefresh) window.pgDrawerRefresh();
+        else if (window.pgOpenCart) window.pgOpenCart();
+        else window.location.reload();
         reset(btn, 'ADD', 2500);
       })
       .catch(function(){

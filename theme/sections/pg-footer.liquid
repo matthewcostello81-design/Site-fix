@@ -37,12 +37,14 @@
   .shopify-section-footer{background:linear-gradient(115deg,#2E1140 0%,#54187A 46%,#7A2FA2 100%) !important}
   #shopify-section-footer + .base-font{background:#2E1140 !important;border-top:1px solid rgba(255,255,255,.14) !important}
 
-  /* Orange hovers and underlines: light purple */
-  #shopify-section-footer a:hover{color:#E9D5F7 !important}
-  #shopify-section-footer .nc-foot-links a:hover{color:#E9D5F7 !important}
+  /* Orange hovers and underlines: light purple.
+     Keyed on the CLASS, not the id: the id only exists on storefront templates,
+     so on Contact / Track Your Order / policies these stayed orange. */
+  .shopify-section-footer a:hover{color:#E9D5F7 !important}
+  .shopify-section-footer .nc-foot-links a:hover{color:#E9D5F7 !important}
   #shopify-section-footer + .base-font a:hover{color:#fff !important}
-  #shopify-section-footer .title-underline-none::after,
-  #shopify-section-footer [class*="title-underline"]::after{background:#C79BE3 !important}
+  .shopify-section-footer .title-underline-none::after,
+  .shopify-section-footer [class*="title-underline"]::after{background:#C79BE3 !important}
 
   /* ---------------- the footer mark ----------------
      The round badge goes; the wordmark carries the brand, as it does in the
@@ -103,23 +105,24 @@
   /* a duplicate row that lost the race stays hidden even if something repaints it */
   html body [data-pg-dupe="1"]{display:none !important}
 
-  /* Subscribe button: black with purple glow, no orange animation */
-  #shopify-section-footer #newsletter-footer button,
-  #shopify-section-footer #newsletter-footer [type="submit"],
-  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+  /* Subscribe button: black with purple glow, no orange animation.
+
+     Keyed on .pg-news, which onePayRow() stamps on whatever it identified as
+     the newsletter card. The old selector needed TWO ids -- the section id and
+     #newsletter-footer -- and this file's own comments already record that
+     neither exists on the content templates. The JS had been taught to find
+     that block by heading text and by the email input; the CSS had not, so on
+     those pages Subscribe stayed the theme's orange animated pill. */
+  html body .pg-news button,
+  html body .pg-news [type="submit"],
+  html body .pg-news .mobile-only{
     background:#121212 !important;background-image:none !important;animation:none !important;
     box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
   }
-  #shopify-section-footer #newsletter-footer button:hover,
-  #shopify-section-footer #newsletter-footer [type="submit"]:hover,
-  #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only:hover{
+  html body .pg-news button:hover,
+  html body .pg-news [type="submit"]:hover,
+  html body .pg-news .mobile-only:hover{
     background:#7A2FA2 !important;filter:none !important;
-  }
-  @media(max-width:760px){
-    #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
-      background:#121212 !important;background-image:none !important;animation:none !important;
-      box-shadow:0 10px 24px -10px rgba(46,17,64,.7) !important;
-    }
   }
 
   /* Content pages (policies, about, track order): purple links to match the theme */
@@ -280,6 +283,9 @@
     }
     var host = news ? (news.parentElement || news) : null;
     if (!host) return;
+    /* give the stylesheet the hook the ids could not provide */
+    (news.closest('form') || host).classList.add('pg-news');
+    host.classList.add('pg-news');
     kept.setAttribute('data-pg-moved', '1');
     kept.classList.add('pg-pay-moved');
     host.appendChild(kept);
