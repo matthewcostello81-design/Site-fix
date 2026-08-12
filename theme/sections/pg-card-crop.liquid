@@ -1,0 +1,44 @@
+{%- comment -%}
+  PG Card Crop: sit the orbs lower in their Best Sellers card.
+
+  The orb photo is five orbs in the upper half with their reflections filling
+  the lower half, so in a square card the subject reads as riding high with
+  dead weight underneath.
+
+  WHY NOT object-position. pg-home sizes these images `aspect-ratio:1/1;
+  object-fit:cover`, and the orb source is 1792x1800 -- essentially square. cover
+  is therefore trimming about 4px top and bottom, and object-position can only
+  choose between crops that exist. With no overflow there is nothing to shift,
+  and the property would silently do nothing.
+
+  WHY NOT a wider box. Giving this image `aspect-ratio:4/3` would create the
+  overflow object-position needs, but the Best Sellers row is three cards side
+  by side and the wrapper takes its height from the image. One shorter card
+  would drop its title and price out of line with the other two.
+
+  So the box stays square and the slack is made instead: scale the image up a
+  little, which pushes 7% of its height past each edge of the wrapper (already
+  overflow:hidden), then translate down into that slack. The subject moves down
+  inside the frame and the reflection is what leaves at the bottom.
+
+  translateY stays under the 7% available per side, so no gap can open at the
+  top. The hover rule has to restate the whole transform: pg-home hovers these
+  with `transform:scale(1.04)`, which REPLACES rather than adds to a transform,
+  so without restating it the image would snap back to centre under the cursor.
+
+  Scoped by href to the orb card alone. The console and wall art photos are
+  framed differently and do not want this.
+{%- endcomment -%}
+<style>
+  /* the orb card only -- pgh-card is an <a>, so its href identifies the product */
+  html body #pgh .pgh-card[href*="pokemon-crystal-ball"] .pgh-card-img img{
+    transform:translateY(5%) scale(1.14);
+  }
+  html body #pgh .pgh-card[href*="pokemon-crystal-ball"]:hover .pgh-card-img img{
+    /* pg-home's hover replaces the transform outright, so restate it in full */
+    transform:translateY(5%) scale(1.18);
+  }
+</style>
+{% schema %}
+{"name": "PG Card Crop", "settings": []}
+{% endschema %}

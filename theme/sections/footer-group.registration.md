@@ -80,3 +80,17 @@ glow and `pg-footer` the footer mark's. It splits the mark into
 `POCKE` + `.pg-wm-t` + `.pg-wm-2` so the T can be moved without dragging every
 other glyph, and neutralises the `letter-spacing` those two files used to set
 by out-specifying them.
+
+## sections/footer-group.json — `pg-card-crop`
+
+Registered after `pg-hero-crop`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_card_crop` | pg-card-crop | sits the orbs lower in their Best Sellers card |
+
+Scoped by href to the orb card alone (`.pgh-card` is an `<a>`). Uses a scale +
+translateY rather than `object-position`: pg-home sizes these images 1:1 and the
+orb source is 1792x1800, so `object-fit:cover` trims ~4px and object-position has
+no overflow to work with. The hover transform is restated in full because
+pg-home's `transform:scale(1.04)` replaces rather than adds.
