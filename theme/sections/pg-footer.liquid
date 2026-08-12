@@ -55,14 +55,9 @@
     font-family:'Press Start 2P','Courier New',monospace !important;
     font-weight:400 !important;
     font-size:20px !important;
-    /* Two numbers, working together -- see pe-logo for the full reasoning.
-       Press Start 2P's T is a bar over a centred stem and carries empty space
-       on both sides, so cancelling the word space outright made the mark read
-       POCKE / TERA. letter-spacing binds the T to POCKET; word-spacing leaves
-       ERA a break wider than any letter gap. The header carries the same
-       values. */
-    letter-spacing:-0.13em !important;
-    word-spacing:-0.30em !important;
+    /* kerning lives in pg-wordmark, which splits the T into its own span --
+       letter-spacing here would move every glyph, which is the trap that made
+       the mark oscillate between a crushed POCKET and a detached T */
     line-height:2.4 !important;
     white-space:nowrap !important;
     color:#F6DBFF !important;
@@ -213,9 +208,23 @@
     var news = document.getElementById('newsletter-footer')
             || document.querySelector('form[action*="/contact#newsletter"], form[action*="customer_posted"]');
     if (!news){
-      var heads = document.querySelectorAll('#shopify-section-footer h2, #shopify-section-footer h3, [id*="footer"] h2, [id*="footer"] h3');
-      for (var j = 0; j < heads.length; j++){
-        if (/stay up to date|newsletter|sign up/i.test(heads[j].textContent || '')){ news = heads[j]; break; }
+      /* The heading search used to look at h2 and h3 only. The theme renders
+         this block's title at whatever level its "title_size_blocks" setting
+         says -- it is set to h4 -- so the search found nothing, host stayed
+         null, and the row silently never moved. Every heading level, plus the
+         theme's title/heading class names, are checked now. */
+      var scope = document.getElementById('shopify-section-footer')
+               || document.querySelector('.shopify-section-footer')
+               || document.body;
+      var cands = scope.querySelectorAll('h1,h2,h3,h4,h5,h6,[class*="title"],[class*="heading"]');
+      for (var j = 0; j < cands.length; j++){
+        if (cands[j].closest('#cart')) continue;
+        if (/stay up to date|newsletter|sign up/i.test(cands[j].textContent || '')){ news = cands[j]; break; }
+      }
+      /* last resort: the signup field itself */
+      if (!news){
+        var mail = scope.querySelector('input[type="email"]');
+        if (mail && !mail.closest('#cart')) news = mail.closest('form') || mail;
       }
     }
     var host = news ? (news.parentElement || news) : null;

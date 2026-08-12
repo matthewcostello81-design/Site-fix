@@ -78,29 +78,11 @@ html body a.pg-wordmark.pg-wordmark{
   transform:scaleY(2.21) !important;
   white-space:nowrap !important;
   font-size:clamp(36px,4.14vw,70px) !important;
-  /* 4. Spacing the two words, which took several passes to get right.
-
-        Press Start 2P is monospaced and draws the space as a full 1em cell, so
-        untouched "POCKET ERA" opened a gap a whole glyph wide. But simply
-        cancelling that advance (-1em) made it read POCKE / TERA instead: the T
-        glyph is a top bar over a centred stem, so it carries empty space on
-        BOTH sides at the baseline, and with no word space the gap to its left
-        and the gap to its right look identical. The eye then groups the T
-        either way, and it picks the wrong one.
-
-        So the two numbers work together. letter-spacing pulls every glyph
-        slightly left of its cell, closing the bearing gap between the E and the
-        T and binding the T to POCKET. word-spacing then leaves ERA a gap that
-        is clearly wider than any letter gap without being a whole cell.
-
-        The two move together: tightening letter-spacing also drags ERA left,
-        so word-spacing is eased by the same amount to hold the break open.
-
-        Tuning: less negative letter-spacing loosens POCKET; less negative
-        word-spacing widens the break before ERA. The theme's own -0.11em is
-        roughly where this sits; watch for glyphs touching if it goes further. */
-  letter-spacing:-0.13em !important;
-  word-spacing:-0.30em !important;
+  /* 4. Kerning lives in pg-wordmark, not here. letter-spacing is the only
+        lever CSS offers on a plain text node and it moves EVERY glyph, so
+        every value that pulled the T toward POCKET also crushed P O C K E
+        together. pg-wordmark splits the T into its own span and gives it a
+        margin, which moves it alone. */
 }
 @media(min-width:1440px){
   html body a.pg-wordmark.pg-wordmark{font-size:70px !important}

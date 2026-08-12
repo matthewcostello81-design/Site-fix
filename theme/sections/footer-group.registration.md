@@ -66,3 +66,17 @@ Gated in Liquid on `page.handle` (`contact`, `track-order`, `track-your-order`)
 rather than by CSS, so it cannot reach product pages or the cart. It styles
 layout only — field glow, focus states and the Send gradient stay owned by
 `pg-form`, which stamps them per element.
+
+## sections/footer-group.json — `pg-wordmark`
+
+Registered last, after `pg-page-style`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_wordmark` | pg-wordmark | kerns the T in POCKET ERA, header and footer |
+
+Owns ONLY the kerning. `pe-logo` still owns the header mark's face/size/stretch/
+glow and `pg-footer` the footer mark's. It splits the mark into
+`POCKE` + `.pg-wm-t` + `.pg-wm-2` so the T can be moved without dragging every
+other glyph, and neutralises the `letter-spacing` those two files used to set
+by out-specifying them.

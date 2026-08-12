@@ -1,0 +1,93 @@
+{%- comment -%}
+  PG Wordmark: kern the T in POCKET ERA on its own, without touching the rest.
+
+  THE PROBLEM WITH THE PREVIOUS APPROACH. Press Start 2P draws T as a top bar
+  over a centred stem, so it carries empty space on both sides at the baseline
+  and drifts away from POCKET toward ERA. The only lever CSS gives you on a
+  plain text node is letter-spacing -- and that moves EVERY glyph. Each pass
+  that pulled the T closer also crushed P O C K E together, and each pass that
+  relaxed the other letters let the T drift again. There is no value that fixes
+  one without breaking the other, which is why five attempts traded the same
+  two problems back and forth.
+
+  WHAT THIS DOES INSTEAD. The mark's text is rewritten as three parts:
+
+      POCKE  <span class="pg-wm-t">T</span>  <span class="pg-wm-2">ERA</span>
+
+  so the T and the second word each get their own margin. The T is pulled left
+  by its own negative margin -- nothing else moves -- and ERA carries the word
+  break as an explicit margin rather than a space character. letter-spacing
+  goes back to 0 and word-spacing back to normal, so every other letter pair
+  sits at the face's natural rhythm.
+
+  Tuning, and these are now independent:
+    --pg-wm-t   how far the T is pulled toward POCKE (more negative = closer)
+    --pg-wm-gap the break before ERA (larger = wider)
+
+  OWNERSHIP. pe-logo still owns the header mark's face, size, stretch and glow,
+  and pg-footer the footer mark's. This file owns only the kerning, and it
+  overrides the letter-spacing those two set by out-specifying them -- pe-logo
+  doubles its class and pg-footer uses a single .nc-foot-word, so tripling and
+  doubling respectively wins wherever they load.
+
+  The split is re-applied on an interval because pg-mobile re-injects the
+  header wordmark's text on its own schedule, which would otherwise wipe the
+  spans.
+{%- endcomment -%}
+<style>
+  html body a.pg-wordmark.pg-wordmark.pg-wordmark,
+  html body .nc-foot-word.nc-foot-word{
+    /* the blunt instruments are off; the spans below do the work */
+    letter-spacing:0 !important;
+    word-spacing:normal !important;
+  }
+
+  html body .pg-wm-t{
+    margin-left:-0.24em !important;
+    letter-spacing:0 !important;
+  }
+  html body .pg-wm-2{
+    margin-left:0.34em !important;
+    letter-spacing:0 !important;
+  }
+</style>
+<script>
+(function(){
+  if (window.pgWordmark) return; window.pgWordmark = 1;
+
+  var SEL = 'a.pg-wordmark, .nc-foot-word';
+
+  function esc(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  /* "POCKET ERA" -> POCKE + <T> + <ERA>. Split off the LAST character of the
+     first word rather than hard-coding a T, so the mark still kerns correctly
+     if the brand text is ever edited in the theme settings. */
+  function kern(el){
+    if (el.querySelector('.pg-wm-t')) return;
+    var text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    var m = text.match(/^(\S+) (\S+)$/);
+    if (!m) return;
+    var first = m[1], second = m[2];
+    if (first.length < 2) return;
+    el.innerHTML =
+      esc(first.slice(0, -1)) +
+      '<span class="pg-wm-t">' + esc(first.slice(-1)) + '</span>' +
+      '<span class="pg-wm-2">' + esc(second) + '</span>';
+  }
+
+  function pass(){
+    document.querySelectorAll(SEL).forEach(kern);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass); else pass();
+  [200, 600, 1200, 2400].forEach(function(t){ setTimeout(pass, t); });
+  setInterval(pass, 900);
+})();
+</script>
+{% schema %}
+{"name": "PG Wordmark", "settings": []}
+{% endschema %}
