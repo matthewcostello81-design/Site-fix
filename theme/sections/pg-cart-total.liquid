@@ -12,13 +12,17 @@
       Sale savings      -$130.00     compare-at minus the selling price
       Promo discount     -$16.25     whatever Shopify actually applied
       ------------------------------
-      Total              $113.73     cart.total_price, the real charge
-      [ You save $146.25 (56%) ]
+      Total savings     $146.25      what the three rows above add up to
+
+  The panel deliberately ends on the SAVINGS, not on the amount charged: the
+  cart's own "Total" row sits directly beneath this box, so printing the total
+  twice made the shopper read the same number twice and the savings not at all.
+  The bold line is now the one number this box exists to communicate.
 
   The arithmetic is anchored on the real total rather than added up
   independently: Original comes from compare-at prices, Total comes straight
   from cart.total_price, and Promo is the remainder after sale savings. That
-  way the three rows can never sum to something other than what is charged --
+  way the rows can never sum to something other than what is charged --
   including when Shopify picks one automatic discount over another, which it
   does, since only ONE automatic discount applies per order.
 
@@ -54,16 +58,12 @@
     font-size:15.5px;font-weight:800;
   }
   #cart .pg-tot-r.pg-tot-sum span{font-weight:800;color:#3B1553}
-  #cart .pg-tot-save{
-    display:block;margin:8px 0 0;padding:7px 10px;border-radius:999px;text-align:center;
-    font-size:13px;font-weight:800;letter-spacing:.02em;color:#fff;
-    background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
-  }
+  /* the savings line is the point of the box, so it carries the accent */
+  #cart .pg-tot-r.pg-tot-saved span{color:#7A2FA2}
   @media(max-width:760px){
     #cart .pg-tot{padding:8px 10px}
     #cart .pg-tot-r{font-size:12.5px;line-height:1.5}
     #cart .pg-tot-r.pg-tot-sum{font-size:14.5px}
-    #cart .pg-tot-save{font-size:12px;padding:6px 10px;margin-top:6px}
   }
 </style>
 <script>
@@ -128,8 +128,12 @@
       var html = row('Original price', money(original + prot));
       if (sale > 0) html += row('Sale savings', '-' + money(sale), 'pg-tot-off');
       if (promo > 0) html += row('Promo discount', '-' + money(promo), 'pg-tot-off');
-      html += row('Total', money(total), 'pg-tot-sum');
-      if (saved > 0) html += '<b class="pg-tot-save">You save ' + money(saved) + ' (' + pct + '%)</b>';
+
+      /* Bottom line: what they saved. With nothing discounted there is no
+         savings to report, so the box falls back to stating the charge rather
+         than printing "Total savings $0.00". */
+      if (saved > 0) html += row('Total savings (' + pct + '%)', money(saved), 'pg-tot-sum pg-tot-saved');
+      else html += row('Total', money(total), 'pg-tot-sum');
 
       var box = pane.querySelector('.pg-tot');
       if (!box){
