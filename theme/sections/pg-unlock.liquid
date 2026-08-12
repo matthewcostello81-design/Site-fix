@@ -137,6 +137,10 @@
         handle: handle,
         name: LADDERS[handle].name,
         variant: rec.item.variant_id,
+        /* the line to grow, and what it currently holds -- see the click
+           handler for why the button raises this rather than posting an add */
+        key: rec.item.key,
+        lineQty: rec.item.quantity,
         image: rec.item.image,
         price: rec.item.price,
         rung: rung,
@@ -171,7 +175,8 @@
         '<small>' + note + '</small>' +
         '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
       '</div>' +
-      '<button type="button" class="pg-unlock-add" data-v="' + o.variant + '">Add</button>';
+      '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
+        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty + '">Add</button>';
     return el;
   }
 
@@ -207,12 +212,50 @@
     busy = true;
     btn.disabled = true;
     btn.textContent = 'Adding...';
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({items: [{id: parseInt(btn.getAttribute('data-v'), 10), quantity: 1}]})
-    }).then(function(r){
-      if (!r.ok) throw 0;
+
+    /* Raise the quantity on the line that is already there, rather than
+       posting an add.
+
+       Shopify only merges an added item into an existing line when the variant
+       AND the line properties match exactly. The wall art line was picking up
+       a fresh line on every click -- one for the 2nd print, another for the
+       3rd -- because whatever put the first one in the cart attached line
+       properties this button does not send. Changing the known line key by
+       quantity + 1 cannot split, whatever properties that line carries.
+
+       add.js stays as the fallback for the case where the key has gone stale
+       (the cart changed in another tab, say); a stale key makes change.js a
+       no-op, so the response is checked for the line actually growing. */
+    var key = btn.getAttribute('data-k');
+    var qty = parseInt(btn.getAttribute('data-q'), 10) || 0;
+    var vid = parseInt(btn.getAttribute('data-v'), 10);
+
+    function addNew(){
+      return fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items: [{id: vid, quantity: 1}]})
+      });
+    }
+
+    var req = key
+      ? fetch('/cart/change.js', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({id: key, quantity: qty + 1})
+        }).then(function(r){
+          if (!r.ok) return addNew();
+          return r.json().then(function(cart){
+            var grew = (cart.items || []).some(function(it){
+              return it.key === key && it.quantity > qty;
+            });
+            return grew ? r : addNew();
+          });
+        })
+      : addNew();
+
+    req.then(function(r){
+      if (!r || !r.ok) throw 0;
       lastKey = '';
       busy = false;
       if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
