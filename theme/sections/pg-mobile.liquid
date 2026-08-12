@@ -19,13 +19,18 @@ html body a.pg-wordmark{max-width:100% !important}
 /* Content templates (track order, contact, policies) render their body text
    flush against the left edge of the viewport, with the first character
    clipped, because the page header replaces the native one and the content
-   wrapper loses its container. Give it the same centred column the footer uses. */
-html body[class*="template-page"] #content{
+   wrapper loses its container. Give it the same centred column the footer uses.
+   The header section renders INSIDE #content on these templates, so the column
+   goes on the body sections only — constraining #content itself squeezed the
+   announcement bar, wordmark and nav into a narrow strip. */
+html body[class*="template-page"] .shopify-section[id*="main-page"],
+html body[class*="template-page"] .shopify-section[id*="breadcrumbs"]{
   max-width:1120px !important;margin-left:auto !important;margin-right:auto !important;
   padding-left:24px !important;padding-right:24px !important;box-sizing:border-box !important
 }
 @media(max-width:760px){
-  html body[class*="template-page"] #content{padding-left:16px !important;padding-right:16px !important}
+  html body[class*="template-page"] .shopify-section[id*="main-page"],
+  html body[class*="template-page"] .shopify-section[id*="breadcrumbs"]{padding-left:16px !important;padding-right:16px !important}
 }
 /* The wordmark is drawn at 2.6x scale, which overflowed its 210px box and
    painted over the nav row beneath it. Give the mark room and float the nav

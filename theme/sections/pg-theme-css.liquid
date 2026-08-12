@@ -810,7 +810,11 @@
       var img = (p.images && p.images[0] && p.images[0].src) || '';
       VARS = (p.variants || []).map(function(v){ return {id: v.id, t: (v.title.indexOf('/') > -1 ? v.title.split('/').pop() : v.title).replace(/^\s+|\s+$/g, ''), p: parseFloat(v.price || 0), c: parseFloat(v.compare_at_price || 0)}; });
       if (VARS.length < 1) return;
-      var opts = VARS.map(function(v){ return '<option value="' + v.id + '">' + v.t + '</option>'; }).join('');
+      /* Default both Duo Pack slots to the 64G variant. Without an explicit
+         selection the browser takes the first option, which is the 128G one,
+         so the pack opened at the dearer configuration. */
+      var duoDef = VARS.filter(function(v){ return /(^|\D)64/.test(v.t); })[0] || VARS[0];
+      var opts = VARS.map(function(v){ return '<option value="' + v.id + '"' + (v.id === duoDef.id ? ' selected' : '') + '>' + v.t + '</option>'; }).join('');
       if (isR36 && !document.querySelector('.pgx-duo')){
       var tile = document.createElement('div');
       tile.className = 'pgx-tile pgx-duo';
