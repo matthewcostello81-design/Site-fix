@@ -17,15 +17,11 @@
 
   A row only appears when adding exactly ONE more unit earns a discount on that
   unit -- the rung is reachable in a single click, so the prompt is never a
-  promise about something two steps away. At quantities between rungs the row
-  says how many more units the next rung takes.
+  promise about something two steps away. At quantities between rungs no row is
+  drawn at all.
 
-  LAYOUT NOTE: the styles below are stamped onto the elements as inline
-  `!important` declarations rather than left to the stylesheet. The cart's own
-  CSS carries rules like `#cart img{width:100%}` that outrank a plain class
-  selector, which collapsed this row into a full-bleed image with the copy
-  squeezed out of view. Inline wins that fight outright, and every render pass
-  re-stamps in case something else repaints the row.
+  The unit added is the same variant already in the cart, so the shopper gets
+  another of the thing they chose rather than the product default.
 
   NOTE for whoever picks this up: Shopify applies only ONE automatic discount to
   an order. These ladders cannot stack with each other or with the free-case
@@ -33,6 +29,40 @@
   both. The copy here deliberately says "applied at checkout" for the rung being
   offered and never claims a total.
 {%- endcomment -%}
+<style>
+  #cart .pg-unlock{
+    display:flex;align-items:center;gap:12px;
+    margin:10px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  #cart .pg-unlock img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock-t{flex:1;min-width:0}
+  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-tag{
+    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
+  }
+  #cart .pg-unlock-add{
+    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    background-image:none !important;color:#7A2FA2 !important;
+    border-radius:999px !important;padding:9px 18px !important;
+    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    animation:none !important;transition:background .15s ease,color .15s ease;
+  }
+  #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
+  #cart .pg-unlock-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
+  #cart .pg-unlock-add[disabled]{opacity:.6;cursor:default}
+  @media(max-width:600px){
+    #cart .pg-unlock{flex-wrap:wrap;gap:10px}
+    #cart .pg-unlock-t{flex:1 1 60%}
+    #cart .pg-unlock-add{flex:1 1 auto;order:4}
+  }
+</style>
 <script>
 (function(){
   if (window.pgUnlock) return; window.pgUnlock = 1;
@@ -53,89 +83,12 @@
     }
   };
 
-  /* ---------- inline style stamping ---------- */
-
-  var S = {
-    box:  {'display':'block','width':'100%'},
-    row:  {'display':'flex','align-items':'center','gap':'12px','width':'100%',
-           'box-sizing':'border-box','margin':'10px 0 4px','padding':'11px 13px',
-           'border':'1px solid rgba(122,47,162,.3)','border-radius':'14px',
-           'background':'linear-gradient(120deg,#F8F3FC,#F1E7F8)',
-           'box-shadow':'0 12px 30px -24px rgba(74,28,102,.45)',
-           'font-family':"'Poppins','Segoe UI',Helvetica,Arial,sans-serif",
-           'list-style':'none','float':'none','position':'relative'},
-    img:  {'width':'52px','height':'52px','min-width':'52px','max-width':'52px',
-           'border-radius':'10px','object-fit':'cover','flex':'0 0 auto',
-           'background':'#efe4f8','display':'block','margin':'0','padding':'0'},
-    txt:  {'flex':'1 1 auto','min-width':'0','display':'block','text-align':'left',
-           'margin':'0','padding':'0'},
-    ttl:  {'display':'block','font-size':'13.5px','line-height':'1.3','color':'#3B1553',
-           'font-weight':'800','margin':'0','white-space':'normal'},
-    note: {'display':'block','font-size':'11.5px','line-height':'1.35','color':'#6E5C80',
-           'margin':'2px 0 0','white-space':'normal'},
-    tag:  {'display':'inline-block','margin':'4px 0 0','padding':'3px 9px','border-radius':'999px',
-           'font-size':'11px','font-weight':'800','letter-spacing':'.04em',
-           'text-transform':'uppercase','color':'#fff',
-           'background':'linear-gradient(120deg,#9B4BC4,#7A2FA2)'},
-    add:  {'flex':'0 0 auto','width':'auto','min-width':'0','border':'1.5px solid #7A2FA2',
-           'background':'#fff','background-image':'none','color':'#7A2FA2',
-           'border-radius':'999px','padding':'9px 18px','font-family':'inherit',
-           'font-weight':'800','font-size':'13px','cursor':'pointer','animation':'none',
-           'position':'static','margin':'0','line-height':'1.2','text-transform':'none',
-           'letter-spacing':'0','box-shadow':'none','transform':'none'}
-  };
-
-  function st(el, map){
-    if (!el) return el;
-    for (var k in map) if (map.hasOwnProperty(k)) el.style.setProperty(k, map[k], 'important');
-    return el;
-  }
-
-  function narrow(){ return window.innerWidth <= 600; }
-
-  /* On a phone the row wraps: copy beside the thumbnail, button on its own
-     line underneath at full width. */
-  function stampRow(el){
-    st(el, S.row);
-    if (narrow()){
-      el.style.setProperty('flex-wrap','wrap','important');
-      el.style.setProperty('row-gap','10px','important');
-    } else {
-      el.style.setProperty('flex-wrap','nowrap','important');
-    }
-    st(el.querySelector('img'), S.img);
-    var t = el.querySelector('.pg-unlock-t');
-    st(t, S.txt);
-    if (narrow() && t) t.style.setProperty('flex','1 1 40%','important');
-    st(el.querySelector('.pg-unlock-b'), S.ttl);
-    st(el.querySelector('.pg-unlock-s'), S.note);
-    st(el.querySelector('.pg-unlock-tag'), S.tag);
-    var b = el.querySelector('.pg-unlock-add');
-    st(b, S.add);
-    if (narrow() && b){
-      b.style.setProperty('flex','1 1 100%','important');
-      b.style.setProperty('width','100%','important');
-      b.style.setProperty('order','4','important');
-    }
-  }
-
-  function stampAll(){
-    document.querySelectorAll('#cart .pg-unlock').forEach(stampRow);
-  }
-
   var busy = false;
   var lastKey = '';
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
-  /* One row per ladder product that still has a rung ahead of it.
-
-     A cart sitting exactly ON a rung gets the actionable offer -- one click
-     earns the discount. A cart BETWEEN rungs (3 orbs, say) used to get nothing
-     at all, which reads as the upsell vanishing, so it now gets the same row
-     stating how many more it takes to reach the next rung. The button adds one
-     unit either way, and the copy never claims a discount that click will not
-     earn. */
+  /* One row per ladder product sitting on a rung. Returns the offers to draw. */
   function offers(cart){
     var byHandle = {};
     (cart.items || []).forEach(function(it){
@@ -148,30 +101,15 @@
     var out = [];
     Object.keys(byHandle).forEach(function(handle){
       var rec = byHandle[handle];
-      var rungs = LADDERS[handle].rungs;
-      var rung = rungs[rec.qty];
-      var away = 0;
-
-      if (!rung){
-        /* nearest rung still ahead of this quantity */
-        var best = null;
-        Object.keys(rungs).forEach(function(k){
-          var q = parseInt(k, 10);
-          if (q > rec.qty && (best === null || q < best)) best = q;
-        });
-        if (best === null) return;          /* ladder exhausted, nothing to say */
-        rung = rungs[best];
-        away = best - rec.qty;
-      }
-
+      var rung = LADDERS[handle].rungs[rec.qty];
+      if (!rung) return;
       out.push({
         handle: handle,
         name: LADDERS[handle].name,
         variant: rec.item.variant_id,
         image: rec.item.image,
         price: rec.item.price,
-        rung: rung,
-        away: away
+        rung: rung
       });
     });
     return out;
@@ -184,70 +122,37 @@
     var free = o.rung.pct === 100;
     var after = free ? 'free' : money(Math.round(o.price * (100 - o.rung.pct) / 100));
     var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
-
-    var title, note;
-    if (o.away === 0){
-      title = 'Add a ' + o.rung.nth + ' ' + o.name;
-      note = (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
-             ', applied at checkout';
-    } else {
-      title = 'Add ' + o.away + ' more ' + o.name + (o.away > 1 ? 's' : '');
-      note = 'Then your ' + o.rung.nth + ' is ' + (free ? 'free' : o.rung.pct + '% off') + ', applied at checkout';
-    }
-
     el.innerHTML =
       '<img alt="" src="' + img + '">' +
       '<div class="pg-unlock-t">' +
-        '<span class="pg-unlock-b">' + title + '</span>' +
-        '<span class="pg-unlock-s">' + note + '</span>' +
-        '<span class="pg-unlock-tag">' + (free ? o.rung.nth + ' free' : o.rung.nth + ' ' + o.rung.pct + '% off') + '</span>' +
+        '<b>Add a ' + o.rung.nth + ' ' + o.name + '</b>' +
+        '<small>' + (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
+        ', applied at checkout</small>' +
+        '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant + '">Add</button>';
-    stampRow(el);
     return el;
-  }
-
-  /* Where the rows belong: the top of the cart body, directly above the items
-     card -- the same place the desktop drawer puts it. The rail (.nc-recs /
-     .nc-recs-panel) moves between breakpoints, so anchoring on the items list
-     keeps the rows in one predictable spot at every width.
-
-     They go inside one wrapper rather than being inserted individually: with
-     two loose rows, each pass saw the other as "not directly above the list"
-     and moved it, so the pair swapped places every tick forever. */
-  function host(list){
-    if (!list || !list.parentNode) return null;
-    var box = document.querySelector('#cart .pg-unlock-box');
-    if (!box){
-      box = document.createElement('div');
-      box.className = 'pg-unlock-box';
-    }
-    st(box, S.box);
-    if (box.nextSibling !== list) list.parentNode.insertBefore(box, list);
-    return box;
-  }
-
-  function itemsList(c){
-    return c.querySelector('.l4ca:not(.in-panel)') || c.querySelector('.l4ca');
   }
 
   function render(){
     var c = document.getElementById('cart');
     if (!c) return;
-    var list = itemsList(c);
+    var list = c.querySelector('.l4ca:not(.in-panel)');
     if (!list) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
       var offs = offers(cart);
-      var box = host(list);
-      if (!box) return;
-      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.away + ':' + o.variant; }).join('|');
-      if (key === lastKey && box.children.length === offs.length){
-        stampAll();
-        return;
-      }
+      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.variant; }).join('|');
+      if (key === lastKey && c.querySelector('.pg-unlock')) return;
       lastKey = key;
-      box.innerHTML = '';
-      offs.forEach(function(o){ box.appendChild(row(o)); });
+      c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
+      if (!offs.length) return;
+      /* directly under the cart items, above the recommendation rail */
+      var anchor = c.querySelector('.nc-recs') || list.nextSibling;
+      offs.forEach(function(o){
+        var el = row(o);
+        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor);
+        else list.parentNode.appendChild(el);
+      });
     }).catch(function(){});
   }
 
@@ -257,7 +162,6 @@
     e.preventDefault(); e.stopPropagation();
     busy = true;
     btn.disabled = true;
-    btn.style.setProperty('opacity','.6','important');
     btn.textContent = 'Adding...';
     fetch('/cart/add.js', {
       method: 'POST',
@@ -273,12 +177,10 @@
     }).catch(function(){
       busy = false;
       btn.disabled = false;
-      btn.style.setProperty('opacity','1','important');
       btn.textContent = 'Try again';
     });
   }, true);
 
-  window.addEventListener('resize', stampAll);
   setInterval(render, 900);
   render();
 })();
