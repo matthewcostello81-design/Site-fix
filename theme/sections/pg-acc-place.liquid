@@ -1,0 +1,73 @@
+{%- comment -%}
+  PG Acc Place: keep the Description / Features / Shipping accordion in the buy
+  column, under the money-back bar, which is where pg-landing renders it.
+
+  pg-mobile's accLeft() moves it out on desktop:
+
+    var acc = document.querySelector('#pgx .pgx-acc'), gal = ...('#pgx .pgx-gallery');
+    if (!acc || !gal || acc.parentElement === gal) return;
+    if (matchMedia('(max-width: 900px)').matches) return;
+    gal.appendChild(acc);
+
+  and it runs on a 1500ms interval, so simply moving the accordion back starts a
+  tug of war that visibly jumps every 1.5s. Instead this disarms accLeft at its
+  own guard: a hidden decoy `.pgx-acc` is placed inside the gallery, and since
+  the gallery comes first in the document, `querySelector('#pgx .pgx-acc')` now
+  returns the decoy -- whose parent IS the gallery, so accLeft returns on its
+  third condition and never touches the real accordion again. No interval, no
+  fight, nothing to keep re-running.
+
+  The real accordion is identified by its id (#pgx-desc), so the decoy can never
+  be mistaken for it. If accLeft already moved it before this ran, it is put
+  back once, after .pgx-guar -- its template position.
+
+  Mobile is unaffected either way: under 900px accLeft already returned early,
+  and the buy column stacks below the gallery, so the accordion sits in the same
+  place it always did.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgAccPlace) return; window.pgAccPlace = 1;
+
+  function place(){
+    var root = document.getElementById('pgx');
+    if (!root) return false;
+    var gal = root.querySelector('.pgx-gallery');
+    var acc = document.getElementById('pgx-desc');
+    if (!gal || !acc) return false;
+
+    /* Decoy first, so accLeft is disarmed before it can run again. */
+    if (!gal.querySelector('[data-pg-accdecoy]')){
+      var decoy = document.createElement('div');
+      decoy.className = 'pgx-acc';
+      decoy.setAttribute('data-pg-accdecoy', '1');
+      decoy.setAttribute('aria-hidden', 'true');
+      decoy.style.setProperty('display', 'none', 'important');
+      gal.insertBefore(decoy, gal.firstChild);
+    }
+
+    /* Put the real one back if it was already moved. */
+    var buy = root.querySelector('.pgx-buy');
+    if (buy && acc.parentElement !== buy){
+      var guar = buy.querySelector('.pgx-guar');
+      if (guar) guar.insertAdjacentElement('afterend', acc);
+      else buy.appendChild(acc);
+      acc.style.removeProperty('margin-top');
+    }
+    return true;
+  }
+
+  function boot(){
+    if (place()) return;
+    /* pg-landing renders server-side, so this normally lands first try; the
+       retries only cover a slow parse. */
+    var n = 0;
+    var t = setInterval(function(){ if (place() || ++n > 20) clearInterval(t); }, 200);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Acc Place", "settings": []}
+{% endschema %}
