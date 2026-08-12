@@ -48,6 +48,12 @@
 
   /* Gallery */
   .pgx-hero{border-radius:10px;overflow:hidden;background:#f6f6f6}
+  {%- if template.suffix == 'pg-wallart' -%}
+  /* Wall art room shot carries a lot of empty bedding under the print. Crop the
+     bottom away instead of letterboxing. Scoped to this template's suffix, so
+     the R36S landing page keeps its square hero. */
+  #pgx .pgx-hero img{aspect-ratio:5/4 !important;object-fit:cover !important;object-position:center top !important;width:100% !important;height:auto !important}
+  {%- endif -%}
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
