@@ -35,7 +35,7 @@
           "type": "accordion",
           "settings": {
             "title": "Reviews",
-            "text": "<p>&#9733;&#9733;&#9733;&#9733;&#9733; 5.0 from 10,000+ happy gamers &mdash; <a href=\"/products/handheld-game-console#pg-reviews\">see what they\u2019re saying</a>.</p>"
+            "text": "<p>&#9733;&#9733;&#9733;&#9733;&#9733; 5.0 from 10,000+ happy gamers &mdash; <a href=\"/products/handheld-game-console#pg-reviews\">see what they’re saying</a>.</p>"
           }
         },
         "acc4": {
@@ -46,25 +46,37 @@
           }
         }
       },
-      "block_order": ["prod1", "prod2", "acc1", "acc2", "acc3", "acc4"],
+      "block_order": [
+        "prod1",
+        "prod2",
+        "acc1",
+        "acc2",
+        "acc3",
+        "acc4"
+      ],
       "settings": {
         "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "logo_text": "PocketEra",
         "announce_text": "Free shipping on all orders",
         "shop_url": "/#pg-shop",
         "hero_image": "shopify://shop_images/pg-hero-4k.png",
+        "hero_eyebrow": "Retro Gaming, Reimagined",
         "hero_title": "Special Offers on New Arrivals",
         "hero_cta": "Shop Now",
         "hero_url": "/#pg-shop",
+        "grid_eyebrow": "Most Loved",
         "grid_title": "Best Sellers",
         "split_title": "Built for real gamers.",
         "split_line1": "Your favourite classics. Now in your pocket.",
         "split_line2": "15,000+ retro games, ready to play anywhere.",
         "split_cta": "Shop now",
-        "split_image": "shopify://shop_images/hf_20260810_233020_a2474415-ccf9-497d-8bb6-6dafee6297a0.png",
+        "split_image": "shopify://shop_images/hf_20260811_213819_ab4e1ccb-4f64-4fe4-9b45-6f08ac87cb3e.png",
+        "tiles_eyebrow": "Explore",
         "tiles_title": "Collections"
       }
     }
   },
-  "order": ["pg_home"]
+  "order": [
+    "pg_home"
+  ]
 }
