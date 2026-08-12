@@ -55,13 +55,14 @@
     font-family:'Press Start 2P','Courier New',monospace !important;
     font-weight:400 !important;
     font-size:20px !important;
-    letter-spacing:0 !important;
-    /* Press Start 2P is monospaced and draws the space as a full 1em cell, so
-       "POCKET ERA" opened a gap a whole glyph wide and the T read as belonging
-       to ERA rather than to POCKET. -1em cancels that advance exactly, leaving
-       the T and the following E on the same rhythm as every other letter pair.
-       The header wordmark carries the same value. */
-    word-spacing:-1em !important;
+    /* Two numbers, working together -- see pe-logo for the full reasoning.
+       Press Start 2P's T is a bar over a centred stem and carries empty space
+       on both sides, so cancelling the word space outright made the mark read
+       POCKE / TERA. letter-spacing binds the T to POCKET; word-spacing leaves
+       ERA a break wider than any letter gap. The header carries the same
+       values. */
+    letter-spacing:-0.06em !important;
+    word-spacing:-0.5em !important;
     line-height:2.4 !important;
     white-space:nowrap !important;
     color:#F6DBFF !important;
