@@ -1,3 +1,31 @@
+# Pocket Era: Heroic 3D Wall Art added to homepage Best Sellers
+
+## What
+The homepage Best Sellers grid showed two cards (R36S console, Pokemon
+Crystal Ball) side by side. Added the new Heroic 3D Wall Art as a third
+card and put all three on one row on desktop.
+
+## How
+- **`templates/index.json`**: new `prod3` product block (wall art handle,
+  label "Heroic 3D Wall Art") ordered after the crystal ball.
+- **`sections/pg-dark.liquid`**: on desktop (min-width 901px) the card
+  width becomes a third of the row (`calc((100% - 44px)/3)` with the grid's
+  22px gaps) so the three cards sit next to each other. The 50% width it
+  overrides lives in pg-theme-css without !important; the new rule is
+  stamped with !important so it wins regardless of load order. Tablet keeps
+  2-up, mobile keeps stacked.
+
+Note: the wall art card shows no "Sale % Off" badge because the product's
+compare-at price is below its selling price (supplier import artifact); the
+grid only badges real markdowns.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") via the
+Admin API (themeFilesUpsert).
+Files changed: templates/index.json, sections/pg-dark.liquid
+
+---
+
 # Pocket Era: product page for Heroic 3D Wall Art
 
 ## What

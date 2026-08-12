@@ -107,6 +107,12 @@ html body .pgx-opt.has-select select option{background:#16101F !important;color:
 #pgh .pgh-atc{background:#1C1428 !important;color:#EFE8F7 !important;border-color:rgba(255,255,255,.16) !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.7) !important}
 #pgh .pgh-atc:hover{background:#8B44BE !important;background-color:#8B44BE !important;border-color:#8B44BE !important;color:#fff !important}
 #pgh .pgh-split-l{background:#16101F !important;color:#F1EDF7 !important}
+/* three best-seller cards on one row on desktop (the 50% card width lives in
+   pg-theme-css without !important; stamped here so it wins regardless of
+   load order). Tablet/mobile keep their 2-up / stacked layouts. */
+@media(min-width:901px){
+  html body #pgh .pgh-grid .pgh-card{width:calc((100% - 44px)/3) !important;max-width:calc((100% - 44px)/3) !important}
+}
 
 /* ---------- search ---------- */
 .pg-search{background:rgba(255,255,255,.05) !important;border-color:rgba(168,120,214,.26) !important}
