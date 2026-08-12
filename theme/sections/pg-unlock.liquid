@@ -134,6 +134,15 @@
     return el;
   }
 
+  /* Where the rows belong: the top of the cart body, directly above the items
+     card -- the same place the desktop drawer puts it. The rail (.nc-recs /
+     .nc-recs-panel) moves between breakpoints, so anchoring on the items list
+     instead keeps the rows in one predictable spot at every width. */
+  function place(el, list){
+    if (!list || !list.parentNode) return;
+    if (el.nextSibling !== list) list.parentNode.insertBefore(el, list);
+  }
+
   function render(){
     var c = document.getElementById('cart');
     if (!c) return;
@@ -142,16 +151,19 @@
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
       var offs = offers(cart);
       var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.variant; }).join('|');
-      if (key === lastKey && c.querySelector('.pg-unlock')) return;
+      var existing = c.querySelectorAll('.pg-unlock');
+      if (key === lastKey && existing.length){
+        /* nothing changed, but the drawer may have re-rendered around the rows */
+        existing.forEach(function(el){ place(el, list); });
+        return;
+      }
       lastKey = key;
-      c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
+      existing.forEach(function(el){ el.parentNode.removeChild(el); });
       if (!offs.length) return;
-      /* directly under the cart items, above the recommendation rail */
-      var anchor = c.querySelector('.nc-recs') || list.nextSibling;
-      offs.forEach(function(o){
-        var el = row(o);
-        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor);
-        else list.parentNode.appendChild(el);
+      /* reversed, so inserting each one directly above the list leaves them in
+         offer order top to bottom */
+      offs.slice().reverse().forEach(function(o){
+        place(row(o), list);
       });
     }).catch(function(){});
   }
