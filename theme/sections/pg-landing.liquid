@@ -262,7 +262,7 @@
         {%- if option.name == 'Color' and option.values.size > 1 -%}{%- assign color_opt = option -%}{%- endif -%}
       {%- endfor -%}
       {%- assign cpos = 0 -%}
-      {%- if color_opt -%}{%- assign cpos = color_opt.position | minus: 1 -%}{%- endif -%}
+      {%- if color_opt != blank -%}{%- assign cpos = color_opt.position | minus: 1 -%}{%- endif -%}
 
       <div class="pgx-tile pgx-sel" data-pgx-tile="single" role="radio" aria-checked="true" tabindex="0">
         <div class="pgx-tile-row">
@@ -276,9 +276,9 @@
             <div class="pgx-p-was" data-pgx-single-was></div>
           </div>
         </div>
-        {%- if size_opt or color_opt -%}
+        {%- if size_opt != blank or color_opt != blank -%}
         <div class="pgx-tile-opts">
-          {%- if color_opt -%}
+          {%- if color_opt != blank -%}
           <div class="pgx-opt">
             <select data-pgx-color="s1" aria-label="{{ color_opt.name | escape }}">
               {%- for value in color_opt.values -%}
@@ -316,7 +316,7 @@
         <div class="pgx-tile-opts">
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
-            {%- if color_opt -%}
+            {%- if color_opt != blank -%}
             <select data-pgx-color="d1" aria-label="{{ color_opt.name | escape }}">
               {%- for value in color_opt.values -%}
                 <option value="{{ value | escape }}">{{ value }}</option>
@@ -334,7 +334,7 @@
           <span class="pgx-plus">+</span>
           <div class="pgx-opt">
             <img src="{{ prod.featured_image | image_url: width: 116 }}" alt="{{ prod.title | escape }}">
-            {%- if color_opt -%}
+            {%- if color_opt != blank -%}
             <select data-pgx-color="d2" aria-label="{{ color_opt.name | escape }}">
               {%- for value in color_opt.values -%}
                 <option value="{{ value | escape }}">{{ value }}</option>

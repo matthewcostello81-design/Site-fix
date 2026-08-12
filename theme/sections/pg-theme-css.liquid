@@ -508,7 +508,7 @@
       });
     },900);
     /* Announcement bar: continuous sideways marquee of the offer messages */
-    var MSGS=['Free shipping on all orders','30-day money back guarantee','Free R36S case with purchase of device','15,000+ classic games preloaded'];
+    var MSGS=['Summer Sale &bull; 10% off with code WELCOME10 &bull; ends in <b class="pg-cd">15:00</b>','Free shipping on all orders','30-day money back guarantee','Free R36S case with purchase of device','15,000+ classic games preloaded'];
     function marq(){
       document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
         if(el.dataset.pgMarq)return; el.dataset.pgMarq='1';
@@ -518,6 +518,19 @@
     }
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',marq);else marq();
     setTimeout(marq,900);
+    /* Rolling 15-minute sale countdown; persists per visitor, restarts on expiry */
+    function pgCd(){
+      var els=document.querySelectorAll('.pg-cd');
+      if(!els.length)return;
+      var end=0;
+      try{end=parseInt(localStorage.getItem('pgCdEnd')||'0',10);}catch(e){}
+      var now=Date.now();
+      if(!end||end<now){end=now+900000;try{localStorage.setItem('pgCdEnd',String(end));}catch(e){}}
+      var s=Math.max(0,Math.floor((end-now)/1000));
+      var t=Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
+      els.forEach(function(e){e.textContent=t;});
+    }
+    setInterval(pgCd,1000); pgCd();
     /* Homepage cards: move the ATC under the price as a full-width button */
     function atcMove(){
       document.querySelectorAll('#pgh .pgh-card').forEach(function(c){
