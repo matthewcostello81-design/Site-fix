@@ -42,6 +42,11 @@
 #pgx .pgx-divider{display:none !important}
 /* Light-theme hairline above the accordions reads as a white bar on dark */
 #pgx .pgx-acc{border-top:0 !important}
+/* The case still carries the old "free-gift" handle, which the drawer CSS
+   uses to hide the quantity stepper. It is a real $13.99 product now, so
+   the stepper must work. */
+#cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
+body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:visible !important}
 /* Cart: retire the old 1/2/3+ item 10%/15% tier ladder everywhere */
 #cart .nc-tiers,body.template-cart .nc-tiers,.nc-tiers{display:none !important}
 /* Footer bottom strip: the light band under the footer was still theme-default */

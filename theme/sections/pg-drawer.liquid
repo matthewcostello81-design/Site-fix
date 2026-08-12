@@ -257,9 +257,10 @@
       if (gift && paid === 0){
         return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 0}})}).then(giftDone);
       }
-      if (gift && gift.quantity !== 1){
-        return fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49623692247268": 1}})}).then(giftDone);
-      }
+      /* Quantity is NOT clamped to 1. The case is a real $13.99 product now;
+         the "Free R36S Case with Console" BXGY covers the first one and any
+         extra the shopper adds with + is simply charged. Forcing it back to 1
+         made the plus button look broken. */
       giftBusy = false;
     }).catch(function(){ giftBusy = false; });
   }
