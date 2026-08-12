@@ -1,3 +1,27 @@
+# Pocket Era: stop hardcoding the PokeOrb name (was showing "Pokemon Crystal Ball")
+
+## Problem
+The product was renamed to "Crystal PokeOrb" in Shopify, but the storefront
+kept showing the old name because two theme files hardcode display names
+that override the live product title:
+- `templates/index.json` - homepage Best Sellers card label
+- `templates/product.pg-crystal.json` - `display_title` (page H1 + purchase
+  tile) and `bundle_title` ("Bundle Deal: 2x Crystal Balls")
+
+## Fix
+Cleared the hardcoded label/display_title (both fall back to the live
+product title via `| default: prod.title`, so future renames show up
+automatically) and updated the bundle tile to "Bundle Deal: 2x Crystal
+PokeOrbs". The R36S and wall art labels were left as deliberate custom
+display names.
+
+## Applied to
+Shopify draft theme `162727330020` ("Pocket Era round 1 (Claude)") via the
+Admin API (themeFilesUpsert).
+Files changed: templates/index.json, templates/product.pg-crystal.json
+
+---
+
 # Pocket Era: re-apply wall art Best Sellers block + strikethrough price
 
 ## What
