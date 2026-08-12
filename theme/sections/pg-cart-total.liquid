@@ -53,17 +53,31 @@
   }
   #cart .pg-tot-r span:last-child{font-weight:700;white-space:nowrap}
   #cart .pg-tot-r.pg-tot-off span{color:#7A2FA2}
+  /* Savings is a supporting figure, not the headline -- the amount charged is.
+     It stays only slightly above the breakdown rows above it. */
   #cart .pg-tot-r.pg-tot-sum{
     margin-top:5px;padding-top:6px;border-top:1px solid rgba(122,47,162,.22);
-    font-size:15.5px;font-weight:800;
+    font-size:13.5px;font-weight:700;
   }
-  #cart .pg-tot-r.pg-tot-sum span{font-weight:800;color:#3B1553}
-  /* the savings line is the point of the box, so it carries the accent */
+  #cart .pg-tot-r.pg-tot-sum span{font-weight:700;color:#3B1553}
+  /* the savings line carries the accent */
   #cart .pg-tot-r.pg-tot-saved span{color:#7A2FA2}
   @media(max-width:760px){
     #cart .pg-tot{padding:8px 10px}
     #cart .pg-tot-r{font-size:12.5px;line-height:1.5}
-    #cart .pg-tot-r.pg-tot-sum{font-size:14.5px}
+    #cart .pg-tot-r.pg-tot-sum{font-size:13px}
+  }
+
+  /* The bottom of the cart is painted black by something that survives both a
+     stylesheet rule and an inline stamp, which leaves a pseudo-element as the
+     only candidate -- and a pseudo cannot be reached from JS. lightenBottom()
+     tags each element it repaints, so the pseudos can be cleared here. */
+  #cart .pg-white,
+  #cart .pg-white::before,
+  #cart .pg-white::after{
+    background:#FFFFFF !important;
+    background-color:#FFFFFF !important;
+    background-image:none !important;
   }
 </style>
 <script>
@@ -108,21 +122,43 @@
     var cart = document.getElementById('cart');
     if (!pane || !cart) return;
 
-    var targets = [];
+    var targets = [], chain = [];
     for (var el = pane; el && el !== document.body; el = el.parentNode){
+      chain.push(el);
       targets.push(el);
       if (el === cart) break;
     }
-    if (pane.parentNode){
-      Array.prototype.forEach.call(pane.parentNode.children, function(sib){
+    /* siblings of every link in the chain, not just the pane's: the black band
+       runs the full width of the drawer, wider than the pane's own row */
+    chain.forEach(function(node){
+      if (!node.parentNode) return;
+      Array.prototype.forEach.call(node.parentNode.children, function(sib){
         if (targets.indexOf(sib) < 0) targets.push(sib);
       });
-    }
+    });
 
     targets.forEach(function(el){
       if (el.nodeType !== 1) return;
+      el.classList.add('pg-white');
       el.style.setProperty('background-color', '#FFFFFF', 'important');
       el.style.setProperty('background-image', 'none', 'important');
+    });
+  }
+
+  /* The amount charged is the headline; the theme renders it as the one
+     surviving row in .l4tt and styles it no larger than the breakdown above.
+     Stamped rather than written in CSS because the theme sets it inline. */
+  function sizeTotal(){
+    var pane = document.querySelector('#cart .sticky-in-panel');
+    if (!pane) return;
+    var rows = pane.querySelectorAll('.l4tt li.pg-tt, .l4tt li');
+    Array.prototype.forEach.call(rows, function(li){
+      if (getComputedStyle(li).display === 'none') return;
+      var set = {'font-size': '21px', 'font-weight': '800', 'color': '#3B1553', 'line-height': '1.3'};
+      for (var k in set) li.style.setProperty(k, set[k], 'important');
+      li.querySelectorAll('*').forEach(function(kid){
+        for (var k2 in set) kid.style.setProperty(k2, set[k2], 'important');
+      });
     });
   }
 
@@ -130,6 +166,7 @@
     /* ahead of the VMAP guard: the background must go white even if the
        product feed never loads */
     lightenBottom();
+    sizeTotal();
     if (!VMAP) return;
     var pane = document.querySelector('#cart .sticky-in-panel');
     if (!pane) return;

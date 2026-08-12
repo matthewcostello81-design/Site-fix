@@ -1,5 +1,9 @@
 {%- comment -%}
-  PG Cart Variants: make the console's storage picker in the cart usable.
+  PG Cart Variants: make every multi-variant cart line switchable.
+
+  TWO JOBS.
+
+  (A) Style and unblock the console picker that pg-drawer already builds.
 
   pg-drawer's vsel() builds a real <select> of every handheld-game-console
   variant on the cart line and, on change, zeroes the old variant and adds the
@@ -21,13 +25,22 @@
      the class only gets applied on the pass that CREATES the select -- the click
      falls straight through the select to the line's product link underneath.
 
-  This re-stamps the styling, guarantees the host paragraph is marked and
-  clickable, lifts the select onto its own stacking context, and stops click and
-  mousedown propagating so the surrounding link can never claim the event.
-  mousedown is only stopped, never prevented: preventing it would keep the
-  dropdown from opening at all.
+  (B) Build the same picker for lines pg-drawer skips.
 
-  The swap itself is untouched -- it is still pg-drawer's change handler.
+  vsel() is hard-coded to the console handle, so a Crystal PokeOrb line just
+  printed its variant as text ("13 Arceus") with no way to change it. Any line
+  whose product has more than one variant now gets a picker built here, in the
+  same place and the same style, so the two are indistinguishable to a shopper.
+
+  Lines are matched to cart items by handle and then by order within that
+  handle -- the Nth rendered line for a handle is the Nth cart item for it --
+  which stays correct when the same product appears twice, as it does when a
+  BXGY hands over a free 5th orb as its own $0.00 line.
+
+  The swap posts quantity 0 for the old line key, then adds the chosen variant
+  at the same quantity, then hands off to pg-drawer's refresh. Line properties
+  are carried over so a free-gift line cannot lose its marker, and single-variant
+  products are skipped entirely.
 {%- endcomment -%}
 <script>
 (function(){
@@ -45,7 +58,7 @@
     'height': '32px',
     'min-height': '32px',
     'width': 'auto',
-    'max-width': '140px',
+    'max-width': '190px',
     'padding': '2px 28px 2px 11px',
     'font-size': '13.5px',
     'font-weight': '700',
@@ -83,12 +96,125 @@
     sel.addEventListener('click', function(e){ e.stopPropagation(); });
   }
 
+  /* ---------- picker for the lines pg-drawer leaves as plain text ---------- */
+
+  var PROD = {};      /* handle -> variants, or null while in flight */
+  var busy = false;
+
+  function variantsFor(handle){
+    if (PROD.hasOwnProperty(handle)) return PROD[handle];
+    PROD[handle] = null;
+    fetch('/products/' + handle + '.js')
+      .then(function(r){ return r.json(); })
+      .then(function(p){ PROD[handle] = (p && p.variants) || []; })
+      .catch(function(){ PROD[handle] = []; });
+    return null;
+  }
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  /* the <p> printing the variant name, which the select replaces */
+  function titleP(li, title){
+    if (!title) return null;
+    var ps = li.querySelectorAll('section p, p');
+    for (var i = 0; i < ps.length; i++){
+      var t = (ps[i].textContent || '').replace(/\s*\/\s*$/, '').trim();
+      if (t === title) return ps[i];
+    }
+    return null;
+  }
+
+  function swap(oldKey, newId, qty, props){
+    if (busy) return;
+    busy = true;
+    var body = {id: oldKey, quantity: 0};
+    fetch('/cart/change.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    }).then(function(){
+      var line = {id: newId, quantity: qty};
+      if (props && Object.keys(props).length) line.properties = props;
+      return fetch('/cart/add.js', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items: [line]})
+      });
+    }).then(function(){
+      busy = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+      window.location.reload();
+    }).catch(function(){
+      busy = false;
+      window.location.reload();
+    });
+  }
+
+  function build(li, item, variants){
+    var p = titleP(li, item.variant_title);
+    if (!p || p.querySelector('select')) return;
+
+    var sel = document.createElement('select');
+    sel.className = 'pg-vsel';
+    variants.forEach(function(v){
+      if (v.available === false && v.id !== item.variant_id) return;
+      var o = document.createElement('option');
+      o.value = v.id;
+      o.textContent = v.title;
+      if (v.id === item.variant_id) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (sel.options.length < 2) return;
+
+    sel.addEventListener('change', function(){
+      var id = parseInt(sel.value, 10);
+      if (!id || id === item.variant_id) return;
+      sel.disabled = true;
+      swap(item.key, id, item.quantity, item.properties);
+    });
+
+    p.textContent = '';
+    p.appendChild(sel);
+    arm(sel);
+  }
+
+  function grow(){
+    var lines = document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li');
+    if (!lines.length) return;
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      /* Nth rendered line for a handle == Nth cart item for that handle, which
+         holds up when one product occupies two lines */
+      var seen = {};
+      Array.prototype.forEach.call(lines, function(li){
+        if (li.querySelector('.pg-vsel')) return;
+        var handle = handleOf(li);
+        if (!handle) return;
+
+        var n = seen[handle] || 0;
+        seen[handle] = n + 1;
+
+        var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
+        var item = hits[n];
+        if (!item) return;
+
+        var vs = variantsFor(handle);
+        if (!vs || vs.length < 2) return;      /* still loading, or nothing to pick */
+        build(li, item, vs);
+      });
+    }).catch(function(){});
+  }
+
   function pass(){
     document.querySelectorAll('#cart .l4ca .pg-vsel, body.template-cart .form-cart .pg-vsel').forEach(arm);
+    grow();
   }
 
   /* the drawer replaces its innerHTML on every cart change, so the selects are
-     new elements each time and have to be re-armed */
+     new elements each time and have to be re-armed and rebuilt */
   setInterval(pass, 400);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass); else pass();
 })();
