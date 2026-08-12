@@ -40,3 +40,16 @@ adding a named variant replaced it. Current, and referenced by the sections:
 `pg-drawer` (GIFT_ID) and `pg-mobile` (CASE_VARIANT) still hardcode the dead
 ID. pg-giftguard takes over placing the gift, and pg-case-add renames the
 button out from under pg-mobile's handler. Both large files are untouched.
+
+## sections/footer-group.json — `pg-hero-crop`
+
+Registered between `pg-gallery-mobile` and `pg-tile-copy`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_hero_crop` | pg-hero-crop | crops the reflection off the Crystal PokeOrb hero |
+
+Scoped to `template.suffix == 'pg-crystal'` and to widths above 900px only.
+Below that, pg-gallery-mobile deliberately sets these images to
+`aspect-ratio:auto` / `object-fit:contain` — that is the fix for the mobile
+hero being cropped square, so this must not reach it.

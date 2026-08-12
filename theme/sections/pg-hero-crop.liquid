@@ -1,0 +1,39 @@
+{%- comment -%}
+  PG Hero Crop: shorten the first gallery image on the Crystal PokeOrb page.
+
+  The orb hero is a near-square studio shot whose bottom third is nothing but
+  the mirrored reflection of the five orbs on the black tabletop. It carries no
+  product information, and it pushes the buy column's opening content that much
+  further down the page.
+
+  The box is cropped to 16:10, which lands just under the bases -- the product
+  is untouched, only the reflection is trimmed. object-position is top so the
+  crop always comes off the bottom rather than being centred.
+
+  pg-landing does this same trick inline for the wall art template, whose room
+  shot has a lot of empty bedding under the print. It lives in its own section
+  here rather than being added there because pg-landing is a 35KB shared file
+  and a themeFilesUpsert rewrites the whole thing.
+
+  DESKTOP ONLY, deliberately. pg-gallery-mobile sets these images to
+  aspect-ratio:auto with object-fit:contain, which is what stopped the mobile
+  hero being cropped into a square -- a problem that was reported and fixed.
+  Cropping at narrow widths would walk straight back into it, so the rule is
+  gated above the 900px breakpoint pg-landing already uses to switch layouts.
+{%- endcomment -%}
+{%- if template.suffix == 'pg-crystal' -%}
+<style>
+  @media (min-width: 901px){
+    html body #pgx .pgx-hero img{
+      aspect-ratio:16/10 !important;
+      object-fit:cover !important;
+      object-position:center top !important;
+      width:100% !important;
+      height:auto !important;
+    }
+  }
+</style>
+{%- endif -%}
+{% schema %}
+{"name": "PG Hero Crop", "settings": []}
+{% endschema %}
