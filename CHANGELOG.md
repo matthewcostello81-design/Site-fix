@@ -1,3 +1,62 @@
+# Pocket Era session: full draft state (theme 162746106084)
+
+Everything below is deployed on **Pocket Era Most Recent Draft** and registered.
+The live theme "Updated Live Theme PE" is a snapshot taken part-way through this
+session, so it carries only the earlier half.
+
+## Sections added (all new files)
+
+| Section | Group | What it does |
+|---|---|---|
+| pg-acc-place | footer | keeps Description/Features/Shipping in the buy column; disarms pg-mobile's accLeft() with a decoy `.pgx-acc` |
+| pg-gallery-mobile | footer | desktop-style thumbnail carousel on phones; stops the 1:1 cover crop on hero and video |
+| pg-tile-copy | footer | first bundle tile reads "Single Item"; adds the best-available-discount qualifier |
+| pg-case-mobile | footer | spare-case upsell tile wraps to two rows under 600px |
+| pg-page-logo | footer | page-template wordmark colour + the black bar |
+| pg-nav | footer | header row height and larger nav links |
+| pg-reviews-text | footer | white review copy on the dark canvas |
+| pg-case-add | footer | rewires the spare-case button to the live variant |
+| pg-marquee | footer | fills the announcement bar so it never runs out of messages |
+| pg-giftguard | overlay | FREE GIFT badge only when earned; places the $0 gift case |
+| pg-chips | overlay | centred, slightly larger cart pills |
+| pg-cart-mobile | overlay | unpinned Your Cart bar; compact totals pane on phones |
+| pg-no-promo | overlay | removes claims for expired % discounts |
+| pg-cart-variants | overlay | makes the console storage picker usable |
+| pg-unlock | overlay | offers the next real rung of each BXGY ladder |
+| pg-cart-total | overlay | one reconciling price breakdown |
+
+Also edited: `pe-logo.liquid` (wordmark 15% shorter, then 10% smaller, single
+line on mobile), `layout/theme.liquid` (tab title + favicon fallback), new
+snippet `pg-title.liquid`, and the product templates for the console, wall art
+and PokeOrb (gallery videos).
+
+## Store data changed (LIVE, not draft-scoped)
+
+Adding a named variant to the R36S Protective Case **replaced** its lone
+"Default Title" variant, so `49623692247268` no longer exists. Current:
+
+- `49640846426340` — $0.00 "Free with console" (the gift)
+- `49640879063268` — $13.99 "Spare case" (the paid upsell)
+
+pg-drawer (GIFT_ID) and pg-mobile (CASE_VARIANT) still hardcode the dead ID;
+pg-giftguard and pg-case-add take those jobs over.
+
+## Outstanding, for whoever picks this up
+
+1. **Publish order matters.** Publish this draft, verify a console adds a $0.00
+   case, and only then disable the "Free R36S Case with Console" discount. The
+   discount is redundant once the $0 variant is live, but harmless until then.
+2. **Only ONE automatic discount applies per Shopify order.** The BXGY ladders
+   cannot stack with each other. Making them stack needs a Shopify Function.
+3. **Page-template header is unverified.** The storefront is unreachable from
+   the container this was built in, so the wordmark colour and black-bar fix on
+   Contact / Track Your Order were reasoned from source, not seen. The bar is
+   most likely the themed link underline on `a.pg-wordmark`, stretched by
+   `scaleY(2.21)`; if it survives, inspect the bar and check whether it is a
+   border, a background or `pe-badge.svg`.
+
+---
+
 # Cart pills: centred text, slightly larger
 
 ## Problem
