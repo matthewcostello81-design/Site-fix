@@ -59,6 +59,17 @@
 /* Buy tile showed two MSRP strikethroughs (a stale one plus the live
    variant's); keep only the last, which tracks the selected variant */
 #pgx .pgx-tile-price .pgx-p-was:not(:last-child){display:none !important}
+/* Extra-case upsell tile: last option before Add to Cart */
+#pgx .pgx-case{display:flex;align-items:center;gap:12px;border:1px solid rgba(168,120,214,.28);background:#16101F;border-radius:12px;padding:12px 14px;margin:0 0 12px;cursor:pointer}
+#pgx .pgx-case.on{border-color:#8B44BE;background:#1C1428;box-shadow:0 0 0 3px rgba(139,68,190,.16)}
+#pgx .pgx-case img{width:52px;height:52px;border-radius:9px;object-fit:cover;flex:none}
+#pgx .pgx-case-t{flex:1;min-width:0}
+#pgx .pgx-case-t b{display:block;font-size:14.5px;color:#F1EDF7}
+#pgx .pgx-case-t small{display:block;font-size:12.5px;color:#A99BC0;margin-top:2px}
+#pgx .pgx-case-p{font-weight:700;color:#C79BEA;font-size:15px;flex:none}
+#pgx .pgx-case-b{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #8B44BE;position:relative}
+#pgx .pgx-case.on .pgx-case-b:after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+#pgx .pgx-case.on .pgx-case-b{background:#8B44BE}
 /* Accordions: same width and gutters as the split banner above them */
 #pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
 /* Best Sellers heading: matching soft purple letter glow */
@@ -183,7 +194,31 @@
     q.style.setProperty('position','static','important');
     q.style.setProperty('margin','0 0 16px','important');
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); }
+  /* Optional extra protective case, offered as the last tile before ATC */
+  var CASE_VARIANT = 49623692247268;
+  function caseTile(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m || m[1] !== 'handheld-game-console') return;
+    var atc = document.querySelector('#pgx .pgx-atc');
+    if (!atc || document.querySelector('#pgx .pgx-case')) return;
+    var el = document.createElement('div');
+    el.className = 'pgx-case';
+    el.innerHTML = '<span class="pgx-case-b"></span>'
+      + '<div class="pgx-case-t"><b>Add an extra protective case</b><small>Keep a spare, or gift one &mdash; ships with your order</small></div>'
+      + '<span class="pgx-case-p">$13.99</span>';
+    atc.parentNode.insertBefore(el, atc);
+    el.addEventListener('click', function(){ el.classList.toggle('on'); });
+  }
+  /* Capture-phase so it still runs when the tile handlers stopPropagation */
+  document.addEventListener('click', function(e){
+    if (!e.target.closest || !e.target.closest('.pgx-atc')) return;
+    var c = document.querySelector('#pgx .pgx-case.on');
+    if (!c) return;
+    c.classList.remove('on');
+    fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})}).catch(function(){});
+  }, true);
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); }
+  setInterval(caseTile, 1500);
   setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
   setTimeout(boot, 1400);
