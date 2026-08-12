@@ -221,7 +221,9 @@
     var c = document.querySelector('#pgx .pgx-case.on');
     if (!c) return;
     c.classList.remove('on');
-    fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})}).catch(function(){});
+    /* keepalive so the add still completes when the bundle handler
+       navigates to /cart a moment later; lands as its own line item */
+    fetch('/cart/add.js', {method: 'POST', keepalive: true, headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})}).catch(function(){});
   }, true);
   function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); }
   setInterval(caseTile, 1500);
