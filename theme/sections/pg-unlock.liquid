@@ -30,6 +30,18 @@
   offered and never claims a total.
 {%- endcomment -%}
 <style>
+  /* the wrapper is an <li> inside the items list so it can take part in that
+     flex column's order; -2 puts it above the FREE GIFT line, which pg-drawer
+     pins with order:-1. Every list-item style the theme paints is stripped. */
+  #cart .l4ca > li.pg-unlock-box,
+  body.template-cart .form-cart .l4ca > li.pg-unlock-box{
+    order:-2 !important;display:block !important;list-style:none !important;
+    background:none !important;border:0 !important;box-shadow:none !important;
+    padding:0 !important;margin:0 !important;min-height:0 !important;
+  }
+  #cart .l4ca > li.pg-unlock-box::before,
+  #cart .l4ca > li.pg-unlock-box::after{display:none !important;content:none !important}
+
   #cart .pg-unlock{
     display:flex;align-items:center;gap:12px;
     margin:10px 0 4px;padding:11px 13px;
@@ -88,7 +100,14 @@
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
-  /* One row per ladder product sitting on a rung. Returns the offers to draw. */
+  /* One row per ladder product that still has a rung ahead of it.
+
+     A cart sitting exactly ON a rung gets the actionable offer -- one click
+     earns the discount. A cart BETWEEN rungs (3 orbs, say) used to get nothing
+     at all, which reads as the upsell vanishing, so it now gets the same row
+     stating how many more it takes to reach the next rung. The button adds one
+     unit either way, and the copy never claims a discount that click will not
+     earn. */
   function offers(cart){
     var byHandle = {};
     (cart.items || []).forEach(function(it){
@@ -101,15 +120,30 @@
     var out = [];
     Object.keys(byHandle).forEach(function(handle){
       var rec = byHandle[handle];
-      var rung = LADDERS[handle].rungs[rec.qty];
-      if (!rung) return;
+      var rungs = LADDERS[handle].rungs;
+      var rung = rungs[rec.qty];
+      var away = 0;
+
+      if (!rung){
+        /* nearest rung still ahead of this quantity */
+        var best = null;
+        Object.keys(rungs).forEach(function(k){
+          var q = parseInt(k, 10);
+          if (q > rec.qty && (best === null || q < best)) best = q;
+        });
+        if (best === null) return;          /* ladder exhausted, nothing to say */
+        rung = rungs[best];
+        away = best - rec.qty;
+      }
+
       out.push({
         handle: handle,
         name: LADDERS[handle].name,
         variant: rec.item.variant_id,
         image: rec.item.image,
         price: rec.item.price,
-        rung: rung
+        rung: rung,
+        away: away
       });
     });
     return out;
@@ -122,49 +156,73 @@
     var free = o.rung.pct === 100;
     var after = free ? 'free' : money(Math.round(o.price * (100 - o.rung.pct) / 100));
     var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
+
+    var title, note;
+    if (o.away === 0){
+      title = 'Add a ' + o.rung.nth + ' ' + o.name;
+      note = (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
+             ', applied at checkout';
+    } else {
+      title = 'Add ' + o.away + ' more ' + o.name + (o.away > 1 ? 's' : '');
+      note = 'Then your ' + o.rung.nth + ' is ' + (free ? 'free' : o.rung.pct + '% off') + ', applied at checkout';
+    }
+
     el.innerHTML =
       '<img alt="" src="' + img + '">' +
       '<div class="pg-unlock-t">' +
-        '<b>Add a ' + o.rung.nth + ' ' + o.name + '</b>' +
-        '<small>' + (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
-        ', applied at checkout</small>' +
-        '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
+        '<b>' + title + '</b>' +
+        '<small>' + note + '</small>' +
+        '<span class="pg-unlock-tag">' + (free ? o.rung.nth + ' free' : o.rung.nth + ' ' + o.rung.pct + '% off') + '</span>' +
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant + '">Add</button>';
     return el;
   }
 
-  /* Where the rows belong: the top of the cart body, directly above the items
-     card -- the same place the desktop drawer puts it. The rail (.nc-recs /
-     .nc-recs-panel) moves between breakpoints, so anchoring on the items list
-     instead keeps the rows in one predictable spot at every width. */
-  function place(el, list){
-    if (!list || !list.parentNode) return;
-    if (el.nextSibling !== list) list.parentNode.insertBefore(el, list);
+  /* Where the rows belong: above the FREE GIFT line, at the very top of the
+     cart, on every width.
+
+     Being a sibling above the list is not enough. pg-drawer makes the items
+     list a flex column and pins the gift line to the top of it with order:-1,
+     and the drawer's own wrappers reorder around it, which is how the rows
+     ended up under the "Add & Save More" rail. Joining the list as an <li>
+     with order:-2 puts them above the gift line deterministically, because
+     they are now sorted by the same flexbox.
+
+     One wrapper holds every row: as separate elements each pass saw the other
+     as misplaced and moved it, so a pair swapped places on every tick. */
+  function host(list){
+    if (!list) return null;
+    var box = document.querySelector('#cart .pg-unlock-box, body.template-cart .pg-unlock-box');
+    if (!box){
+      box = document.createElement('li');
+      box.className = 'pg-unlock-box';
+    }
+    if (box.parentNode !== list || list.firstChild !== box){
+      list.insertBefore(box, list.firstChild);
+    }
+    return box;
+  }
+
+  /* the drawer's items list, with a fallback in case the in-panel variant is
+     the only one rendered at this breakpoint */
+  function itemsList(c){
+    return c.querySelector('.l4ca:not(.in-panel)') || c.querySelector('.l4ca');
   }
 
   function render(){
     var c = document.getElementById('cart');
     if (!c) return;
-    var list = c.querySelector('.l4ca:not(.in-panel)');
+    var list = itemsList(c);
     if (!list) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
       var offs = offers(cart);
-      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.variant; }).join('|');
-      var existing = c.querySelectorAll('.pg-unlock');
-      if (key === lastKey && existing.length){
-        /* nothing changed, but the drawer may have re-rendered around the rows */
-        existing.forEach(function(el){ place(el, list); });
-        return;
-      }
+      var box = host(list);
+      if (!box) return;
+      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.away + ':' + o.variant; }).join('|');
+      if (key === lastKey && box.children.length) return;
       lastKey = key;
-      existing.forEach(function(el){ el.parentNode.removeChild(el); });
-      if (!offs.length) return;
-      /* reversed, so inserting each one directly above the list leaves them in
-         offer order top to bottom */
-      offs.slice().reverse().forEach(function(o){
-        place(row(o), list);
-      });
+      box.innerHTML = '';
+      offs.forEach(function(o){ box.appendChild(row(o)); });
     }).catch(function(){});
   }
 
