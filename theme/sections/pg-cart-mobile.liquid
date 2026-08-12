@@ -1,0 +1,25 @@
+{%- comment -%}
+  PG Cart Mobile: the "Your Cart (n items)" bar stops sticking on phones.
+
+  pg-drawer pins it with `.pg-cart-top{position:sticky;top:0;z-index:6}`. On a
+  phone the drawer is full-width and short, so that bar eats a permanent slice
+  of the panel and rides over whatever scrolls beneath it -- in practice it sits
+  on top of the "Add & Save More" heading.
+
+  Below 760px it scrolls away with the rest of the list. It keeps its
+  background, padding and bottom rule, so it still reads as the header of the
+  panel; it simply is not pinned. Desktop keeps the sticky behaviour, where
+  there is height to spare.
+{%- endcomment -%}
+<style>
+@media (max-width:760px){
+  #cart .pg-cart-top{
+    position:static !important;
+    top:auto !important;
+    z-index:auto !important
+  }
+}
+</style>
+{% schema %}
+{"name": "PG Cart Mobile", "settings": []}
+{% endschema %}

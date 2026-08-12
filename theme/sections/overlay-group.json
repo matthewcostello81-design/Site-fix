@@ -103,6 +103,10 @@
     "pg-chips": {
       "type": "pg-chips",
       "settings": {}
+    },
+    "pg-cart-mobile": {
+      "type": "pg-cart-mobile",
+      "settings": {}
     }
   },
   "order": [
@@ -125,6 +129,7 @@
     "pg-drawer",
     "pg-footer",
     "pg-giftguard",
-    "pg-chips"
+    "pg-chips",
+    "pg-cart-mobile"
   ]
 }
