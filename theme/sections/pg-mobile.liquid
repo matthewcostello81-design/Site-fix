@@ -42,6 +42,12 @@
 #pgx .pgx-acc{border-top:0 !important}
 /* Cart: retire the old 1/2/3+ item 10%/15% tier ladder everywhere */
 #cart .nc-tiers,body.template-cart .nc-tiers,.nc-tiers{display:none !important}
+/* Footer bottom strip: the light band under the footer was still theme-default */
+#shopify-section-footer .footer-bottom,#shopify-section-footer [class*="bottom"],
+.shopify-section[id$="__footer"] .footer-bottom{background:#0E0914 !important;background-color:#0E0914 !important;color:#B9A8CE !important;border-top:1px solid rgba(168,120,214,.14) !important}
+#shopify-section-footer .footer-bottom a,.shopify-section[id$="__footer"] .footer-bottom a{color:#C6B6DA !important}
+/* Cart goal bar: removed at owner's request */
+#cart .pg-bar,body.template-cart .pg-bar{display:none !important}
 /* Cart goal bar in theme purple */
 #cart .pg-bar,body.template-cart .pg-bar{background:linear-gradient(120deg,#2A1140,#4A1C66 55%,#2A1140) !important;border:1px solid rgba(168,120,214,.35) !important;border-radius:14px !important;box-shadow:0 12px 30px -22px rgba(0,0,0,.9) !important}
 #cart .pg-bar .pg-bar-t,body.template-cart .pg-bar .pg-bar-t{color:#EFE4FB !important}
