@@ -8,8 +8,8 @@
    The logo art itself is hidden - the wordmark is the brand mark now. */
 .pgx-head,.pgh-head,.pgc-head,.pgf-head{position:relative}
 .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{display:none !important}
-.pgh-logo,.pgx-logo,.pgc-logo{min-height:92px;display:flex;align-items:center;justify-content:center}
-.pg-wordmark{display:block;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(30px,3.4vw,58px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
+.pgh-logo,.pgx-logo,.pgc-logo{min-height:104px;display:flex;align-items:center;justify-content:center}
+.pg-wordmark{display:block;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(30px,3.4vw,58px);line-height:1.5;color:#F6DBFF;text-decoration:none;letter-spacing:.14em;word-spacing:.5em;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
 @media(max-width:560px){.pg-wordmark{font-size:26px}}
 </style>
 <style>
@@ -62,9 +62,9 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
 #pgx .pgx-case-t b{display:block;font-size:14.5px;color:#F1EDF7}
 #pgx .pgx-case-t small{display:block;font-size:12.5px;color:#A99BC0;margin-top:2px}
 #pgx .pgx-case-p{font-weight:700;color:#C79BEA;font-size:15px;flex:none}
-#pgx .pgx-case-b{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #8B44BE;position:relative}
-#pgx .pgx-case.on .pgx-case-b:after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
-#pgx .pgx-case.on .pgx-case-b{background:#8B44BE}
+#pgx .pgx-case-add{flex:none;border:1.5px solid #8B44BE;background:#1C1428;color:#E9C6FF;font-family:inherit;font-weight:700;font-size:12.5px;letter-spacing:.06em;border-radius:999px;padding:9px 20px;cursor:pointer}
+#pgx .pgx-case-add:hover{background:#8B44BE;color:#fff}
+#pgx .pgx-case-add[disabled]{opacity:.6;cursor:default}
 /* Accordions: same width and gutters as the split banner above them */
 #pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
 /* Best Sellers heading: matching soft purple letter glow */
@@ -188,7 +188,9 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
     q.style.setProperty('position','static','important');
     q.style.setProperty('margin','0 0 16px','important');
   }
-  /* Optional extra protective case, offered as the last tile before ATC */
+  /* Optional extra protective case: its own Add button, fired immediately on
+     click. Earlier versions piggybacked on the Add-to-Cart handler, which
+     raced the bundle's own /cart/add.js and lost. This cannot race. */
   var CASE_VARIANT = 49623692247268;
   function caseTile(){
     var m = location.pathname.match(/\/products\/([^\/?#]+)/);
@@ -197,42 +199,29 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
     if (!atc || document.querySelector('#pgx .pgx-case')) return;
     var el = document.createElement('div');
     el.className = 'pgx-case';
-    el.innerHTML = '<span class="pgx-case-b"></span>'
-      + '<img alt="R36S protective case" src="" style="visibility:hidden">'
+    el.innerHTML = '<img alt="R36S protective case" src="" style="visibility:hidden">'
       + '<div class="pgx-case-t"><b>Add an extra protective case</b><small>Keep a spare, or gift one &mdash; ships with your order</small></div>'
-      + '<span class="pgx-case-p">$13.99</span>';
+      + '<span class="pgx-case-p">$13.99</span>'
+      + '<button type="button" class="pgx-case-add">ADD</button>';
     atc.parentNode.insertBefore(el, atc);
-    el.addEventListener('click', function(){ el.classList.toggle('on'); });
     fetch('/products/r36s-protective-case-free-gift.js').then(function(r){ return r.json(); }).then(function(p2){
       var src = p2.featured_image || (p2.images && p2.images[0]);
       var im = el.querySelector('img');
       if (src && im){ im.src = src.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); im.style.visibility = 'visible'; }
     }).catch(function(){});
-  }
-  /* The bundle handlers add to the cart and navigate immediately, and two
-     concurrent /cart/add.js calls race (one gets dropped). So: flag the
-     intent on pointerdown (fires before click), then reconcile on the next
-     page load - if the case is not in the cart, add it there. Self-healing,
-     no race. */
-  function caseFlag(v){ try{ v == null ? sessionStorage.removeItem('pgCase') : sessionStorage.setItem('pgCase', v); }catch(e){} }
-  function caseWanted(){ try{ return sessionStorage.getItem('pgCase') === '1'; }catch(e){ return false; } }
-  document.addEventListener('pointerdown', function(e){
-    if (!e.target.closest || !e.target.closest('.pgx-atc')) return;
-    var c = document.querySelector('#pgx .pgx-case.on');
-    if (!c) return;
-    caseFlag('1');
-    c.classList.remove('on');
-  }, true);
-  function caseReconcile(){
-    if (!caseWanted()) return;
-    fetch('/cart.js', {headers: {'Accept': 'application/json'}}).then(function(r){ return r.json(); }).then(function(c){
-      if (!c || !c.items) return;
-      var has = c.items.some(function(it){ return it.id === CASE_VARIANT; });
-      if (has){ caseFlag(null); return; }
-      if (!c.items.length) return; /* nothing added yet, try again later */
-      return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})})
-        .then(function(r){ if (r.ok){ caseFlag(null); if (window.location.pathname.indexOf('/cart') === 0) window.location.reload(); } });
-    }).catch(function(){});
+    var btn = el.querySelector('.pgx-case-add');
+    btn.addEventListener('click', function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      if (btn.disabled) return;
+      btn.disabled = true; btn.textContent = 'ADDING...';
+      fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})})
+        .then(function(r){
+          if (!r.ok) throw 0;
+          el.classList.add('on'); btn.textContent = 'ADDED';
+          setTimeout(function(){ btn.disabled = false; btn.textContent = 'ADD'; el.classList.remove('on'); }, 2200);
+        })
+        .catch(function(){ btn.disabled = false; btn.textContent = 'ADD'; });
+    });
   }
   /* Description / Features / Shipping sit under the gallery, not the buy box */
   function accLeft(){
@@ -285,11 +274,10 @@ body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amo
       if (tag) tag.style.setProperty('display', n > 1 ? 'none' : 'inline-block', 'important');
     });
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); caseReconcile(); footDark(); caseLine(); }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); footDark(); caseLine(); }
   setInterval(caseLine, 1200);
   setTimeout(footDark, 1500); setTimeout(footDark, 3200);
   setInterval(ymlTrim, 1500);
-  setTimeout(caseReconcile, 1200); setTimeout(caseReconcile, 3000);
   setInterval(accLeft, 1500);
   setInterval(caseTile, 1500);
   setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
