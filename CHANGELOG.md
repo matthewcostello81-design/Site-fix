@@ -1,3 +1,24 @@
+# Pocket Era: slider arrows restyled (base theme was hijacking them)
+
+## Problem
+The new gallery slider arrows rendered as wide black rectangles: the Xtra
+base theme's global button skin (black background, square shape, animated
+::before/::after overlays) applied to the `<button class="pgx-tharrow">`
+elements and buried the intended styling.
+
+## Fix (`sections/pg-landing.liquid`)
+Arrow CSS hardened so every property is locked in with `html body`
+specificity + `!important`: 48px round purple (#7A2FA2) circle, white
+chevron glyph, flex-centered, hover #8B44BE, soft drop shadow. The base
+theme's ::before/::after pseudo overlays are removed outright and
+animations disabled, so nothing can paint over the circle.
+
+## Applied to
+Shopify draft theme `162727330020` via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-landing.liquid
+
+---
+
 # Pocket Era: product gallery thumbnails become a 2-up slider
 
 ## Problem

@@ -51,13 +51,30 @@
   .pgx-thumbs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
   .pgx-thumbs button{padding:0;border:0;background:#f6f6f6;border-radius:10px;overflow:hidden;cursor:pointer}
   .pgx-thumbs img{aspect-ratio:1/1;object-fit:cover;width:100%}
-  /* desktop: thumbnails become a 2-up slider with side arrows instead of a tall grid */
+  /* desktop: thumbnails become a 2-up slider with side arrows instead of a tall grid.
+     The base theme's global button skin paints buttons as black bars with pseudo
+     overlays, so every property is stamped !important and the pseudos are killed. */
   .pgx-thumbwrap{position:relative;margin-top:14px}
-  .pgx-tharrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;width:46px;height:46px;border-radius:50%;border:0;background:rgba(122,47,162,.92);color:#fff;font-size:26px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 10px 24px -10px rgba(0,0,0,.7);transition:background .15s ease}
-  .pgx-tharrow:hover{background:#8B44BE}
-  .pgx-tharrow.prev{left:10px}
-  .pgx-tharrow.next{right:10px}
-  .pgx-tharrow[hidden]{display:none}
+  html body .pgx-tharrow{
+    position:absolute !important;top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;
+    z-index:5 !important;width:48px !important;height:48px !important;
+    min-width:0 !important;min-height:0 !important;max-width:none !important;
+    padding:0 0 4px !important;margin:0 !important;border:0 !important;border-radius:50% !important;
+    background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;
+    color:#fff !important;font-size:28px !important;line-height:1 !important;font-weight:400 !important;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;
+    text-transform:none !important;letter-spacing:0 !important;text-indent:0 !important;
+    overflow:hidden !important;isolation:isolate !important;cursor:pointer !important;
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.75) !important;
+    animation:none !important;transition:background .15s ease !important;
+  }
+  html body .pgx-tharrow::before,
+  html body .pgx-tharrow::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important;border:0 !important}
+  html body .pgx-tharrow:hover{background:#8B44BE !important;background-color:#8B44BE !important}
+  html body .pgx-tharrow.prev{left:10px !important;right:auto !important}
+  html body .pgx-tharrow.next{right:10px !important;left:auto !important}
+  html body .pgx-tharrow[hidden]{display:none !important}
   @media (min-width: 901px){
     .pgx-thumbwrap .pgx-thumbs{display:flex;flex-wrap:nowrap;overflow-x:auto;scroll-behavior:smooth;scrollbar-width:none;-ms-overflow-style:none;gap:14px;margin-top:0;scroll-snap-type:x mandatory}
     .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
