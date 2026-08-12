@@ -1,8 +1,16 @@
 {%- comment -%}
-  PG Mobile: mobile-only polish for the dark PocketEra skin. Loads last from
-  footer-group so it wins every tie. Keep ALL mobile-specific fixes here.
+  PG Mobile: mobile polish + late-loading hotfix layer for the dark PocketEra
+  skin. Loads last from footer-group so it wins every tie.
 {%- endcomment -%}
 <style>
+/* ---------- sitewide hotfixes (not mobile-specific) ---------- */
+/* Split banner: cap the height, the natural image ratio made it enormous */
+#pgh .pgh-split-r{min-height:0 !important;height:420px !important;overflow:hidden}
+#pgh .pgh-split-r img{width:100% !important;height:100% !important;object-fit:cover !important}
+#pgh .pgh-split-l{padding:48px 48px !important}
+/* Gallery video tile: square cover crop, no letterbox bars */
+.pgx-vid video{aspect-ratio:1/1 !important;height:auto !important;max-height:none !important;object-fit:cover !important;width:100% !important}
+
 @media(max-width:900px){
   /* iOS ignores background-attachment:fixed and repaints badly; scroll + a
      solid dark html behind everything keeps overscroll areas black */
@@ -10,6 +18,9 @@
   html,body,#content,main,
   body.template-cart,body.template-cart #content,body.template-cart main{background-attachment:scroll !important}
   html,body{overflow-x:hidden !important;max-width:100vw}
+}
+@media(max-width:760px){
+  #pgh .pgh-split-r{height:240px !important}
 }
 @media(max-width:560px){
   /* 16px inputs stop iOS Safari from zooming the page on focus */
@@ -46,6 +57,46 @@
   #shopify-section-footer button,#shopify-section-footer [class*='button']{width:100% !important;margin-top:8px !important}
 }
 </style>
+
+<script>
+(function(){
+  if (window.pgHotfix) return; window.pgHotfix = 1;
+  /* Announcement marquee: authoritative message list (Summer Sale + countdown,
+     no retired offers). Rebuilds over whatever the base layer rendered. */
+  var MSGS=['Summer Sale &bull; 10% off with code WELCOME10 &bull; ends in <b class="pg-cd">15:00</b>','Free shipping on all orders','30-day money back guarantee','Free R36S case with purchase of device','15,000+ classic games preloaded'];
+  function marq(){
+    document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
+      if (el.dataset.pgMarq2) return; el.dataset.pgMarq2 = '1';
+      var half = MSGS.map(function(m){ return '<span>'+m+' ✦</span>'; }).join('');
+      el.innerHTML = '<div class="pg-marq">'+half+half+'</div>';
+    });
+  }
+  /* Rolling 15-minute sale countdown; persists per visitor, restarts on expiry */
+  function cd(){
+    var els = document.querySelectorAll('.pg-cd');
+    if (!els.length) return;
+    var end = 0;
+    try{ end = parseInt(localStorage.getItem('pgCdEnd')||'0',10); }catch(e){}
+    var now = Date.now();
+    if (!end || end < now){ end = now + 900000; try{ localStorage.setItem('pgCdEnd', String(end)); }catch(e){} }
+    var s = Math.max(0, Math.floor((end-now)/1000));
+    var t = Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
+    els.forEach(function(e){ e.textContent = t; });
+  }
+  /* The split banner is display-only: something deeper in the base theme was
+     hijacking clicks on it and navigating to the product page. Only the
+     explicit Shop-now button may navigate. */
+  document.addEventListener('click', function(e){
+    var sp = e.target.closest('.pgh-split');
+    if (sp && !e.target.closest('a.pgh-split-btn')){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  function boot(){ marq(); cd(); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  setTimeout(boot, 1400);
+  setTimeout(boot, 2600);
+  setInterval(cd, 1000);
+})();
+</script>
 
 {% schema %}
 {"name": "PG Mobile", "settings": []}
