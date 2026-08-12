@@ -1,0 +1,116 @@
+{%- comment -%}
+  PE Logo: swaps every header mark to the vector Pocket Era badge and repairs
+  the two flanking wordmarks.
+
+  This section loads from header-group, which renders BEFORE the pg-* layers in
+  footer-group, so every rule here is written one level more specific than the
+  rule it replaces (html body ...). Specificity is compared before source order,
+  so these win regardless of load position. The flicker keyframe is renamed
+  rather than redefined, because same-name @keyframes resolve by source order,
+  not specificity.
+{%- endcomment -%}
+{%- assign pe_mark = 'pe-badge.svg' | asset_url -%}
+<style data-pe-logo>
+/* ---------------- the mark ----------------
+   The previous art was a raster PNG with a black box baked in, which is why
+   pg-theme-css and pg-dark both blend it with mix-blend-mode:screen. The
+   replacement is a transparent vector, so screen blending would only wash it
+   out against the rgba(11,7,16,.9) header bar. */
+html body .pgh-logo img,
+html body .pgx-logo img,
+html body .pgc-logo img,
+html body .pgf-head img,
+html body img.nc-dlogo,
+html body img.nc-foot-emblem{
+  content:url("{{ pe_mark }}") !important;
+  mix-blend-mode:normal !important;
+  filter:drop-shadow(0 0 13px rgba(180,120,224,.42)) drop-shadow(0 0 34px rgba(139,68,190,.26)) !important;
+}
+html body .pgh-logo img,
+html body .pgx-logo img{max-height:124px !important;width:auto !important}
+html body .pgc-logo img{max-height:104px !important;width:auto !important}
+html body .pgf-head img{max-height:96px !important;width:auto !important}
+@media(max-width:900px){
+  html body .pgh-logo img,
+  html body .pgx-logo img{max-height:88px !important}
+  html body .pgc-logo img{max-height:76px !important}
+  html body .pgf-head img{max-height:76px !important}
+}
+
+/* ---------------- flanking wordmarks ----------------
+   Three things were making these hard to read:
+   1. letter-spacing:-.11em pulled the glyphs into each other. Press Start 2P
+      already carries its own spacing, so natural tracking is the match.
+   2. clamp(18px,1.7vw,30px) produces fractional sizes. Press Start 2P is drawn
+      on an 8px grid and only lands on whole device pixels at multiples of 8 --
+      anything else gets resampled and blurs. Fixed 24/32px instead.
+   3. The glow's first shadow was 12px at .9 alpha, which bled over the
+      letterforms. Tighter and lighter keeps the edges. */
+html body a.pg-wordmark{
+  top:50% !important;
+  transform:translateY(-50%);
+  font-size:24px !important;
+  letter-spacing:0 !important;
+  line-height:1.2 !important;
+  text-shadow:0 0 6px rgba(246,219,255,.5),0 0 17px rgba(199,155,234,.38),0 0 40px rgba(139,68,190,.26) !important;
+  animation-name:peFlash !important;
+}
+@media(min-width:1440px){html body a.pg-wordmark{font-size:32px !important}}
+/* ---------------- wordmark sizing (wins over pg-mobile) ----------------
+   pg-mobile hides the logo art and promotes the injected text wordmark to be
+   the brand mark, stretching it with transform:scaleY(2.6). That rule is
+   `html body a.pg-wordmark` + !important and loads later, so it currently wins
+   the ties above. Repeating the class (a.pg-wordmark.pg-wordmark) buys one
+   more specificity point, which beats source order.
+
+   1. 2.6 -> 2.21 makes the mark 15% shorter. Only the vertical scale changes,
+      so the width and letterforms are exactly as before, just less stretched.
+   2. white-space:nowrap keeps "Pocket Era" on a single line -- on narrow
+      phones it was wrapping to two. Nowrap alone would overflow (the header
+      box is overflow:hidden), so under 560px the size is also capped to a
+      share of the viewport: the mark is ~9.8em wide, and 8.4vw keeps it
+      around 82% of the screen with room for the gutters. */
+html body a.pg-wordmark.pg-wordmark{
+  transform:scaleY(2.21) !important;
+  white-space:nowrap !important;
+}
+@media(max-width:560px){
+  html body a.pg-wordmark.pg-wordmark{font-size:min(30px,8.4vw) !important}
+}
+/* the old pgFlash dipped to .45 opacity twice every 3.2s, which read as the
+   name blinking out. Same rhythm, much shallower. */
+@keyframes peFlash{
+  0%,100%{opacity:1}
+  6%{opacity:.74}
+  8%{opacity:1}
+  11%{opacity:.88}
+  13%{opacity:1}
+  46%{opacity:1}
+  48%{opacity:.8}
+  50%{opacity:1}
+}
+</style>
+<script data-pe-logo>
+(function(){
+  if (window.peLogo) return; window.peLogo = 1;
+  var SRC = {{ pe_mark | json }};
+  var SEL = '.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img,img.nc-dlogo,img.nc-foot-emblem';
+  /* content:url above already handles the visual swap. This rewrites src too so
+     the retired art stops being fetched and alt text stays correct. pg-drawer
+     and pg-footer re-assign src from their own settings on a delay, so this
+     re-asserts a few times rather than running once. */
+  function swap(){
+    document.querySelectorAll(SEL).forEach(function(i){
+      if (i.getAttribute('src') === SRC) return;
+      i.setAttribute('src', SRC);
+      i.alt = 'Pocket Era';
+      i.removeAttribute('srcset');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', swap); else swap();
+  [400, 900, 1600, 2800].forEach(function(t){ setTimeout(swap, t); });
+})();
+</script>
+{% schema %}
+{"name": "PE Logo", "settings": []}
+{% endschema %}
