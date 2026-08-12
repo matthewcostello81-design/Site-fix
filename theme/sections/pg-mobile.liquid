@@ -274,9 +274,21 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
   /* A single case is the free gift; extras are charged. When the line
      quantity is >1 the FREE GIFT tag is wrong - show the real price. */
   function caseLine(){
+    var seen = 0;
     document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li').forEach(function(li){
       var a = li.querySelector('a[href*="free-gift"]');
       if (!a) return;
+      seen++;
+      /* Only one case is free (the console BXGY covers exactly one), so only
+         the first case line may wear the FREE GIFT tag. */
+      if (seen > 1){
+        var extra = li.querySelector('.pg-free-tag');
+        if (extra) extra.style.setProperty('display', 'none', 'important');
+        li.querySelectorAll('.semantic-amount, .nc-lsave, .cols').forEach(function(el){
+          el.style.setProperty('visibility', 'visible', 'important');
+        });
+        return;
+      }
       var q = li.querySelector('input[type="number"], .semantic-amount input');
       var n = q ? (parseInt(q.value, 10) || 1) : 1;
       var tag = li.querySelector('.pg-free-tag');
