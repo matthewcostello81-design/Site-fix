@@ -1,0 +1,48 @@
+{%- comment -%}
+  PG Case Mobile: make the spare-case upsell tile fit a phone.
+
+  pg-mobile builds `.pgx-case` as a single non-wrapping flex row: 52px thumb,
+  text, price, then an ADD button padded 11px 26px. On a 390px screen the button
+  and thumb take their width first, leaving the text roughly 110px, so "Add a
+  spare protective case" breaks over three lines, the sentence below it turns
+  into a tall ribbon, and the price ends up wedged against the button.
+
+  Below 600px the tile becomes two rows instead:
+
+      [thumb] [title + note............]
+      [$13.99]              [   ADD   ]
+
+  The text gets the full width beside the thumb, and the price and button share
+  a second row with the button taking the slack, which also makes it a much
+  bigger tap target. Rules are id-scoped and this section loads after pg-mobile,
+  so they win on source order without fighting anything.
+{%- endcomment -%}
+<style>
+@media (max-width:600px){
+  #pgx .pgx-case{
+    flex-wrap:wrap !important;
+    gap:10px 12px !important;
+    padding:14px !important;
+    align-items:center !important
+  }
+  #pgx .pgx-case img{
+    width:48px !important;height:48px !important;flex:none !important
+  }
+  /* flex-basis over half the row forces the price and button onto row two */
+  #pgx .pgx-case-t{
+    flex:1 1 60% !important;min-width:0 !important
+  }
+  #pgx .pgx-case-t b{font-size:15px !important;line-height:1.3 !important}
+  #pgx .pgx-case-t small{font-size:12.5px !important;line-height:1.4 !important;margin-top:3px !important}
+  #pgx .pgx-case-p{
+    order:3 !important;flex:0 0 auto !important;font-size:16px !important
+  }
+  #pgx .pgx-case-add{
+    order:4 !important;flex:1 1 auto !important;
+    padding:13px 20px !important;font-size:13.5px !important
+  }
+}
+</style>
+{% schema %}
+{"name": "PG Case Mobile", "settings": []}
+{% endschema %}
