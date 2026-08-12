@@ -291,17 +291,12 @@
       {%- endif -%}
 
       {%- comment -%}
-        Sellout-risk bar under the review carousel. Driven by the variant's real
-        stock when Shopify is tracking it, so the claim has something behind it;
-        products with untracked inventory fall back to the section setting.
+        Sellout-risk bar under the review carousel. The level is whatever the
+        section setting says — High on every product by default, per the owner.
         Turn the whole bar off with the "Show sellout risk bar" setting.
       {%- endcomment -%}
       {%- if section.settings.show_sellout -%}
-        {%- assign sellout_qty = prod.selected_or_first_available_variant.inventory_quantity -%}
-        {%- assign sellout_level = section.settings.sellout_level -%}
-        {%- if prod.selected_or_first_available_variant.inventory_management != blank and sellout_qty > 0 -%}
-          {%- if sellout_qty > 100 -%}{%- assign sellout_level = 'Moderate' -%}{%- endif -%}
-        {%- endif -%}
+        {%- assign sellout_level = section.settings.sellout_level | default: 'High' -%}
         <div class="pgx-sellout">
           <span class="pgx-sellout-ic">&#128293;</span>
           <span class="pgx-sellout-t">Sellout risk: <b>{{ sellout_level }}</b></span>
