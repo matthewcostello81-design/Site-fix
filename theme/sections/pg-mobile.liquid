@@ -285,7 +285,35 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
       if (tag) tag.style.setProperty('display', n > 1 ? 'none' : 'inline-block', 'important');
     });
   }
-  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); footDark(); caseLine(); }
+  /* The copyright / payment-icon band sits outside the footer section, so
+     the footer-scoped sweep never saw it. Find it by its content and darken
+     that block plus any light ancestor up to <body>. */
+  function footBottom(){
+    var nodes = document.querySelectorAll('#shopify-section-footer ~ *, body > *, main > *, #root > *, footer, footer *');
+    var hit = null;
+    for (var i = 0; i < nodes.length; i++){
+      var t = (nodes[i].textContent || '');
+      if (t.length < 400 && /Powered by Shopify|\u00a9\s*\d{4}/.test(t)){ hit = nodes[i]; break; }
+    }
+    if (!hit) return;
+    var el = hit;
+    for (var k = 0; k < 6 && el && el !== document.body; k++){
+      var bg = getComputedStyle(el).backgroundColor || '';
+      var m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+      if (m && (m[4] === undefined || parseFloat(m[4]) > 0.1)){
+        var lum = (parseInt(m[1],10) * 299 + parseInt(m[2],10) * 587 + parseInt(m[3],10) * 114) / 1000;
+        if (lum > 140){
+          el.style.setProperty('background', '#0E0914', 'important');
+          el.style.setProperty('background-color', '#0E0914', 'important');
+          el.style.setProperty('color', '#B9A8CE', 'important');
+        }
+      }
+      el = el.parentElement;
+    }
+    hit.style.setProperty('color', '#B9A8CE', 'important');
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); footDark(); footBottom(); caseLine(); }
+  setTimeout(footBottom, 1600); setTimeout(footBottom, 3400);
   setInterval(caseLine, 1200);
   setTimeout(footDark, 1500); setTimeout(footDark, 3200);
   setInterval(ymlTrim, 1500);
