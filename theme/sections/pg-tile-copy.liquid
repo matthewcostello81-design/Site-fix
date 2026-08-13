@@ -12,18 +12,20 @@
 
      pg-landing prices that tile from a single `bundle_pct` setting -- a flat
      percentage off the pair, set to 10 -- and captions it "10% OFF". No such
-     discount exists. What the shop actually runs is a BXGY on every one of
-     these products: the SECOND unit at 25% off, which is 12.5% off the pair,
-     and which is also what the cart's upsell row offers. The tile was quoting
-     a worse deal than the shopper gets, in different words from the cart.
+     discount has ever existed. The shop now runs one offer per product, Buy 2
+     Get 1 Free, and it pays out on the THIRD unit: two in the cart earn
+     nothing at all.
 
-     So the caption becomes "2nd one 25% OFF" and the price is recomputed as
-     one unit at full price plus one at 25% off, read from the tile's own size
-     selects so it stays correct when the two units are different variants.
+     So the tile no longer claims a discount on the pair. It quotes two units
+     at the real price against two at MSRP -- read from the tile's own size
+     selects, so it stays correct when the two units are different variants --
+     and the caption points the shopper at the free third one instead.
 
-     SECOND_PCT is 25 because all three ladders (PokeOrb, Wall Art, R36S) open
-     at 25% off the second unit. If a product's ladder ever differs, this needs
-     to become per-handle rather than one constant.
+     KNOWN GAP, deliberately left rather than guessed at: this tile still adds
+     TWO units. Making it add three needs pg-landing's builder and its
+     add-to-cart path changed, not just the wording, and pg-landing is a 35KB
+     shared section. Until that is done the third unit is added from the cart,
+     where pg-unlock's row offers it for free at exactly the right moment.
 
      The proper home for this is pg-landing's own paint(), replacing bundle_pct
      with a second-unit percentage. It lives here because pg-landing is a 35KB
@@ -31,15 +33,10 @@
 
   3. A one-line qualifier under the tiles.
 
-     Shopify applies only ONE automatic discount per order, so a cart that also
-     earns a bigger discount elsewhere (four orbs triggering Buy 4 Get 1, say)
-     gets that one instead and the pair stays at full price. Rather than water
-     down the prices, the note says how the discounts actually behave: the best
-     available one is applied at checkout. The cart's own breakdown then shows
-     exactly what landed, so the two never disagree.
-
-     Remove this note if the ladders are ever moved to a Shopify Function, which
-     is what would let every product's ladder apply independently.
+     The tiles stop at two units, so the offer's payout is off-screen. The note
+     states it plainly -- buy 2, the 3rd is free, taken off at checkout -- so a
+     shopper reading only the tiles still learns the actual deal. The cart's own
+     breakdown then shows exactly what landed, and the two agree.
 {%- endcomment -%}
 <style>
   #pgx .pgx-deal-note{
@@ -58,8 +55,7 @@
   var FROM = /^buy\s*1$/i;
   var TO = 'Single Item';
   var TILES = '#pgx .pgx-tile, #pgx [class*="pgx-lad"]';
-  var NOTE = 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
-  var SECOND_PCT = 25;
+  var NOTE = 'Buy 2, get your <b>3rd free</b> &mdash; the free one comes off automatically at checkout.';
 
   function swapIn(root){
     if (!root || root.nodeType !== 1) return;
@@ -108,12 +104,16 @@
     var a = pickedIn(tile, 'd1'), b = pickedIn(tile, 'd2');
     if (!a || !b) return;
 
-    var disc = a.price + Math.round(b.price * (100 - SECOND_PCT) / 100);
+    /* The pair itself carries no discount any more -- the offer is Buy 2 Get 1
+       Free, which pays out on the THIRD unit. So the tile quotes two units at
+       the real price against two at MSRP, and the caption points at the free
+       one rather than inventing a percentage off the pair. */
+    var pair = a.price + b.price;
     var retail = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
 
     put(tile.querySelector('.pgx-tile-sub'),
-        '2nd one ' + SECOND_PCT + '% OFF, applied automatically at checkout');
-    put(tile.querySelector('[data-pgx-double-now]'), money(disc));
+        'Buy 2, get your 3rd FREE - add the 3rd in your cart');
+    put(tile.querySelector('[data-pgx-double-now]'), money(pair));
     put(tile.querySelector('[data-pgx-double-was]'), money(retail));
 
     if (!tile.dataset.pgBundle){

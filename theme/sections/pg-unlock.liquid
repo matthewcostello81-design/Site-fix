@@ -4,30 +4,25 @@
   Read from the shop's live automatic discounts, so every message below is a
   real offer rather than invented copy:
 
-    PokeOrb  - 2nd Orb 25% Off ......... buy 1, next 1 at 25% off
-    PokeOrb  - 3rd Orb 50% Off ......... buy 2, next 1 at 50% off
-    PokeOrb  - Buy 4 Get 1 Free ........ buy 4, next 1 free
-    Wall Art - 2nd Print 25% Off ....... buy 1, next 1 at 25% off
-    Wall Art - 3rd Print 50% Off ....... buy 2, next 1 at 50% off
-    Wall Art - Buy 4 Get 1 Free ........ buy 4, next 1 free
+    PokeOrb  - Buy 2 Get 1 Free ........ buy 2, next 1 free
+    Wall Art - Buy 2 Get 1 Free ........ buy 2, next 1 free
     R36S     - 2nd Console 25% Off ..... buy 1, next 1 at 25% off
 
-  Both ladders now read 25 / 50 / free-at-the-5th, which is what the product
-  pages advertise. A second orb discount, "Buy 2 Get 1 Free - Crystal PokeOrb",
-  used to sit on the SAME rung as the 3rd-at-50% and paid out more, and since
-  Shopify applies only one automatic discount and takes the largest, checkout
-  handed the 3rd orb over free no matter what this row said. That discount has
-  been deactivated so the offer here and the charge at checkout agree.
+  The orb and wall-art ladders used to run three rungs -- 2nd at 25%, 3rd at
+  50%, 5th free -- priced off a $32.99 / $39.99 unit. They are now a single
+  Buy 2 Get 1 Free on a $34.99 orb and a $44.99 print, because one offer a
+  shopper can hold in their head advertises better than a three-step ladder,
+  and because the percentage tiers never survived being read at a glance. The
+  four superseded discounts are deactivated in the admin, so nothing else can
+  win at checkout and contradict this row.
 
-  A cart sitting ON a rung gets the actionable offer -- one click earns the
-  discount. A cart BETWEEN rungs gets the same row pointed at the next rung
-  ahead, saying how many more units it takes:
+  A cart sitting ON the rung gets the actionable offer -- one click earns the
+  discount. A cart BELOW it gets the same row pointed forward, saying how many
+  more units it takes:
 
-      1 orb ..... Add a 2nd Crystal PokeOrb - 25% off
-      2 orbs .... Add a 3rd Crystal PokeOrb - 50% off
-      3 orbs .... Add 1 more, then your 5th is free
-      4 orbs .... Add a 5th Crystal PokeOrb - free
-      5 orbs .... ladder exhausted, no row
+      1 orb ..... Add 1 more Crystal PokeOrb - then your 3rd is free
+      2 orbs .... Add a 3rd Crystal PokeOrb - free
+      3 orbs .... offer taken, no row
 
   Without the between-rungs case the upsell went silent at 3, which reads as
   the offer disappearing right after the shopper took one. The button adds a
@@ -92,13 +87,17 @@
 
   /* handle -> { name, rungs: { qtyAlreadyInCart: {pct, nth} } } */
   var LADDERS = {
+    /* Orbs and wall art both run a single Buy 2 Get 1 Free, so there is exactly
+       one rung: with 2 in the cart, the next one is free. `away` then covers the
+       shopper sitting on 1 -- they get "add 1 more, then your 3rd is free" --
+       so the whole offer is still reachable from the first unit. */
     'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
       name: 'Crystal PokeOrb',
-      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 50, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
+      rungs: {2: {pct: 100, nth: '3rd'}}
     },
     'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {
       name: 'Heroic Holographic Wall Art',
-      rungs: {1: {pct: 25, nth: '2nd'}, 2: {pct: 50, nth: '3rd'}, 4: {pct: 100, nth: '5th'}}
+      rungs: {2: {pct: 100, nth: '3rd'}}
     },
     'handheld-game-console': {
       name: 'PocketBoy R36',
