@@ -1,3 +1,41 @@
+# Pocket Era: payment-card icons dropped from the cart drawer pane
+
+## Change
+The wrapped strip of card-brand logos under the CHECKOUT button is removed
+from the pinned pane, at every width. Because the pane is pinned it was
+permanently on screen, costing that height on every drawer at every scroll
+position, to repeat what the "SECURE CHECKOUT" line directly above it
+already says.
+
+    #cart .sticky-in-panel .l4pm{display:none !important}
+
+Scoped to the pane, so the site footer's own payment strip is untouched, and
+specific enough to outrank pg-drawer's `#cart .l4pm{display:flex !important}`.
+The mobile rules that were shrinking those icons are deleted as dead code.
+
+Accepted cards are still shown at checkout itself and in the site footer.
+
+## Verified on the draft theme (1 item in cart)
+| | mobile 390x844 | desktop 1280x900 |
+|---|---|---|
+| pane height | 379px -> **328px** | 386px -> **328px** |
+| icons in pane | display:none | display:none |
+| footer icon strip | still flex | still flex |
+| gap below pane | 0px | 0px |
+| room for item list | -52px -> -1px | 189px -> 247px |
+
+## Still open
+On mobile the pane is 328px of an 844px screen, so the first cart item is
+still just covered at the top of the drawer. The remaining fix is to pin only
+a slim bar (total + checkout) and let shipping protection, the savings
+breakdown and the trust row scroll above it.
+
+## Applied to
+Shopify draft theme `162779103460` ("Copy of Pocket Era Most Recent Draft").
+Files changed: sections/pg-cart-mobile.liquid
+
+---
+
 # Pocket Era: cart drawer pane sits flush with the bottom (mobile + desktop)
 
 ## Reverted: unpinning the pane

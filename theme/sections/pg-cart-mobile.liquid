@@ -27,15 +27,16 @@
      totals, the trust row, the checkout button and the payment icons. Each is
      fine on its own; together they take more than half a phone screen.
 
-     Nothing is removed. Everything is tightened: smaller paddings and gaps,
-     one step down in type on the secondary rows, and payment icons at 26x17
-     instead of 36x23. The one exception is the shipping-protection subtitle
-     ("Protect your order against loss or damage in transit"), which is hidden
-     below 760px -- the label, price and toggle all remain, and that sentence is
-     a full wrapped line on a phone.
+     Everything is tightened: smaller paddings and gaps, and one step down in
+     type on the secondary rows. The shipping-protection subtitle ("Protect
+     your order against loss or damage in transit") is hidden below 760px --
+     the label, price and toggle all remain, and that sentence is a full
+     wrapped line on a phone.
 
      The total and the checkout button are deliberately left large: they are
      what the pane is for.
+
+  4. The payment-icon row is dropped from the pane at every width (below).
 
   NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
   turned the drawer blank on iOS Safari -- scrolled to the top, the panel
@@ -53,6 +54,16 @@
   top:auto !important;
   z-index:auto !important
 }
+
+/* 4. the payment-icon row comes out of the pinned pane, all widths.
+   It is a wrapped strip of card-brand logos plus its own margins sitting
+   directly under the checkout button, and it is permanently on screen because
+   the pane is pinned -- so it costs that height on every drawer, at every
+   scroll position, to say something the "SECURE CHECKOUT" line above it
+   already says. The accepted cards are still shown at checkout itself and in
+   the site footer. Scoped to the pane so the footer's own strip is untouched
+   (`#cart .sticky-in-panel .l4pm` outranks pg-drawer's `#cart .l4pm`). */
+#cart .sticky-in-panel .l4pm{display:none !important}
 
 @media (max-width:760px){
   /* 3. compact the pane */
@@ -85,11 +96,6 @@
   /* checkout stays a full-size target */
   #cart .sticky-in-panel form.f8vl{margin:2px 0 0 !important}
   #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important}
-
-  /* payment icons: one tight row */
-  #cart .sticky-in-panel .l4pm{margin:4px 0 0 !important;gap:5px !important}
-  #cart .sticky-in-panel .l4pm li{padding:2px 4px !important;border-radius:6px !important}
-  #cart .sticky-in-panel .l4pm svg{width:26px !important;height:17px !important}
 }
 </style>
 <script>
