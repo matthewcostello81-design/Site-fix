@@ -135,9 +135,27 @@
      and wait -- drawing rows from a cart that is about to change would flash
      the wrong offer. */
   var merging = false;
+  var merges = 0;            /* merges attempted this page load */
+  var mergedVariants = {};   /* variant ids already merged once */
+  var MAX_MERGES = 4;
 
   function consolidate(cart){
     if (merging) return false;
+
+    /* CONVERGENCE GUARD -- read this before removing it.
+
+       Merging fights anything that legitimately wants a variant on two lines.
+       A BXGY allocation is exactly that: when Shopify discounts one unit of
+       four, it can hold the discounted unit on its own line. Merge them and
+       Shopify splits them again on the next cart read, this fires again on the
+       next 900ms tick, and the cart thrashes -- quantities jumping, a request
+       every tick, which is what "bugging hard" looks like from the outside.
+
+       Two brakes. A variant is merged AT MOST ONCE per page load: if it comes
+       back split, that is Shopify asserting a split we should not overrule, so
+       it is left alone. And MAX_MERGES caps total attempts regardless, so no
+       combination of products can turn this into a request loop. */
+    if (merges >= MAX_MERGES) return false;
 
     var byVariant = {};
     (cart.items || []).forEach(function(it){
@@ -147,9 +165,14 @@
 
     var dupes = null;
     Object.keys(byVariant).forEach(function(v){
-      if (!dupes && byVariant[v].length > 1) dupes = byVariant[v];
+      if (dupes) return;
+      if (byVariant[v].length < 2) return;
+      if (mergedVariants[v]) return;   /* already merged once; Shopify re-split it */
+      dupes = byVariant[v];
+      mergedVariants[v] = 1;
     });
     if (!dupes) return false;
+    merges++;
 
     var total = dupes.reduce(function(n, it){ return n + it.quantity; }, 0);
     var keep = dupes[0];
