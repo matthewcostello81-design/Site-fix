@@ -8,10 +8,24 @@
      it covers the drawer logo and free-shipping pill. It now scrolls with the
      list, keeping its background and rule so it still reads as the panel header.
 
-  2. The totals pane gets shorter.
+  2. The pinned pane sits flush with the bottom of the screen (all widths).
+     The drawer carries an inline `padding-bottom` written by the theme's own
+     script -- 34px, inline and !important, so no stylesheet can override it --
+     while the pane sticks at `bottom:-10px`. The pane therefore came to rest
+     24px short of the bottom edge, and the cart list showed through the gap as
+     a strip of product peeking out from under the checkout button.
+
+     The script below reads that padding at runtime and pulls the pane down by
+     exactly that much, then gives the pane the same amount back as its own
+     bottom padding. Net effect: the pane's background reaches the bottom edge
+     so nothing shows underneath it, while the checkout button keeps its
+     distance from the edge of the screen. Reading the value rather than
+     hard-coding 34px means it stays correct if the theme changes it.
+
+  3. The pane gets shorter under 760px.
      `.sticky-in-panel` stacks shipping protection, the savings breakdown, the
      totals, the trust row, the checkout button and the payment icons. Each is
-     fine on its own; together they take more than half the screen.
+     fine on its own; together they take more than half a phone screen.
 
      Nothing is removed. Everything is tightened: smaller paddings and gaps,
      one step down in type on the secondary rows, and payment icons at 26x17
@@ -23,12 +37,14 @@
      The total and the checkout button are deliberately left large: they are
      what the pane is for.
 
-  3. The pane stops being frozen (see the block below for why).
-
-  The header bar is unpinned at every width -- on desktop it was covering the
-  drawer logo and free-shipping pill as the panel scrolled. The pane compaction
-  and unpinning stay under 760px, where the height actually matters; the 490px
-  desktop drawer keeps its roomier spacing and its pinned pane.
+  NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
+  turned the drawer blank on iOS Safari -- scrolled to the top, the panel
+  painted white with no content, though the markup and computed colours were
+  correct. Removing the sticky element drops a compositing layer from a
+  position:fixed, internally-scrolling container, which iOS is known to render
+  as unpainted white. The pane stays pinned for that reason. If more room for
+  the item list is wanted, pin a slim bar (total + checkout only) and let the
+  rest of the pane scroll, rather than unpinning the whole thing.
 {%- endcomment -%}
 <style>
 /* 1. header bar scrolls away, all widths */
@@ -39,35 +55,8 @@
 }
 
 @media (max-width:760px){
-  /* 3. the pane stops being frozen.
-     Even after the compaction below, the pinned pane measured ~364px tall once
-     the shipping-protection row, savings breakdown, totals, trust strip,
-     checkout button and payment icons were stacked -- and the upsell panel
-     above it pushed the item list down to y=502 on an 844px phone. The pane
-     started at y=456, so it covered the top of the list: not one cart item was
-     fully visible without scrolling.
-
-     Two symptoms came out of that. The cart looked squished, and a 24px strip
-     of cart peeked out below the pane -- the drawer carries an inline
-     `padding-bottom:34px` set by the theme's own script, while the pane sticks
-     at `bottom:-10px`, so it came to rest 24px short of the screen edge with
-     list showing through the difference.
-
-     Unpinning puts the pane at the bottom of the drawer, where it reads as the
-     end of the cart. Nothing floats, so nothing peeks out underneath it, and
-     the item list gets the full height rather than a slot above the pane
-     (measured: 342px of list, first item fully visible, versus none before).
-
-     Trade-off worth knowing: checkout is now reached by scrolling to the end of
-     the drawer rather than always being on screen. */
-  #cart .sticky-in-panel{
-    position:static !important;
-    bottom:auto !important;
-    box-shadow:none !important
-  }
-
-  /* 2. compact the pane */
-  #cart .sticky-in-panel{padding-top:3px !important;padding-bottom:5px !important}
+  /* 3. compact the pane */
+  #cart .sticky-in-panel{padding-top:3px !important}
 
   /* shipping protection: single line, smaller icon */
   #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
@@ -103,6 +92,49 @@
   #cart .sticky-in-panel .l4pm svg{width:26px !important;height:17px !important}
 }
 </style>
+<script>
+/* 2. pull the pinned pane down onto the bottom edge -- see the note above. */
+(function(){
+  if (window.pgCartFlush) return; window.pgCartFlush = 1;
+
+  function flush(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var pane = drawer.querySelector('.sticky-in-panel');
+    if (!pane) return;
+    var pad = parseFloat(getComputedStyle(drawer).paddingBottom) || 0;
+    if (pane.dataset.pgFlush === String(pad)) return;
+    pane.dataset.pgFlush = String(pad);
+    if (pad > 0){
+      pane.style.setProperty('bottom', (-pad) + 'px', 'important');
+      pane.style.setProperty('padding-bottom', 'calc(' + pad + 'px + 5px)', 'important');
+    }
+  }
+
+  function boot(){
+    flush();
+    window.addEventListener('resize', flush);
+    /* The pane only exists once the cart has something in it, and the theme
+       replaces it wholesale on every add, remove and quantity change -- a
+       fresh element each time, with the theme's own bottom offset back on it.
+       Timers alone lose that race (an add-to-cart round trip outruns them), so
+       watch the document for the re-render and re-apply. childList only: flush
+       writes inline styles, and observing attributes would re-trigger itself. */
+    if (window.MutationObserver){
+      var queued = false;
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; flush(); }, 60);
+      }).observe(document.body, {childList:true, subtree:true});
+    }
+    [400, 1000, 2200, 4500].forEach(function(t){ setTimeout(flush, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
 {% schema %}
 {"name": "PG Cart Mobile", "settings": []}
 {% endschema %}

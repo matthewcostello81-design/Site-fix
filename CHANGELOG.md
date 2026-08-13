@@ -1,4 +1,53 @@
-# Pocket Era: cart drawer unsquished on mobile
+# Pocket Era: cart drawer pane sits flush with the bottom (mobile + desktop)
+
+## Reverted: unpinning the pane
+The previous entry unpinned the totals pane on mobile. On iOS Safari that
+turned the drawer blank -- scrolled to the top it painted white with no
+content at all. It could not be reproduced in a headless iPhone-sized
+Chromium: the markup, positions and computed colours were all correct there.
+The likely cause is compositing, not layout -- removing the sticky element
+drops a layer from a `position:fixed`, internally-scrolling container, which
+iOS is known to leave unpainted. The pane is pinned again, and the file now
+carries a note so nobody retries it.
+
+## Fixed instead: the strip of cart peeking out underneath
+The drawer carries an inline `padding-bottom:34px` written by the theme's own
+script. Being inline **and** `!important`, no stylesheet can override it. The
+pane sticks at `bottom:-10px`, so it came to rest 24px short of the bottom
+edge with the cart list showing through the gap.
+
+`sections/pg-cart-mobile.liquid` now reads that padding at runtime and pulls
+the pane down by exactly that amount, giving the same amount back as the
+pane's own bottom padding -- so the background reaches the bottom edge while
+the checkout button keeps its distance from it. The value is read rather than
+hard-coded, so it stays right if the theme changes it.
+
+A MutationObserver re-applies it on every drawer re-render. Timers alone lost
+the race: the pane only exists once the cart has items, and the theme replaces
+it wholesale on each add/remove, so an add-to-cart round trip outran the
+fixed timeouts.
+
+## Verified on the draft theme (1 item in cart)
+| | mobile 390x844 | desktop 1280x900 |
+|---|---|---|
+| pane offset | -34px | -34px |
+| gap below pane | 0px (was 24px) | 0px (was 24px) |
+| position | sticky | sticky |
+| checkout above screen bottom | 116px | 123px |
+
+## Still open
+On mobile the pinned pane is ~379px tall, so at the top of the drawer it still
+covers the first cart item. Fixing that properly means pinning only a slim bar
+(total + checkout) and letting shipping protection, the savings breakdown, the
+trust row and the payment icons scroll above it -- not unpinning the pane.
+
+## Applied to
+Shopify draft theme `162779103460` ("Copy of Pocket Era Most Recent Draft").
+Files changed: sections/pg-cart-mobile.liquid
+
+---
+
+# Pocket Era: cart drawer unsquished on mobile (SUPERSEDED - see entry above)
 
 ## Problem
 On a phone the cart drawer left almost no room for the cart itself, and a
