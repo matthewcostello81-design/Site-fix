@@ -1,36 +1,38 @@
 {%- comment -%}
-  PG Cart Total: one clear price breakdown at the bottom of the cart.
+  PG Cart Total: two numbers at the bottom of the cart.
 
   The panel was showing three overlapping things: pg-drawer's "Sale Savings /
   Bundle Discount / Total Savings" box, the theme's own Subtotal row, and the
   Total. Two of those are savings figures computed different ways, which is how
   a shopper ends up unsure what they are actually paying.
 
-  This replaces all of it with four lines that always reconcile:
+  It then spent a while showing the opposite problem -- a full itemisation:
 
-      Original price     $259.98     every unit at its full compare-at price
-      Sale savings      -$130.00     compare-at minus the selling price
-      Promo discount     -$16.25     whatever Shopify actually applied
+      Original price     $551.96
+      Sale savings      -$276.02
+      Promo discount     -$36.99
       ------------------------------
-      Total savings     $146.25      what the three rows above add up to
+      Total savings      $313.01
 
-  The panel deliberately ends on the SAVINGS, not on the amount charged: the
-  cart's own "Total" row sits directly beneath this box, so printing the total
-  twice made the shopper read the same number twice and the savings not at all.
-  The bold line is now the one number this box exists to communicate.
+  Five numbers, three of which exist only to explain the fourth, stacked above
+  the Total. On a phone they filled the space the checkout button should own,
+  and a shopper reading them has to do arithmetic to answer the only two
+  questions they have. So the box is now one line:
+
+      You saved (57%)    $313.01
+
+  and the cart's own Total row sits directly beneath it. What they saved, what
+  they owe, nothing else. The intermediate figures are still COMPUTED -- `saved`
+  is derived from them -- they are simply not printed.
 
   The arithmetic is anchored on the real total rather than added up
   independently: Original comes from compare-at prices, Total comes straight
-  from cart.total_price, and Promo is the remainder after sale savings. That
-  way the rows can never sum to something other than what is charged --
-  including when Shopify picks one automatic discount over another, which it
-  does, since only ONE automatic discount applies per order.
+  from cart.total_price, and the saving is the difference. That way the figure
+  can never disagree with what is charged -- including when Shopify picks one
+  automatic discount over another.
 
-  The promo row only appears when Shopify has actually discounted something, so
-  the cart never claims a promo it did not get -- which also means the row is
-  the honest answer to "did my bundle deal work?", however the shopper got
-  there: adding one at a time or taking a bundle tile on the product page. The
-  BXGY ladders key off quantity in the cart, not the route taken to it.
+  With nothing discounted there is no saving to report, so the box falls back to
+  stating the charge rather than printing "You saved $0.00".
 
   Shipping Protection is excluded from Original and from the savings, since it
   is a service the shopper opted into and never carries a compare-at price. It
@@ -60,9 +62,9 @@
   #cart .pg-tot-r span:last-child{font-weight:700;white-space:nowrap}
   #cart .pg-tot-r.pg-tot-off span{color:#7A2FA2}
   /* Savings is a supporting figure, not the headline -- the amount charged is.
-     It stays only slightly above the breakdown rows above it. */
+     With the breakdown gone there is nothing above it to divide from, so the
+     rule and its top padding go too. */
   #cart .pg-tot-r.pg-tot-sum{
-    margin-top:5px;padding-top:6px;border-top:1px solid rgba(122,47,162,.22);
     font-size:13.5px;font-weight:700;
   }
   #cart .pg-tot-r.pg-tot-sum span{font-weight:700;color:#3B1553}
@@ -199,24 +201,19 @@
       });
 
       var total = c.total_price;                       /* the real charge */
-      var sale = Math.max(0, original - selling);      /* compare-at savings */
-      var promo = Math.max(0, (original + prot) - total - sale);
       var saved = Math.max(0, (original + prot) - total);
       var pct = original > 0 ? Math.round(saved / (original + prot) * 100) : 0;
 
-      var key = [original, prot, total, sale, promo].join('|');
+      var key = [original, prot, total].join('|');
       if (key === last && pane.querySelector('.pg-tot')) return;
       last = key;
 
-      var html = row('Original price', money(original + prot));
-      if (sale > 0) html += row('Sale savings', '-' + money(sale), 'pg-tot-off');
-      if (promo > 0) html += row('Promo discount', '-' + money(promo), 'pg-tot-off');
-
-      /* Bottom line: what they saved. With nothing discounted there is no
-         savings to report, so the box falls back to stating the charge rather
-         than printing "Total savings $0.00". */
-      if (saved > 0) html += row('Total savings (' + pct + '%)', money(saved), 'pg-tot-sum pg-tot-saved');
-      else html += row('Total', money(total), 'pg-tot-sum');
+      /* ONE LINE. What they saved -- or, with nothing discounted, what they
+         owe, because "You saved $0.00" is worse than saying nothing. The
+         cart's own Total row sits directly beneath this box either way. */
+      var html = saved > 0
+        ? row('You saved (' + pct + '%)', money(saved), 'pg-tot-sum pg-tot-saved')
+        : row('Total', money(total), 'pg-tot-sum');
 
       var box = pane.querySelector('.pg-tot');
       if (!box){
