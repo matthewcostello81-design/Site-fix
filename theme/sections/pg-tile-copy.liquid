@@ -1,49 +1,50 @@
 {%- comment -%}
-  PG Tile Copy: bundle tile wording, pricing, and the Buy 2 Get 1 Free pack.
+  PG Tile Copy: collapse the bundle ladder to one Buy 2 Get 1 Free tile.
 
-  1. The first tile reads "Single Item" rather than "Buy 1".
+  WHERE THE TILES ACTUALLY COME FROM. There are two tile builders in this
+  theme and they look identical on screen:
 
-  2. THE PACK TILE. pg-landing renders a 2-unit tile (data-pgx-tile="double")
-     with two variant selects, d1 and d2, prices it from a flat `bundle_pct`
-     setting of 10, and captions it "10% OFF". No such discount has ever
-     existed.
+    - pg-landing renders server-side tiles, data-pgx-tile="single"/"double".
+    - pg-theme-css (window.pgLadder) renders .pgx-lad tiles from a TIERS array
+      -- Buy 1 / Duo 25% / Trio 50% / Quad +1 FREE -- and HIDES pg-landing's
+      with display:none.
 
-     On the orb and the wall art the shop now runs Buy 2 Get 1 Free, and that
-     pays out on the THIRD unit -- two in the cart earn nothing at all. A tile
-     that adds two was therefore selling the offer and then not delivering it:
-     the shopper picks the bundle, checks out, and is charged full price for
-     both.
+  The ladder wins, so the ladder is what a shopper sees, and it is what has to
+  change. An earlier pass rewrote pg-landing's tiles instead: correct code
+  aimed at markup that is display:none on every product page.
 
-     So on those two products this file turns that tile into a real 3-pack:
+  WHY NOT EDIT pg-theme-css. That file is 73KB and holds the storefront's
+  entire visual layer. Its TIERS array is four lines of it. Rewriting the whole
+  file through the API to change four lines risks the other 73KB for no reason,
+  so the ladder is edited after it is built instead.
 
-       - a third variant select, d3, cloned from the existing pair so it
-         carries the same options and styling,
-       - the tile renamed 2x -> 3x and captioned with the actual offer,
-       - priced at TWO units against THREE at MSRP, which is what the shopper
-         pays and what they save,
-       - and the add-to-cart intercepted so it posts three units.
+  WHAT THIS DOES on the orb and the wall art:
 
-     THE INTERCEPT. pg-landing binds its own click handler to #pgx-atc and
-     builds the cart payload from `mode`, which it sets from the selected
-     tile. There is no hook into that. So the listener here is registered on
-     document in the CAPTURE phase, which runs before a listener bound to the
-     button itself, and calls stopPropagation -- pg-landing's handler never
-     sees the click. It only does this when the pack tile is the selected one
-     on a Buy-2-Get-1 product; every other tile, product and click falls
-     through to pg-landing untouched.
+    - deletes the Trio and Quad tiles (tiers 2 and 3). Neither offer exists any
+      more: the only discount on these products is Buy 2 Get 1 Free.
+    - rewrites the Duo tile into that offer -- title, badge, chip, the free-unit
+      line, and the price: two units paid against three at MSRP.
+    - makes it add THREE units.
 
-     STRICT d3. The third unit is read with pickedOpt, which returns null when
-     the d3 select is not there, NOT the first variant in the list. pickedIn's
-     fallback-to-first behaviour is right for a select that is guaranteed to
-     exist and wrong for one this file injects: if thirdSlot ever failed, a
-     lenient read would quietly add an Arceus to every order. Missing d3 falls
-     back to whatever d2 holds instead.
+  HOW THE THIRD UNIT IS ADDED. pgLadder's own add-to-cart counts the .pg-drop
+  pickers inside the selected tile and multiplies by data-pg-mul. So there is
+  nothing to intercept -- give the tile a third picker and it posts three
+  units through pgLadder's existing path.
 
-  3. Products NOT on Buy 2 Get 1 Free keep the old treatment: the R36S still
-     runs 2nd Console 25% Off, which is a genuine discount on the pair, so its
-     tile is still captioned and priced that way.
+  Two shapes, because pgLadder builds the tile differently depending on how
+  many variants a product has:
 
-  4. A one-line qualifier under the tiles states the offer outright.
+    - MANY variants (the orb): one picker per unit. A third picker is appended,
+      built with window.pgDrop -- the same factory pgLadder uses. It is NOT
+      cloned: .pg-drop carries a pgValue() method on the element, and
+      cloneNode copies markup but not properties, so a cloned picker would
+      throw the moment add-to-cart read it.
+    - ONE variant (the wall art): a single picker with a x N badge, and
+      data-pg-mul carries the count. There the badge and the multiplier move
+      from 2 to 3.
+
+  Anything not on Buy 2 Get 1 Free -- the R36S with its own Duo Pack, any
+  future product -- is left exactly as pgLadder built it.
 {%- endcomment -%}
 <style>
   #pgx .pgx-deal-note{
@@ -62,24 +63,25 @@
   var FROM = /^buy\s*1$/i;
   var TO = 'Single Item';
   var TILES = '#pgx .pgx-tile, #pgx [class*="pgx-lad"]';
-  var SECOND_PCT = 25;      /* still true for the R36S pair */
 
-  /* Products running Buy 2 Get 1 Free. Anything not listed keeps the old
-     second-unit-percentage treatment. */
+  /* Products running Buy 2 Get 1 Free. */
   var B2G1 = {
-    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': 1,
-    'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': 1
+    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {noun: 'Orb', chip: '+3 FREE LED Bases'},
+    'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {noun: 'Print', chip: '+3 PRINTS'}
   };
 
   function handle(){
     var m = location.pathname.match(/\/products\/([^\/?#]+)/);
     return m ? m[1] : '';
   }
-  var PACK = !!B2G1[handle()];
+  var HANDLE = handle();
+  var PACK = B2G1[HANDLE] || null;
 
   var NOTE = PACK
     ? 'Buy 2, get your <b>3rd free</b> &mdash; the free one comes off automatically at checkout.'
     : 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
 
   function swapIn(root){
     if (!root || root.nodeType !== 1) return;
@@ -92,8 +94,6 @@
     return hits.length > 0;
   }
 
-  function money(c){ return '$' + (c / 100).toFixed(2); }
-
   var variants = null;
   function vdata(){
     if (variants) return variants;
@@ -103,161 +103,75 @@
     return variants;
   }
 
-  function bySize(sz){
-    var vs = vdata();
-    if (!vs || !vs.length) return null;
-    for (var i = 0; i < vs.length; i++){ if (vs[i].size === sz) return vs[i]; }
-    return vs[0];
-  }
-
-  function packTile(){
-    return document.querySelector('#pgx [data-pgx-tile="double"]');
-  }
-
-  /* for selects pg-landing guarantees */
-  function pickedIn(tile, name){
-    var s = tile.querySelector('[data-pgx-size="' + name + '"]');
-    var vs = vdata();
-    return bySize(s ? s.value : (vs && vs[0] ? vs[0].size : null));
-  }
-
-  /* for selects this file injects: absent means absent, never "the first one" */
-  function pickedOpt(tile, name){
-    var s = tile.querySelector('[data-pgx-size="' + name + '"]');
-    return s ? bySize(s.value) : null;
-  }
-
-  /* Only writes when the value actually changes, so the MutationObserver that
-     calls back into pass() cannot drive this into a loop. */
   function put(el, text){
     if (el && el.textContent !== text) el.textContent = text;
   }
 
-  /* ---------------- the third unit ----------------
-     Cloned from the second slot so it inherits the option list, the image and
-     the styling pg-landing gave them. Only the select's identity changes. */
-  function thirdSlot(){
+  /* ---------------- the ladder ---------------- */
+
+  function ladder(){
     if (!PACK) return;
-    var tile = packTile();
-    if (!tile) return;
-    if (tile.querySelector('[data-pgx-size="d3"]')) return;
-    var opts = tile.querySelector('.pgx-tile-opts');
-    var d2 = tile.querySelector('[data-pgx-size="d2"]');
-    if (!opts || !d2) return;
-    var slot = d2.closest('.pgx-opt');
-    if (!slot) return;
+    var tiles = document.querySelectorAll('#pgx .pgx-lad');
+    if (!tiles.length) return;                 /* pgLadder has not built yet */
 
-    var plus = tile.querySelector('.pgx-plus');
-    var clone = slot.cloneNode(true);
-    var sel = clone.querySelector('select');
-    if (!sel) return;
-    sel.setAttribute('data-pgx-size', 'd3');
-    sel.setAttribute('aria-label', 'Emitting Color for unit 3 (free)');
-    sel.value = d2.value;
-    sel.addEventListener('change', function(){ setTimeout(bundle, 0); });
-
-    if (plus) opts.appendChild(plus.cloneNode(true));
-    opts.appendChild(clone);
-  }
-
-  function bundle(){
-    var tile = packTile();
-    if (!tile) return;
-    var a = pickedIn(tile, 'd1'), b = pickedIn(tile, 'd2');
-    if (!a || !b) return;
-
-    var now, was, sub;
-
-    if (PACK){
-      var c = pickedOpt(tile, 'd3') || b;
-      /* three units, two paid for -- the third is the BXGY payout */
-      now = a.price + b.price;
-      was = (a.cap > a.price ? a.cap : a.price)
-          + (b.cap > b.price ? b.cap : b.price)
-          + (c.cap > c.price ? c.cap : c.price);
-      sub = 'Buy 2, get your 3rd FREE - applied automatically at checkout';
-
-      var nameEl = tile.querySelector('.pgx-tile-name');
-      if (nameEl && /\b2x\b/.test(nameEl.textContent)){
-        nameEl.textContent = nameEl.textContent.replace(/\b2x\b/, '3x');
+    /* 1. the offers that no longer exist */
+    tiles.forEach(function(t){
+      var tier = t.getAttribute('data-pg-tier');
+      if (tier === '2' || tier === '3'){
+        /* if the shopper had one of them selected, hand selection back to Buy 1 */
+        var wasSel = t.classList.contains('pgx-sel');
+        if (t.parentNode) t.parentNode.removeChild(t);
+        if (wasSel){
+          var first = document.querySelector('#pgx .pgx-lad[data-pg-tier="0"]');
+          if (first){ first.classList.add('pgx-sel'); first.setAttribute('aria-checked', 'true'); }
+        }
       }
-    } else {
-      now = a.price + Math.round(b.price * (100 - SECOND_PCT) / 100);
-      was = (a.cap > a.price ? a.cap : a.price) + (b.cap > b.price ? b.cap : b.price);
-      sub = '2nd one ' + SECOND_PCT + '% OFF, applied automatically at checkout';
-    }
-
-    put(tile.querySelector('.pgx-tile-sub'), sub);
-    put(tile.querySelector('[data-pgx-double-now]'), money(now));
-    put(tile.querySelector('[data-pgx-double-was]'), money(was));
-
-    if (!tile.dataset.pgBundle){
-      tile.dataset.pgBundle = '1';
-      tile.querySelectorAll('[data-pgx-size]').forEach(function(s){
-        /* pg-landing's own paint() also fires on change and would put the flat
-           bundle_pct price back, so re-run after it */
-        s.addEventListener('change', function(){ setTimeout(bundle, 0); });
-      });
-    }
-  }
-
-  /* ---------------- add three, not two ----------------
-     Capture phase on document: this runs before pg-landing's own listener on
-     #pgx-atc, and stopPropagation keeps that listener from ever firing. Scoped
-     hard -- only a Buy-2-Get-1 product, only when the pack tile is selected. */
-  var adding = false;
-  document.addEventListener('click', function(e){
-    if (!PACK || adding) return;
-    var btn = e.target && e.target.closest && e.target.closest('#pgx-atc, #pgx .pgx-atc');
-    if (!btn) return;
-    var tile = packTile();
-    if (!tile || !tile.classList.contains('pgx-sel')) return;   /* single tile: leave it alone */
-
-    var a = pickedIn(tile, 'd1'), b = pickedIn(tile, 'd2');
-    if (!a || !b) return;                                       /* fall through rather than guess */
-    var c = pickedOpt(tile, 'd3') || b;
-
-    e.preventDefault(); e.stopPropagation();
-    adding = true;
-
-    /* fold repeats into one line so the cart shows 3x, not three rows */
-    var qty = {};
-    [a, b, c].forEach(function(v){ qty[v.id] = (qty[v.id] || 0) + 1; });
-    var items = Object.keys(qty).map(function(id){
-      return {id: parseInt(id, 10), quantity: qty[id]};
     });
 
-    var label = btn.firstElementChild || btn;
-    var was = label.textContent;
-    btn.disabled = true;
-    label.textContent = 'Adding...';
-    var err = document.getElementById('pgx-err');
-    if (err) err.style.display = 'none';
+    /* 2. the pack tile */
+    var tile = document.querySelector('#pgx .pgx-lad[data-pg-tier="1"]');
+    if (!tile) return;
 
-    fetch('/cart/add.js', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({items: items})
-    }).then(function(r){
-      if (!r.ok) throw 0;
-      btn.disabled = false; label.textContent = was; adding = false;
-      if (window.pgDrawerRefresh) window.pgDrawerRefresh();
-      if (window.pgOpenCart) window.pgOpenCart();
-      else {
-        /* the cart page is retired; open the drawer the way a shopper does */
-        var icon = document.querySelector('a[href$="/cart"]:not(#cart a)');
-        if (icon) icon.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
-      }
-    }).catch(function(){
-      btn.disabled = false; label.textContent = was; adding = false;
-      if (err){ err.textContent = 'Could not add to cart. Please try again.'; err.style.display = 'block'; }
-    });
-  }, true);
+    var vs = vdata();
+    if (!vs || !vs.length) return;
+    var unit = vs[0].price;
+    var cap  = vs[0].cap > unit ? vs[0].cap : unit;
+
+    put(tile.querySelector('.pgx-lad-t b'), 'Buy 2, Get 1 FREE');
+    put(tile.querySelector('.pgx-lad-chip'), PACK.chip);
+    put(tile.querySelector('.pgx-lad-save'), '3rd ' + PACK.noun + ' = FREE!');
+    put(tile.querySelector('.pgx-lad-badge'), 'Best Deal!');
+    put(tile.querySelector('.pgx-lad-px b'), money(unit * 2));
+    put(tile.querySelector('.pgx-lad-px s'), money(cap * 3));
+
+    /* 3. three units, through pgLadder's own add-to-cart */
+    var picks = tile.querySelector('.pgx-lad-picks');
+    if (!picks) return;
+    var drops = picks.querySelectorAll('.pg-drop');
+
+    if (drops.length > 1){
+      /* one picker per unit: add the third, built the way pgLadder builds them */
+      if (drops.length >= 3) return;
+      if (typeof window.pgDrop !== 'function') return;   /* no factory, no guess */
+      var opts = vs.filter(function(v){ return v.avail !== false; })
+                   .map(function(v){ return {id: v.id, t: v.size, img: ''}; });
+      if (!opts.length) return;
+      var row = document.createElement('div');
+      row.className = 'pgx-lad-row';
+      row.appendChild(window.pgDrop(opts, opts[2 % opts.length].id, null));
+      picks.appendChild(row);
+      tile.dataset.pgMul = '1';
+    } else if (drops.length === 1){
+      /* single design: the count rides on data-pg-mul and the x N badge */
+      tile.dataset.pgMul = '3';
+      var xb = picks.querySelector('.pgx-lad-row b');
+      if (xb && /^×\d+$/.test(xb.textContent.trim())) put(xb, '×3');
+    }
+  }
 
   function note(){
     var root = document.getElementById('pgx');
     if (!root || root.querySelector('.pgx-deal-note')) return;
-    /* only where a ladder is actually offered */
     if (!root.querySelector('.pgx-tile, [class*="pgx-lad"]')) return;
     var atc = root.querySelector('.pgx-atc');
     if (!atc || !atc.parentNode) return;
@@ -272,8 +186,7 @@
       if (tile.dataset.pgCopy) return;
       if (swapIn(tile)) tile.dataset.pgCopy = '1';
     });
-    thirdSlot();
-    bundle();
+    ladder();
     note();
   }
 
@@ -283,7 +196,9 @@
     if (root){
       try { new MutationObserver(pass).observe(root, {childList: true, subtree: true}); } catch(e){}
     }
-    setInterval(pass, 1500);
+    /* pgLadder rebuilds on its own 3s timer whenever .pgx-lad is missing, so
+       this keeps pace with it rather than running once */
+    setInterval(pass, 1200);
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
