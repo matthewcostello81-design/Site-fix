@@ -1,3 +1,41 @@
+# Pocket Era: product pages were cut off on mobile
+
+## Problem
+On a phone the Crystal Orb product page (and the other two landing pages)
+rendered about 970px wide inside a 390px screen, so the logo, headings,
+bundle tiles, price and Add to cart were all sliced off at the right edge.
+The page could not be scrolled sideways to reach them either.
+
+## Cause
+`.pgx-main` is a CSS grid, and on mobile its single column is `1fr` — which
+is really `minmax(auto, 1fr)`. That `auto` floor is the grid item's
+*min-content* width. `pg-gallery-mobile` turns the thumbnails into a
+nowrap flex carousel on mobile, and the min-content width of a nowrap row
+is the entire un-wrapped filmstrip. So the column stretched to fit the whole
+strip (~970px) and dragged the hero, video, buy column and accordions out
+past the screen with it. `#root` and `body` both set `overflow-x: hidden`,
+so nothing scrolled — it was just clipped.
+
+## Fix (`sections/pg-gallery-mobile.liquid`)
+Give the column a zero floor so it can shrink below its content:
+
+    #pgx .pgx-main{grid-template-columns:minmax(0,1fr) !important}
+    #pgx .pgx-gallery, #pgx .pgx-buy{min-width:0 !important}
+
+The column now takes the viewport width and the thumbnail strip scrolls
+inside its own box, which is what the carousel was for.
+
+## Verified at 390x844 (iPhone viewport)
+Gallery column 970px -> 342px, and zero overflowing elements, on all three:
+Crystal Legends Orb, Holo Legends Wall Art, Pocket Era R36S. Carousel
+arrows still show.
+
+## Applied to
+Shopify draft theme `162746106084` ("Pocket Era Most Recent Draft").
+Files changed: sections/pg-gallery-mobile.liquid (now tracked in this repo)
+
+---
+
 # Pocket Era: product pages show the imported Judge.me reviews
 
 ## Problem
