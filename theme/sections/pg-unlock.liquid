@@ -318,12 +318,13 @@
       lastKey = key;
       c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
       if (!offs.length) return;
-      /* directly under the cart items, above the recommendation rail */
-      var anchor = c.querySelector('.nc-recs') || list.nextSibling;
+      /* At the TOP of the cart, above the line items. It used to sit below
+         them, anchored on the recommendation rail, where a cart of three or
+         four products pushed it off the first screen -- and an offer nobody
+         scrolls to is an offer nobody takes. */
       offs.forEach(function(o){
         var el = row(o);
-        if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(el, anchor);
-        else list.parentNode.appendChild(el);
+        if (list.parentNode) list.parentNode.insertBefore(el, list);
       });
     }).catch(function(){});
   }
