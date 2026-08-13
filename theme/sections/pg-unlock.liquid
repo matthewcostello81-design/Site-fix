@@ -256,6 +256,10 @@
            handler for why the button raises this rather than posting an add */
         key: rec.item.key,
         lineQty: rec.item.quantity,
+        /* the product's TOTAL across every line it sits on. When it differs
+           from lineQty the product is split, and growing one line by `need`
+           would not add `need` units to the cart. */
+        totalQty: rec.qty,
         image: rec.item.image,
         price: rec.item.price,
         rung: rung,
@@ -297,7 +301,8 @@
         '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
-        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty + '" data-n="' + o.need + '">Add</button>';
+        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty +
+        '" data-t="' + o.totalQty + '" data-n="' + o.need + '">Add</button>';
     return el;
   }
 
@@ -355,6 +360,15 @@
     var vid = parseInt(btn.getAttribute('data-v'), 10);
     /* how many units this offer needs -- 2 from a single orb, 1 from a pair */
     var need = parseInt(btn.getAttribute('data-n'), 10) || 1;
+    var total = parseInt(btn.getAttribute('data-t'), 10) || qty;
+
+    /* SPLIT LINES. The offer counts every unit of the product; the button
+       grows ONE line. When the two disagree the product is on more than one
+       line, and raising that line to qty + need adds the right number to the
+       line but the wrong number to the cart -- which is how a click meant to
+       add one console added two. Post a plain add instead: it is exactly
+       `need` units, whatever the lines look like. */
+    var split = total !== qty;
 
     function addNew(){
       return fetch('/cart/add.js', {
@@ -364,7 +378,7 @@
       });
     }
 
-    var req = key
+    var req = (key && !split)
       ? fetch('/cart/change.js', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
