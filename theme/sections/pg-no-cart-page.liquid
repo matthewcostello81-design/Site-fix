@@ -1,0 +1,142 @@
+{%- comment -%}
+  PG No Cart Page: the cart is the side drawer, everywhere.
+
+  The store has two carts -- the slide-out drawer and the full /cart page -- and
+  they are not the same cart. Every override in this theme (the upsell rows, the
+  totals breakdown, the variant pickers, the SAVED % badges, the white footer)
+  is built against the drawer. A shopper who lands on /cart gets a different,
+  half-styled experience, so that page should simply not be reachable.
+
+  TWO WAYS IN, both closed here:
+
+  1. A link to /cart. Clicks are intercepted and the drawer is opened instead.
+     Only the cart page itself is matched -- /cart/add, /cart/change and
+     /cart/update are the AJAX endpoints every override posts to, and matching
+     those would break the entire cart.
+
+  2. A direct visit, a bookmark, or a link this file did not catch. The page is
+     hidden before it paints, the shopper is sent back where they came from, and
+     the drawer opens on arrival.
+
+  HOW THE DRAWER IS OPENED. Not by calling into pg-drawer -- there is no
+  reliable public hook. `window.pgOpenCart` is referenced exactly once in this
+  whole theme and may not exist (pg-case-add was relying on it and silently did
+  nothing after a successful add, which is how shoppers ended up adding the same
+  case three times). What does reliably work is the header cart icon, since the
+  drawer already opens from it on every page. So the icon is clicked
+  programmatically and the drawer's own listener does the rest -- no private
+  API, nothing to keep in sync.
+
+  The open-after-redirect flag rides in sessionStorage because the redirect is a
+  full page load. It is cleared the moment it is read, so a stale flag cannot
+  make the drawer spring open on some unrelated page later in the session.
+{%- endcomment -%}
+<style>
+  /* Hide the cart page before it paints, so the redirect does not flash a
+     half-styled cart. Belt and braces: if the script fails, the fallback below
+     restores it rather than leaving a blank page. */
+  body.template-cart #content{visibility:hidden}
+  body.template-cart.pg-cart-visible #content{visibility:visible}
+</style>
+<script>
+(function(){
+  if (window.pgNoCartPage) return; window.pgNoCartPage = 1;
+
+  var FLAG = 'pgOpenDrawer';
+
+  /* exactly the cart page, with or without a locale prefix -- never the
+     /cart/add, /cart/change, /cart/update endpoints the overrides post to */
+  var CART_PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?cart\/?$/i;
+
+  function isCartPage(path){ return CART_PATH.test(path || ''); }
+
+  /* The header cart icon: an anchor to the cart that is NOT inside the drawer
+     itself. Clicking it is how a shopper opens the drawer, so it is also the
+     most reliable way for us to. */
+  function trigger(){
+    var links = document.querySelectorAll('a[href*="cart"]');
+    for (var i = 0; i < links.length; i++){
+      var a = links[i];
+      if (a.closest('#cart')) continue;
+      var path;
+      try { path = new URL(a.href, location.origin).pathname; } catch (e){ continue; }
+      if (isCartPage(path)) return a;
+    }
+    return null;
+  }
+
+  function openDrawer(skip){
+    if (window.pgOpenCart){ try { window.pgOpenCart(); return true; } catch (e){} }
+    var a = trigger();
+    if (a && a !== skip){
+      /* dispatch rather than call .click(), so our own capture listener below
+         can recognise and ignore it */
+      a.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
+      return true;
+    }
+    return false;
+  }
+
+  /* ---- 1. links to the cart page open the drawer ---- */
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a) return;
+    if (a.dataset.pgDrawerOpen) return;      /* our own synthetic click */
+    var path;
+    try { path = new URL(a.href, location.origin).pathname; } catch (err){ return; }
+    if (!isCartPage(path)) return;
+
+    /* Inside the drawer, a cart link is something else entirely (Continue
+       shopping, a product link) -- leave it alone. */
+    if (a.closest('#cart')) return;
+
+    e.preventDefault();
+    a.dataset.pgDrawerOpen = '1';
+    var opened = openDrawer(a);
+    delete a.dataset.pgDrawerOpen;
+
+    /* If nothing could open the drawer, honour the click rather than trapping
+       the shopper on a page with no way to see their cart. */
+    if (!opened) window.location.href = a.href;
+  }, true);
+
+  /* ---- 2. a direct visit to /cart bounces back and opens the drawer ---- */
+  function leaveCartPage(){
+    if (!isCartPage(location.pathname)) return false;
+    try { sessionStorage.setItem(FLAG, '1'); } catch (e){}
+
+    var back = '/';
+    try {
+      var ref = document.referrer ? new URL(document.referrer) : null;
+      if (ref && ref.origin === location.origin && !isCartPage(ref.pathname)) back = ref.pathname + ref.search;
+    } catch (e){}
+    location.replace(back);
+    return true;
+  }
+
+  function openIfFlagged(){
+    var flagged = false;
+    try {
+      flagged = sessionStorage.getItem(FLAG) === '1';
+      if (flagged) sessionStorage.removeItem(FLAG);   /* read once, never twice */
+    } catch (e){}
+    if (!flagged) return;
+    /* the drawer's own script has to be up before its trigger means anything */
+    [300, 900, 1800].forEach(function(ms){ setTimeout(function(){ openDrawer(null); }, ms); });
+  }
+
+  function boot(){
+    if (leaveCartPage()) return;
+    /* not the cart page (or the redirect failed): make sure nothing stays hidden */
+    document.body.classList.add('pg-cart-visible');
+    openIfFlagged();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  /* last resort: never leave a shopper looking at a blank page */
+  setTimeout(function(){ document.body.classList.add('pg-cart-visible'); }, 4000);
+})();
+</script>
+{% schema %}
+{"name": "PG No Cart Page", "settings": []}
+{% endschema %}

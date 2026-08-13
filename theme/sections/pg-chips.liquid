@@ -30,6 +30,17 @@
   combination of them now that the ladders stack, is reflected. compare_at comes
   from /products.json, which cart.js does not carry.
 
+  (C) THE STRUCK PRICE. Same root cause, other half of the line. pg-drawer
+  strikes through the variant's LIST price, so an undiscounted orb showed
+  $79.99 struck against $32.99 -- correct, that is MSRP -- while the
+  bundle-discounted orb beside it showed $32.99 struck against $16.50. Two
+  identical products, two different meanings for the same struck figure, and
+  the discounted line quietly hid the fact that it is $79.99 off MSRP.
+
+  Every line now strikes MSRP x quantity, so the struck number means the same
+  thing on every row and the pill's percentage is the arithmetic between the
+  two figures a shopper can actually see.
+
   Lines are matched to cart items by handle and then by order within that handle
   -- the same approach pg-cart-variants uses -- so a product on two lines still
   lines up. The FREE GIFT pill is left alone: it is a label, not a percentage.
@@ -94,6 +105,8 @@
     return m ? m[1] : null;
   }
 
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
   function lines(){
     return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
   }
@@ -134,6 +147,18 @@
 
         var text = 'SAVED ' + pct + '%';
         if (chip.textContent.trim() !== text) chip.textContent = text;
+
+        /* and the struck figure beside it: MSRP for the whole line, so it means
+           the same thing on a discounted row as on a full-price one */
+        var was = money(base);
+        li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
+          if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
+          var t = (el.textContent || '').trim();
+          /* only touch nodes that are just a price -- never a sentence that
+             happens to contain one */
+          if (!/^\$[\d.,]+$/.test(t)) return;
+          if (t !== was) el.textContent = was;
+        });
       });
     }).catch(function(){});
   }

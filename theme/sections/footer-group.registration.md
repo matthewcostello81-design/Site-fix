@@ -94,3 +94,17 @@ translateY rather than `object-position`: pg-home sizes these images 1:1 and the
 orb source is 1792x1800, so `object-fit:cover` trims ~4px and object-position has
 no overflow to work with. The hover transform is restated in full because
 pg-home's `transform:scale(1.04)` replaces rather than adds.
+
+## sections/footer-group.json — `pg-no-cart-page`
+
+Registered last, after `pg-wordmark`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_no_cart_page` | pg-no-cart-page | the drawer is the only cart; /cart is unreachable |
+
+Matches ONLY the cart page path (with optional locale prefix), never
+`/cart/add`, `/cart/change` or `/cart/update` — those are the AJAX endpoints
+every cart override posts to. Opens the drawer by dispatching a click on the
+header cart icon rather than calling `window.pgOpenCart`, which appears once in
+the whole theme and may not exist.
