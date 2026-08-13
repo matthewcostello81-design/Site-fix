@@ -192,26 +192,19 @@
       tile.dataset.pgMul = '1';
     } else if (drops.length === 1){
       /* Single design (the wall art): pgLadder gives the tile ONE picker and
-         carries the count on data-pg-mul, with a x N badge beside it. Both
-         move to 3.
+         carries the count on data-pg-mul, with a x N badge beside it.
 
-         The badge is found by position, not by matching its text. It used to
-         be gated on /^×\d+$/ against the rendered "×2", which is a
-         multiplication sign the theme writes as an escape and a font may or
-         may not render as the same codepoint -- if that test missed, the
-         multiplier still changed and the badge kept saying ×2, so the tile
-         contradicted itself. The only <b> inside a picker row IS the badge, so
-         it is taken directly, and created if pgLadder never drew one. */
+         The multiplier moves to 3 -- that is what actually decides how many
+         units add-to-cart posts. The badge is REMOVED rather than relabelled:
+         it is the only place in the tile that repeats the count, the title and
+         the "+3 PRINTS" chip already say it, and while it was drawn by
+         pgLadder it kept showing the old x2 next to an offer that gives three.
+         One fewer number, and no chance of it disagreeing with the cart. */
       tile.dataset.pgMul = '3';
       var pickRow = picks.querySelector('.pgx-lad-row');
       if (pickRow){
         var xb = pickRow.querySelector('b');
-        if (!xb){
-          xb = document.createElement('b');
-          xb.style.cssText = 'margin-left:10px;font-size:15px;font-weight:700;color:#C79BEA;align-self:center';
-          pickRow.appendChild(xb);
-        }
-        put(xb, '×3');
+        if (xb && xb.parentNode) xb.parentNode.removeChild(xb);
       }
     }
   }
