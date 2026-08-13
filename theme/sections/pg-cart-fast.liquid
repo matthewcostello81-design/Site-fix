@@ -60,8 +60,6 @@
       font-weight:800 !important;
       line-height:1.25 !important;
     }
-    #cart .pg-save-line{font-size:12.5px !important}
-
     /* and a button that is always reachable */
     #cart .sticky-in-panel{
       position:sticky !important;
@@ -92,12 +90,43 @@
     #cart form{padding-bottom:0 !important;margin-bottom:0 !important}
   }
 
-  /* rows the breakdown no longer shows -- see stripBreakdown() */
+  /* rows the breakdown no longer shows */
   #cart .pg-hide-row{display:none !important}
 
-  /* flat black disc: pe-logo writes its filter with !important, so this
-     doubles the #cart id rather than relying on source order */
-  html body #cart#cart img.nc-dlogo{filter:none !important}
+  /* ---------------- the drawer mark ----------------
+     The Game Boy disc is retired here for the same reason it went from the
+     footer: the wordmark is the mark. pe-logo re-asserts that image's src on a
+     timer, so it is hidden rather than removed -- deleting it would only be
+     undone on the next pass. */
+  html body #cart#cart img.nc-dlogo{display:none !important}
+
+  #cart .pg-cart-mark{
+    display:block;
+    background:#0B0710;
+    border-radius:14px;
+    padding:20px 16px 15px;
+    margin:0 0 10px;
+    text-align:center;
+    box-shadow:0 10px 26px -18px rgba(0,0,0,.8);
+  }
+  #cart a.pg-cart-word{
+    display:inline-block;
+    font-family:'Press Start 2P','Courier New',monospace;
+    font-weight:400;
+    font-size:17px;
+    line-height:1;
+    color:#F6DBFF;
+    text-decoration:none;
+    transform:scaleY(1.7);
+    transform-origin:center;
+    text-shadow:0 0 6px rgba(246,219,255,.5),
+                0 0 17px rgba(199,155,234,.38),
+                0 0 40px rgba(139,68,190,.26);
+  }
+  @media(max-width:600px){
+    #cart .pg-cart-mark{padding:17px 12px 13px}
+    #cart a.pg-cart-word{font-size:14px}
+  }
 </style>
 <script>
 (function(){
@@ -183,6 +212,36 @@
   coalesce();
   setInterval(coalesce, 800);
 
+  /* ---------------- 3. the drawer mark ----------------
+
+     The cart opened on a Game Boy badge -- art the rest of the site stopped
+     using when the wordmark became the mark. This puts POCKET ERA there
+     instead, on the black panel the badge used to sit in.
+
+     Written as <a class="pg-wordmark"> on purpose: pg-wordmark kerns exactly
+     that selector, splitting the T into its own span so the mark reads POCKET
+     ERA rather than POCKE T ERA. Reusing the class means this mark inherits
+     that fix instead of carrying its own copy -- and if the kerning is ever
+     retuned, it retunes here too.
+
+     Rebuilt on a timer because the drawer is replaced wholesale by
+     pgDrawerRefresh, which drops anything added to it. */
+  function mark(){
+    var top = document.querySelector('#cart .nc-drawer-top');
+    if (!top || top.querySelector('.pg-cart-mark')) return;
+    var box = document.createElement('div');
+    box.className = 'pg-cart-mark';
+    var a = document.createElement('a');
+    a.className = 'pg-wordmark pg-cart-word';
+    a.setAttribute('href', '/');
+    a.textContent = 'POCKET ERA';
+    box.appendChild(a);
+    top.insertBefore(box, top.firstChild);
+  }
+
+  setInterval(mark, 500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark);
+  else mark();
 })();
 </script>
 {% schema %}
