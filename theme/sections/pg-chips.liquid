@@ -1,24 +1,38 @@
 {%- comment -%}
-  PG Chips: centre the text in the cart pills and give them a little more room.
+  PG Chips: cart pill styling, and a SAVED % that tells the truth.
 
-  The FREE GIFT pill (pg-drawer's giftTag) and the SAVED n% pill (its pass())
-  are both stamped with INLINE `!important` styles the moment they are created:
-  font-size:12px, line-height:1.5, padding:4px 12px. An inline !important
-  declaration outranks every stylesheet rule, so this cannot be fixed in CSS --
-  the properties have to be re-set on the elements themselves.
+  (A) CENTRING. The FREE GIFT pill (pg-drawer's giftTag) and the SAVED n% pill
+  (its pass()) are both stamped with INLINE `!important` styles the moment they
+  are created: font-size:12px, line-height:1.5, padding:4px 12px. An inline
+  !important declaration outranks every stylesheet rule, so this cannot be fixed
+  in CSS -- the properties have to be re-set on the elements themselves.
 
-  What changes:
   - display:inline-flex + centred alignment and line-height:1, so the glyphs sit
     in the middle of the pill instead of riding on a 1.5 line box.
   - text-indent matching the letter-spacing. Letter-spacing adds its gap AFTER
     the final letter too, which pushes the visual centre left; indenting by the
     same amount puts it back.
-  - 12px -> 13px text and 4px 12px -> 7px 15px padding: the same pill, slightly
-    larger.
+  - 12px -> 13px text and 4px 12px -> 7px 15px padding.
 
-  pg-drawer only stamps its inline styles when it creates a pill, so re-stamping
-  on an interval is enough to win, and it is cheap: each element is marked once
-  and skipped afterwards.
+  (B) THE PERCENTAGE. pg-drawer works its SAVED n% out from compare-at against
+  the variant's list price, which ignores every bundle discount actually applied
+  to that line. A shopper who took the 3rd-orb-50%-off rung saw a line charged
+  $16.50 against a $79.99 compare-at -- a real saving of 79% -- still badged
+  SAVED 59%, the same as the undiscounted orb sitting above it. The badge was
+  understating the offer precisely on the line the offer applied to, and two
+  identical-looking lines carried identical badges at different prices.
+
+  So the pill is recomputed from what the line is genuinely charged:
+
+      saved% = 1 - final_line_price / (compare_at x quantity)
+
+  final_line_price is cart.js's post-discount figure, so any BXGY rung, and any
+  combination of them now that the ladders stack, is reflected. compare_at comes
+  from /products.json, which cart.js does not carry.
+
+  Lines are matched to cart items by handle and then by order within that handle
+  -- the same approach pg-cart-variants uses -- so a product on two lines still
+  lines up. The FREE GIFT pill is left alone: it is a label, not a percentage.
 {%- endcomment -%}
 <style>
   /* Backstop for any pill rendered without the inline styles. */
@@ -58,8 +72,76 @@
     });
   }
 
+  /* ---------------- the honest percentage ---------------- */
+
+  var CAP = null;   /* variant id -> compare-at in cents (falls back to price) */
+
+  fetch('/products.json?limit=50').then(function(r){ return r.json(); }).then(function(j){
+    CAP = {};
+    (j.products || []).forEach(function(p){
+      (p.variants || []).forEach(function(v){
+        var price = Math.round(parseFloat(v.price || 0) * 100);
+        var cap = Math.round(parseFloat(v.compare_at_price || 0) * 100);
+        CAP[v.id] = cap > price ? cap : price;
+      });
+    });
+  }).catch(function(){});
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  function lines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+
+  function repct(){
+    if (!CAP) return;
+    var els = lines();
+    if (!els.length) return;
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var seen = {};
+      Array.prototype.forEach.call(els, function(li){
+        var handle = handleOf(li);
+        if (!handle) return;
+        var n = seen[handle] || 0;
+        seen[handle] = n + 1;
+
+        var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
+        var item = hits[n];
+        if (!item) return;
+
+        /* the free gift carries its own label, not a percentage */
+        if (item.properties && item.properties._free_gift) return;
+
+        var chip = li.querySelector('.pg-save-chip');
+        if (!chip) return;
+
+        var cap = CAP[item.variant_id];
+        if (!cap) return;
+        var base = cap * item.quantity;
+        /* final_line_price is what this line actually costs after every
+           line-level discount Shopify applied to it */
+        var paid = typeof item.final_line_price === 'number' ? item.final_line_price : item.line_price;
+        if (!base || typeof paid !== 'number') return;
+
+        var pct = Math.round((base - paid) / base * 100);
+        if (pct < 1) return;
+
+        var text = 'SAVED ' + pct + '%';
+        if (chip.textContent.trim() !== text) chip.textContent = text;
+      });
+    }).catch(function(){});
+  }
+
   setInterval(stamp, 300);
+  setInterval(repct, 700);
   stamp();
+  repct();
 })();
 </script>
 {% schema %}
