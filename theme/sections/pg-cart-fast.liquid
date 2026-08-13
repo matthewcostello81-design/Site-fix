@@ -1,0 +1,173 @@
+{%- comment -%}
+  PG Cart Fast: stop the drawer re-downloading the storefront, and simplify it
+  on a phone.
+
+  ---------------------------------------------------------------- 1. SPEED
+
+  Two things made the cart slow, and neither is the cart's markup.
+
+  A. SIX POLLERS, SIX REQUESTS. pg-unlock (900ms), pg-chips (700ms),
+     pg-cart-total, pg-cart-variants, the gift sync and the item counter each
+     fetch /cart.js on their own timer. They are independent by design -- each
+     override owns its own concern -- but they all want the same document, so
+     the drawer was issuing roughly eight requests a second for one JSON file.
+
+     Fixed by memoising GET /cart.js for half a second. Every caller still
+     writes `fetch('/cart.js')` and still gets a real Response; within the
+     window they share one round trip, and a request already in flight is
+     joined rather than duplicated. Any write to /cart/add|change|update|clear
+     drops the cache immediately, so a poller can never read a stale cart after
+     the shopper changed something. Half a second is under the fastest tick,
+     which means no poller ever waits and none of them sees old data.
+
+  B. THE FULL-PAGE REFRESH. pgDrawerRefresh rebuilds the drawer by fetching
+     `/` and lifting #cart out of the parsed document -- around 580KB of
+     homepage for a panel of line items. It is called after every add, every
+     quantity change, every merge, and by the free-gift sync, so a single click
+     could trigger several. Calls are now coalesced: one runs at a time, and a
+     second within 700ms joins it instead of starting another download.
+
+     The right fix is a dedicated cart section rendered through the Section
+     Rendering API rather than the whole homepage. That is a change to whoever
+     owns pgDrawerRefresh; this makes the existing one stop repeating itself.
+
+  Both wrappers are transparent. Nothing else changes its code, and if this
+  section is removed the theme behaves exactly as it did before.
+
+  ---------------------------------------------------------------- 2. MOBILE
+
+  On a phone the drawer asked the shopper to read a lot before finding the
+  button: line items, a savings line, a total, then a recommendation rail
+  pushing checkout below the fold.
+
+  So on narrow screens the recommendations go, the total gets big enough to
+  read at a glance, and the checkout button becomes full width and sticks to
+  the bottom of the panel so it is always reachable without scrolling.
+
+  The upsell row deliberately STAYS. It is the one thing in the drawer that
+  raises order value, and it is inserted as a sibling before .nc-recs, so
+  hiding the rail leaves it untouched.
+{%- endcomment -%}
+<style>
+  @media (max-width: 600px){
+    /* the recommendation rail is the main thing pushing checkout off screen */
+    #cart .nc-recs{display:none !important}
+
+    /* one number the shopper can find without reading */
+    #cart .l4tt li.pg-tt,
+    #cart .sticky-in-panel .l4tt li.pg-tt{
+      font-size:20px !important;
+      font-weight:800 !important;
+      line-height:1.25 !important;
+    }
+    #cart .pg-save-line{font-size:12.5px !important}
+
+    /* and a button that is always reachable */
+    #cart .sticky-in-panel{
+      position:sticky !important;
+      bottom:0 !important;
+      z-index:5 !important;
+      padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important;
+    }
+    #cart .sticky-in-panel button[name='checkout'],
+    #cart .sticky-in-panel .button-1,
+    #cart .sticky-in-panel [href*='checkout']{
+      display:block !important;
+      width:100% !important;
+      padding:16px !important;
+      font-size:16px !important;
+      font-weight:800 !important;
+    }
+
+    /* tighter line items, so more of the cart fits above the fold */
+    #cart .l4ca:not(.in-panel) > li{padding-top:10px !important;padding-bottom:10px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartFast) return; window.pgCartFast = 1;
+
+  /* ---------------- 1a. share one /cart.js ---------------- */
+
+  var TTL = 500;                /* under the fastest poller's 700ms tick */
+  var cached = null, cachedAt = 0, inflight = null;
+  var orig = window.fetch;
+  if (typeof orig !== 'function') return;
+
+  function urlOf(input){
+    if (typeof input === 'string') return input;
+    if (input && typeof input.url === 'string') return input.url;
+    return '';
+  }
+  function methodOf(input, init){
+    var m = (init && init.method) || (input && input.method) || 'GET';
+    return String(m).toUpperCase();
+  }
+
+  window.fetch = function(input, init){
+    var url = urlOf(input);
+    var method = methodOf(input, init);
+
+    /* a write invalidates the cache before it is even sent, so nothing can
+       read a cart that is about to change */
+    if (/\/cart\/(add|change|update|clear)(\.js)?/.test(url)){
+      cached = null;
+      return orig.apply(this, arguments);
+    }
+
+    if (method === 'GET' && /\/cart\.js(\?|$)/.test(url)){
+      if (cached && (Date.now() - cachedAt) < TTL){
+        /* clone every time: a Response body can only be read once, and the
+           stored copy is never read itself */
+        return Promise.resolve(cached.clone());
+      }
+      if (inflight) return inflight.then(function(r){ return r.clone(); });
+
+      inflight = orig.apply(this, arguments).then(function(r){
+        if (r && r.ok){ cached = r.clone(); cachedAt = Date.now(); }
+        inflight = null;
+        return r;
+      }, function(e){
+        inflight = null;
+        throw e;
+      });
+      return inflight.then(function(r){ return r.clone(); });
+    }
+
+    return orig.apply(this, arguments);
+  };
+
+  /* ---------------- 1b. one drawer rebuild at a time ---------------- */
+
+  function coalesce(){
+    var real = window.pgDrawerRefresh;
+    if (typeof real !== 'function' || real.pgFast) return;
+
+    var running = null, lastDone = 0;
+
+    var wrapped = function(){
+      if (running) return running;                 /* join the one in flight */
+      var wait = Math.max(0, 700 - (Date.now() - lastDone));
+      running = new Promise(function(resolve){
+        setTimeout(function(){
+          var done = function(){ lastDone = Date.now(); running = null; resolve(); };
+          try { Promise.resolve(real()).then(done, done); }
+          catch (e){ done(); }
+        }, wait);
+      });
+      return running;
+    };
+    wrapped.pgFast = 1;
+    window.pgDrawerRefresh = wrapped;
+  }
+
+  /* pgDrawerRefresh is defined by another section that may load after this
+     one, and some paths reassign it, so this keeps watch rather than wrapping
+     once and hoping */
+  coalesce();
+  setInterval(coalesce, 800);
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Fast", "settings": []}
+{% endschema %}
