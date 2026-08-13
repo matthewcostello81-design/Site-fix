@@ -103,29 +103,47 @@
   #cart .pg-cart-mark{
     display:block;
     background:#0B0710;
-    border-radius:14px;
-    padding:20px 16px 15px;
-    margin:0 0 10px;
+    border-radius:12px;
+    padding:13px 14px 10px;
+    margin:0 0 8px;
     text-align:center;
-    box-shadow:0 10px 26px -18px rgba(0,0,0,.8);
+    overflow:hidden;
+    box-shadow:0 8px 22px -18px rgba(0,0,0,.8);
   }
-  #cart a.pg-cart-word{
-    display:inline-block;
-    font-family:'Press Start 2P','Courier New',monospace;
-    font-weight:400;
-    font-size:17px;
-    line-height:1;
-    color:#F6DBFF;
-    text-decoration:none;
-    transform:scaleY(1.7);
-    transform-origin:center;
-    text-shadow:0 0 6px rgba(246,219,255,.5),
-                0 0 17px rgba(199,155,234,.38),
-                0 0 40px rgba(139,68,190,.26);
+
+  /* SIZE HAS TO BE FOUGHT FOR HERE.
+     .pg-wordmark is the header mark's class, and pg-mobile sizes it
+     clamp(40px,4.6vw,78px) with scaleY(2.6) and a negative letter-spacing --
+     all !important, because the header mark had its own battles. Inheriting the
+     class buys this mark pg-wordmark's T kerning, and it also inherits that
+     sizing, which is how POCKET ERA arrived 78px wide in a 380px drawer and
+     ran off the edge as POCKETER.
+
+     So every property pg-mobile sets is re-set here, on a doubled #cart id so
+     it outranks a plain html body selector, and the mark is told not to wrap.
+     Small enough to be a mark rather than a headline: the cart's job is the
+     items, not the branding. */
+  html body #cart#cart a.pg-cart-word{
+    display:inline-block !important;
+    font-family:'Press Start 2P','Courier New',monospace !important;
+    font-weight:400 !important;
+    font-size:13px !important;
+    line-height:1 !important;
+    letter-spacing:0 !important;
+    white-space:nowrap !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    color:#F6DBFF !important;
+    text-decoration:none !important;
+    transform:scaleY(1.5) !important;
+    transform-origin:center !important;
+    text-shadow:0 0 5px rgba(246,219,255,.45),
+                0 0 14px rgba(199,155,234,.32) !important;
   }
   @media(max-width:600px){
-    #cart .pg-cart-mark{padding:17px 12px 13px}
-    #cart a.pg-cart-word{font-size:14px}
+    #cart .pg-cart-mark{padding:11px 10px 9px}
+    html body #cart#cart a.pg-cart-word{font-size:11px !important}
   }
 </style>
 <script>
