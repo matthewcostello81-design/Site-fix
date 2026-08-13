@@ -1,3 +1,47 @@
+# Pocket Era: cart drawer unsquished on mobile
+
+## Problem
+On a phone the cart drawer left almost no room for the cart itself, and a
+strip of cart peeked out below the pinned totals pane.
+
+## Measured cause (390x844, 3 items)
+The pinned `.sticky-in-panel` measured 364px tall once shipping protection,
+the savings breakdown, totals, trust strip, checkout and payment icons were
+stacked. The upsell panel above it pushed the item list down to y=502 while
+the pane started at y=456 -- so the pane covered the top of the list and
+**not one cart item was fully visible** without scrolling.
+
+The peek underneath was a second effect: the drawer carries an inline
+`padding-bottom:34px` set by the theme's own script (inline + !important, so
+no stylesheet can override it), while the pane sticks at `bottom:-10px`. It
+therefore came to rest 24px short of the screen edge, with the cart list
+showing through the difference.
+
+## Fix (`sections/pg-cart-mobile.liquid`)
+Under 760px the pane is unpinned so it sits at the bottom of the drawer:
+
+    #cart .sticky-in-panel{position:static !important;bottom:auto !important;
+                           box-shadow:none !important}
+
+Nothing floats, so nothing peeks out underneath it, and the item list gets
+the full height instead of a slot above the pane. The existing compaction
+rules stay. Desktop is untouched and keeps its pinned pane.
+
+## Verified on the draft theme
+- Mobile: position static, gap below pane 0px (was 24px), list room 342px,
+  first item fully visible (was 0 of 3).
+- Desktop 1280x900: still sticky, unchanged.
+
+## Trade-off
+Checkout is now reached by scrolling to the end of the drawer rather than
+being permanently on screen.
+
+## Applied to
+Shopify draft theme `162779103460` ("Copy of Pocket Era Most Recent Draft").
+Files changed: sections/pg-cart-mobile.liquid (now tracked in this repo)
+
+---
+
 # Pocket Era: product pages were cut off on mobile
 
 ## Problem

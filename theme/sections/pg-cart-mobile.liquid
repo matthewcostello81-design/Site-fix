@@ -1,0 +1,108 @@
+{%- comment -%}
+  PG Cart Mobile: space fixes for the cart drawer.
+
+  1. The "Your Cart (n items)" bar stops sticking.
+     pg-drawer pins it with `.pg-cart-top{position:sticky;top:0;z-index:6}`. It
+     permanently eats part of the panel and rides over whatever scrolls beneath
+     it -- on a phone it sat on top of the "Add & Save More" heading, on desktop
+     it covers the drawer logo and free-shipping pill. It now scrolls with the
+     list, keeping its background and rule so it still reads as the panel header.
+
+  2. The totals pane gets shorter.
+     `.sticky-in-panel` stacks shipping protection, the savings breakdown, the
+     totals, the trust row, the checkout button and the payment icons. Each is
+     fine on its own; together they take more than half the screen.
+
+     Nothing is removed. Everything is tightened: smaller paddings and gaps,
+     one step down in type on the secondary rows, and payment icons at 26x17
+     instead of 36x23. The one exception is the shipping-protection subtitle
+     ("Protect your order against loss or damage in transit"), which is hidden
+     below 760px -- the label, price and toggle all remain, and that sentence is
+     a full wrapped line on a phone.
+
+     The total and the checkout button are deliberately left large: they are
+     what the pane is for.
+
+  3. The pane stops being frozen (see the block below for why).
+
+  The header bar is unpinned at every width -- on desktop it was covering the
+  drawer logo and free-shipping pill as the panel scrolled. The pane compaction
+  and unpinning stay under 760px, where the height actually matters; the 490px
+  desktop drawer keeps its roomier spacing and its pinned pane.
+{%- endcomment -%}
+<style>
+/* 1. header bar scrolls away, all widths */
+#cart .pg-cart-top{
+  position:static !important;
+  top:auto !important;
+  z-index:auto !important
+}
+
+@media (max-width:760px){
+  /* 3. the pane stops being frozen.
+     Even after the compaction below, the pinned pane measured ~364px tall once
+     the shipping-protection row, savings breakdown, totals, trust strip,
+     checkout button and payment icons were stacked -- and the upsell panel
+     above it pushed the item list down to y=502 on an 844px phone. The pane
+     started at y=456, so it covered the top of the list: not one cart item was
+     fully visible without scrolling.
+
+     Two symptoms came out of that. The cart looked squished, and a 24px strip
+     of cart peeked out below the pane -- the drawer carries an inline
+     `padding-bottom:34px` set by the theme's own script, while the pane sticks
+     at `bottom:-10px`, so it came to rest 24px short of the screen edge with
+     list showing through the difference.
+
+     Unpinning puts the pane at the bottom of the drawer, where it reads as the
+     end of the cart. Nothing floats, so nothing peeks out underneath it, and
+     the item list gets the full height rather than a slot above the pane
+     (measured: 342px of list, first item fully visible, versus none before).
+
+     Trade-off worth knowing: checkout is now reached by scrolling to the end of
+     the drawer rather than always being on screen. */
+  #cart .sticky-in-panel{
+    position:static !important;
+    bottom:auto !important;
+    box-shadow:none !important
+  }
+
+  /* 2. compact the pane */
+  #cart .sticky-in-panel{padding-top:3px !important;padding-bottom:5px !important}
+
+  /* shipping protection: single line, smaller icon */
+  #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
+  #cart .sticky-in-panel .pg-sp-ic{width:24px !important;height:24px !important}
+  #cart .sticky-in-panel .pg-sp-ic svg{width:14px !important;height:14px !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:12.5px !important;line-height:1.25 !important}
+  #cart .sticky-in-panel .pg-sp-t small{display:none !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:12.5px !important}
+  #cart .sticky-in-panel .pg-sp-sw{transform:scale(.9);transform-origin:right center}
+
+  /* savings breakdown */
+  #cart .sticky-in-panel .pg-sav{margin:2px 0 5px !important;padding:6px 9px !important}
+  #cart .sticky-in-panel .pg-sav-r{font-size:12px !important;line-height:1.4 !important}
+  #cart .sticky-in-panel .pg-sav-t{margin-top:3px !important;padding-top:4px !important;font-size:12.5px !important}
+
+  /* totals: subtotal and discount rows tighten, the Total holds its weight */
+  #cart .sticky-in-panel .l4tt{margin:1px 0 !important}
+  #cart .sticky-in-panel .l4tt li{font-size:12.5px !important;padding:0 !important;line-height:1.35 !important}
+  #cart .sticky-in-panel .l4tt li.pg-drow,#cart .sticky-in-panel .l4tt li.pg-drow *{font-size:12.5px !important}
+  #cart .sticky-in-panel .l4tt li.pg-tt,#cart .sticky-in-panel .l4tt li.pg-tt *{font-size:15px !important}
+
+  /* trust strip */
+  #cart .sticky-in-panel .nc-dtrust{margin:2px 0 !important;padding:0 !important}
+  #cart .sticky-in-panel .nc-dtrust span{font-size:10px !important}
+
+  /* checkout stays a full-size target */
+  #cart .sticky-in-panel form.f8vl{margin:2px 0 0 !important}
+  #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important}
+
+  /* payment icons: one tight row */
+  #cart .sticky-in-panel .l4pm{margin:4px 0 0 !important;gap:5px !important}
+  #cart .sticky-in-panel .l4pm li{padding:2px 4px !important;border-radius:6px !important}
+  #cart .sticky-in-panel .l4pm svg{width:26px !important;height:17px !important}
+}
+</style>
+{% schema %}
+{"name": "PG Cart Mobile", "settings": []}
+{% endschema %}
