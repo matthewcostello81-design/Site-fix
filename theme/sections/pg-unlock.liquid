@@ -16,29 +16,30 @@
   four superseded discounts are deactivated in the admin, so nothing else can
   win at checkout and contradict this row.
 
-  A cart sitting ON the rung gets the actionable offer -- one click earns the
-  discount. A cart BELOW it gets the same row pointed forward, saying how many
-  more units it takes:
+  ONE CLICK TAKES THE WHOLE OFFER. The rung is the quantity that EARNS the
+  discount and the free unit is the one after it, so Buy 2 Get 1 Free is only
+  real once the cart holds three. The button therefore adds however many units
+  that takes, not one:
 
-      1 orb ..... Add 1 more Crystal PokeOrb - then your 3rd is free
-      2 orbs .... Add a 3rd Crystal PokeOrb - free
+      1 orb ..... Add 2 more, get 1 FREE   (pay for 1 more)   -> cart of 3
+      2 orbs .... Add your FREE 3rd Orb    (costs nothing)    -> cart of 3
       3 orbs .... offer taken, no row
 
-  Without the between-rungs case the upsell went silent at 3, which reads as
-  the offer disappearing right after the shopper took one. The button adds a
-  single unit either way, and the copy never claims a discount that click will
-  not actually earn.
+  Adding a single unit from one orb landed the shopper on two, with nothing
+  discounted yet and a second prompt still to go -- the offer read as further
+  away after they had acted on it. The console keeps its own shape: one rung
+  at 25% off the second, one unit to add.
 
   The unit added is the same variant already in the cart, so the shopper gets
   another of the thing they chose rather than the product default.
 
   STACKING. Every one of these BXGYs used to carry combinesWith.productDiscounts
   = false, which is the setting behind the old "only one automatic discount per
-  order" behaviour -- a cart with a console and four orbs got whichever single
-  discount was worth most, and the other rungs silently did nothing. All eight
-  ladder discounts are now marked combinable (product, order and shipping), so a
-  free 5th orb, a free 5th print, a free case and 25% off a second console can
-  all land on the same order.
+  order" behaviour -- a cart with a console and several orbs got whichever single
+  discount was worth most, and the other offers silently did nothing. The live
+  discounts are now marked combinable (product, order and shipping), so a free
+  3rd orb, a free 3rd print, a free case and 25% off a second console can all
+  land on the same order.
 
   The blanket "10% Off (2+ Items)" discount is deliberately NOT combinable. It
   applies to everything in the cart, so stacking it on top of every ladder rung
@@ -88,9 +89,9 @@
   /* handle -> { name, rungs: { qtyAlreadyInCart: {pct, nth} } } */
   var LADDERS = {
     /* Orbs and wall art both run a single Buy 2 Get 1 Free, so there is exactly
-       one rung: with 2 in the cart, the next one is free. `away` then covers the
-       shopper sitting on 1 -- they get "add 1 more, then your 3rd is free" --
-       so the whole offer is still reachable from the first unit. */
+       one rung: with 2 in the cart, the next one is free. offers() works out
+       how many units the shopper is short of holding the free one and the
+       button adds all of them at once. */
     'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
       name: 'Crystal PokeOrb',
       rungs: {2: {pct: 100, nth: '3rd'}}
@@ -221,6 +222,8 @@
       var rung = rungs[rec.qty];
       var away = 0;
 
+      var at = rec.qty;                     /* the rung's own quantity */
+
       if (!rung){
         /* nearest rung still ahead of this quantity */
         var best = null;
@@ -230,8 +233,20 @@
         });
         if (best === null) return;          /* ladder exhausted, nothing to say */
         rung = rungs[best];
+        at = best;
         away = best - rec.qty;
       }
+
+      /* ONE CLICK TAKES THE WHOLE OFFER.
+         The rung is the quantity that EARNS the discount; the discounted unit
+         is the one after it. Buy 2 Get 1 Free earns at 2 and pays out on the
+         3rd, so the cart has to reach 3 -- and a shopper holding one orb was
+         being told to "add 1 more", which lands them on 2 with nothing yet
+         discounted and a second prompt to go. `need` is the whole distance:
+         two units from one orb, one from two, and the button adds that many
+         so the free one is always a single click away. */
+      var need = (at + 1) - rec.qty;
+      if (need < 1) return;
 
       out.push({
         handle: handle,
@@ -244,7 +259,8 @@
         image: rec.item.image,
         price: rec.item.price,
         rung: rung,
-        away: away
+        away: away,
+        need: need
       });
     });
     return out;
@@ -259,13 +275,18 @@
     var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
 
     var title, note;
-    if (o.away === 0){
-      title = 'Add a ' + o.rung.nth + ' ' + o.name;
-      note = (free ? 'Your ' + o.rung.nth + ' one is free' : 'Get it for ' + after + ' instead of ' + money(o.price)) +
-             ', applied at checkout';
+    if (free){
+      if (o.need === 1){
+        title = 'Add your FREE ' + o.rung.nth + ' ' + o.name;
+        note = 'You already qualify - this one costs nothing';
+      } else {
+        title = 'Add ' + o.need + ' more, get 1 FREE';
+        note = 'Buy 2 get 1 free: you only pay for ' + (o.need - 1) +
+               ' more ' + o.name + ((o.need - 1) > 1 ? 's' : '');
+      }
     } else {
-      title = 'Add ' + o.away + ' more ' + o.name + (o.away > 1 ? 's' : '');
-      note = 'Then your ' + o.rung.nth + ' is ' + (free ? 'free' : o.rung.pct + '% off') + ', applied at checkout';
+      title = 'Add a ' + o.rung.nth + ' ' + o.name;
+      note = 'Get it for ' + after + ' instead of ' + money(o.price) + ', applied at checkout';
     }
 
     el.innerHTML =
@@ -276,7 +297,7 @@
         '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
-        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty + '">Add</button>';
+        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty + '" data-n="' + o.need + '">Add</button>';
     return el;
   }
 
@@ -292,7 +313,7 @@
       /* `away` is part of the key: going from 3 orbs to 4 keeps the same rung
          and variant, and without it the row would keep the "add 1 more" copy
          after the shopper has already arrived */
-      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.away + ':' + o.variant; }).join('|');
+      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.need + ':' + o.variant; }).join('|');
       if (key === lastKey && c.querySelector('.pg-unlock')) return;
       lastKey = key;
       c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
@@ -331,12 +352,14 @@
     var key = btn.getAttribute('data-k');
     var qty = parseInt(btn.getAttribute('data-q'), 10) || 0;
     var vid = parseInt(btn.getAttribute('data-v'), 10);
+    /* how many units this offer needs -- 2 from a single orb, 1 from a pair */
+    var need = parseInt(btn.getAttribute('data-n'), 10) || 1;
 
     function addNew(){
       return fetch('/cart/add.js', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({items: [{id: vid, quantity: 1}]})
+        body: JSON.stringify({items: [{id: vid, quantity: need}]})
       });
     }
 
@@ -344,7 +367,7 @@
       ? fetch('/cart/change.js', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({id: key, quantity: qty + 1})
+          body: JSON.stringify({id: key, quantity: qty + need})
         }).then(function(r){
           if (!r.ok) return addNew();
           return r.json().then(function(cart){
