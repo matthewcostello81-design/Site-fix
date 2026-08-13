@@ -94,6 +94,10 @@
 
   /* rows the breakdown no longer shows -- see stripBreakdown() */
   #cart .pg-hide-row{display:none !important}
+
+  /* flat black disc: pe-logo writes its filter with !important, so this
+     doubles the #cart id rather than relying on source order */
+  html body #cart#cart img.nc-dlogo{filter:none !important}
 </style>
 <script>
 (function(){
@@ -179,57 +183,6 @@
   coalesce();
   setInterval(coalesce, 800);
 
-  /* ---------------- 3. two lines, not five ----------------
-
-     The totals block listed Original price, Sale savings, Promo discount,
-     Total savings and Total. Five numbers, three of which only exist to
-     explain the fourth, and on a phone they filled the space the checkout
-     button should own. A shopper needs to know what they saved and what they
-     owe.
-
-     The rows are matched on their LABEL rather than a class, because they are
-     drawn by different layers -- the sale line by the theme, the promo line by
-     the discount app -- and no single selector covers them. Matching text is
-     what actually identifies them, and it degrades safely: a label that never
-     appears simply hides nothing.
-
-     Only the row's own label is read, never a total, so a price that happens
-     to contain the same digits cannot be caught by this. */
-  var DROP = /^(original price|sale savings|promo discount|subtotal)\b/i;
-  var SAVED = /^total savings/i;
-
-  function stripBreakdown(){
-    var c = document.getElementById('cart');
-    if (!c) return;
-    c.querySelectorAll('li, tr, .l4tt > *').forEach(function(row){
-      if (row.dataset.pgRow) return;
-      var label = (row.textContent || '').trim();
-      if (!label) return;
-      if (DROP.test(label)){
-        row.dataset.pgRow = '1';
-        row.classList.add('pg-hide-row');
-        return;
-      }
-      if (SAVED.test(label)){
-        row.dataset.pgRow = '1';
-        /* keep the percentage -- it is the strongest part of the line */
-        var el = null;
-        row.querySelectorAll('*').forEach(function(n){
-          if (!el && SAVED.test((n.textContent || '').trim())) el = n;
-        });
-        var target = el || row.firstChild;
-        if (target && target.textContent){
-          var pct = (target.textContent.match(/\((\d+)%\)/) || [])[1];
-          var txt = 'You saved' + (pct ? ' (' + pct + '%)' : '');
-          if (target.textContent.trim() !== txt) target.textContent = txt;
-        }
-      }
-    });
-  }
-
-  setInterval(stripBreakdown, 700);
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', stripBreakdown);
-  else stripBreakdown();
 })();
 </script>
 {% schema %}
