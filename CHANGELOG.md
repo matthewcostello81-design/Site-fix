@@ -1,3 +1,66 @@
+# Order tracking: brand the page, and point the links at it
+
+## Problem
+The tracking page at `/apps/track123` rendered the Track123 app's factory look —
+a stock photo of a truck on a highway, a white form card with a black button,
+and an orange five-step progress tracker — on top of the site's dark purple
+background. And every "Track your order" link on the site pointed somewhere
+else entirely.
+
+## Cause
+Two separate things.
+
+**The links.** The tracker lives at the app-proxy path `/apps/track123`. Every
+nav pointed at `/pages/track-order`, a leftover North Cove Wellness page with
+carrier links and a northcovewellness.com support address — no lookup tool on
+it at all. There are four copies of that nav: `pg-home`, `pg-cart-header` and
+`pg-landing` render one each, and `pg-theme-css` injects a JS fallback which is
+the one used on the proxy page itself. Both footer menus pointed there too.
+
+**The page.** Track123 mounts a Vue app into `#track123-app` as plain light DOM
+— no iframe, no shadow root — so theme CSS can reach it. It appends its own
+stylesheets to `<head>` at runtime, so they land after the theme's and win on
+equal specificity. That is a load-order problem, not a specificity one.
+
+## Fix (`snippets/pg-track.liquid`, rendered by `sections/pg-cart-fast.liquid`)
+- **Banner** swapped for a brand banner (generated to match: parcel and console
+  under violet rim light, left third kept clear for the lookup card), with a
+  bottom-weighted scrim so the card and heading stay legible over any image.
+- **The rest of the widget** repainted to the brand: the white card gets the
+  same gradient/border/shadow recipe the site's other cards use, fields go dark
+  with a lilac caret and a purple focus ring, the black button becomes the
+  standard purple CTA pill, and the orange tracker goes purple.
+- Overrides are `!important` — which also beats the app's inline `:style`
+  bindings, and is how the orange progress bar is recoloured without touching
+  the app. Everything is scoped under `#track123-app`, which exists on exactly
+  one page, so no locale prefix or trailing slash can make it miss and it cannot
+  misfire elsewhere. Selectors are substring matches on the app's own naming
+  (`track123_` prefix, `step_line` stem), so a rename that keeps the semantics
+  still hits, and anything that misses just keeps the app's default look.
+- **Links** corrected wherever `/pages/track-order` appears — a few timed passes
+  rewrite the href so previews and copy-link are right, and a capture-phase
+  click handler is the backstop for a nav injected later. No interval, no
+  MutationObserver. This avoids rewriting 73KB, 39KB and 20KB files through the
+  API to change one string in each.
+
+Also repointed the `Track Order` item in the **footer** and **Help** menus from
+`/pages/track-order` to `/apps/track123` (Admin API, applied to the live store).
+
+## Not done
+`/pages/track-order` is still published with its stale North Cove content. A URL
+redirect to the tracker only fires once that page 404s, so removing it is a
+merchant decision, not a code change.
+
+## Applied to
+Shopify theme `162816262372` (unpublished copy of live), byte-verified after
+write. Banner uploaded to Shopify Files (2688x1536).
+
+Files changed:
+- snippets/pg-track.liquid (new)
+- sections/pg-cart-fast.liquid (one render line + a note on why it lives there)
+
+---
+
 # Cart drawer: stop it tearing itself down on every change
 
 ## Problem

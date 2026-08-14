@@ -1,0 +1,192 @@
+{%- comment -%}
+  PG Track: brand the Track123 order-tracking page, and point every "track your
+  order" link at it.
+
+  ---------------------------------------------------------------- THE LINKS
+
+  The tracker lives at the app-proxy path /apps/track123. Every nav on the site
+  was pointing at /pages/track-order instead -- a leftover North Cove page of
+  carrier links with no lookup tool on it. There are four copies of that nav
+  (pg-home, pg-cart-header and pg-landing render one each, and pg-theme-css
+  injects a JS fallback used on the proxy page itself), spread across 73KB,
+  39KB and 20KB files. Rather than rewrite three large files through the API to
+  change one string in each, the href is corrected wherever it appears:
+
+  - a few timed passes rewrite the attribute so the link previews correctly and
+    middle-click / copy-link give the right URL;
+  - a capture-phase click handler is the backstop, so a link injected after the
+    last pass still lands on the tracker.
+
+  Both are cheap and idempotent. No interval, no MutationObserver -- this theme
+  has enough of those already.
+
+  ---------------------------------------------------------------- THE PAGE
+
+  Track123 mounts a Vue app into #track123-app as plain light DOM -- no iframe,
+  no shadow root -- so theme CSS reaches it. It appends its own stylesheets to
+  <head> at runtime, which means they land AFTER the theme's and win on equal
+  specificity. That is a load-order problem, not a specificity one, so the
+  overrides are !important. That also beats the app's inline :style bindings,
+  which is how the orange progress bar gets recoloured without touching the app.
+
+  Everything is scoped under #track123-app, which exists on exactly one page.
+  Scoping by container rather than by request.path means no locale prefix
+  (/en/apps/track123), trailing slash or sub-path can make it miss, and it
+  cannot misfire anywhere else.
+
+  Selectors are substring matches on the app's own naming (every class is
+  prefixed track123_, and the tracker's variants all share the step_line stem),
+  so a rename that keeps the semantics still hits. Anything that does miss
+  simply keeps the app's default look -- nothing collapses.
+
+  The banner is an inline background-image on the app's form background. It can
+  also be set in the Track123 admin (Tracking Page > Order lookup > Layout >
+  Image, and Mobile image). Set it in ONE place: with this CSS shipped, an
+  admin change will look like it did nothing. Delete the pgt_banner assign
+  below to hand control back to the app.
+{%- endcomment -%}
+{%- assign pgt_banner = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260814_025444_07f5c6ff-b029-4da5-a8d5-7c0569bf8820.png?v=1786676464' -%}
+<style>
+  /* ---- tokens the app already consumes: no !important needed ---- */
+  #track123-app{
+    --Track123-primary:#9B4BC4;
+    --Track123-bg:transparent;
+    --Track123-line:rgba(168,120,214,.24);
+    --Track123-Form-Content:#F1EDF7;
+    --Track123-Detail-Progress-line:rgba(168,120,214,.35);
+    --Track123-icon-color:#C79BEA;
+    --Track123-Dark-bg:#16101F;
+    --Track123-default-star:#C79BEA;
+    --Track123-all-radius:12px;
+    --Track123-big-radius:20px;
+    --Track123-small-radius:12px;
+  }
+
+  /* ---- the banner ---- */
+  {%- if pgt_banner != blank -%}
+  #track123-app [class*="tab_form_background"],
+  #track123-app [class*="form_background"]{
+    background-image:linear-gradient(180deg,rgba(11,7,16,.35) 0%,rgba(11,7,16,.92) 100%),
+                     url('{{ pgt_banner }}') !important;
+    background-size:cover !important;
+    background-position:50% 45% !important;
+    background-repeat:no-repeat !important;
+  }
+  {%- endif -%}
+
+  /* ---- the lookup card: same recipe the rest of the site uses ---- */
+  #track123-app [class*="form_wrapper"],
+  #track123-app .track_form{
+    background:linear-gradient(165deg,#170E22 0%,#120B1B 55%,#0D0813 100%) !important;
+    border:1px solid rgba(139,68,190,.34) !important;
+    border-radius:20px !important;
+    box-shadow:0 34px 90px -46px rgba(139,68,190,.75),0 0 0 1px rgba(255,255,255,.02) inset !important;
+    color:#F1EDF7 !important;
+  }
+  #track123-app [class*="form_wrapper"] *:not(button):not([class*="tab_bar"]){color:#F1EDF7}
+
+  /* ---- fields ---- */
+  #track123-app input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=submit]),
+  #track123-app [class*="form_input"],
+  #track123-app [class*="form_field"]{
+    background:#0F0A16 !important;
+    border:1px solid rgba(168,120,214,.24) !important;
+    border-radius:12px !important;
+    color:#F1EDF7 !important;
+    caret-color:#C79BEA !important;
+  }
+  #track123-app input::placeholder{color:#7E7290 !important;opacity:1 !important}
+  #track123-app input:focus{
+    border-color:#9B4BC4 !important;
+    box-shadow:0 0 0 3px rgba(155,75,196,.22) !important;
+    outline:none !important;
+  }
+
+  /* ---- the black button becomes the CTA used everywhere else ---- */
+  #track123-app #track123_submit_button,
+  #track123-app button[class*="track123_form_button"],
+  #track123-app [class*="form_wrapper"] button{
+    background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;
+    background-color:#7A2FA2 !important;
+    border:0 !important;
+    border-radius:999px !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    font-weight:700 !important;
+    letter-spacing:.05em !important;
+    text-transform:uppercase !important;
+    box-shadow:0 10px 30px -12px rgba(155,75,196,.75) !important;
+  }
+
+  /* ---- Order Number / Tracking Number tabs ---- */
+  #track123-app [class*="tab_bar"]{
+    color:#A296B4 !important;
+    background:transparent !important;
+    border-bottom:3px solid transparent !important;
+  }
+  #track123-app [class*="tab_bar_color"]{
+    color:#F1EDF7 !important;
+    border-bottom-color:#C79BEA !important;
+    opacity:1 !important;
+  }
+
+  /* ---- the orange step tracker ----
+     Three implementations ship under step_line / step_line1 / step_line2, so
+     the rules key on the shared stem and cover all of them. */
+  #track123-app [class*="step_line"][class*="_track"],
+  #track123-app [class*="step_line"] [class*="_track"]{
+    background:rgba(168,120,214,.18) !important;
+  }
+  #track123-app [class*="step_line"] [class*="_process"],
+  #track123-app [class*="step_line"] [class*="_dot"],
+  #track123-app [class*="step_line"] [class*="_icon"]:not([class*="_border"]):not([class*="_container"]){
+    background:linear-gradient(90deg,#7A2FA2,#C79BEA) !important;
+    border-color:#C79BEA !important;
+  }
+  #track123-app [class*="step_line"] [class*="_icon_border"]{
+    background:transparent !important;
+    box-shadow:0 0 0 4px rgba(155,75,196,.18) !important;
+  }
+  #track123-app [class*="not_active"]{opacity:.45 !important}
+  #track123-app [class*="step_line"] svg [fill]:not([fill="none"]){fill:#fff !important}
+  #track123-app [class*="step_line"] svg [stroke]:not([stroke="none"]){stroke:#fff !important}
+
+  /* ---- the vertical detail timeline below the tracker ---- */
+  #track123-app [class*="detail_step_line"]{border-left-color:rgba(168,120,214,.35) !important}
+  #track123-app [class*="detail_dot"]{background:#C79BEA !important}
+</style>
+<script>
+(function(){
+  if (window.pgTrackLink) return; window.pgTrackLink = 1;
+
+  var OLD = '/pages/track-order';
+  var NEW = '/apps/track123';
+
+  function isOld(a){
+    var h = a.getAttribute('href') || '';
+    return h.split('?')[0].replace(/\/$/, '').indexOf(OLD) > -1;
+  }
+
+  function fix(){
+    var as = document.querySelectorAll('a[href*="' + OLD + '"]');
+    for (var i = 0; i < as.length; i++){
+      if (isOld(as[i])) as[i].setAttribute('href', NEW);
+    }
+  }
+
+  /* the navs are injected at different times by different sections, so a few
+     cheap passes cover them without leaving a timer running */
+  fix();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
+  [400, 1200, 3000].forEach(function(ms){ setTimeout(fix, ms); });
+
+  /* and the backstop: a link built after the last pass still goes to the
+     tracker, because the click itself is redirected */
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest ? e.target.closest('a[href*="' + OLD + '"]') : null;
+    if (!a || !isOld(a)) return;
+    e.preventDefault();
+    window.location.href = NEW;
+  }, true);
+})();
+</script>
