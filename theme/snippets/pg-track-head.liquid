@@ -33,6 +33,11 @@
   Whichever one is on screen ends up white with a purple glow; the rules for the
   other match nothing and cost nothing.
 
+  The glow is deliberately restrained: three stacked shadows at 6/16/34px and
+  well under half opacity. It should read as light coming off the mark, not as
+  a halo around it -- at full strength the letterforms lose their edges, which
+  on a pixel face is the whole character of the mark.
+
   ---------------------------------------------------------------- SPACING
 
     top    56px  the announcement marquee sits over this block; less than this
@@ -50,9 +55,9 @@
     content:url("{{ 'pe-badge.svg' | asset_url }}") !important;
     mix-blend-mode:normal !important;
     filter:brightness(0) invert(1)
-           drop-shadow(0 0 10px rgba(199,155,234,.90))
-           drop-shadow(0 0 26px rgba(155,75,196,.62))
-           drop-shadow(0 0 48px rgba(122,47,162,.42)) !important;
+           drop-shadow(0 0 7px rgba(199,155,234,.58))
+           drop-shadow(0 0 18px rgba(155,75,196,.38))
+           drop-shadow(0 0 36px rgba(122,47,162,.25)) !important;
   }
 
   /* the mark as text */
@@ -69,9 +74,9 @@
     background-clip:border-box !important;
     color:#FFFFFF !important;
     -webkit-text-fill-color:#FFFFFF !important;
-    text-shadow:0 0 8px rgba(199,155,234,.95),
-                0 0 22px rgba(155,75,196,.65),
-                0 0 46px rgba(122,47,162,.45) !important;
+    text-shadow:0 0 6px rgba(199,155,234,.62),
+                0 0 16px rgba(155,75,196,.40),
+                0 0 34px rgba(122,47,162,.26) !important;
   }
 
   @media (max-width:600px){
