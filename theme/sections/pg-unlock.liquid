@@ -292,7 +292,10 @@
            for one more orb and two more arrive. That is the sentence. */
         var pay = o.need - 1;
         title = 'Buy ' + pay + ' more, get 1 FREE';
-        note = 'Adds ' + o.need + ' ' + o.name + 's to your cart - you only pay for ' + pay;
+        /* no product name here: it pluralises badly on "Heroic Holographic
+           Wall Art", and the row already names the product in the image and
+           the title above it */
+        note = 'Adds ' + o.need + ' to your cart - you only pay for ' + pay;
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;
