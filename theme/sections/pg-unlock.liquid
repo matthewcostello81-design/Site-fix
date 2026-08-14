@@ -284,9 +284,15 @@
         title = 'Add your FREE ' + o.rung.nth + ' ' + o.name;
         note = 'You already qualify - this one costs nothing';
       } else {
-        title = 'Add ' + o.need + ' more, get 1 FREE';
-        note = 'Buy 2 get 1 free: you only pay for ' + (o.need - 1) +
-               ' more ' + o.name + ((o.need - 1) > 1 ? 's' : '');
+        /* SAY IT THE WAY THE SHOPPER EXPERIENCES IT.
+           This read "Add 2 more, get 1 FREE" to someone holding one orb, which
+           is arithmetically right -- the cart has to reach three before the
+           BXGY pays out -- and reads as though the offer moved further away
+           the moment they bought one. What actually happens is that they pay
+           for one more orb and two more arrive. That is the sentence. */
+        var pay = o.need - 1;
+        title = 'Buy ' + pay + ' more, get 1 FREE';
+        note = 'Adds ' + o.need + ' ' + o.name + 's to your cart - you only pay for ' + pay;
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;
