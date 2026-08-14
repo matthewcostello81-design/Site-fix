@@ -6,66 +6,77 @@
   A cart line is a CSS grid with named areas. The price lives in `pr` and the
   quantity stepper in `qt`, immediately to its left.
 
-  The price itself is .nc-lsave -- nc-linesave's element, NOT the theme's
-  p.price, which is hidden on any line that has one. Its base rule is a flex
-  ROW with white-space:nowrap, so the struck compare-at and the price charged
-  sit side by side and refuse to wrap. There is a column override, but it does
-  not reach a phone. So on a narrow drawer the pair is wider than its column,
-  and because nowrap forbids breaking, it overflows LEFT -- straight under the
-  + button. A struck number beside a quantity reads as a struck quantity.
+  The price element is .nc-lsave -- nc-linesave's, NOT the theme's p.price,
+  which is hidden on any line carrying a saving. Its base rule is a flex ROW
+  with white-space:nowrap, so the struck compare-at and the price charged sit
+  side by side and refuse to wrap. When that pair is wider than the column it
+  overflows LEFT, into `qt`, and the old price runs under the + button. A
+  struck number beside a quantity reads as a struck quantity.
 
-  Stacking turns that overflow into height, which the row has to spare, and
-  order:-1 lifts the struck figure ABOVE the price charged so it reads
+  NO MEDIA QUERY -- and this is the correction that mattered. The first pass
+  scoped this to max-width:600px, reasoning about phones. But the constraint
+  here is the width of the DRAWER, not the width of the screen: the cart panel
+  is roughly 380-420px whatever it is opened on, so the same overflow happens
+  on a desktop browser, where a 600px query never fires. The rule now applies
+  wherever the cart is.
+
+  Stacking turns the overflow into height, which the row has to spare, and
+  order:-1 lifts the struck figure ABOVE the price charged, so it reads
   was-then-now down the column. Both .nc-lsave and p.price are covered, since
-  which one renders depends on whether the line carries a saving.
+  which renders depends on whether the line has a saving, and the struck figure
+  is matched as <s>, <del> or by strike-through class, because which of those
+  the cart emits varies by line type.
 
   ---------------------------------------------------- 2. THE WHITE BAND
 
   The band under CHECKOUT is the sticky footer's own doing. position:sticky
-  with bottom:0 pins an element to the bottom of the VIEWPORT only while its
-  container is taller than the screen; when the cart is short, the element
-  simply sits at its natural place in the flow and the rest of the panel's
-  height stays empty below it. Padding was never the cause, which is why
-  trimming padding did not shift it.
+  with bottom:0 pins to the bottom of the VIEWPORT only while its container is
+  taller than the screen; on a short cart the element sits at its natural place
+  in the flow and the container's remaining height stays blank below it.
+  Padding was never the cause, which is why trimming padding never moved it.
 
-  So the pin is dropped on phones and the panel sits at the end of the content,
-  where it ends when the content ends. A short cart no longer has a white band;
-  a long cart scrolls to the button, which is one swipe on a list that short.
+  That one IS phone-scoped: the sticky footer is only set below 600px in
+  pg-cart-fast, so there is nothing to undo above it.
 
-  Ordered after pg-cart-fast in footer-group, so this overrides the sticky rule
-  it sets at equal specificity.
+  Ordered after pg-cart-fast in footer-group, so it overrides that file's
+  sticky rule at equal specificity.
 {%- endcomment -%}
 <style>
-  @media (max-width: 600px){
-    /* ---- struck price above the price charged ---- */
-    #cart .l4ca > li .nc-lsave,
-    #cart .l4ca > li section .nc-lsave,
-    #cart .l4ca > li .price,
-    #cart .l4ca > li section .cols p.price{
-      display:flex !important;
-      flex-direction:column !important;
-      align-items:flex-end !important;
-      justify-content:flex-end !important;
-      flex-wrap:nowrap !important;
-      gap:1px !important;
-      line-height:1.15 !important;
-      text-align:right !important;
-      max-width:100% !important;
-      overflow:visible !important;
-    }
-    #cart .l4ca > li .nc-lsave s,
-    #cart .l4ca > li .nc-lsave del,
-    #cart .l4ca > li .price s,
-    #cart .l4ca > li .price del{
-      order:-1 !important;
-      display:block !important;
-      font-size:12px !important;
-      font-weight:600 !important;
-      line-height:1.15 !important;
-      white-space:nowrap !important;
-    }
+  /* ---- struck price above the price charged, at every width ---- */
+  #cart .l4ca > li .nc-lsave,
+  #cart .l4ca > li section .nc-lsave,
+  #cart .l4ca > li .price,
+  #cart .l4ca > li section .cols p.price{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:flex-end !important;
+    justify-content:flex-end !important;
+    flex-wrap:nowrap !important;
+    gap:1px !important;
+    line-height:1.15 !important;
+    text-align:right !important;
+    max-width:100% !important;
+    overflow:visible !important;
+  }
+  #cart .l4ca > li .nc-lsave s,
+  #cart .l4ca > li .nc-lsave del,
+  #cart .l4ca > li .nc-lsave [class*="old"],
+  #cart .l4ca > li .nc-lsave [class*="was"],
+  #cart .l4ca > li .nc-lsave [class*="compare"],
+  #cart .l4ca > li .price s,
+  #cart .l4ca > li .price del{
+    order:-1 !important;
+    display:block !important;
+    width:auto !important;
+    margin:0 !important;
+    font-size:12px !important;
+    font-weight:600 !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+  }
 
-    /* ---- no white band under the button ---- */
+  /* ---- no white band under the button ---- */
+  @media (max-width: 600px){
     #cart .sticky-in-panel{
       position:static !important;
       bottom:auto !important;
