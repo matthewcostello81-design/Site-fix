@@ -1,3 +1,46 @@
+# Pocket Era: upsell card moved above Shipping Protection on mobile
+
+## Change
+`.pg-unlock` ("Add your FREE 3rd Crystal PokeOrb") rendered above the cart
+itself, so on a phone the first thing in the drawer was an offer and the
+items actually added were pushed off the bottom of the screen. On mobile it
+is now moved to sit immediately before the pinned pane, which places it
+directly above Shipping Protection -- last thing before the totals, beside
+the checkout button.
+
+Done in JS rather than CSS because the card and the pane are siblings in
+source order and the card has to end up on the other side of several blocks
+(recommendations, free-shipping bar, the item list). The move is guarded by a
+position check -- `pane.previousElementSibling === card` -- which makes it
+idempotent and therefore safe to drive from the existing MutationObserver,
+since moving a node is itself a mutation. The card's original slot is
+remembered so a resize up to desktop puts it back.
+
+Desktop deliberately keeps the card where it was: that drawer has the height.
+
+## Theme note
+The working theme changed again mid-task. "Copy of Pocket Era Most Recent
+Draft" no longer exists; work moved to
+`162809938148` ("★ PUBLISH THIS — Cart + Logo Fixes (Aug 14)"), which had
+branched before the last two cart fixes. The flush-to-bottom script and the
+payment-icon removal were therefore re-applied there as well, so that theme
+now carries the whole cart drawer set.
+
+## Verified on that theme (1 item in cart)
+| | mobile 390x844 | desktop 1280x900 |
+|---|---|---|
+| upsell directly above pane | yes | no (unchanged, near top) |
+| upsell position | y=535, pane y=718 | y=251, pane y=626 |
+| payment icons in pane | display:none | display:none |
+| gap below pane | 0px | 0px |
+| pane height | 289px | 274px |
+
+## Applied to
+Shopify draft theme `162809938148`.
+Files changed: sections/pg-cart-mobile.liquid
+
+---
+
 # Pocket Era: payment-card icons dropped from the cart drawer pane
 
 ## Change

@@ -38,6 +38,15 @@
 
   4. The payment-icon row is dropped from the pane at every width (below).
 
+  5. The upsell card moves down on mobile only.
+     `.pg-unlock` ("Add your FREE 3rd Crystal PokeOrb") renders above the cart
+     itself, so on a phone the first thing in the drawer is an offer and the
+     items you actually added are pushed off the bottom of the screen. It is
+     moved to sit immediately before the pinned pane, which puts it directly
+     above Shipping Protection -- last thing before the totals, next to the
+     checkout button, where it reads as an add-on rather than a wall in front
+     of the cart. Desktop keeps it where it was; the drawer has the height.
+
   NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
   turned the drawer blank on iOS Safari -- scrolled to the top, the panel
   painted white with no content, though the markup and computed colours were
@@ -117,9 +126,36 @@
     }
   }
 
+  /* 5. on phones, drop the upsell card down to just above the pinned pane, so
+     it sits directly above Shipping Protection instead of in front of the
+     cart. The position check is what makes this safe to run from a
+     MutationObserver: once the card is already the pane's previous sibling
+     there is nothing to do, so moving it cannot feed itself. */
+  function placeUnlock(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var card = drawer.querySelector('.pg-unlock');
+    if (!card) return;
+
+    if (window.matchMedia('(max-width:760px)').matches){
+      var pane = drawer.querySelector('.sticky-in-panel');
+      if (!pane || pane.previousElementSibling === card) return;
+      /* remember the original slot so a resize up to desktop can undo this */
+      if (!card.pgHome) card.pgHome = {parent: card.parentNode, next: card.nextSibling};
+      pane.parentNode.insertBefore(card, pane);
+    } else if (card.pgHome && card.pgHome.parent && card.pgHome.parent.isConnected){
+      var home = card.pgHome;
+      if (card.parentNode !== home.parent || card.nextSibling !== home.next){
+        home.parent.insertBefore(card, home.next && home.next.isConnected ? home.next : null);
+      }
+    }
+  }
+
+  function apply(){ flush(); placeUnlock(); }
+
   function boot(){
-    flush();
-    window.addEventListener('resize', flush);
+    apply();
+    window.addEventListener('resize', apply);
     /* The pane only exists once the cart has something in it, and the theme
        replaces it wholesale on every add, remove and quantity change -- a
        fresh element each time, with the theme's own bottom offset back on it.
@@ -131,10 +167,10 @@
       new MutationObserver(function(){
         if (queued) return;
         queued = true;
-        setTimeout(function(){ queued = false; flush(); }, 60);
+        setTimeout(function(){ queued = false; apply(); }, 60);
       }).observe(document.body, {childList:true, subtree:true});
     }
-    [400, 1000, 2200, 4500].forEach(function(t){ setTimeout(flush, t); });
+    [400, 1000, 2200, 4500].forEach(function(t){ setTimeout(apply, t); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
