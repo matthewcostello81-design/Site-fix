@@ -1,0 +1,24 @@
+{%- comment -%}
+  PG Cards: framing fixes for individual product-card images on the homepage.
+
+  The Crystal Legends Orb hero is 1792x1800 -- square, in a square card -- so
+  nothing is being cropped. The problem is the composition: the orb cluster
+  occupies the top two thirds and the bottom third is its reflection, so at card
+  size the scene reads small and half the tile is a mirror. Scaling from a high
+  origin fills the card with the orbs and crops the reflection away.
+
+  Keyed on the image filename rather than a class, because the homepage builds
+  its own cards inside pg-home and its class names are its own. Scoped to #pgh
+  so the product page gallery, the cart thumbnails and the recommendation rail
+  all keep the full frame -- only the homepage tile is re-framed.
+
+  The parent gets overflow:hidden via :has(), whatever element it turns out to
+  be, so the scaled image cannot spill outside the tile.
+{%- endcomment -%}
+<style>
+  #pgh *:has(> img[src*="hf_20260812_024500"]){overflow:hidden !important}
+  #pgh img[src*="hf_20260812_024500"]{
+    transform:scale(1.3) !important;
+    transform-origin:50% 30% !important;
+  }
+</style>
