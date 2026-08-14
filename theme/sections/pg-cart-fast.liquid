@@ -145,6 +145,12 @@
   setInterval(coalesce, 800);
 })();
 </script>
+{%- comment -%}
+  Must come first: it pre-sets pg-no-cart-page's own guard flag so that section
+  bails before binding its click interceptor. footer-group renders this section
+  4th and pg-no-cart-page 23rd, so document order does the rest.
+{%- endcomment -%}
+{% render 'pg-cart-open' %}
 {% render 'pg-cart-smooth' %}
 {%- comment -%}
   The snippets below are unrelated to the cart. They live here because they need

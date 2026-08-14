@@ -1,0 +1,64 @@
+{%- comment -%}
+  PG Cart Open: stop pg-no-cart-page hijacking the cart icon.
+
+  THE BUG IT CAUSES. pg-no-cart-page intercepts every click on a /cart link in
+  the capture phase and does this:
+
+      e.preventDefault();                          // blocks the theme's drawer
+      var opened = openDrawer(a);
+      if (!opened) window.location.href = a.href;  // gives up, navigates
+
+  openDrawer() looks for the drawer trigger with
+
+      querySelectorAll('a[href*="cart"]')  ->  first one not inside #cart
+
+  which is the anchor that was just clicked. It then refuses to use it:
+
+      if (a && a !== skip)   // a === skip, so this is false
+
+  so `opened` is always false on that click, and the handler force-navigates to
+  /cart. Every time. The theme's own drawer never gets the event, because
+  preventDefault already ate it.
+
+  That is the flash: block the drawer, fail to open it by hand, navigate to
+  /cart, and let pg-cart-gone bounce back. Then openIfFlagged() fires on arrival,
+  dispatches another synthetic click on the same anchor, the same interceptor
+  catches it, and the round trip happens again. Hence a cart that "spazzes"
+  between the old page and the drawer instead of just opening.
+
+  The file's own comment says the drawer "already opens from it on every page",
+  which is the point: the native behaviour worked, and this broke it.
+
+  THE FIX. window.pgNoCartPage is that file's own re-entry guard --
+
+      if (window.pgNoCartPage) return; window.pgNoCartPage = 1;
+
+  -- so setting it first makes the whole IIFE bail before it binds anything. It
+  is stamped here rather than by editing that 6KB file, so the change is one
+  line to revert. This renders from pg-cart-fast, 4th in footer-group, while
+  pg-no-cart-page is 23rd; scripts run in document order, so the flag is always
+  set before it is read.
+
+  With the interceptor gone, clicking the cart icon does what it did before any
+  of this existed: the theme opens the drawer, and no navigation happens at all.
+
+  WHAT STILL COVERS /cart. pg-cart-gone, which renders as the entire cart
+  template and redirects during parse. Bookmarks, old links and anything this
+  does not catch still land back on the site rather than on a second cart. That
+  is the safety net, and it is earlier and simpler than the one being disabled.
+
+  The one thing deliberately not carried over is openIfFlagged(), which re-opened
+  the drawer after a bounce by dispatching a click at an anchor. Dispatching a
+  click at an <a href="/cart"> only avoids navigating if something cancels the
+  event -- which is exactly the assumption that failed above -- so a direct visit
+  to /cart now simply returns you to the site, and the cart icon opens the drawer
+  when you want it. No synthetic clicks, nothing to loop.
+
+  The visibility rule is neutralised too: that CSS hides #content on the cart
+  template and relies on the script it no longer runs to reveal it. Without this,
+  the <noscript> fallback in pg-cart-gone would be invisible.
+{%- endcomment -%}
+<script>window.pgNoCartPage = 1;</script>
+<style>
+  body.template-cart #content{visibility:visible !important}
+</style>
