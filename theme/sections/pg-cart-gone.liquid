@@ -1,0 +1,70 @@
+{%- comment -%}
+  PG Cart Gone: /cart stops being a page at all.
+
+  The store has two carts and only one of them is maintained. Every override in
+  this theme -- the upsell rows, the totals breakdown, the variant pickers, the
+  SAVED % badges -- is built against the drawer. The /cart page misses most of
+  them, so it is not just a second cart, it is a worse one.
+
+  pg-no-cart-page already intercepts links to /cart and bounces direct visits,
+  and it still does the link half. But it renders from footer-group, which means
+  it runs only AFTER the entire cart page has been built and painted: the
+  shopper sees the old cart, then it disappears. Its 4-second failsafe actively
+  reveals the page rather than hiding it, which is the right call for a script
+  that might fail -- but it means the page is never truly gone.
+
+  So the page is removed at the template instead. templates/cart.json renders
+  this section and nothing else: no pg-cart-header, no pg-cart-main. There is no
+  cart page left to flash, because none is built. The redirect below is the
+  first thing in the body and runs during parse, before anything downstream.
+
+  WHY STILL JAVASCRIPT. Shopify's URL redirects only fire on a 404, and /cart is
+  a live core route that never 404s, so it cannot be redirected server-side.
+  Liquid has no redirect either. A parse-time script is as early as this can
+  happen.
+
+  The sessionStorage flag is the one pg-no-cart-page already reads on arrival to
+  open the drawer, so the two stay in step -- set here, consumed there, cleared
+  on read.
+
+  noindex matters more than it looks: /cart is a real crawlable URL, and a cart
+  page in the index is a bad search result that lands shoppers on a redirect.
+
+  NOTE ON templates/cart.json. Shopify's theme editor regenerates that file from
+  its own state on save, so if the cart template is ever opened and saved in the
+  customiser it may pull the old sections back. If a full cart page reappears,
+  that is the first thing to check.
+{%- endcomment -%}
+<script>
+(function(){
+  /* exactly the cart page, with or without a locale prefix -- never the
+     /cart/add, /cart/change, /cart/update endpoints the cart posts to */
+  if (!/^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?cart\/?$/i.test(location.pathname)) return;
+
+  try { sessionStorage.setItem('pgOpenDrawer', '1'); } catch (e){}
+
+  var back = '/';
+  try {
+    var ref = document.referrer ? new URL(document.referrer) : null;
+    if (ref && ref.origin === location.origin &&
+        !/^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?cart\/?$/i.test(ref.pathname)){
+      back = ref.pathname + ref.search;
+    }
+  } catch (e){}
+
+  /* replace, not assign: the cart page must not sit in the back stack, or Back
+     from the homepage returns to it and bounces again */
+  location.replace(back);
+})();
+</script>
+<noscript>
+  <style>.pg-cart-gone{max-width:520px;margin:80px auto;padding:0 20px;text-align:center;color:#F1EDF7;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}</style>
+  <div class="pg-cart-gone">
+    <h1>Your cart</h1>
+    <p>Your cart opens from the bag icon at the top of every page.</p>
+    <p><a href="/">Continue shopping</a></p>
+  </div>
+</noscript>
+{% schema %}
+{"name": "PG Cart Gone", "settings": []}
+{% endschema %}
