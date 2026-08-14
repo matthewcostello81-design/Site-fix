@@ -81,6 +81,26 @@
     #cart .pg-unlock-t{flex:1 1 60%}
     #cart .pg-unlock-add{flex:1 1 auto;order:4}
   }
+
+  /* ---------------- smaller line images on a phone ----------------
+     nc-recs sizes the cart thumbnail 120px square with !important. That is a
+     third of the width of a phone drawer, and it leaves the name, variant
+     picker, saved chip, stepper and price to share the rest -- which is why
+     every line wraps. 72px still reads as the product and gives the copy room.
+
+     Doubled id because the rule being overridden is already !important. */
+  @media(max-width:600px){
+    html body #cart#cart .l4ca:not(.in-panel) > li > figure,
+    html body #cart#cart .l4ca:not(.in-panel) > li > figure img,
+    html body #cart#cart .l4ca:not(.in-panel) > li > figure picture,
+    html body #cart#cart .l4ca:not(.in-panel) > li > figure picture img{
+      width:72px !important;
+      min-width:72px !important;
+      max-width:72px !important;
+      height:72px !important;
+      flex:0 0 72px !important;
+    }
+  }
 </style>
 <script>
 (function(){
