@@ -43,13 +43,45 @@ equal specificity. That is a load-order problem, not a specificity one.
   MutationObserver. This avoids rewriting 73KB, 39KB and 20KB files through the
   API to change one string in each.
 
-Also repointed the `Track Order` item in the **footer** and **Help** menus from
-`/pages/track-order` to `/apps/track123` (Admin API, applied to the live store).
+## The wordmark header
+`pg-theme-css` injects `.pgf-head` / `.pgf-nav` as the fallback header on any
+page without one of its own, which includes this page. Its logo is capped at
+88px against 14px/6px padding, so the wordmark sat crowded up under the
+announcement marquee and read larger and softer than the wordmark anywhere else
+on the site. Sized to 56px and given real breathing room, on a background that
+matches the page. Scoped to `html.pgt-on` — set only when the widget is present
+or the path matches — so the CMS pages that share this header are untouched.
+`mix-blend-mode` is deliberately left alone: the asset relies on `screen` to
+drop its own dark background.
 
-## Not done
-`/pages/track-order` is still published with its stale North Cove content. A URL
-redirect to the tracker only fires once that page 404s, so removing it is a
-merchant decision, not a code change.
+## Mobile
+Three separate things stopped the page fitting a phone, and only one was layout:
+- **Zoom-on-focus.** iOS Safari zooms the whole page in when a text input under
+  16px takes focus, and never zooms back. Every input is pinned to 16px. Not a
+  `user-scalable=no` viewport, which would break pinch-zoom for everyone.
+- **The two lookup columns** (Order Number / OR / Tracking Number) are told to
+  wrap so they stack, and the vertical OR rule lies down with them. A no-op if
+  the app's own small-screen CSS already stacks them.
+- **The five-step tracker** is intrinsically wider than a phone; left alone it
+  stretches the document and gives every section a horizontal scrollbar. It now
+  scrolls inside its own container instead.
+
+## Navigation (Admin API, applied to the live store)
+- `Track Order` in the **footer** and **Help** menus repointed to `/apps/track123`.
+- **Main menu** rebuilt. Six of its eight items pointed at collection handles
+  that do not exist on this store (`/collections/sleep`,
+  `/collections/pain-relief-therapy`, `/collections/foot-leg-care`,
+  `/collections/home-wellness`, `/collections/massage-therapy`,
+  `/collections/fitness-exercise`) — every one a 404. Now: Shop All, Consoles,
+  Crystal Orbs, Wall Art, Track Order, Contact, all resolving.
+- **Header Slim** menu rebuilt the same way (it led with "Massage & Recovery").
+- `/pages/track-order` unpublished and a URL redirect created to
+  `/apps/track123`. Order matters: Shopify redirects only fire on a 404, so the
+  page has to be unpublished first.
+
+Note: the `best-sellers` collection is not linked from anywhere any more — all
+eight products in it are drafts, so it renders empty. What belongs in it is a
+merchandising decision.
 
 ## Applied to
 Shopify theme `162816262372` (unpublished copy of live), byte-verified after

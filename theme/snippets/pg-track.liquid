@@ -39,11 +39,12 @@
   so a rename that keeps the semantics still hits. Anything that does miss
   simply keeps the app's default look -- nothing collapses.
 
-  The banner is an inline background-image on the app's form background. It can
-  also be set in the Track123 admin (Tracking Page > Order lookup > Layout >
-  Image, and Mobile image). Set it in ONE place: with this CSS shipped, an
-  admin change will look like it did nothing. Delete the pgt_banner assign
-  below to hand control back to the app.
+  The banner is an inline background-image on the app's form background, and so
+  only applies in the app's Tab layout; the Tile layout has no banner and the
+  rule simply finds nothing. It can also be set in the Track123 admin (Tracking
+  Page > Order lookup > Layout > Image, and Mobile image). Set it in ONE place:
+  with this CSS shipped, an admin change will look like it did nothing. Delete
+  the pgt_banner assign below to hand control back to the app.
 {%- endcomment -%}
 {%- assign pgt_banner = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260814_025444_07f5c6ff-b029-4da5-a8d5-7c0569bf8820.png?v=1786676464' -%}
 <style>
@@ -102,9 +103,52 @@
     outline:none !important;
   }
 
-  /* ---- the black button becomes the CTA used everywhere else ---- */
+  /* ---- the wordmark header ----
+     pg-theme-css injects .pgf-head / .pgf-nav as the fallback header on any
+     page without a header of its own, which includes this one. Its logo is
+     capped at 88px against 14px/6px padding, so the wordmark sits crowded up
+     under the announcement marquee and reads larger and softer than the
+     wordmark anywhere else on the site. Sized and spaced to match here only --
+     the CMS pages that share this header are left alone.
+
+     mix-blend-mode is deliberately NOT touched: the asset leans on `screen` to
+     drop its own dark background, and normalising it would put the box back. */
+  html.pgt-on .pgf-head{
+    background:#0B0710 !important;
+    border-bottom:0 !important;
+    padding:22px 16px 10px !important;
+    height:auto !important;
+    overflow:visible !important;
+    line-height:0 !important;
+  }
+  html.pgt-on .pgf-head img{
+    max-height:56px !important;
+    max-width:min(400px,70vw) !important;
+    width:auto !important;
+    height:auto !important;
+    object-fit:contain !important;
+    margin:0 auto !important;
+  }
+  html.pgt-on .pgf-nav{
+    background:#0B0710 !important;
+    border-bottom:1px solid rgba(168,120,214,.16) !important;
+    padding:10px 16px 16px !important;
+    gap:30px !important;
+  }
+  @media (max-width:600px){
+    html.pgt-on .pgf-head{padding:16px 12px 8px !important}
+    html.pgt-on .pgf-head img{max-height:42px !important;max-width:78vw !important}
+    html.pgt-on .pgf-nav{gap:18px !important;padding:8px 12px 14px !important}
+  }
+
+  /* ---- the black button becomes the CTA used everywhere else ----
+     Both layouts are covered: the Tab layout puts its button inside a form
+     wrapper, the Tile layout does not, so the net is every button in the
+     widget that is not a close/copy/icon control. The tab rules below come
+     after this one on purpose, so a tab built as a <button> still wins. */
   #track123-app #track123_submit_button,
   #track123-app button[class*="track123_form_button"],
+  #track123-app button:not([class*="close"]):not([class*="copy"]):not([class*="icon"]):not([class*="tab"]),
   #track123-app [class*="form_wrapper"] button{
     background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;
     background-color:#7A2FA2 !important;
@@ -122,7 +166,12 @@
   #track123-app [class*="tab_bar"]{
     color:#A296B4 !important;
     background:transparent !important;
+    background-image:none !important;
+    border:0 !important;
     border-bottom:3px solid transparent !important;
+    border-radius:0 !important;
+    box-shadow:none !important;
+    text-transform:none !important;
   }
   #track123-app [class*="tab_bar_color"]{
     color:#F1EDF7 !important;
@@ -154,6 +203,66 @@
   /* ---- the vertical detail timeline below the tracker ---- */
   #track123-app [class*="detail_step_line"]{border-left-color:rgba(168,120,214,.35) !important}
   #track123-app [class*="detail_dot"]{background:#C79BEA !important}
+
+  /* ---- phones ----
+     Three separate things make this page "not fit" on a phone, and only one of
+     them is layout:
+
+     1. iOS Safari zooms the whole page in when a text input smaller than 16px
+        takes focus, and never zooms back out. A 14px field is enough to do it.
+        Every input is pinned to 16px, which is the actual fix -- not a
+        user-scalable=no viewport, which breaks pinch-zoom for everyone.
+     2. The lookup card is a row of two columns with an OR divider between them.
+        Told to wrap, it stacks; if the app's own small-screen CSS already
+        stacks it, this is a no-op.
+     3. The five-step tracker is intrinsically wider than a phone. Left alone it
+        stretches the document and every section on the page gains a horizontal
+        scrollbar. Given its own scroll container, it scrolls in place instead. */
+  @media (max-width:600px){
+    #track123-app{
+      max-width:100% !important;
+      overflow-x:hidden !important;
+      padding-left:12px !important;
+      padding-right:12px !important;
+      box-sizing:border-box !important;
+    }
+    #track123-app *{max-width:100% !important;box-sizing:border-box !important}
+
+    /* 1. no zoom-on-focus */
+    #track123-app input:not([type=hidden]):not([type=checkbox]):not([type=radio]),
+    #track123-app select,
+    #track123-app textarea{font-size:16px !important}
+
+    /* 2. stack the two lookup columns */
+    #track123-app [class*="form_wrapper"],
+    #track123-app [class*="form_content"],
+    #track123-app [class*="form_box"]{
+      flex-wrap:wrap !important;
+      width:100% !important;
+      padding:18px 14px !important;
+      border-radius:16px !important;
+    }
+    #track123-app [class*="form_wrapper"] > *{min-width:0 !important}
+    /* the vertical OR rule between the columns reads as a stray line once they
+       stack, so it lies down with them */
+    #track123-app [class*="_or"],
+    #track123-app [class*="divider"]{
+      width:100% !important;
+      height:auto !important;
+      margin:6px 0 !important;
+    }
+    #track123-app button{width:100% !important}
+
+    /* 3. the tracker scrolls in place rather than widening the document */
+    #track123-app [class*="step_line"]{
+      max-width:100% !important;
+      overflow-x:auto !important;
+      -webkit-overflow-scrolling:touch !important;
+      scrollbar-width:none !important;
+    }
+    #track123-app [class*="step_line"]::-webkit-scrollbar{display:none !important}
+    #track123-app [class*="step_line"] > *{max-width:none !important}
+  }
 </style>
 <script>
 (function(){
@@ -161,6 +270,18 @@
 
   var OLD = '/pages/track-order';
   var NEW = '/apps/track123';
+
+  /* html.pgt-on gates the rules that reach OUTSIDE the widget -- the injected
+     wordmark header, which is shared with the CMS pages and must not be
+     restyled there. Keyed on the widget being present as well as the path, so
+     a locale prefix or a trailing slash cannot make it miss. If it never gets
+     set, the header simply looks like it does today. */
+  var PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?apps\/track123(?:\/|$)/i;
+  function mark(){
+    if (!PATH.test(location.pathname) && !document.getElementById('track123-app')) return false;
+    document.documentElement.classList.add('pgt-on');
+    return true;
+  }
 
   function isOld(a){
     var h = a.getAttribute('href') || '';
@@ -174,11 +295,12 @@
     }
   }
 
-  /* the navs are injected at different times by different sections, so a few
-     cheap passes cover them without leaving a timer running */
-  fix();
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
-  [400, 1200, 3000].forEach(function(ms){ setTimeout(fix, ms); });
+  /* the header and the navs are injected at different times by different
+     sections, so a few cheap passes cover them without leaving a timer running */
+  function pass(){ mark(); fix(); }
+  pass();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  [400, 1200, 3000].forEach(function(ms){ setTimeout(pass, ms); });
 
   /* and the backstop: a link built after the last pass still goes to the
      tracker, because the click itself is redirected */
