@@ -311,7 +311,8 @@
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
         '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty +
-        '" data-t="' + o.totalQty + '" data-n="' + o.need + '">Add</button>';
+        '" data-t="' + o.totalQty + '" data-n="' + o.need +
+        '" data-h="' + o.handle + '">Add</button>';
     return el;
   }
 
@@ -370,6 +371,7 @@
     /* how many units this offer needs -- 2 from a single orb, 1 from a pair */
     var need = parseInt(btn.getAttribute('data-n'), 10) || 1;
     var total = parseInt(btn.getAttribute('data-t'), 10) || qty;
+    var handle = btn.getAttribute('data-h') || '';
 
     /* SPLIT LINES. The offer counts every unit of the product; the button
        grows ONE line. When the two disagree the product is on more than one
@@ -394,11 +396,23 @@
           body: JSON.stringify({id: key, quantity: qty + need})
         }).then(function(r){
           if (!r.ok) return addNew();
+          /* DID THE CART ACTUALLY GROW?
+             This used to look for the original line key with a bigger
+             quantity. That is wrong the moment a BXGY applies: Shopify splits
+             the line into a free unit and paid units and RE-KEYS them, so the
+             key we sent no longer exists, the check reported failure on a
+             change that had succeeded, and the fallback added `need` units a
+             second time. One click on a cart of one orb added three.
+
+             The question is about the product, not the line: count every unit
+             of this handle and compare with what it held before. That holds
+             however Shopify chooses to split the lines. */
           return r.json().then(function(cart){
-            var grew = (cart.items || []).some(function(it){
-              return it.key === key && it.quantity > qty;
+            var now = 0;
+            (cart.items || []).forEach(function(it){
+              if (it.handle === handle) now += it.quantity;
             });
-            return grew ? r : addNew();
+            return now >= total + need ? r : addNew();
           });
         })
       : addNew();
