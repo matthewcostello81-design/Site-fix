@@ -105,23 +105,43 @@
 
   /* ---- the wordmark header ----
      pg-theme-css injects .pgf-head / .pgf-nav as the fallback header on any
-     page without a header of its own, which includes this one. Its logo is
-     capped at 88px against 14px/6px padding, so the wordmark sits crowded up
-     under the announcement marquee and reads larger and softer than the
-     wordmark anywhere else on the site. Sized and spaced to match here only --
-     the CMS pages that share this header are left alone.
+     page without a header of its own, which includes this one.
 
-     mix-blend-mode is deliberately NOT touched: the asset leans on `screen` to
-     drop its own dark background, and normalising it would put the box back. */
+     WHY THIS PAGE ALONE HAS THE OLD MARK. pe-logo already swaps every header
+     logo -- .pgf-head img included -- to the transparent vector badge with the
+     brand glow. But pe-logo loads from header-group, and this app-proxy page
+     renders no header group at all, which is the very reason the JS fallback
+     header exists here. So the tracking page is the one place still showing
+     the retired raster art: pale, soft, and nothing like the mark on every
+     other page. The swap is repeated here, pointing at the same asset, so the
+     two cannot drift apart.
+
+     brightness(0) invert(1) collapses the badge to a pure white silhouette and
+     the drop-shadows add the purple glow around it. That order matters: the
+     shadows are cast from the whitened shape, not the original artwork. This
+     works because the badge is a transparent vector -- doing it to the old
+     raster PNG would have whitened the black box baked into it, which is also
+     why the theme blends that asset with mix-blend-mode:screen elsewhere.
+
+     Padding is 34px at the top because the announcement marquee sits above
+     this block and the old 14px let the mark run up into it. */
   html.pgt-on .pgf-head{
     background:#0B0710 !important;
     border-bottom:0 !important;
-    padding:22px 16px 10px !important;
+    padding:34px 16px 12px !important;
     height:auto !important;
     overflow:visible !important;
     line-height:0 !important;
+    position:relative !important;
+    z-index:1 !important;
   }
   html.pgt-on .pgf-head img{
+    content:url("{{ 'pe-badge.svg' | asset_url }}") !important;
+    mix-blend-mode:normal !important;
+    filter:brightness(0) invert(1)
+           drop-shadow(0 0 10px rgba(199,155,234,.85))
+           drop-shadow(0 0 26px rgba(155,75,196,.60))
+           drop-shadow(0 0 48px rgba(122,47,162,.40)) !important;
     max-height:56px !important;
     max-width:min(400px,70vw) !important;
     width:auto !important;
@@ -136,7 +156,7 @@
     gap:30px !important;
   }
   @media (max-width:600px){
-    html.pgt-on .pgf-head{padding:16px 12px 8px !important}
+    html.pgt-on .pgf-head{padding:24px 12px 10px !important}
     html.pgt-on .pgf-head img{max-height:42px !important;max-width:78vw !important}
     html.pgt-on .pgf-nav{gap:18px !important;padding:8px 12px 14px !important}
   }
