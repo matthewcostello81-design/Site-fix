@@ -1,0 +1,139 @@
+{%- comment -%}
+  PG Money: stop the JS-built prices claiming to be dollars.
+
+  THE BUG. Four files build price strings in JavaScript with a hardcoded dollar
+  sign:
+
+      function money(c){ return '$' + (c / 100).toFixed(2); }   pg-unlock, pg-chips, pg-tile-copy
+      function money(n){ return '$' + n.toFixed(2); }           pg-drawer
+
+  Those produce the drawer's savings breakdown, the SAVED % struck prices, the
+  upsell row prices and the bundle tile prices. The AMOUNTS are already correct:
+  /cart.js returns them converted to the buyer's presentment currency once local
+  currencies are on. Only the symbol is wrong. So a German shopper sees the right
+  number wearing a dollar sign -- which reads as being charged in USD, and is the
+  one kind of price error a shopper is guaranteed to notice.
+
+  WHY THIS IS NOT FIXED AT SOURCE. The correct fix is to make those four money()
+  helpers read cart.currency and format with Intl. They are closure-private, so
+  that means re-uploading four files wholesale -- pg-drawer is 45KB of add-to-cart,
+  BXGY allocation and free-gift logic, pg-unlock 17.8KB more of the same. None of
+  it can be tested against a live storefront from here. Retyping money-critical
+  code blind to change one token in each is a bad trade, so the symbol is
+  corrected at the display layer instead, where the worst possible failure is a
+  price that still says $.
+
+  WHAT MAKES THIS SAFE
+
+  1. USD IS A HARD NO-OP. If the presentment currency is USD the script is not
+     even rendered -- the Liquid guard below excludes it, and the script returns
+     early as well. That is nearly all traffic today, so nearly all traffic is
+     provably unaffected.
+  2. It never touches cart logic. No fetch, no /cart write, no listener on any
+     control. It reads text nodes and rewrites the symbol.
+  3. It cannot change what anyone is charged. Prices come from Shopify at
+     checkout; this only relabels what is already on screen.
+  4. It only ever rewrites a number that already parsed cleanly. Anything that
+     does not match the pattern is left exactly as it was.
+  5. It is idempotent. format(parse(x)) is stable, so a second pass over its own
+     output produces the same string and the observer settles rather than
+     looping. A busy flag and a rAF stop it re-entering itself.
+  6. Scoped to #cart and #pgx. Script and style text is skipped explicitly, and
+     input values are untouched because those are attributes, not text nodes --
+     so the quantity fields cannot be affected.
+
+  Failure mode, end to end: the dollar sign stays. Which is today's behaviour.
+{%- endcomment -%}
+{%- assign pgm_cur = cart.currency.iso_code -%}
+{%- if pgm_cur == blank -%}{%- assign pgm_cur = localization.country.currency.iso_code -%}{%- endif -%}
+{%- if pgm_cur == blank -%}{%- assign pgm_cur = shop.currency -%}{%- endif -%}
+{%- assign pgm_loc = request.locale.iso_code | default: 'en' -%}
+{%- if pgm_cur != blank and pgm_cur != 'USD' -%}
+<script>
+(function(){
+  if (window.pgMoney) return; window.pgMoney = 1;
+
+  var CUR = {{ pgm_cur | json }};
+  var LOC = {{ pgm_loc | json }};
+
+  /* belt and braces: the Liquid guard above already excluded USD */
+  if (!CUR || CUR === 'USD') return;
+
+  var fmt;
+  try { fmt = new Intl.NumberFormat(LOC, {style: 'currency', currency: CUR}); }
+  catch (e){ return; }                       /* unknown locale/currency: do nothing */
+
+  /* $ then a plain or thousand-separated amount. Deliberately strict: anything
+     that is not clearly a price is left alone. */
+  var RE = /\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/g;
+  var ROOTS = '#cart, #pgx';
+
+  var busy = 0, queued = 0;
+
+  function convert(text){
+    return text.replace(RE, function(whole, num){
+      var v = parseFloat(String(num).replace(/,/g, ''));
+      if (!isFinite(v)) return whole;        /* unparseable: leave it be */
+      try { return fmt.format(v); } catch (e){ return whole; }
+    });
+  }
+
+  function sweepRoot(root){
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var hits = [], n;
+    while ((n = walker.nextNode())){
+      if (!n.nodeValue || n.nodeValue.indexOf('$') < 0) continue;
+      var p = n.parentNode;
+      if (!p) continue;
+      var tag = p.nodeName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'TEXTAREA') continue;
+      hits.push(n);
+    }
+    for (var i = 0; i < hits.length; i++){
+      var out = convert(hits[i].nodeValue);
+      if (out !== hits[i].nodeValue) hits[i].nodeValue = out;
+    }
+  }
+
+  function sweep(){
+    if (busy) return;
+    busy = 1;
+    try {
+      var roots = document.querySelectorAll(ROOTS);
+      for (var i = 0; i < roots.length; i++) sweepRoot(roots[i]);
+    } catch (e){}
+    busy = 0;
+  }
+
+  /* our own edits mutate the tree, so the observer is debounced through a frame
+     and gated by the busy flag -- and because the conversion is idempotent, the
+     follow-up pass changes nothing and the loop ends there */
+  function schedule(){
+    if (busy || queued) return;
+    queued = 1;
+    requestAnimationFrame(function(){ queued = 0; sweep(); });
+  }
+
+  function watch(){
+    var roots = document.querySelectorAll(ROOTS);
+    for (var i = 0; i < roots.length; i++){
+      if (roots[i].pgmWatched) continue;
+      roots[i].pgmWatched = 1;
+      try {
+        new MutationObserver(schedule).observe(roots[i], {
+          childList: true, subtree: true, characterData: true
+        });
+      } catch (e){}
+    }
+  }
+
+  function pass(){ watch(); sweep(); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  else pass();
+  /* the drawer and the ladder are built by other sections on their own schedule,
+     so a few cheap passes catch whichever mounts last */
+  [400, 1200, 3000].forEach(function(ms){ setTimeout(pass, ms); });
+})();
+</script>
+{%- endif -%}
