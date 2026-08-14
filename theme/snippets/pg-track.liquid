@@ -123,19 +123,27 @@
      raster PNG would have whitened the black box baked into it, which is also
      why the theme blends that asset with mix-blend-mode:screen elsewhere.
 
-     Padding is 34px at the top because the announcement marquee sits above
-     this block and the old 14px let the mark run up into it. */
-  html.pgt-on .pgf-head{
+     NO html.pgt-on GATE ON THESE RULES. .pgf-head only exists where the
+     fallback header was injected, and pg-theme-css injects it only on a page
+     with no header of its own -- it bails the moment it finds .pgh-head,
+     .pgx-head or .pgc-head. So the element is its own scope: the CMS pages
+     that have a real header never have a .pgf-head to restyle. Keying on the
+     element rather than a JS-set class means this is pure CSS and lands even
+     if the script never runs.
+
+     Padding is 48px at the top: the announcement marquee sits over this block,
+     so anything less lets the mark run up underneath it. */
+  html body .pgf-head{
     background:#0B0710 !important;
     border-bottom:0 !important;
-    padding:34px 16px 12px !important;
+    padding:48px 16px 14px !important;
     height:auto !important;
     overflow:visible !important;
     line-height:0 !important;
     position:relative !important;
     z-index:1 !important;
   }
-  html.pgt-on .pgf-head img{
+  html body .pgf-head img{
     content:url("{{ 'pe-badge.svg' | asset_url }}") !important;
     mix-blend-mode:normal !important;
     filter:brightness(0) invert(1)
@@ -149,16 +157,16 @@
     object-fit:contain !important;
     margin:0 auto !important;
   }
-  html.pgt-on .pgf-nav{
+  html body .pgf-nav{
     background:#0B0710 !important;
     border-bottom:1px solid rgba(168,120,214,.16) !important;
     padding:10px 16px 16px !important;
     gap:30px !important;
   }
   @media (max-width:600px){
-    html.pgt-on .pgf-head{padding:24px 12px 10px !important}
-    html.pgt-on .pgf-head img{max-height:42px !important;max-width:78vw !important}
-    html.pgt-on .pgf-nav{gap:18px !important;padding:8px 12px 14px !important}
+    html body .pgf-head{padding:34px 12px 10px !important}
+    html body .pgf-head img{max-height:42px !important;max-width:78vw !important}
+    html body .pgf-nav{gap:18px !important;padding:8px 12px 14px !important}
   }
 
   /* ---- the black button becomes the CTA used everywhere else ----
@@ -291,16 +299,23 @@
   var OLD = '/pages/track-order';
   var NEW = '/apps/track123';
 
-  /* html.pgt-on gates the rules that reach OUTSIDE the widget -- the injected
-     wordmark header, which is shared with the CMS pages and must not be
-     restyled there. Keyed on the widget being present as well as the path, so
-     a locale prefix or a trailing slash cannot make it miss. If it never gets
-     set, the header simply looks like it does today. */
-  var PATH = /^\/(?:[a-z]{2}(?:-[a-z]{2})?\/)?apps\/track123(?:\/|$)/i;
-  function mark(){
-    if (!PATH.test(location.pathname) && !document.getElementById('track123-app')) return false;
-    document.documentElement.classList.add('pgt-on');
-    return true;
+  /* The CSS above swaps the mark with content:url. This swaps the src as well,
+     exactly as pe-logo does on the pages where it loads. Two reasons: the
+     retired art stops being fetched and the alt text stays correct -- and,
+     more importantly, brightness(0) invert(1) is only safe on the transparent
+     vector. If content:url ever failed and the old raster stayed, whitening it
+     would fill in the black box baked into that PNG. This makes the swap true
+     of the element itself, so the filter can never be applied to the wrong
+     artwork. */
+  var LOGO = {{ 'pe-badge.svg' | asset_url | json }};
+  function logo(){
+    var imgs = document.querySelectorAll('.pgf-head img');
+    for (var i = 0; i < imgs.length; i++){
+      if (imgs[i].getAttribute('src') === LOGO) continue;
+      imgs[i].setAttribute('src', LOGO);
+      imgs[i].removeAttribute('srcset');
+      imgs[i].alt = 'Pocket Era';
+    }
   }
 
   function isOld(a){
@@ -315,9 +330,11 @@
     }
   }
 
-  /* the header and the navs are injected at different times by different
-     sections, so a few cheap passes cover them without leaving a timer running */
-  function pass(){ mark(); fix(); }
+  /* the navs are injected at different times by different sections, so a few
+     cheap passes cover them without leaving a timer running. Nothing in the
+     styling depends on this script -- every rule above is plain CSS keyed on
+     elements, so a failure here costs the link rewrite and nothing else. */
+  function pass(){ logo(); fix(); }
   pass();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
   [400, 1200, 3000].forEach(function(ms){ setTimeout(pass, ms); });
