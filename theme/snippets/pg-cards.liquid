@@ -15,17 +15,22 @@
   The parent gets overflow:hidden via :has(), whatever element it turns out to
   be, so the scaled image cannot spill outside the tile.
 
-  transform-origin is the framing control, and it is worth being precise about
-  which way it moves things. The origin is the point that stays put while the
-  image grows around it, so the visible window ends up centred on it: a LOWER
-  percentage keeps the top of the image and pushes the rest down out of the
-  tile, which is what "pull the image down" means on screen. At 15% the window
-  sits over the orb cluster and the reflection band falls away below.
+  transform-origin is the framing control. The origin is the point that stays
+  put while the image grows around it, so the visible window ends up over it,
+  and a LOWER percentage keeps the top of the image while pushing the rest down
+  out of the tile -- which is what "pull the image down" looks like on screen.
+
+  At origin 0% with scale 1.45 the window is the top 69% of the source: the
+  full orb cluster, no reflection band at all, and the cluster noticeably
+  larger in the tile. That is as far as this direction goes -- the window is
+  already flush with the top edge of the image, so there is nothing above it
+  left to reveal. If the framing wants to move the other way, the origin goes
+  UP (toward 50%) rather than down, and the scale comes back toward 1.3.
 {%- endcomment -%}
 <style>
   #pgh *:has(> img[src*="hf_20260812_024500"]){overflow:hidden !important}
   #pgh img[src*="hf_20260812_024500"]{
-    transform:scale(1.3) !important;
-    transform-origin:50% 15% !important;
+    transform:scale(1.45) !important;
+    transform-origin:50% 0% !important;
   }
 </style>

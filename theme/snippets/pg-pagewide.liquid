@@ -7,9 +7,17 @@
       html body #content   { padding:52px 20px 76px !important }
 
   On a wide monitor that leaves the page as a narrow strip with dark emptiness
-  either side. The cap is lifted and the side gutters scale with the viewport
-  instead, so the card spans the screen with proportional breathing room rather
-  than running edge to edge.
+  either side. The cap is raised to 1280px and the side gutters scale with the
+  viewport, so the card uses far more of the screen while still reading as a
+  deliberate centred panel.
+
+  NOT edge to edge, which is where this landed first. With no cap at all the
+  card simply became the viewport: the two form columns stretched to ~700px
+  each, the labels sat a screen apart from their fields, and the whole thing
+  stopped looking like a box at all. A cap is what makes centring meaningful --
+  auto margins have nothing to distribute once an element fills its container.
+  1280px is wide enough to fix the narrow-strip problem and narrow enough that
+  the form still reads as one object.
 
   Two details make this land without touching pg-page-style itself:
 
@@ -31,7 +39,11 @@
 {%- assign pgw_h = page.handle | default: '' -%}
 {%- if pgw_h == 'contact' or pgw_h == 'track-order' or pgw_h == 'track-your-order' -%}
 <style>
-  html body #content > *{max-width:none !important}
+  html body #content > *{
+    max-width:1280px !important;
+    margin-left:auto !important;
+    margin-right:auto !important;
+  }
 
   @media (min-width:601px){
     html body #content#content{
