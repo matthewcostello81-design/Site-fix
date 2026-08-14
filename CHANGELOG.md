@@ -1,3 +1,71 @@
+# Cart drawer: stop it tearing itself down on every change
+
+## Problem
+Changing anything in the cart — quantity + / −, remove, adding an orb from the
+rail, switching the console version or an orb variant — made the drawer come
+apart and reassemble itself: pieces vanished, the panel jumped as it collapsed
+and re-grew, and everything popped back in one at a time over the next second.
+
+## Cause
+`pg-drawer`'s refresh rebuilds the drawer with
+
+    fetch('/') -> parse -> cart.innerHTML = fresh.innerHTML
+
+The fetched page has never run any JavaScript, so its `#cart` is the bare theme
+markup. Every part of the drawer this theme builds at runtime — the "Your Cart"
+header, the reward progress bar, the shipping-protection toggle, the savings
+breakdown, the SAVED n% and FREE GIFT pills, the +/− steppers, the variant
+pickers, the recommendation rail, the drawer logo — was destroyed on every cart
+change and then landed again in waves as each section's own poller noticed it
+was missing: 300ms (pg-chips styling), 400ms (pg-cart-variants pickers,
+nc-cart-tweaks bars), 700ms (pg-chips percentages), 800ms (pg-drawer's
+steppers, bar and totals), 900ms (pg-unlock). Three of those files describe the
+teardown in their own comments and poll specifically to survive it.
+
+## Fix (`snippets/pg-cart-smooth.liquid`, rendered by `sections/pg-cart-fast.liquid`)
+Only two regions of the drawer come from the server — the line-item lists
+(`.l4ca`) and the totals (`.l4tt`). Those are swapped; everything else is left
+standing, so there is nothing to rebuild and nothing to pop back in.
+
+- **`window.pgDrawerRefresh` is replaced with a morphing version**, same
+  contract (promise, single-flight, mid-flight calls folded into one follow-up),
+  so every existing caller is unchanged.
+- **`cart.innerHTML` is guarded at the element**, which catches the two callers
+  living inside pg-drawer's closure and unreachable from outside: the
+  shipping-protection toggle and the free-gift sync. Markup carrying runtime
+  chrome of its own is passed through untouched, so a deliberate rebuild still
+  works, and any structure the morph does not recognise (an emptied cart) falls
+  back to the original whole-drawer swap.
+- **Carried vs rebuilt.** Pills and struck prices are display-only, so they are
+  cloned across with quantity-dependent figures rescaled — no blink, no stale
+  number. The variant `<select>` and the steppers capture live state (a line key
+  and quantity, an input reference), so carrying them would let a swap post
+  against a stale line; they are rebuilt. Steppers are rebuilt in the same tick
+  as the swap so + and − are never briefly dead; the picker is left to
+  pg-cart-variants' 400ms pass with its space reserved so nothing jumps.
+- **Fewer bytes per change**: the refresh reads `/?section_id=side-cart` rather
+  than the ~580KB homepage, validated on arrival and permanently abandoned for
+  the old whole-page fetch if it ever comes back wrong.
+- **Motion**: height changes ease, genuinely new pieces fade in rather than
+  snap, and the list dims while a change is in flight instead of going blank.
+  All of it off under `prefers-reduced-motion`.
+
+No add-to-cart, discount-ladder or checkout logic is touched — the change is
+entirely in how the drawer's existing HTML is put on screen.
+
+## Applied to
+Shopify theme `162816262372` ("Copy of ★ PUBLISH THIS — Cart + Logo Fixes")
+on `thepocketera.com`, verified byte-identical to the live theme's cart files
+before the write. The live theme could not be written to directly: the Shopify
+tooling blocks theme-file writes to the published theme, so this needs
+publishing from Shopify admin.
+
+Files changed:
+- snippets/pg-cart-smooth.liquid (new)
+- sections/pg-cart-fast.liquid (one line: renders the new snippet)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

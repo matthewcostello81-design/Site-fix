@@ -1,0 +1,384 @@
+{%- comment -%}
+  PG Cart Smooth: stop the drawer tearing itself down on every cart change.
+
+  ---------------------------------------------------------------- THE PROBLEM
+
+  pg-drawer refreshes the cart with
+
+      fetch('/') -> parse -> cart.innerHTML = fresh.innerHTML
+
+  The fetched page has never run any JavaScript, so its #cart is the bare theme
+  markup. Everything this theme builds at runtime -- the "Your Cart" header, the
+  reward progress bar, the shipping-protection toggle, the savings breakdown,
+  the SAVED n% and FREE GIFT pills, the +/- steppers, the variant pickers, the
+  recommendation rail, the drawer logo -- is destroyed on every add, quantity
+  change, delete and variant swap, and then lands again in waves as each
+  section's own poller notices it is missing: 300ms (pg-chips styling), 400ms
+  (pg-cart-variants pickers, nc-cart-tweaks bars), 700ms (pg-chips
+  percentages), 800ms (pg-drawer's steppers, bar and totals), 900ms
+  (pg-unlock). Three of those files say so in their own comments.
+
+  That staggered rebuild is what reads as the cart "bugging out": pieces
+  vanish, the panel jumps as it collapses and re-grows, and things pop back in
+  one at a time in no particular order.
+
+  ---------------------------------------------------------------- THE FIX
+
+  Only two regions of the drawer actually come from the server: the line-item
+  lists (.l4ca) and the totals (.l4tt). Those are swapped; everything else is
+  left standing, so there is nothing to rebuild and nothing to pop back in.
+
+  1. window.pgDrawerRefresh is replaced with a morphing version. Same contract
+     -- returns a promise, single-flight, a request arriving mid-flight is
+     folded into one follow-up run -- so every existing caller (the stepper,
+     the remove link, the orb Add button, both variant pickers) is unchanged.
+
+  2. cart.innerHTML is guarded at the element, which catches the callers that
+     live inside pg-drawer's closure and cannot be reached from outside: the
+     shipping-protection toggle and the free-gift sync. A wholesale assignment
+     of server markup is morphed instead. Markup that carries runtime chrome of
+     its own is passed straight through untouched, so a deliberate rebuild
+     still works.
+
+  3. What survives the swap, and what does not. The pills and struck prices are
+     display only, so they are cloned across and the quantity-dependent figures
+     rescaled -- no blink, no stale number. The variant <select> and the
+     steppers hold live state (a captured line key and quantity, an input
+     reference), so copying them would let a swap post against a stale line;
+     they are rebuilt instead. Steppers are rebuilt here, in the same tick as
+     the swap, so + and - are never briefly dead; the picker is left to
+     pg-cart-variants' 400ms pass with its space reserved so nothing jumps.
+
+  4. The refresh reads /?section_id=side-cart rather than the whole homepage --
+     a few KB instead of ~580KB -- validated on arrival and permanently
+     abandoned for the old whole-page fetch if it ever comes back wrong.
+
+  5. Height changes ease, late arrivals fade in rather than snap, and the list
+     dims while a change is in flight instead of going blank.
+
+  Nothing here touches add-to-cart, the discount ladders or checkout: the fix
+  is entirely in how the drawer's existing HTML is put on screen.
+{%- endcomment -%}
+<style>
+  @keyframes pgSoftIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* runtime chrome now persists, so these animations play once when a piece is
+     genuinely new rather than on every cart change */
+  #cart .pg-cart-top,#cart .pg-bar,#cart .pg-sav,#cart .pg-sp,
+  #cart .nc-tiers,#cart .nc-recs,#cart .nc-recs-panel,#cart .l4pm,
+  #cart .pg-orbsel,#cart .l4ca .pg-vsel,
+  #cart .l4ca > li[data-pg-new]{animation:pgSoftIn .26s ease both}
+
+  /* a pill carried across the swap keeps only its shimmer -- it was already on
+     screen, so it must not re-announce itself */
+  #cart#cart .pg-save-chip:not([data-pg-kept]),
+  #cart#cart .pg-free-tag:not([data-pg-kept]){animation:pgShift 5s ease-in-out infinite,pgSoftIn .26s ease both}
+
+  /* in flight: dimmed and inert, not blank */
+  #cart .l4ca,#cart .l4tt{transition:opacity .16s ease}
+  #cart[data-pg-busy] .l4ca:not(.in-panel),
+  #cart[data-pg-busy] .l4tt{opacity:.55;pointer-events:none}
+
+  /* space held for the two controls that are rebuilt rather than carried */
+  #cart .l4ca > li[data-pg-hadsel] section > p{min-height:32px}
+  #cart .l4ca .input-amount{min-width:114px}
+
+  #cart .pg-bar-t{transition:opacity .2s ease}
+  #cart .l4ca > li{transition:opacity .2s ease}
+
+  @media (prefers-reduced-motion: reduce){
+    #cart *{animation:none !important}
+    #cart .l4ca,#cart .l4tt,#cart .l4ca > li{transition:none !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartSmooth) return; window.pgCartSmooth = 1;
+
+  var RAW = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+  if (!RAW || !RAW.get || !RAW.set) return;
+
+  function cartEl(){ return document.getElementById('cart'); }
+
+  /* ------------------------------------------------ reading the fresh drawer */
+
+  var FAST = 1, misses = 0;
+
+  function parse(t){ return new DOMParser().parseFromString(t, 'text/html'); }
+
+  /* A drawer worth morphing against: it must actually be the cart, and it must
+     carry the two server-rendered regions. Anything less falls back rather
+     than being trusted with the shopper's line items. */
+  function usable(doc, needItems){
+    var c = doc && doc.querySelector('#cart');
+    if (!c || !c.querySelector('.l4tt')) return null;
+    if (needItems && !c.querySelector('.l4ca:not(.in-panel)')) return null;
+    return c;
+  }
+
+  function whole(){
+    return fetch('/', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.text(); })
+      .then(function(t){ return usable(parse(t), false); });
+  }
+
+  function fresh(needItems){
+    if (!FAST) return whole();
+    return fetch('/?section_id=side-cart', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.ok ? r.text() : ''; })
+      .then(function(t){
+        var c = t ? usable(parse(t), needItems) : null;
+        if (c){ misses = 0; return c; }
+        if (++misses >= 2) FAST = 0;      /* the endpoint is not it -- stop asking */
+        return whole();
+      })
+      .catch(function(){ FAST = 0; return whole(); });
+  }
+
+  /* ------------------------------------------------------------ line matching */
+
+  function lisOf(list){
+    return Array.prototype.filter.call(list.children, function(n){ return n.tagName === 'LI'; });
+  }
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    var m = a && (a.getAttribute('href') || '').match(/\/products\/([^\/?#]+)/);
+    return m ? m[1] : '';
+  }
+  function qtyOf(li){
+    var i = li.querySelector('.input-amount input, .semantic-amount input');
+    return i ? (parseInt(i.value, 10) || 0) : 0;
+  }
+  /* A struck price is a per-line total, so it only carries across a quantity
+     change if it is rescaled with it. The pollers correct it either way; this
+     just means the shopper never sees a figure that is wrong in the meantime. */
+  function scale(txt, from, to){
+    if (!from || !to || from === to) return txt;
+    return txt.replace(/\$\s*([\d,]+(?:\.\d+)?)/g, function(_, n){
+      return '$' + (parseFloat(n.replace(/,/g, '')) / from * to).toFixed(2);
+    });
+  }
+
+  function carry(oldLi, newLi){
+    var h2 = newLi.querySelector('h2'), sec = newLi.querySelector('section');
+    var q0 = qtyOf(oldLi), q1 = qtyOf(newLi);
+
+    /* pills hold no listeners, so they can simply come across */
+    ['.pg-save-chip', '.pg-free-tag'].forEach(function(s){
+      var el = oldLi.querySelector(s);
+      if (!el || newLi.querySelector(s) || !h2 || !h2.parentNode) return;
+      var cl = el.cloneNode(true);
+      cl.setAttribute('data-pg-kept', '1');
+      h2.parentNode.insertBefore(cl, h2.nextSibling);
+      /* pg-drawer's giftTag skips a line already carrying the badge */
+      if (s === '.pg-free-tag') newLi.setAttribute('data-pg-free', '1');
+    });
+
+    var ls = oldLi.querySelector('.nc-lsave');
+    if (ls && sec && !newLi.querySelector('.nc-lsave')){
+      var lc = ls.cloneNode(true);
+      if (q0 !== q1) lc.innerHTML = scale(lc.innerHTML, q0, q1);
+      lc.setAttribute('data-pg-kept', '1');
+      sec.appendChild(lc);            /* placed by grid-area, not by DOM order */
+    }
+
+    var was = oldLi.querySelector('s.pg-lwas'), pr = newLi.querySelector('p.price');
+    if (was && pr && !pr.querySelector('s.pg-lwas')){
+      var wc = was.cloneNode(true);
+      wc.textContent = scale(wc.textContent, q0, q1);
+      pr.insertBefore(wc, pr.firstChild);
+    }
+
+    /* the picker captures a line key and a quantity when it is built, so a
+       carried-over one would post against a line that no longer exists --
+       reserve its height instead and let pg-cart-variants rebuild it */
+    if (oldLi.querySelector('.pg-vsel')) newLi.setAttribute('data-pg-hadsel', '1');
+  }
+
+  /* ---------------------------------------------------------------- steppers */
+
+  /* Same buttons pg-drawer's pgStepper builds, built in the same tick as the
+     swap so + and - are never dead for the 800ms until its timer comes round.
+     data-pg-step is what pgStepper checks, so it will leave these alone. */
+  function qbtn(inp, txt, d){
+    var b = document.createElement('span');
+    b.className = 'pg-qbtn';
+    b.textContent = txt;
+    b.setAttribute('role', 'button');
+    b.tabIndex = 0;
+    b.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      var v = (parseInt(inp.value, 10) || 1) + d;
+      if (v < 0) v = 0;
+      inp.value = v;
+      inp.dispatchEvent(new Event('change', {bubbles: true}));
+    });
+    return b;
+  }
+  function steppers(root){
+    Array.prototype.forEach.call(root.querySelectorAll('.input-amount'), function(p){
+      if (p.dataset.pgStep) return;
+      var inp = p.querySelector('input');
+      if (!inp) return;
+      p.dataset.pgStep = '1';
+      p.insertBefore(qbtn(inp, '-', -1), inp);
+      p.appendChild(qbtn(inp, '+', 1));
+      p.style.setProperty('display', 'inline-flex', 'important');
+      p.style.setProperty('align-items', 'center', 'important');
+      p.style.setProperty('gap', '5px', 'important');
+    });
+  }
+
+  /* -------------------------------------------------------------- the morph */
+
+  function ease(el, h0){
+    var h1 = el.offsetHeight;
+    if (!h0 || !h1 || Math.abs(h1 - h0) < 3) return;
+    el.style.height = h0 + 'px';
+    el.style.overflow = 'hidden';
+    void el.offsetHeight;                       /* commit the start height */
+    el.style.transition = 'height .24s ease';
+    el.style.height = h1 + 'px';
+    setTimeout(function(){
+      el.style.height = ''; el.style.overflow = ''; el.style.transition = '';
+    }, 300);
+  }
+
+  function swapList(oldList, newList){
+    var olds = lisOf(oldList), taken = {};
+    var incoming = document.importNode(newList, true);
+    lisOf(incoming).forEach(function(li){
+      var h = handleOf(li), src = null;
+      for (var i = 0; i < olds.length; i++){
+        if (!taken[i] && handleOf(olds[i]) === h){ src = olds[i]; taken[i] = 1; break; }
+      }
+      if (src) carry(src, li); else li.setAttribute('data-pg-new', '1');
+    });
+    steppers(incoming);
+    var h0 = oldList.offsetHeight;
+    while (oldList.firstChild) oldList.removeChild(oldList.firstChild);
+    while (incoming.firstChild) oldList.appendChild(incoming.firstChild);
+    ease(oldList, h0);
+  }
+
+  /* pg-drawer's pgTotals, applied at swap time so the total does not spend a
+     tick in the theme's default styling before turning purple */
+  function totals(cur){
+    var tl = cur.querySelector('.sticky-in-panel .l4tt') || cur.querySelector('.l4tt');
+    if (!tl) return;
+    Array.prototype.forEach.call(tl.querySelectorAll('li > span'), function(s){
+      if (/\(\d+\)/.test(s.textContent)) s.textContent = 'Subtotal';
+    });
+    Array.prototype.forEach.call(tl.children, function(li){
+      var t = li.textContent || '', c = li.className || '';
+      if (c.indexOf('pg-tt') > -1 || c.indexOf('pg-drow') > -1) return;
+      if (/Total/i.test(t) && !/Subtotal/i.test(t)) li.className += ' pg-tt';
+      else if (/(-\$|\(-|% Off)/i.test(t)) li.className += ' pg-drow';
+    });
+  }
+
+  /* `next` is any element holding the fresh drawer markup: a parsed #cart, or
+     the container an innerHTML assignment was about to be written into. */
+  function morph(cur, next){
+    if (!cur.querySelector('.l4ca:not(.in-panel)')) return false;
+    if (!next.querySelector('.l4ca:not(.in-panel)')) return false;
+    ['.l4ca:not(.in-panel)', '.l4ca.in-panel', '.l4tt'].forEach(function(sel){
+      var a = cur.querySelectorAll(sel), b = next.querySelectorAll(sel);
+      var n = Math.min(a.length, b.length);
+      for (var i = 0; i < n; i++){
+        if (sel === '.l4tt'){
+          if (a[i].innerHTML !== b[i].innerHTML) RAW.set.call(a[i], RAW.get.call(b[i]));
+        } else {
+          swapList(a[i], b[i]);
+        }
+      }
+    });
+    totals(cur);
+    return true;
+  }
+
+  /* ------------------------------------------------------------ the refresh */
+
+  var running = null, again = false;
+
+  function once(){
+    var cur = cartEl();
+    if (!cur) return Promise.resolve();
+    var had = !!cur.querySelector('.l4ca:not(.in-panel) > li');
+    cur.setAttribute('data-pg-busy', '1');
+    /* a request that never settles must not leave the cart dimmed and inert */
+    setTimeout(function(){
+      var c = cartEl();
+      if (c) c.removeAttribute('data-pg-busy');
+    }, 6000);
+    return fresh(had).then(function(next){
+      var c = cartEl();
+      if (!c || !next) return;
+      var ok = false;
+      try { ok = morph(c, next); } catch (e){ ok = false; }
+      if (!ok) c.innerHTML = RAW.get.call(next);   /* an emptied cart, or markup we do not recognise */
+    }).catch(function(){}).then(function(){
+      var c = cartEl();
+      if (c) c.removeAttribute('data-pg-busy');
+    });
+  }
+
+  function refresh(){
+    if (running){ again = true; return running; }
+    running = once().then(function(){
+      running = null;
+      if (again){ again = false; return refresh(); }
+    });
+    return running;
+  }
+  /* pg-cart-fast wraps pgDrawerRefresh to make it single-flight; this already
+     is, and its flag is how that section knows to leave it alone */
+  refresh.pgFast = 1;
+
+  /* Only takes over once pg-drawer has published its own refresh, and takes it
+     back if anything replaces it later. */
+  function install(){
+    if (typeof window.pgDrawerRefresh !== 'function') return;
+    if (window.pgDrawerRefresh !== refresh) window.pgDrawerRefresh = refresh;
+  }
+
+  /* --------------------------------------------- the callers we cannot reach */
+
+  /* The shipping-protection toggle and the free-gift sync call pg-drawer's
+     refresh through its closure, not through window, so the only place to
+     catch them is the assignment itself. */
+  /* word boundaries matter: pg-save-chip is a line pill, pg-sav is the totals
+     breakdown, and only the second means "this markup already has chrome" */
+  var CHROME = /pg-cart-top|pg-bar\b|pg-sav\b|nc-tiers|nc-recs|data-pg-sp/;
+
+  function guard(el){
+    if (!el || el.pgGuarded) return;
+    el.pgGuarded = 1;
+    try {
+      Object.defineProperty(el, 'innerHTML', {
+        configurable: true,
+        get: function(){ return RAW.get.call(this); },
+        set: function(html){
+          var self = this;
+          /* markup that brings its own chrome is a deliberate rebuild */
+          if (self.pgRaw || CHROME.test(String(html))){ RAW.set.call(self, html); return; }
+          var box = document.createElement('div');
+          RAW.set.call(box, html);
+          var ok = false;
+          try { ok = morph(self, box); } catch (e){ ok = false; }
+          if (!ok){
+            self.pgRaw = 1;
+            RAW.set.call(self, html);
+            self.pgRaw = 0;
+          }
+        }
+      });
+    } catch (e){}
+  }
+
+  function tick(){ install(); guard(cartEl()); }
+  tick();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick);
+  setInterval(tick, 500);
+})();
+</script>
