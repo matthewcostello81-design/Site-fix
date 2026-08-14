@@ -1,48 +1,51 @@
 {%- comment -%}
-  PG Page Wide: let the Contact page use the whole screen.
+  PG Page Wide: full-width page, centred Contact card.
 
-  pg-page-style centres the content column and caps it:
+  pg-page-style caps and centres EVERY direct child of #content:
 
       html body #content > *{ max-width:1000px; margin-left:auto; margin-right:auto }
       html body #content   { padding:52px 20px 76px !important }
 
-  On a wide monitor that leaves the page as a narrow strip with dark emptiness
-  either side. The cap is raised to 1280px and the side gutters scale with the
-  viewport, so the card uses far more of the screen while still reading as a
-  deliberate centred panel.
+  That single rule does two jobs at once, which is why the first two attempts
+  here traded one problem for the other. Lifting the cap freed the banners and
+  let the form stretch to the full viewport. Restoring a cap on `> *` reined in
+  the form and squeezed the banners back down with it.
 
-  NOT edge to edge, which is where this landed first. With no cap at all the
-  card simply became the viewport: the two form columns stretched to ~700px
-  each, the labels sat a screen apart from their fields, and the whole thing
-  stopped looking like a box at all. A cap is what makes centring meaningful --
-  auto margins have nothing to distribute once an element fills its container.
-  1280px is wide enough to fix the narrow-strip problem and narrow enough that
-  the form still reads as one object.
+  So the two are separated. The cap comes off `> *` entirely -- anything
+  full-bleed stays full-bleed -- and is re-applied only to the pieces that make
+  up the contact panel itself: the form card and the heading above it. Both get
+  the same width and the same auto margins, so they sit in one centred column
+  on a page that is otherwise the full width of the screen.
 
-  Two details make this land without touching pg-page-style itself:
+  SPECIFICITY. pg-page-style is 21st in footer-group and this renders from
+  pg-cart-fast, which is 4th, so on equal specificity pg-page-style wins every
+  tie. Its `max-width:1000px` carries no !important and is beaten outright, but
+  its heading and padding rules do, and they are written at `html body #content
+  ...`. The doubled id here (`#content#content`) buys the point that decides it
+  regardless of load order.
 
-  - The 1000px cap carries NO !important, so a plain !important override beats
-    it regardless of load order. That matters, because this renders from
-    pg-cart-fast (4th in footer-group) while pg-page-style is 21st and would
-    otherwise win every tie.
-  - The padding DOES carry !important, so that one needs a doubled id to
-    out-specify it.
+  MOBILE IS UNTOUCHED. pg-page-style narrows the gutters to 14px under 600px
+  and that is what keeps the form usable on a phone; the padding change here is
+  inside min-width:601px, and a 1100px cap is far wider than any phone.
 
-  MOBILE IS DELIBERATELY UNTOUCHED. pg-page-style already narrows the gutters
-  to 14px under 600px, and that rule is what keeps the form usable on a phone.
-  Every change here is inside a min-width:601px query, so the phone layout is
-  bit-for-bit what it was.
-
-  Gated on the page handle in Liquid, exactly as pg-page-style is, so this
-  cannot reach the product pages, the cart, or anything else.
+  Gated on the page handle in Liquid, exactly as pg-page-style is.
 {%- endcomment -%}
 {%- assign pgw_h = page.handle | default: '' -%}
 {%- if pgw_h == 'contact' or pgw_h == 'track-order' or pgw_h == 'track-your-order' -%}
 <style>
-  html body #content > *{
-    max-width:1280px !important;
+  /* the page itself: no cap, so anything full-bleed stays full-bleed */
+  html body #content#content > *{max-width:none !important}
+
+  /* the contact panel: one centred column, card and heading aligned to it */
+  html body #content#content form[action*='contact'],
+  html body #content#content .pgp-card,
+  html body #content#content h1,
+  html body #content#content .pgp-title{
+    max-width:1100px !important;
     margin-left:auto !important;
     margin-right:auto !important;
+    width:100% !important;
+    box-sizing:border-box !important;
   }
 
   @media (min-width:601px){
