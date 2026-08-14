@@ -152,8 +152,12 @@
   or is an auto-generated JSON the theme editor rewrites; this file is already
   registered, already global, and is the one whose contents are mirrored in the
   repo. Move them to their own sections the moment a slot frees up.
+
+  pg-track-head must stay immediately after pg-track: it overrides that file's
+  header geometry and colour, and wins those ties on source order.
 {%- endcomment -%}
 {% render 'pg-track' %}
+{% render 'pg-track-head' %}
 {% render 'pg-cards' %}
 {% render 'pg-unlock-fix' %}
 {% render 'pg-pagewide' %}

@@ -1,0 +1,81 @@
+{%- comment -%}
+  PG Track Head: the fallback header's mark and spacing.
+
+  Split out of pg-track so the values that get nudged by eye live in a file that
+  can be rewritten in seconds, instead of being buried in a 16KB stylesheet that
+  has to be re-sent whole to change one number. pg-track keeps the widget
+  styling; this keeps the header. It renders immediately after pg-track, so on
+  equal specificity it wins the tie.
+
+  ---------------------------------------------------------------- THE MARK
+
+  It is styled BOTH WAYS on purpose. pg-theme-css injects the fallback header as
+  an <img>, but pg-mobile hides the logo art on some breakpoints and promotes an
+  injected TEXT wordmark to be the brand mark instead -- pe-logo's own comments
+  describe doing battle with exactly that. Styling only the image is why this
+  kept coming back looking untouched: on a page where the text mark is the one
+  on screen, every img rule matches nothing at all.
+
+  So:
+
+  - As an image: swapped to the transparent vector badge, then
+    brightness(0) invert(1) collapses it to a white silhouette and the
+    drop-shadows cast the purple glow from that whitened shape. Whitening is
+    only safe on the vector -- the retired raster has a black box baked into it,
+    which is why the theme blends that asset with mix-blend-mode:screen.
+
+  - As text: the fill is forced white and the glow moves to text-shadow.
+    background-clip and text-fill-color are reset first, because a gradient
+    clipped to the glyphs would make `color` do nothing at all -- that is the
+    usual reason a wordmark stays stubbornly purple however many times you set
+    the colour.
+
+  Whichever one is on screen ends up white with a purple glow; the rules for the
+  other match nothing and cost nothing.
+
+  ---------------------------------------------------------------- SPACING
+
+    top    56px  the announcement marquee sits over this block; less than this
+                 and the mark runs up underneath it
+    gap    40px + 28px = 68px between mark and nav. pg-theme-css ships 6px and
+                 8px, which puts the links almost against the logo, nowhere
+                 near what the real header leaves on home and contact
+{%- endcomment -%}
+<style>
+  html body .pgf-head{padding:56px 16px 40px !important}
+  html body .pgf-nav{padding:28px 16px 22px !important}
+
+  /* the mark as an image */
+  html body .pgf-head img{
+    content:url("{{ 'pe-badge.svg' | asset_url }}") !important;
+    mix-blend-mode:normal !important;
+    filter:brightness(0) invert(1)
+           drop-shadow(0 0 10px rgba(199,155,234,.90))
+           drop-shadow(0 0 26px rgba(155,75,196,.62))
+           drop-shadow(0 0 48px rgba(122,47,162,.42)) !important;
+  }
+
+  /* the mark as text */
+  html body .pgf-head a,
+  html body .pgf-head a.pg-wordmark,
+  html body .pgf-head .pg-wordmark,
+  html body .pgf-head .pg-wm-t,
+  html body .pgf-head .pg-wm-2,
+  html body .pgf-head span,
+  html body .pgf-head b{
+    background:none !important;
+    background-image:none !important;
+    -webkit-background-clip:border-box !important;
+    background-clip:border-box !important;
+    color:#FFFFFF !important;
+    -webkit-text-fill-color:#FFFFFF !important;
+    text-shadow:0 0 8px rgba(199,155,234,.95),
+                0 0 22px rgba(155,75,196,.65),
+                0 0 46px rgba(122,47,162,.45) !important;
+  }
+
+  @media (max-width:600px){
+    html body .pgf-head{padding:38px 12px 26px !important}
+    html body .pgf-nav{padding:18px 12px 16px !important}
+  }
+</style>

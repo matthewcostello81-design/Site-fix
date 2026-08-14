@@ -134,14 +134,14 @@
      Padding is 48px at the top: the announcement marquee sits over this block,
      so anything less lets the mark run up underneath it.
 
-     The 24px below the mark, plus the nav's 18px above it, is what separates
+     The 32px below the mark, plus the nav's 24px above it, is what separates
      the two. pg-theme-css shipped 6px and 8px, which put the links almost
      against the logo -- nowhere near the gap the real header leaves on the
-     home and contact pages. 42px between them matches those. */
+     home and contact pages. 56px between them clears it comfortably. */
   html body .pgf-head{
     background:#0B0710 !important;
     border-bottom:0 !important;
-    padding:48px 16px 24px !important;
+    padding:48px 16px 32px !important;
     height:auto !important;
     overflow:visible !important;
     line-height:0 !important;
@@ -165,13 +165,13 @@
   html body .pgf-nav{
     background:#0B0710 !important;
     border-bottom:1px solid rgba(168,120,214,.16) !important;
-    padding:18px 16px 20px !important;
+    padding:24px 16px 20px !important;
     gap:30px !important;
   }
   @media (max-width:600px){
-    html body .pgf-head{padding:34px 12px 16px !important}
+    html body .pgf-head{padding:34px 12px 22px !important}
     html body .pgf-head img{max-height:42px !important;max-width:78vw !important}
-    html body .pgf-nav{gap:18px !important;padding:12px 12px 16px !important}
+    html body .pgf-nav{gap:18px !important;padding:16px 12px 16px !important}
   }
 
   /* ---- the black button becomes the CTA used everywhere else ----
