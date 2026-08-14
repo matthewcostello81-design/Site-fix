@@ -35,9 +35,12 @@
      checkout; this only relabels what is already on screen.
   4. It only ever rewrites a number that already parsed cleanly. Anything that
      does not match the pattern is left exactly as it was.
-  5. It is idempotent. format(parse(x)) is stable, so a second pass over its own
-     output produces the same string and the observer settles rather than
-     looping. A busy flag and a rAF stop it re-entering itself.
+  5. It is idempotent -- but ONLY because of the dollar-family guard. Without
+     it, AUD/CAD/NZD format as A$/CA$/NZ$, whose output re-matches the pattern,
+     so each observer pass prepended another letter and every price in the cart
+     grew into AAAA...$0.00. Three separate checks now stop that: bail entirely
+     if the formatted output contains $, skip any $ preceded by a letter or $,
+     and never emit a replacement that still contains $.
   6. Scoped to #cart and #pgx. Script and style text is skipped explicitly, and
      input values are untouched because those are attributes, not text nodes --
      so the quantity fields cannot be affected.
@@ -63,6 +66,22 @@
   try { fmt = new Intl.NumberFormat(LOC, {style: 'currency', currency: CUR}); }
   catch (e){ return; }                       /* unknown locale/currency: do nothing */
 
+  /* THE RUNAWAY GUARD. Read this before touching anything below.
+
+     AUD formats as A$36.99, CAD as CA$36.99, NZD as NZ$36.99. Rewriting
+     "$36.99" in those currencies produces a string that STILL CONTAINS "$",
+     so the next sweep matches the inner $ and produces "AA$36.99", then
+     "AAA$36.99" -- growing by one letter every time the observer fires on our
+     own mutation. The conversion is only idempotent when its own output does
+     not re-match the pattern, which is not true for the dollar family.
+
+     So: if the formatted output contains a dollar sign, do nothing at all. A
+     plain $ on a dollar-family currency is imperfect. Corrupting every price
+     in the cart is not. */
+  var probe;
+  try { probe = fmt.format(1); } catch (e){ return; }
+  if (!probe || probe.indexOf('$') > -1) return;
+
   /* $ then a plain or thousand-separated amount. Deliberately strict: anything
      that is not clearly a price is left alone. */
   var RE = /\$\s?(\d{1,3}(?:,\d{3})+(?:\.\d{1,2})?|\d+(?:\.\d{1,2})?)/g;
@@ -71,10 +90,19 @@
   var busy = 0, queued = 0;
 
   function convert(text){
-    return text.replace(RE, function(whole, num){
+    return text.replace(RE, function(whole, num, offset, str){
+      /* second line of defence against the runaway above: never treat a $ that
+         is part of a longer symbol (A$, CA$, NZ$, US$, HK$) as a bare one */
+      var prev = offset > 0 ? str.charAt(offset - 1) : '';
+      if (prev && /[A-Za-z$]/.test(prev)) return whole;
+
       var v = parseFloat(String(num).replace(/,/g, ''));
       if (!isFinite(v)) return whole;        /* unparseable: leave it be */
-      try { return fmt.format(v); } catch (e){ return whole; }
+      var out;
+      try { out = fmt.format(v); } catch (e){ return whole; }
+      /* and a third: if the output would still match, it is not safe to swap */
+      if (!out || out.indexOf('$') > -1) return whole;
+      return out;
     });
   }
 
