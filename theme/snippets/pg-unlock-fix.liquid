@@ -1,0 +1,61 @@
+{%- comment -%}
+  PG Unlock Fix: the offer row's Add button sticks on "Adding..." when the click
+  completes the ladder.
+
+  THE BUG, precisely. pg-unlock's button never resets its own label on success.
+  It sets "Adding...", posts the add, and leaves the reset to render(), which
+  removes every .pg-unlock row and rebuilds from the current offers. render()
+  is guarded so it does not thrash on its own 900ms tick:
+
+      var key = offs.map(...).join('|');
+      if (key === lastKey && c.querySelector('.pg-unlock')) return;
+
+  and the success path invalidates that guard with
+
+      lastKey = '';
+
+  Those two collide in exactly one case. Adding the FREE 3rd orb completes the
+  offer, so offers() returns an empty array, so `key` is the empty string --
+  the same value the success path just wrote into lastKey as its "invalidate"
+  sentinel. key === lastKey, a .pg-unlock row is still on screen, and render()
+  returns early on that tick and every tick after it. The row it was about to
+  remove stays forever, still reading "Adding...".
+
+  So it is not intermittent: it is every click that takes a shopper to the last
+  rung, and only those. A click that leaves an offer standing produces a
+  different key and rebuilds normally.
+
+  THE PROPER FIX is three characters in pg-unlock -- make the invalidation
+  sentinel `null` instead of `''`, so it can never equal a real key, and reset
+  the button in the success path rather than depending on a rebuild. That file
+  is 17.8KB of money-critical BXGY logic and nothing here can be tested against
+  a live storefront, so it is not being retyped through the API to change one
+  token. This does the same job from outside.
+
+  WHAT THIS DOES. It finishes what render() intended. Two and a half seconds
+  after a click on the Add button, if the button still says "Adding...", the
+  row is removed -- which is precisely the removal render() skipped. It is
+  self-healing in both directions: a genuinely failed add says "Try again", not
+  "Adding...", so it is left alone; and if the add was merely slow and the
+  offer does in fact still stand, render() re-adds the row on its next tick,
+  because its guard's second condition no longer finds a .pg-unlock element.
+
+  No interval, no observer. One listener, one timeout per click.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgUnlockFix) return; window.pgUnlockFix = 1;
+
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest ? e.target.closest('.pg-unlock-add') : null;
+    if (!btn) return;
+
+    setTimeout(function(){
+      /* "Try again" is pg-unlock reporting a real failure -- leave it be */
+      if (!/adding/i.test(btn.textContent || '')) return;
+      var row = btn.closest ? btn.closest('.pg-unlock') : null;
+      if (row && row.parentNode) row.parentNode.removeChild(row);
+    }, 2500);
+  }, true);
+})();
+</script>

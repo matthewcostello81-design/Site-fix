@@ -1,0 +1,43 @@
+{%- comment -%}
+  PG Page Wide: let the Contact page use the whole screen.
+
+  pg-page-style centres the content column and caps it:
+
+      html body #content > *{ max-width:1000px; margin-left:auto; margin-right:auto }
+      html body #content   { padding:52px 20px 76px !important }
+
+  On a wide monitor that leaves the page as a narrow strip with dark emptiness
+  either side. The cap is lifted and the side gutters scale with the viewport
+  instead, so the card spans the screen with proportional breathing room rather
+  than running edge to edge.
+
+  Two details make this land without touching pg-page-style itself:
+
+  - The 1000px cap carries NO !important, so a plain !important override beats
+    it regardless of load order. That matters, because this renders from
+    pg-cart-fast (4th in footer-group) while pg-page-style is 21st and would
+    otherwise win every tie.
+  - The padding DOES carry !important, so that one needs a doubled id to
+    out-specify it.
+
+  MOBILE IS DELIBERATELY UNTOUCHED. pg-page-style already narrows the gutters
+  to 14px under 600px, and that rule is what keeps the form usable on a phone.
+  Every change here is inside a min-width:601px query, so the phone layout is
+  bit-for-bit what it was.
+
+  Gated on the page handle in Liquid, exactly as pg-page-style is, so this
+  cannot reach the product pages, the cart, or anything else.
+{%- endcomment -%}
+{%- assign pgw_h = page.handle | default: '' -%}
+{%- if pgw_h == 'contact' or pgw_h == 'track-order' or pgw_h == 'track-your-order' -%}
+<style>
+  html body #content > *{max-width:none !important}
+
+  @media (min-width:601px){
+    html body #content#content{
+      padding-left:clamp(20px,4vw,72px) !important;
+      padding-right:clamp(20px,4vw,72px) !important;
+    }
+  }
+</style>
+{%- endif -%}

@@ -147,14 +147,16 @@
 </script>
 {% render 'pg-cart-smooth' %}
 {%- comment -%}
-  pg-track is unrelated to the cart. It lives here because it needs to render on
-  every page and every section group is either at its 25-section cap or is an
-  auto-generated JSON the theme editor rewrites; this file is already registered,
-  already global, and is the one whose contents are mirrored in the repo. Move it
-  to its own section the moment a slot frees up.
+  The snippets below are unrelated to the cart. They live here because they need
+  to render on every page and every section group is either at its 25-section cap
+  or is an auto-generated JSON the theme editor rewrites; this file is already
+  registered, already global, and is the one whose contents are mirrored in the
+  repo. Move them to their own sections the moment a slot frees up.
 {%- endcomment -%}
 {% render 'pg-track' %}
 {% render 'pg-cards' %}
+{% render 'pg-unlock-fix' %}
+{% render 'pg-pagewide' %}
 {% schema %}
 {"name": "PG Cart Fast", "settings": []}
 {% endschema %}
