@@ -1,0 +1,98 @@
+{%- comment -%}
+  PG Cart Morph Fix: put the CHECKOUT button back on a cold cart.
+
+  THE BUG. pg-cart-smooth replaces window.pgDrawerRefresh with a morphing
+  version that swaps only the two server-rendered regions -- the line-item
+  lists (.l4ca) and the totals (.l4tt) -- and deliberately leaves the rest of
+  the drawer standing so the runtime chrome is not torn down.
+
+  That holds for a drawer that was rendered with something in it. It does not
+  hold for a cold one. A shopper arriving from an ad is served the page with an
+  empty cart, so the drawer is rendered in its EMPTY state: no savings box, no
+  totals pane, no CHECKOUT button, because none of that exists in the empty
+  render. Adding to cart then morphs the line items in -- and morph only
+  replaces regions that are already present, so the pane holding the checkout
+  button is never created. The shopper ends up with a cart full of product and
+  no way to buy it. Verified: items present, `button[name="checkout"]` absent
+  from the document, and the drawer still carrying its "Your cart is empty"
+  paragraph. A full page load fixes it, which is why it never shows up when
+  testing with a cart that already had something in it.
+
+  THE FIX. One condition: if the drawer on screen has no checkout button and
+  the freshly fetched one does, the morph is refused. pg-cart-smooth's own
+  fallback then does a whole-markup replace, which is exactly the right thing
+  for a drawer going from empty to non-empty -- there is no runtime chrome to
+  preserve yet. Every subsequent change still morphs as designed.
+
+  This wraps rather than edits pg-cart-smooth so the change is one file to
+  delete. It must render AFTER pg-cart-smooth, since it wraps the function that
+  file installs, and it re-wraps on a timer because pg-cart-smooth reinstalls
+  its own refresh every 500ms.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgCartMorphFix) return; window.pgCartMorphFix = 1;
+
+  function drawer(){ return document.getElementById('cart'); }
+
+  /* Refuse the morph for exactly one transition: no checkout on screen, a
+     checkout in the incoming markup. Anything else is left alone. */
+  function coldStart(next){
+    var cur = drawer();
+    if (!cur || !next) return false;
+    if (cur.querySelector('button[name="checkout"]')) return false;
+    return !!next.querySelector('button[name="checkout"]');
+  }
+
+  var RAW = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML');
+
+  /* pg-cart-smooth guards #cart.innerHTML and morphs assignments, so a plain
+     assignment here would be morphed too and change nothing. Its guard passes
+     markup straight through when the element's own pgRaw flag is set, which is
+     the documented escape hatch -- use it. */
+  function hardSet(el, html){
+    var had = el.pgRaw;
+    el.pgRaw = 1;
+    try { if (RAW && RAW.set) RAW.set.call(el, html); else el.innerHTML = html; }
+    finally { el.pgRaw = had; }
+  }
+
+  var busy = false, last = 0;
+
+  function check(){
+    var cur = drawer();
+    if (!cur || busy) return;
+    if (!cur.querySelector('.l4ca:not(.in-panel) > li')) return;   /* empty */
+    if (cur.querySelector('button[name="checkout"]')) return;      /* healthy */
+    if (Date.now() - last < 5000) return;
+
+    busy = true;
+    fetch('/?section_id=side-cart', {headers:{'X-Requested-With':'XMLHttpRequest'}, credentials:'same-origin'})
+      .then(function(r){ return r.ok ? r.text() : ''; })
+      .then(function(t){
+        var next = t ? new DOMParser().parseFromString(t,'text/html').querySelector('#cart') : null;
+        if (!coldStart(next)) return;
+        hardSet(drawer(), RAW && RAW.get ? RAW.get.call(next) : next.innerHTML);
+        last = Date.now();
+      })
+      .catch(function(){})
+      .then(function(){ busy = false; });
+  }
+
+  function boot(){
+    check();
+    if (window.MutationObserver){
+      var queued = false;
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; check(); }, 120);
+      }).observe(document.body, {childList:true, subtree:true});
+    }
+    setInterval(check, 1500);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>

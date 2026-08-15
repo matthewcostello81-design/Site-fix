@@ -1,3 +1,64 @@
+# Pocket Era: CHECKOUT button missing for every shopper from an ad (LIVE BUG)
+
+## Symptom
+Click an ad, land on a product page, add to cart -- the drawer opens with the
+product in it and there is no CHECKOUT button anywhere. Reported from the
+Instagram in-app browser; reproduced in Safari and desktop too. Present on the
+published theme, so it was live.
+
+## It was not the cart styling
+Ruled out first: the bug survives with this repo's `pg-cart-mobile` JS disabled
+and with `pg-cart-fast`'s JS disabled. The button is not hidden or pushed off
+screen -- `button[name="checkout"]` is absent from the document entirely, and
+the drawer still carries its "Your cart is empty" paragraph while showing a
+line item.
+
+## Cause
+`snippets/pg-cart-smooth.liquid` replaces `window.pgDrawerRefresh` with a
+morphing refresh that, by design, swaps only the two server-rendered regions --
+the line-item lists (`.l4ca`) and the totals (`.l4tt`) -- and leaves the rest
+of the drawer standing so runtime chrome is not torn down and rebuilt.
+
+That is correct for a drawer that was rendered with something in it. A shopper
+arriving cold is served the page with an empty cart, so the drawer is rendered
+in its EMPTY state -- no savings box, no totals pane, no checkout button, none
+of which exist in the empty render. Adding the first item morphs the line items
+in, but morph only replaces regions that are already present, so the pane
+holding the checkout button is never created.
+
+It never showed up in testing because any cart that already had an item in it
+at page load renders correctly, as does any full page reload.
+
+## Fix (`snippets/pg-cart-morph-fix.liquid`, new)
+Refuses the morph for exactly one transition -- no checkout button on screen,
+a checkout button in the incoming markup -- and does a whole-markup replace
+instead. That is the right move for a drawer going from empty to non-empty:
+there is no runtime chrome to preserve yet. Every later change still morphs as
+designed. Wraps rather than edits pg-cart-smooth, so it is one file to delete
+once that snippet handles the empty case itself. Rendered from pg-cart-fast
+immediately after pg-cart-smooth.
+
+Note it must write through `pgRaw`: pg-cart-smooth redefines `innerHTML` on
+`#cart` and morphs assignments, so an ordinary assignment is swallowed. That
+is why an earlier repair attempt reported success and changed nothing.
+
+## Verified (add to cart from a cold session, no reload)
+| | checkout button | on screen | qty / remove | total |
+|---|---|---|---|---|
+| 390x640 (in-app browser) | present, 51px | yes | intact | $36.99 |
+| 390x844 (Safari) | present, 51px | yes | intact | $36.99 |
+| 1280x900 (desktop) | present, 41px | yes | intact | $36.99 |
+
+"Your cart is empty" no longer appears alongside line items.
+
+## Applied to
+Both unpublished themes, so whichever is published carries it:
+`162852765924` ("Copy of Best 1 LIVE") and `162844967140` ("Best Fixes PE").
+The published theme `162847293668` ("Best 1 LIVE") still has the bug -- the API
+blocks writes to the live theme, so one of the above must be published.
+
+---
+
 # Pocket Era: upsell card moved above Shipping Protection on mobile
 
 ## Change

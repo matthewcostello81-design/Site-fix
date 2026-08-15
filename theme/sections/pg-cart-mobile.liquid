@@ -8,19 +8,26 @@
      it covers the drawer logo and free-shipping pill. It now scrolls with the
      list, keeping its background and rule so it still reads as the panel header.
 
-  2. The pinned pane sits flush with the bottom of the screen (all widths).
+  2. The strip of cart peeking out under the pane is painted over.
      The drawer carries an inline `padding-bottom` written by the theme's own
-     script -- 34px, inline and !important, so no stylesheet can override it --
-     while the pane sticks at `bottom:-10px`. The pane therefore came to rest
-     24px short of the bottom edge, and the cart list showed through the gap as
-     a strip of product peeking out from under the checkout button.
+     script -- 34px in Safari, inline and !important, so no stylesheet can
+     override it -- while the pane sticks at `bottom:-10px`. The pane therefore
+     comes to rest short of the bottom edge, and the cart list shows through
+     the difference as a strip of product under the checkout button.
 
-     The script below reads that padding at runtime and pulls the pane down by
-     exactly that much, then gives the pane the same amount back as its own
-     bottom padding. Net effect: the pane's background reaches the bottom edge
-     so nothing shows underneath it, while the checkout button keeps its
-     distance from the edge of the screen. Reading the value rather than
-     hard-coding 34px means it stays correct if the theme changes it.
+     It is covered with a solid downward box-shadow rather than by moving the
+     pane. A shadow paints but does not lay out: it cannot push anything off
+     screen, and `#cart`'s own `overflow:hidden auto` clips it to the drawer.
+     The spread is deliberately far larger than the 24px it needs to cover, so
+     it still works wherever that padding is bigger.
+
+     DO NOT go back to repositioning the pane to close this gap. Pulling it
+     down by the measured padding (`bottom:-Npx`) works in Safari and breaks
+     the Instagram in-app browser: that webview has a tall bottom toolbar, so
+     the padding is far larger there, and shifting the pane by it pushed the
+     savings box, the Total, the trust row and the CHECKOUT button clean off
+     the bottom of the screen. Shoppers arriving from an Instagram ad reached
+     the cart and had no way to check out.
 
   3. The pane gets shorter under 760px.
      `.sticky-in-panel` stacks shipping protection, the savings breakdown, the
@@ -74,6 +81,16 @@
    (`#cart .sticky-in-panel .l4pm` outranks pg-drawer's `#cart .l4pm`). */
 #cart .sticky-in-panel .l4pm{display:none !important}
 
+/* 2. paint over the strip of cart showing below the pane, all widths.
+   First shadow is pg-drawer's original lift above the pane; the second is a
+   solid block of the pane's own white running downwards, with no blur and no
+   layout effect. 400px is far more than the gap needs -- it just has to
+   outlast the drawer's bottom padding on any browser -- and the drawer clips
+   it. See the note at the top before changing this. */
+#cart .sticky-in-panel{
+  box-shadow:0 -14px 26px -18px rgba(74,28,102,.4), 0 400px 0 0 #fff !important
+}
+
 @media (max-width:760px){
   /* 3. compact the pane */
   #cart .sticky-in-panel{padding-top:3px !important}
@@ -108,23 +125,10 @@
 }
 </style>
 <script>
-/* 2. pull the pinned pane down onto the bottom edge -- see the note above. */
+/* 5. move the upsell card on phones. Nothing here repositions the pane -- see
+   the note at the top of this file. */
 (function(){
   if (window.pgCartFlush) return; window.pgCartFlush = 1;
-
-  function flush(){
-    var drawer = document.getElementById('cart');
-    if (!drawer) return;
-    var pane = drawer.querySelector('.sticky-in-panel');
-    if (!pane) return;
-    var pad = parseFloat(getComputedStyle(drawer).paddingBottom) || 0;
-    if (pane.dataset.pgFlush === String(pad)) return;
-    pane.dataset.pgFlush = String(pad);
-    if (pad > 0){
-      pane.style.setProperty('bottom', (-pad) + 'px', 'important');
-      pane.style.setProperty('padding-bottom', 'calc(' + pad + 'px + 5px)', 'important');
-    }
-  }
 
   /* 5. on phones, drop the upsell card down to just above the pinned pane, so
      it sits directly above Shipping Protection instead of in front of the
@@ -151,17 +155,57 @@
     }
   }
 
-  function apply(){ flush(); placeUnlock(); }
+  /* 6. CHECKOUT WATCHDOG.
+     From a cold session -- which is every shopper arriving from an ad -- the
+     page is served with an empty cart, so the drawer is rendered in its empty
+     state. Adding to cart injects the line items client-side but the drawer is
+     never re-rendered from the server, and the totals, the trust row and the
+     CHECKOUT button only exist in the server's non-empty render. The result is
+     a cart full of product with no way to buy it. `window.pgDrawerRefresh()`
+     does not repair it (called directly, nothing changes); a full page load
+     does.
+
+     This re-fetches the current page and lifts the server's freshly rendered
+     #cart into place -- the same trick pgDrawerRefresh is meant to do. It only
+     runs in the broken state: items present AND no checkout button. A healthy
+     drawer is never touched, so this costs nothing once the underlying bug is
+     fixed, and it can be deleted then. */
+  var repairing = false, lastRepair = 0;
+  function repairCheckout(){
+    var drawer = document.getElementById('cart');
+    if (!drawer || repairing) return;
+    if (!drawer.querySelector('.l4ca > li')) return;            /* empty cart */
+    if (drawer.querySelector('button[name="checkout"]')) return; /* healthy */
+    if (Date.now() - lastRepair < 4000) return;                  /* don't spin */
+
+    repairing = true;
+    fetch(location.pathname + (location.search || ''), {credentials: 'same-origin'})
+      .then(function(r){ return r.ok ? r.text() : null; })
+      .then(function(html){
+        if (!html) return;
+        var fresh = new DOMParser().parseFromString(html, 'text/html').getElementById('cart');
+        /* only swap in a render that actually has the button, so a cached or
+           still-empty response can never make things worse */
+        if (fresh && fresh.querySelector('button[name="checkout"]')){
+          drawer.innerHTML = fresh.innerHTML;
+          lastRepair = Date.now();
+          placeUnlock();
+        }
+      })
+      .catch(function(){})
+      .then(function(){ repairing = false; });
+  }
+
+  function apply(){ placeUnlock(); repairCheckout(); }
 
   function boot(){
     apply();
     window.addEventListener('resize', apply);
     /* The pane only exists once the cart has something in it, and the theme
-       replaces it wholesale on every add, remove and quantity change -- a
-       fresh element each time, with the theme's own bottom offset back on it.
+       replaces the drawer contents wholesale on every add, remove and quantity
+       change -- a fresh upsell card each time, back in its original slot.
        Timers alone lose that race (an add-to-cart round trip outruns them), so
-       watch the document for the re-render and re-apply. childList only: flush
-       writes inline styles, and observing attributes would re-trigger itself. */
+       watch for the re-render and re-apply. childList only. */
     if (window.MutationObserver){
       var queued = false;
       new MutationObserver(function(){
