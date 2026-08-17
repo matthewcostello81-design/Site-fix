@@ -1,3 +1,45 @@
+# Pocket Era: cart peek under CHECKOUT actually gone, pane seated on the edge
+
+## The earlier cover was wrong
+The strip of cart showing below the pinned pane was supposedly covered by
+`box-shadow:0 400px 0 0 #fff`. That offsets the shadow 400px DOWN, so with a
+256px-tall pane the white block started 144px BELOW the pane and left the strip
+immediately under CHECKOUT -- the only part that needed covering -- untouched.
+Confirmed on the draft: the shadow was applied and the peek was still there.
+
+## Fix, part 1: a skirt instead of a shadow
+    #cart .sticky-in-panel::after{position:absolute;top:100%;left:0;right:0;
+                                  height:400px;background:#fff}
+Hung off the pane's bottom edge, so it cannot be off by the pane's height the
+way an offset shadow can. Absolutely positioned, so no layout effect, and the
+drawer's own overflow clips it.
+
+## Fix, part 2: seat the pane on the bottom edge
+The pane settled short of the bottom because the drawer carries an inline
+padding-bottom and the pane sticks at `bottom:-10px`. It is now pulled down to
+sit flush, which also hands that space back to the cart above it.
+
+The shift is MEASURED, never derived from that padding. Deriving it from the
+padding is what took the checkout button off screen in the Instagram in-app
+browser: that webview's toolbar makes the padding far larger. Now the shift is
+the gap actually visible below the pane, measured against `visualViewport`
+(which excludes browser toolbars), capped at 44px -- and after applying it the
+code re-checks the checkout button and drops the shift if the button is not
+fully on screen. Nothing in that path can hide checkout.
+
+## Verified (item added from a cold session, drawer scrolled to the bottom)
+| | gap below pane | checkout on screen | checkout above bottom |
+|---|---|---|---|
+| 390x844 | 0px (was 24px) | yes | 32px |
+| 390x640 (in-app browser) | 0px | yes | 32px |
+| 1280x900 | 0px (was 24px) | yes | 32px |
+
+## Applied to
+Shopify draft theme `162914828516` ("Copy of Best Fixes PE").
+Files changed: sections/pg-cart-mobile.liquid
+
+---
+
 # Pocket Era: CHECKOUT button missing for every shopper from an ad (LIVE BUG)
 
 ## Symptom
