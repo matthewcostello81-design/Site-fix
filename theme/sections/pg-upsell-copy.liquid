@@ -1,0 +1,17 @@
+{%- comment -%}
+  PG Upsell Copy: RETIRED.
+
+  This section existed to rewrite pg-unlock's offer wording from outside, every
+  400ms, back when writes to pg-unlock were not reaching the renderer (the
+  25-section footer-group cap, since diagnosed). The wording it patched in --
+  "Buy 1 more, get 1 FREE" / "Adds 2 to your cart" -- has been pg-unlock's own
+  copy for days, so every pass here was a no-op scan at best and a second
+  writer to the same rows at worst. Two scripts touching the offer rows is how
+  the mobile drawer ended up flickering.
+
+  The file stays registered (overlay-group references it); it just does
+  nothing. Delete the registration and this file together when convenient.
+{%- endcomment -%}
+{% schema %}
+{"name": "PG Upsell Copy", "settings": []}
+{% endschema %}

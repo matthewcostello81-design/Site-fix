@@ -1,0 +1,11 @@
+{%- comment -%}
+  PG Unlock Fix: RETIRED.
+
+  This snippet worked around the old "Adding..." freeze by DELETING any offer
+  row whose button still said Adding... 2.5 seconds after a click. The freeze
+  itself is fixed inside pg-unlock (afterAdd resets state immediately instead
+  of waiting on pgDrawerRefresh), so this timer had become a second script
+  mutating the offer rows -- removing a row the current code then re-inserted,
+  which reads as flicker. It does nothing now. Remove the render call in
+  theme.liquid and this file together when convenient.
+{%- endcomment -%}

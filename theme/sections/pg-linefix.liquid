@@ -1,0 +1,136 @@
+{%- comment -%}
+  PG Line Fix: three cart repairs in ONE section, because slots are the
+  scarce resource here.
+
+  ================================================================
+  WHY EVERYTHING IS IN THIS FILE
+
+  A section group holds a MAXIMUM OF 25 SECTIONS. footer-group is at 24.
+  themeFilesUpsert accepts a group JSON with more than 25 -- it validates on
+  write -- but the storefront renders only the first 25 and silently drops the
+  rest. That is the whole explanation for the last several rounds: files were
+  written correctly, the API reported them correctly, and the page never
+  contained them. It looked like a caching or propagation fault. It was a cap.
+
+  So new work goes INSIDE an already-registered section rather than into a new
+  one. Three fixes live here.
+
+  ================================================================
+  1. THE STRUCK PRICE IN THE STEPPER
+
+  The line is a grid: "nm nm" / "vr vr" / "sv sv" / "qt pr" -- stepper in `qt`,
+  price in `pr`. Separate cells, so nothing should collide.
+
+  What collides is the CONTENT of `pr`. nc-linesave draws the price as a flex
+  ROW with white-space:nowrap -- .nc-lsave-was (struck), .nc-lsave-now (price
+  charged), .nc-lsave-off (pill). nowrap means it cannot break, and a grid
+  item's default min-width:auto means it will not shrink below its content, so
+  once was + now is wider than the column it overflows LEFT into `qt` and the
+  struck figure lands on the + button.
+
+  Stacked into a column, struck figure first. NOT a phone issue: the drawer is
+  ~380-420px wide on desktop too, which is where it was reported. No media
+  query. min-width:0 matters as much as the direction.
+
+  ================================================================
+  2. THE DRAWER MARK
+
+  The disc used to be hidden in CSS in one file and replaced by JS in another.
+  Two independent deliveries -- and when only the hide arrived, the cart had no
+  mark at all, which is worse than the disc. So the hide happens in JS, on the
+  line AFTER the wordmark is inserted. If this file fails to load or the drawer
+  top is not found, the disc simply stays. There is no state with neither.
+
+  Stamped inline because pe-logo, pg-drawer and nc-recs all write that element
+  with !important and up to three ids.
+
+  The mark is <a class="pg-wordmark"> so pg-wordmark kerns it -- that file
+  splits the T into its own span, which is what stops it reading POCKE T ERA.
+  Inheriting the class also inherits pg-mobile's HEADER sizing for it
+  (clamp(40px,4.6vw,78px), scaleY(2.6), negative letter-spacing, all
+  !important), so every one of those is re-set below on a doubled id.
+
+  ================================================================
+  3. THE UPSELL SENTENCE
+
+  With one orb in the cart the row read "Add 2 more, get 1 FREE". True -- a Buy
+  2 Get 1 Free pays out on the third unit, so the cart must reach three -- but
+  it reads as though the offer moved further away the moment they bought one,
+  and it leads with the demand instead of the offer. They pay for one more and
+  two arrive. So: "Buy 1 more, get 1 FREE".
+
+  The same edit is committed to pg-unlock, which owns the row and is where it
+  belongs. It is rewritten here because pg-unlock is not one of the 25.
+{%- endcomment -%}
+<style>
+  /* ---- 1. the price cell keeps to itself ---- */
+  html body #cart .l4ca > li section .nc-lsave,
+  html body #cart .l4ca > li section .price,
+  html body #cart .l4ca > li section .cols .price{
+    min-width:0 !important;
+    max-width:100% !important;
+    display:flex !important;
+    flex-direction:column !important;
+    flex-wrap:nowrap !important;
+    align-items:flex-end !important;
+    justify-content:flex-end !important;
+    gap:1px !important;
+    text-align:right !important;
+    overflow:visible !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-was,
+  html body #cart .l4ca > li .price .old-price,
+  html body #cart .l4ca > li .price s,
+  html body #cart .l4ca > li .price del{
+    order:-1 !important;
+    display:block !important;
+    margin:0 !important;
+    font-size:12px !important;
+    font-weight:600 !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-now{
+    order:0 !important;line-height:1.2 !important;white-space:nowrap !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-off{
+    order:1 !important;margin-top:2px !important;
+  }
+  html body #cart .l4ca > li section footer{min-width:0 !important;flex-wrap:wrap !important}
+
+  /* ---- 2. the drawer mark ---- */
+  #cart .pg-cart-mark{
+    display:block;background:#0B0710;border-radius:12px;
+    padding:13px 14px 10px;margin:0 0 8px;text-align:center;overflow:hidden;
+    box-shadow:0 8px 22px -18px rgba(0,0,0,.8);
+  }
+  html body #cart#cart a.pg-cart-word{
+    display:inline-block !important;
+    font-family:'Press Start 2P','Courier New',monospace !important;
+    font-weight:400 !important;
+    font-size:13px !important;
+    line-height:1 !important;
+    letter-spacing:0 !important;
+    white-space:nowrap !important;
+    max-width:100% !important;
+    margin:0 !important;padding:0 !important;
+    color:#F6DBFF !important;
+    text-decoration:none !important;
+    transform:scaleY(1.5) !important;
+    transform-origin:center !important;
+    text-shadow:0 0 5px rgba(246,219,255,.45),0 0 14px rgba(199,155,234,.32) !important;
+  }
+  @media(max-width:600px){
+    #cart .pg-cart-mark{padding:11px 10px 9px}
+    html body #cart#cart a.pg-cart-word{font-size:11px !important}
+  }
+</style>
+<script>
+/* PG Line Fix script RETIRED. The mark and the offer-row copy this ran every
+   400ms are both owned by pg-unlock now; a second writer touching the same
+   rows was one of the sources of the mobile drawer flicker. The CSS above
+   still applies. */
+</script>
+{% schema %}
+{"name": "PG Line Fix", "settings": []}
+{% endschema %}
