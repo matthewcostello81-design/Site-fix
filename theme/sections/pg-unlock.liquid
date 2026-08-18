@@ -80,6 +80,10 @@
 <style>
   #cart .pg-unlock{
     display:flex;align-items:center;gap:12px;
+    flex-wrap:wrap;          /* the chooser panel is flex:1 1 100% -- without wrap
+                                at EVERY width it cannot drop to its own line, so
+                                on the ~485px desktop drawer it sat beside the
+                                copy and crushed the title to one word per line */
     margin:10px 0 4px;padding:11px 13px;
     border:1px solid rgba(122,47,162,.3);border-radius:14px;
     background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
@@ -129,6 +133,13 @@
     border-top:1px solid rgba(122,47,162,.18);
   }
   #cart .pg-unlock.is-open .pg-unlock-pick{display:block}
+  /* once the panel is open the trigger button has done its job, and the panel's
+     own "Add ... to cart" is the CTA -- two buttons that both add is confusing,
+     and on the narrow drawer the trigger was overlapping the title. Hide it and
+     let the copy take the full first line. */
+  #cart .pg-unlock.is-open .pg-unlock-add{display:none !important}
+  #cart .pg-unlock.is-open .pg-unlock-tag{display:none}
+  #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}
   #cart .pg-unlock-pick-r{display:flex;align-items:center;gap:8px;margin:0 0 7px}
   #cart .pg-unlock-pick-r span{
     flex:none;width:58px;
