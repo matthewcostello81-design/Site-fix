@@ -467,6 +467,22 @@
     return el;
   }
 
+  /* RECONCILE, DON'T REBUILD.
+     The flicker on a cart holding both an orb and the console came from tearing
+     both rows down and re-adding them on every rebuild -- and re-adding them in
+     cart-line order, which Shopify SHUFFLES when a BXGY splits a line, so the
+     two rows visibly swapped places. Two changes stop it:
+
+       1. Offers are sorted to a FIXED order (by handle), so the rows never
+          swap even when something does force a rebuild.
+       2. render() reconciles in place. A row whose offer is unchanged is left
+          exactly where it is -- not removed, not re-created -- so an unchanged
+          cart produces no DOM churn at all. Only a genuinely changed offer is
+          replaced, only a vanished one is removed, and only a missing one is
+          inserted (which is how a row wiped by the drawer refresh comes back).
+
+     A row the shopper has opened to choose designs is never yanked out from
+     under them mid-pick. */
   function render(){
     var c = document.getElementById('cart');
     if (!c) return;
@@ -475,25 +491,34 @@
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
       LASTCART = cart;
       if (consolidate(cart)) return;
-      var offs = offers(cart);
-      /* ORDER-INDEPENDENT, VARIANT-FREE KEY.
-         With two ladder products in the cart (an orb and the console) the old
-         key flickered: it joined offers in cart-line order and included the
-         first line's variant id, and a BXGY splitting a line re-orders the cart
-         between reads -- so the key oscillated every 900ms tick, tore down both
-         rows and rebuilt them, which on a phone reads as the two upsells
-         spazzing. Sorting drops the ordering dependency and the offer does not
-         depend on which specific variant is first, so that is dropped too. The
-         row count is checked as well, so a row that actually went missing still
-         rebuilds. */
-      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.need; }).sort().join('|');
-      if (key === lastKey && c.querySelectorAll('.pg-unlock').length === offs.length) return;
-      lastKey = key;
-      c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
-      if (!offs.length) return;
+      var offs = offers(cart).sort(function(a, b){
+        return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
+      });
+
+      var want = {};
+      offs.forEach(function(o){ want[o.handle] = o; });
+
+      /* drop rows whose offer no longer exists */
+      c.querySelectorAll('.pg-unlock').forEach(function(el){
+        var h = el.getAttribute('data-pg-unlock');
+        if (!want[h] && el.parentNode) el.parentNode.removeChild(el);
+      });
+
+      /* add or refresh, in the fixed sorted order */
       offs.forEach(function(o){
-        var el = row(o);
-        if (list.parentNode) list.parentNode.insertBefore(el, list);
+        var sig = o.handle + ':' + o.rung.nth + ':' + o.need;
+        var existing = c.querySelector('.pg-unlock[data-pg-unlock="' + o.handle + '"]');
+        if (existing){
+          if (existing.getAttribute('data-sig') === sig) return;   /* unchanged: leave it */
+          if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
+          var fresh = row(o);
+          fresh.setAttribute('data-sig', sig);
+          existing.parentNode.replaceChild(fresh, existing);
+        } else {
+          var el = row(o);
+          el.setAttribute('data-sig', sig);
+          if (list.parentNode) list.parentNode.insertBefore(el, list);
+        }
       });
     }).catch(function(){});
   }
@@ -637,16 +662,6 @@
           body: JSON.stringify({id: key, quantity: qty + need})
         }).then(function(r){
           if (!r.ok) return addNew();
-          /* DID THE CART ACTUALLY GROW?
-             This used to look for the original line key with a bigger
-             quantity. That is wrong the moment a BXGY applies: Shopify splits
-             the line into a free unit and paid units and RE-KEYS them, so the
-             key we sent no longer exists, the check reported failure on a
-             change that had succeeded, and the fallback added `need` units a
-             second time. One click on a cart of one orb added three.
-
-             Count every unit of the handle instead. That holds however Shopify
-             chooses to split the lines. */
           return r.json().then(function(cart){
             var now = 0;
             (cart.items || []).forEach(function(it){
