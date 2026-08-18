@@ -495,13 +495,14 @@
     return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(',');
   }
 
-  function rowsCurrent(c, offs){
+  /* Present = the right NUMBER of rows and every expected handle has one. When
+     the cart is unchanged the offers are unchanged, so a row that merely exists
+     is a row that is correct -- there is nothing to compare beyond presence, and
+     comparing data-sig was a failure mode that let the row rebuild forever. */
+  function rowsPresent(c, offs){
     if (c.querySelectorAll('.pg-unlock').length !== offs.length) return false;
     for (var i = 0; i < offs.length; i++){
-      var o = offs[i];
-      var el = c.querySelector('.pg-unlock[data-pg-unlock="' + o.handle + '"]');
-      if (!el) return false;
-      if (el.getAttribute('data-sig') !== (o.handle + ':' + o.rung.nth + ':' + o.need)) return false;
+      if (!c.querySelector('.pg-unlock[data-pg-unlock="' + offs[i].handle + '"]')) return false;
     }
     return true;
   }
@@ -521,7 +522,7 @@
       var sig = cartSig(cart);
 
       /* nothing changed and the rows are already right -> do absolutely nothing */
-      if (sig === lastCartSig && rowsCurrent(c, offs)){ rendering = false; return; }
+      if (sig === lastCartSig && rowsPresent(c, offs)){ rendering = false; return; }
 
       if (consolidate(cart)){ rendering = false; return; }
       lastCartSig = sig;
@@ -574,7 +575,6 @@
       img.style.setProperty('display', 'none', 'important');
     });
   }
-  setInterval(mark, 500);
 
   /* After ANY successful add, unfreeze and rebuild from the NEW cart at once.
      The old chain did `pgDrawerRefresh().then(render)` -- but pgDrawerRefresh
@@ -715,7 +715,59 @@
     });
   }
 
-  setInterval(render, 900);
+  /* ---------------- event-driven, never polled ----------------
+     The 900ms render loop was the flicker: on mobile it did visible DOM work
+     on some ticks no matter how tight the guard, and every rebuild wiped a
+     half-filled chooser. There is no timer now. render() runs only when the
+     cart actually changes -- and on a steady cart it therefore never runs, so
+     there is nothing left to flicker and an open chooser survives.
+
+     Three triggers, all debounced into one render:
+       - a cart-mutating fetch resolves (add / change / update / clear)
+       - Shopify mutates the drawer (line added, quantity changed, drawer
+         rebuilt by pgDrawerRefresh)
+       - the drawer is opened
+     render() still short-circuits when the cart signature is unchanged, so the
+     one observer bounce our own insert causes settles immediately. */
+  var renderTimer = null;
+  function scheduleRender(){
+    if (renderTimer) return;
+    renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 120);
+  }
+
+  /* fire after any cart write, whoever issued it */
+  var _f = window.fetch;
+  if (typeof _f === 'function'){
+    window.fetch = function(input, init){
+      var url = (typeof input === 'string') ? input : (input && input.url) || '';
+      var pr = _f.apply(this, arguments);
+      if (pr && pr.then && /\/cart\/(add|change|update|clear)/.test(url)){
+        pr.then(function(){ scheduleRender(); }, function(){});
+      }
+      return pr;
+    };
+  }
+
+  /* watch the drawer: line changes AND full rebuilds. Observing #cart means a
+     pgDrawerRefresh that swaps the whole subtree still triggers a re-render --
+     and our own row insert triggers one bounce that render() no-ops on. */
+  function watch(){
+    var cart = document.getElementById('cart');
+    if (!cart){ setTimeout(watch, 400); return; }
+    try {
+      new MutationObserver(scheduleRender).observe(cart, {childList: true, subtree: true});
+    } catch(e){}
+    /* opening the drawer usually toggles a class/attribute on #cart or body */
+    try {
+      new MutationObserver(scheduleRender).observe(document.body, {attributes: true, attributeFilter: ['class']});
+    } catch(e){}
+    scheduleRender();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
+  else watch();
+
+  setInterval(mark, 500);   /* the wordmark is cheap and idempotent; leave it */
   render();
   mark();
 })();
