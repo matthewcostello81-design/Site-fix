@@ -202,7 +202,24 @@
     });
   }
 
-  function apply(){ placeUnlock(); seatPane(); fixLabels(); }
+  /* 8. the Shipping Protection switch getting stuck. pg-drawer's toggle sets
+     data-busy on the .pg-sp box (which CSS dims and makes pointer-events:none)
+     and only clears it on ERROR -- on success it relies on the whole drawer
+     being rebuilt to throw the box away. pg-cart-smooth's morph now PRESERVES
+     that box instead of rebuilding it, so data-busy is never removed and the
+     switch stays dimmed and unclickable after the first on/off.
+
+     Cleared here. apply() runs on the childList mutation the refresh produces,
+     which is exactly when the operation has completed, so the switch frees the
+     moment the add/remove lands. The box's checkbox already reflects the new
+     cart state, so nothing else needs syncing. */
+  function unstickSP(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    drawer.querySelectorAll('.pg-sp[data-busy]').forEach(function(b){ b.removeAttribute('data-busy'); });
+  }
+
+  function apply(){ placeUnlock(); seatPane(); fixLabels(); unstickSP(); }
 
   function boot(){
     apply();
