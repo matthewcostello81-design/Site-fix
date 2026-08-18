@@ -164,6 +164,20 @@
     #cart .pg-unlock-pick select{font-size:12.5px;padding:9px 9px}
   }
 
+  /* ---------------- the slot: visual order pinned in CSS ----------------
+     The screen recording showed the two offer rows SWAPPING places. Every
+     defence inside render() still left one dependency: the rows' on-screen
+     order was their DOM order, and anything that reinserted them -- a stale
+     cached copy of an older script, a drawer rebuild racing a render -- could
+     flip it. So the rows now live in one flex container and each product's
+     row carries a fixed CSS `order`. DOM order no longer decides anything:
+     whatever writes the rows, in whatever sequence, the screen shows wall art,
+     then console, then orb. A swap is not suppressed; it is impossible. */
+  #cart #pg-unlock-slot{display:flex;flex-direction:column}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="anime"]{order:0}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="handheld"]{order:1}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="pokemon"]{order:2}
+
   /* ---------------- 2. the struck price keeps to its own cell ---------------- */
   html body #cart .l4ca > li section .nc-lsave,
   html body #cart .l4ca > li section .price,
@@ -500,6 +514,7 @@
      is a row that is correct -- there is nothing to compare beyond presence, and
      comparing data-sig was a failure mode that let the row rebuild forever. */
   function rowsPresent(c, offs){
+    if (offs.length && !c.querySelector('#pg-unlock-slot')) return false;
     if (c.querySelectorAll('.pg-unlock').length !== offs.length) return false;
     for (var i = 0; i < offs.length; i++){
       if (!c.querySelector('.pg-unlock[data-pg-unlock="' + offs[i].handle + '"]')) return false;
@@ -530,16 +545,31 @@
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
 
-      /* drop rows whose offer no longer exists */
+      /* the slot: one container, CSS-ordered. Created once, recreated when a
+         drawer rebuild destroys it. */
+      var slot = c.querySelector('#pg-unlock-slot');
+      if (!slot){
+        slot = document.createElement('div');
+        slot.id = 'pg-unlock-slot';
+        list.parentNode.insertBefore(slot, list);
+      }
+
+      /* adopt strays and kill duplicates: any row outside the slot (an older
+         writer, a race) is pulled in, and each product keeps exactly one row */
+      var seen = {};
       c.querySelectorAll('.pg-unlock').forEach(function(el){
         var h = el.getAttribute('data-pg-unlock');
-        if (!want[h] && el.parentNode) el.parentNode.removeChild(el);
+        if (!want[h] || seen[h]){
+          if (el.parentNode) el.parentNode.removeChild(el);
+          return;
+        }
+        seen[h] = el;
+        if (el.parentNode !== slot) slot.appendChild(el);
       });
 
-      /* add or refresh, in the fixed sorted order */
       offs.forEach(function(o){
         var sg = o.handle + ':' + o.rung.nth + ':' + o.need;
-        var existing = c.querySelector('.pg-unlock[data-pg-unlock="' + o.handle + '"]');
+        var existing = seen[o.handle];
         if (existing){
           if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
           if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
@@ -549,7 +579,7 @@
         } else {
           var el = row(o);
           el.setAttribute('data-sig', sg);
-          if (list.parentNode) list.parentNode.insertBefore(el, list);
+          slot.appendChild(el);
         }
       });
       rendering = false;
