@@ -476,8 +476,18 @@
       LASTCART = cart;
       if (consolidate(cart)) return;
       var offs = offers(cart);
-      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.need + ':' + o.variant; }).join('|');
-      if (key === lastKey && c.querySelector('.pg-unlock')) return;
+      /* ORDER-INDEPENDENT, VARIANT-FREE KEY.
+         With two ladder products in the cart (an orb and the console) the old
+         key flickered: it joined offers in cart-line order and included the
+         first line's variant id, and a BXGY splitting a line re-orders the cart
+         between reads -- so the key oscillated every 900ms tick, tore down both
+         rows and rebuilt them, which on a phone reads as the two upsells
+         spazzing. Sorting drops the ordering dependency and the offer does not
+         depend on which specific variant is first, so that is dropped too. The
+         row count is checked as well, so a row that actually went missing still
+         rebuilds. */
+      var key = offs.map(function(o){ return o.handle + ':' + o.rung.nth + ':' + o.need; }).sort().join('|');
+      if (key === lastKey && c.querySelectorAll('.pg-unlock').length === offs.length) return;
       lastKey = key;
       c.querySelectorAll('.pg-unlock').forEach(function(el){ el.parentNode.removeChild(el); });
       if (!offs.length) return;
@@ -509,6 +519,26 @@
   }
   setInterval(mark, 500);
 
+  /* After ANY successful add, unfreeze and rebuild from the NEW cart at once.
+     The old chain did `pgDrawerRefresh().then(render)` -- but pgDrawerRefresh
+     fetches the whole homepage to rebuild the drawer, and when it is slow, or
+     coalesced by pg-cart-fast into a promise that never settles, the button
+     that triggered the add sat on "Adding..." forever even though the items
+     were already in the cart. So render() runs immediately off /cart.js (the
+     server's truth), which also DESTROYS the triggering button by rebuilding
+     the row; the drawer refresh then runs in the background where a hang can
+     no longer freeze the offer. */
+  function afterAdd(){
+    lastKey = '';
+    busy = false;
+    render();
+    if (window.pgDrawerRefresh){
+      try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ render(); }, function(){}); }
+      catch(e){}
+    }
+    setTimeout(render, 400);
+  }
+
   /* Add the chosen designs as separate line items. Different variants of the
      same product all qualify for the product's Buy 2 Get 1 Free, so a mixed
      three -- Charizard, Gengar, Mewtwo -- still pays out the free one. Each
@@ -516,6 +546,7 @@
   function chooserAdd(go){
     var panel = go.closest('.pg-unlock-pick');
     if (!panel) return;
+    var rowEl = go.closest('.pg-unlock');
     var items = [];
     panel.querySelectorAll('select').forEach(function(sel){
       var id = parseInt(sel.value, 10);
@@ -531,11 +562,8 @@
       body: JSON.stringify({items: items})
     }).then(function(r){
       if (!r || !r.ok) throw 0;
-      lastKey = '';
-      busy = false;
-      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
-    }).then(function(){
-      render();
+      if (rowEl) rowEl.classList.remove('is-open');
+      afterAdd();
     }).catch(function(){
       busy = false;
       go.disabled = false;
@@ -631,11 +659,7 @@
 
     req.then(function(r){
       if (!r || !r.ok) throw 0;
-      lastKey = '';
-      busy = false;
-      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
-    }).then(function(){
-      render();
+      afterAdd();     /* unfreeze + rebuild now, refresh in the background */
     }).catch(function(){
       busy = false;
       btn.disabled = false;
