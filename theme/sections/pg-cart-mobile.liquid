@@ -1,33 +1,34 @@
 {%- comment -%}
-  PG Cart Mobile: two space fixes for the drawer on phones.
+  PG Cart Mobile: cart drawer fixes.
 
-  1. The "Your Cart (n items)" bar stops sticking.
-     pg-drawer pins it with `.pg-cart-top{position:sticky;top:0;z-index:6}`. On
-     a phone the drawer is full-width and short, so that bar permanently eats
-     part of the panel and rides over the content beneath it -- in practice it
-     sat on top of the "Add & Save More" heading. It now scrolls with the list,
-     keeping its background and rule so it still reads as the panel header.
+  1. The "Your Cart (n items)" bar stops sticking, so it scrolls with the list
+     instead of riding over what is beneath it.
 
-  2. The frozen totals pane gets shorter.
-     `.sticky-in-panel` stacks shipping protection, the savings breakdown, the
-     totals, the trust row, the checkout button and the payment icons -- pinned
-     to the bottom of the drawer. Each is fine on its own; together they take
-     more than half the screen and leave a narrow slot for the actual cart.
+  2. The strip of cart peeking out under the pane is covered.
+     The drawer carries an inline `padding-bottom` written by the theme's own
+     script, and the pane sticks at `bottom:-10px`, so it settles short of the
+     bottom edge with the cart showing through the difference.
 
-     Nothing is removed. Everything is tightened: smaller paddings and gaps,
-     one step down in type on the secondary rows, and payment icons at 26x17
-     instead of 36x23. The one exception is the shipping-protection subtitle
-     ("Protect your order against loss or damage in transit"), which is hidden
-     below 760px -- the label, price and toggle all remain, and that sentence is
-     a full wrapped line on a phone.
+     Covered with an absolutely positioned skirt hung off the pane's bottom
+     edge. This was a box-shadow first and that was wrong -- see the note by
+     the rule.
 
-     The total and the checkout button are deliberately left large: they are
-     what the pane is for.
+  3. The pane gets shorter under 760px: smaller paddings and gaps, one step
+     down in type on the secondary rows, and the shipping-protection subtitle
+     hidden (label, price and toggle all remain). The total and the checkout
+     button are deliberately left large: they are what the pane is for.
 
-  The header bar is unpinned at every width -- on desktop it was covering the
-  drawer logo and free-shipping pill as the panel scrolled. The pane compaction
-  stays under 760px, where the height actually matters; the 490px desktop drawer
-  keeps its roomier spacing.
+  4. The payment-icon row is dropped from the pane at every width.
+
+  5. The upsell card moves down on mobile only, to just above the pane.
+
+  6. The pane is seated on the bottom edge -- MEASURED, not derived from the
+     drawer's padding. See the long note by the code before touching it.
+
+  NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
+  turned the drawer blank on iOS Safari. Removing the sticky element drops a
+  compositing layer from a position:fixed, internally-scrolling container,
+  which iOS renders as unpainted white.
 {%- endcomment -%}
 <style>
 /* 1. header bar scrolls away, all widths */
@@ -37,11 +38,38 @@
   z-index:auto !important
 }
 
-@media (max-width:760px){
-  /* 2. compact the frozen pane */
-  #cart .sticky-in-panel{padding-top:3px !important;padding-bottom:5px !important}
+/* 4. the payment-icon row comes out of the pinned pane, all widths. It is a
+   wrapped strip of card-brand logos permanently on screen because the pane is
+   pinned, saying what the "SECURE CHECKOUT" line above it already says. The
+   cards still show at checkout itself and in the site footer. Scoped to the
+   pane so the footer's strip is untouched. */
+#cart .sticky-in-panel .l4pm{display:none !important}
 
-  /* shipping protection: single line, smaller icon */
+/* 2. paint over the strip of cart showing below the pane, all widths.
+   An absolutely positioned skirt hung off the pane's bottom edge: no layout
+   effect, and the drawer's own overflow clips it.
+
+   This was a box-shadow first and that was wrong. `0 400px 0 0 #fff` OFFSETS
+   the shadow 400px down, so with a 256px pane it began 144px BELOW the pane
+   and left the strip immediately under CHECKOUT -- the only part that needed
+   covering -- untouched. A shadow can only cover this by matching the pane's
+   height, which changes with the cart; `top:100%` cannot get it wrong. */
+#cart .sticky-in-panel{position:sticky}
+#cart .sticky-in-panel::after{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  top:100%;
+  height:400px;          /* just has to outlast the drawer's bottom padding */
+  background:#fff;
+  pointer-events:none;
+}
+
+@media (max-width:760px){
+  /* 3. compact the pane */
+  #cart .sticky-in-panel{padding-top:3px !important}
+
   #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
   #cart .sticky-in-panel .pg-sp-ic{width:24px !important;height:24px !important}
   #cart .sticky-in-panel .pg-sp-ic svg{width:14px !important;height:14px !important}
@@ -50,31 +78,131 @@
   #cart .sticky-in-panel .pg-sp-price{font-size:12.5px !important}
   #cart .sticky-in-panel .pg-sp-sw{transform:scale(.9);transform-origin:right center}
 
-  /* savings breakdown */
   #cart .sticky-in-panel .pg-sav{margin:2px 0 5px !important;padding:6px 9px !important}
   #cart .sticky-in-panel .pg-sav-r{font-size:12px !important;line-height:1.4 !important}
   #cart .sticky-in-panel .pg-sav-t{margin-top:3px !important;padding-top:4px !important;font-size:12.5px !important}
 
-  /* totals: subtotal and discount rows tighten, the Total holds its weight */
   #cart .sticky-in-panel .l4tt{margin:1px 0 !important}
   #cart .sticky-in-panel .l4tt li{font-size:12.5px !important;padding:0 !important;line-height:1.35 !important}
   #cart .sticky-in-panel .l4tt li.pg-drow,#cart .sticky-in-panel .l4tt li.pg-drow *{font-size:12.5px !important}
   #cart .sticky-in-panel .l4tt li.pg-tt,#cart .sticky-in-panel .l4tt li.pg-tt *{font-size:15px !important}
 
-  /* trust strip */
   #cart .sticky-in-panel .nc-dtrust{margin:2px 0 !important;padding:0 !important}
   #cart .sticky-in-panel .nc-dtrust span{font-size:10px !important}
 
-  /* checkout stays a full-size target */
   #cart .sticky-in-panel form.f8vl{margin:2px 0 0 !important}
   #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important}
-
-  /* payment icons: one tight row */
-  #cart .sticky-in-panel .l4pm{margin:4px 0 0 !important;gap:5px !important}
-  #cart .sticky-in-panel .l4pm li{padding:2px 4px !important;border-radius:6px !important}
-  #cart .sticky-in-panel .l4pm svg{width:26px !important;height:17px !important}
 }
 </style>
+<script>
+(function(){
+  if (window.pgCartFlush) return; window.pgCartFlush = 1;
+
+  /* 5. on phones, drop the upsell down to just above the pinned pane, so it
+     sits directly above Shipping Protection instead of in front of the cart.
+
+     MOVE THE SLOT, NOT A CARD. pg-unlock now renders its offer rows inside a
+     single container, #pg-unlock-slot, whose child order is pinned in CSS.
+     This function used to grab `querySelector('.pg-unlock')` -- the FIRST
+     offer row -- and move that one alone. With two offers in the cart (an orb
+     and the console) each 60ms MutationObserver tick moved whichever row was
+     currently first, so the two rows took turns being relocated and visibly
+     SWAPPED about ten times a second. That was the mobile "spazzing".
+
+     Moving the slot relocates both rows together as one unit, so there is
+     nothing to reorder. The position check makes this safe under the observer:
+     once the slot is already the pane's previous sibling there is nothing to
+     do, so the move cannot feed itself. Falls back to a lone .pg-unlock if the
+     slot is ever absent. */
+  function placeUnlock(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var card = drawer.querySelector('#pg-unlock-slot') || drawer.querySelector('.pg-unlock');
+    if (!card) return;
+
+    if (window.matchMedia('(max-width:760px)').matches){
+      var pane = drawer.querySelector('.sticky-in-panel');
+      if (!pane || pane.previousElementSibling === card) return;
+      if (!card.pgHome) card.pgHome = {parent: card.parentNode, next: card.nextSibling};
+      pane.parentNode.insertBefore(card, pane);
+    } else if (card.pgHome && card.pgHome.parent && card.pgHome.parent.isConnected){
+      var home = card.pgHome;
+      if (card.parentNode !== home.parent || card.nextSibling !== home.next){
+        home.parent.insertBefore(card, home.next && home.next.isConnected ? home.next : null);
+      }
+    }
+  }
+
+  /* 6. SEAT THE PANE ON THE BOTTOM EDGE.
+     The drawer carries an inline padding-bottom from the theme's own script,
+     and the pane sticks at bottom:-10px, so it settles short of the bottom of
+     the screen. Closing that hands the space back to the cart above it.
+
+     The shift is MEASURED, never derived from that padding. An earlier version
+     pulled the pane down by the padding value and broke the Instagram in-app
+     browser: its bottom toolbar makes that padding far larger, and the Total
+     and CHECKOUT button went off the bottom of the screen with it. Here the
+     shift is the gap actually visible below the pane, measured against the
+     visual viewport -- which excludes the browser's own toolbars -- so where
+     nothing is visibly showing there is no shift, and it is capped regardless.
+
+     Then it checks its work: if the checkout button is not fully on screen
+     afterwards the shift is dropped. Nothing here can hide checkout.
+
+     (The cold-cart checkout repair that used to live here now has its own
+     file, snippets/pg-cart-morph-fix.liquid.) */
+  var MAX_SHIFT = 44;
+  function seatPane(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var pane = drawer.querySelector('.sticky-in-panel');
+    if (!pane) return;
+
+    /* always re-measure from the theme's own resting position */
+    if (pane.pgBase == null){
+      var b = parseFloat(getComputedStyle(pane).bottom);
+      pane.pgBase = isNaN(b) ? 0 : b;
+    }
+    pane.style.removeProperty('bottom');
+
+    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    var gap = vh - pane.getBoundingClientRect().bottom;
+    if (!(gap > 1)) return;                       /* nothing visible below it */
+    if (gap > MAX_SHIFT) gap = MAX_SHIFT;
+
+    pane.style.setProperty('bottom', (pane.pgBase - gap) + 'px', 'important');
+
+    var btn = drawer.querySelector('button[name="checkout"]');
+    if (btn){
+      var r = btn.getBoundingClientRect();
+      if (r.bottom > vh + 1 || r.top < 0) pane.style.removeProperty('bottom');
+    }
+  }
+
+  function apply(){ placeUnlock(); seatPane(); }
+
+  function boot(){
+    apply();
+    window.addEventListener('resize', apply);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', apply);
+    /* the theme replaces the drawer contents wholesale on every add, remove and
+       quantity change, and an add-to-cart round trip outruns fixed timers, so
+       watch for the re-render and re-apply. childList only. */
+    if (window.MutationObserver){
+      var queued = false;
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; apply(); }, 60);
+      }).observe(document.body, {childList:true, subtree:true});
+    }
+    [400, 1000, 2200, 4500].forEach(function(t){ setTimeout(apply, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
 {% schema %}
 {"name": "PG Cart Mobile", "settings": []}
 {% endschema %}
