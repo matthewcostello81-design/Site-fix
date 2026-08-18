@@ -179,7 +179,30 @@
     }
   }
 
-  function apply(){ placeUnlock(); seatPane(); }
+  /* 7. the chooser button noun. pg-unlock's buildChooser hard-codes " orb" in
+     the confirm button ("Add 1 orb to cart"), which is right for the orb but
+     read as "ADD 1 ORB TO CART" on the PocketBoy R36 console upsell -- a
+     console, not an orb. The correct fix is one line in pg-unlock, but that
+     file is 34KB and the running theme cannot practically be rewritten through
+     the API right now, so the label is corrected here from the row's handle:
+     the orb and the print keep their noun, the console (or anything else) just
+     says "Add N ... to cart". Idempotent, so when pg-unlock is next redeployed
+     clean this simply finds nothing to change. */
+  function fixLabels(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    drawer.querySelectorAll('.pg-unlock').forEach(function(row){
+      var go = row.querySelector('.pg-unlock-go');
+      if (!go) return;
+      var h = row.getAttribute('data-pg-unlock') || '';
+      if (h.indexOf('pokemon-crystal') > -1 || h.indexOf('anime-pokemon') > -1) return;
+      var t = go.textContent;
+      var fixed = t.replace(/\s+orb\b/i, '').replace(/\s+print\b/i, '');
+      if (fixed !== t) go.textContent = fixed;
+    });
+  }
+
+  function apply(){ placeUnlock(); seatPane(); fixLabels(); }
 
   function boot(){
     apply();
