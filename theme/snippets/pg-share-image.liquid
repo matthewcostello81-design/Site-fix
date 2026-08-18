@@ -1,0 +1,79 @@
+{%- comment -%}
+  PG Share Image: the two things that have to be in the <head>.
+
+  Named for the first of them; it carries the second because it is already
+  rendered from layout/theme.liquid's head, and the head is exactly where both
+  belong. Splitting them would mean a second render line in the layout for no
+  gain.
+
+  ================================================================
+  1. THE SEARCH THUMBNAIL (og:image)
+
+  The site emitted NO og:image on any page. With none declared a crawler picks
+  an image off the page itself -- Google chose a photo of leg compression boots
+  left over from North Cove Wellness, and that became the thumbnail beside the
+  search result.
+
+  Declared for the homepage only: product and collection pages get theirs from
+  content_for_header and social-meta-tags, and a second declaration would
+  compete. Requested at 1200px because Facebook wants 1200 on the long edge and
+  Google needs at least that width to consider an image for a rich result.
+
+  ================================================================
+  2. THE LOGO FLASH
+
+  Clicking Home, Track Order or Contact showed the old North Cove logo for
+  about half a second before it corrected itself.
+
+  pe-logo does the swap with content:url() -- but pe-logo is a SECTION in
+  footer-group, and section groups render at the END of the body. The browser
+  parses the header, paints whatever <img> the theme settings put there, and
+  only later reaches pe-logo's rule and repaints. Warm cache hides it; a cold
+  navigation shows the old art for as long as the rest of the page takes to
+  arrive.
+
+  CSS in the HEAD is parsed before the header markup exists, so the first paint
+  is already correct and there is nothing to repaint.
+
+  The rule is duplicated from pe-logo deliberately. pe-logo still owns the
+  glow, the sizing and the JS that rewrites src, and it must keep working on
+  its own if this snippet is ever removed. What is here is only the
+  substitution -- the minimum needed to make the first paint right.
+
+  asset_url rather than pe-logo's hard-coded CDN path, so a re-uploaded badge
+  cannot leave this pointing at a stale version of the file.
+
+  The class list caught every logo the current markup uses, but the old North
+  Cove badge is still referenced in the served HTML by a bare <img> that does
+  not always carry one of those classes: the file
+  768205661_..._n.jpg, rendered with alt="North Cove". Any page that paints
+  that <img> before pe-logo's section is reached shows the old art. So the
+  swap is matched by SRC and ALT as well as by class -- whichever selector
+  hits first, the first paint is the Pocket Era badge. Both attribute matches
+  are narrow (the specific North Cove asset id, and the exact North Cove alt),
+  so nothing else on the page is touched.
+{%- endcomment -%}
+{%- if template.name == 'index' -%}
+  {%- assign pg_share = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260812_024500_f32899a3-31ee-4f58-b86d-d1bd7489954e.png' -%}
+  <meta property="og:image" content="{{ pg_share }}?width=1200">
+  <meta property="og:image:secure_url" content="{{ pg_share }}?width=1200">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="1200">
+  <meta property="og:image:alt" content="Pocket Era glowing crystal orb collectibles">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="{{ pg_share }}?width=1200">
+{%- endif -%}
+<style>
+  /* first paint already correct -- see note 2 above */
+  html body .pgh-logo img,
+  html body .pgx-logo img,
+  html body .pgc-logo img,
+  html body .pgf-head img,
+  html body img.nc-dlogo,
+  html body img.nc-foot-emblem,
+  html body img[src*="768205661"],
+  html body img[alt="North Cove"]{
+    content:url("{{ 'pe-badge.svg' | asset_url }}") !important;
+    mix-blend-mode:normal !important;
+  }
+</style>
