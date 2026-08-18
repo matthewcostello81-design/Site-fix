@@ -467,33 +467,64 @@
     return el;
   }
 
-  /* RECONCILE, DON'T REBUILD.
-     The flicker on a cart holding both an orb and the console came from tearing
-     both rows down and re-adding them on every rebuild -- and re-adding them in
-     cart-line order, which Shopify SHUFFLES when a BXGY splits a line, so the
-     two rows visibly swapped places. Two changes stop it:
+  /* RECONCILE, AND ONLY WHEN THE CART ACTUALLY CHANGED.
+     Two mobile-flicker fixes live here.
 
-       1. Offers are sorted to a FIXED order (by handle), so the rows never
-          swap even when something does force a rebuild.
-       2. render() reconciles in place. A row whose offer is unchanged is left
-          exactly where it is -- not removed, not re-created -- so an unchanged
-          cart produces no DOM churn at all. Only a genuinely changed offer is
-          replaced, only a vanished one is removed, and only a missing one is
-          inserted (which is how a row wiped by the drawer refresh comes back).
+     1. STRICT NO-OP ON A STEADY CART. render() runs on a 900ms timer. Every
+        earlier version did DOM work on every tick -- querying, comparing,
+        sometimes replacing -- and on a cart holding both an orb and the console
+        that churn showed up as the two upsell rows spazzing. Now the cart is
+        signed by its variant ids and quantities; if that signature is unchanged
+        AND both rows are already present and current, render returns having
+        touched nothing at all.
 
-     A row the shopper has opened to choose designs is never yanked out from
-     under them mid-pick. */
+     2. SINGLE FLIGHT. The 900ms timer, afterAdd() and a 400ms follow-up can all
+        call render() around the same moment. Two /cart.js reads resolving out
+        of order used to let a stale one rewrite the rows the fresh one just
+        set. `rendering` lets one run at a time.
+
+     Beyond that it reconciles rather than rebuilds: offers are sorted to a
+     FIXED order so the rows never swap, an unchanged row is left exactly where
+     it is, a changed one is replaced, a vanished one removed, a missing one
+     re-inserted, and a row the shopper has opened to pick designs is never
+     yanked mid-pick. */
+  var lastCartSig = null;
+  var rendering = false;
+
+  function cartSig(cart){
+    return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(',');
+  }
+
+  function rowsCurrent(c, offs){
+    if (c.querySelectorAll('.pg-unlock').length !== offs.length) return false;
+    for (var i = 0; i < offs.length; i++){
+      var o = offs[i];
+      var el = c.querySelector('.pg-unlock[data-pg-unlock="' + o.handle + '"]');
+      if (!el) return false;
+      if (el.getAttribute('data-sig') !== (o.handle + ':' + o.rung.nth + ':' + o.need)) return false;
+    }
+    return true;
+  }
+
   function render(){
+    if (rendering) return;
     var c = document.getElementById('cart');
     if (!c) return;
     var list = c.querySelector('.l4ca:not(.in-panel)');
     if (!list) return;
+    rendering = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
       LASTCART = cart;
-      if (consolidate(cart)) return;
       var offs = offers(cart).sort(function(a, b){
         return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
       });
+      var sig = cartSig(cart);
+
+      /* nothing changed and the rows are already right -> do absolutely nothing */
+      if (sig === lastCartSig && rowsCurrent(c, offs)){ rendering = false; return; }
+
+      if (consolidate(cart)){ rendering = false; return; }
+      lastCartSig = sig;
 
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
@@ -506,21 +537,22 @@
 
       /* add or refresh, in the fixed sorted order */
       offs.forEach(function(o){
-        var sig = o.handle + ':' + o.rung.nth + ':' + o.need;
+        var sg = o.handle + ':' + o.rung.nth + ':' + o.need;
         var existing = c.querySelector('.pg-unlock[data-pg-unlock="' + o.handle + '"]');
         if (existing){
-          if (existing.getAttribute('data-sig') === sig) return;   /* unchanged: leave it */
+          if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
           if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
           var fresh = row(o);
-          fresh.setAttribute('data-sig', sig);
+          fresh.setAttribute('data-sig', sg);
           existing.parentNode.replaceChild(fresh, existing);
         } else {
           var el = row(o);
-          el.setAttribute('data-sig', sig);
+          el.setAttribute('data-sig', sg);
           if (list.parentNode) list.parentNode.insertBefore(el, list);
         }
       });
-    }).catch(function(){});
+      rendering = false;
+    }).catch(function(){ rendering = false; });
   }
 
   /* ---------------- 3. mark first, hide the disc only once it is there ---------------- */
@@ -556,6 +588,7 @@
   function afterAdd(){
     lastKey = '';
     busy = false;
+    lastCartSig = null;   /* force the next render to act on the new cart */
     render();
     if (window.pgDrawerRefresh){
       try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ render(); }, function(){}); }
