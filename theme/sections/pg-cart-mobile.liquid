@@ -80,7 +80,7 @@
    re-open of an already-built cart skips the hold and is instant. */
 #cart .nc-drawer-top,#cart .l4ca,
 #cart #pg-unlock-slot,#cart .pg-unlock,#cart .sticky-in-panel{
-  transition:opacity .2s ease;
+  transition:opacity .14s ease;
 }
 #cart.pg-settling .nc-drawer-top,#cart.pg-settling .l4ca,
 #cart.pg-settling #pg-unlock-slot,#cart.pg-settling .pg-unlock,
@@ -96,11 +96,17 @@
      drawer on a SHORT cart. #cart is a flex column and every child is
      flex:0 1 auto, so when the contents do not fill the screen the leftover
      space falls BELOW the last child (the pane), leaving a tall white gap under
-     CHECKOUT. margin-top:auto hands that free space to the top of the pane
-     instead, so the pane sits on the bottom edge and the empty room reads as
-     ordinary drawer space above it. When the cart is tall enough to scroll
-     there is no free space and this is a no-op. */
-  #cart .sticky-in-panel{margin-top:auto !important}
+     CHECKOUT.
+
+     This is done with a FLEX SPACER (pg-cart-spacer, inserted by the JS just
+     before the pane), NOT with margin-top:auto on the pane. An auto top margin
+     was tried and it broke the pane's position:sticky on iOS Safari -- auto
+     margins and sticky do not compose there -- so the pane stopped sticking and
+     scrolled away with the list. The spacer keeps the pane's margins clean: it
+     grows to swallow the free space above the pane on a short cart (pushing the
+     pane to the bottom), and collapses to zero the moment the cart overflows and
+     scrolls, leaving sticky to do its job untouched. */
+  #cart .pg-cart-spacer{flex:1 1 0;min-height:0;align-self:stretch;pointer-events:none}
 
   #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
   #cart .sticky-in-panel .pg-sp-ic{width:24px !important;height:24px !important}
@@ -251,13 +257,42 @@
     drawer.querySelectorAll('.pg-sp[data-busy]').forEach(function(b){ b.removeAttribute('data-busy'); });
   }
 
-  function apply(){ placeUnlock(); seatPane(); fixLabels(); unstickSP(); }
+  /* 3b (cont). Keep a flex spacer sitting directly before the pane on phones so
+     a short cart's free space collapses ABOVE the pane instead of leaving white
+     under CHECKOUT. It is a plain element with no margins, so the pane's sticky
+     positioning is left untouched (see the CSS note). Removed on desktop. */
+  function placeSpacer(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var pane = drawer.querySelector('.sticky-in-panel');
+    var mobile = window.matchMedia('(max-width:760px)').matches;
+    var spacer = drawer.querySelector('.pg-cart-spacer');
+    if (!mobile || !pane){
+      if (spacer) spacer.parentNode.removeChild(spacer);
+      return;
+    }
+    if (!spacer){
+      spacer = document.createElement('div');
+      spacer.className = 'pg-cart-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+    }
+    /* must be the pane's immediate previous sibling */
+    if (pane.previousElementSibling !== spacer){
+      pane.parentNode.insertBefore(spacer, pane);
+    }
+  }
+
+  function apply(){ placeUnlock(); placeSpacer(); seatPane(); fixLabels(); unstickSP(); }
 
   /* 9. SMOOTH OPEN. The theme adds `m6pn-open` to <html> when the drawer opens.
      If the cart's totals pane is not rendered yet at that moment, the drawer is
      opening onto content that is still assembling, so hold the rows invisible
-     (CSS class pg-settling) and clear it -- fading them in -- once the pane has
-     appeared and held the same position for two ticks. A hard 900ms cap and a
+     (CSS class pg-settling) and clear it -- fading them in -- the instant the
+     totals pane stops moving (its position matches across two 50ms polls). That
+     is the earliest CLEAN moment: revealing before it settles trades the
+     reshuffle for a smaller post-reveal nudge, which is still a jump, so the
+     reveal is pinned to the settle instead. On a fast connection that is ~0.7s;
+     the poll is quick so there is no slack beyond it. A hard cap and a
      close-resets guard mean the rows can never be stuck hidden, and a cart that
      is already built when it opens skips the hold entirely (instant re-open). */
   function smoothOpen(){
@@ -271,14 +306,14 @@
       if (!d) return;
       if (!d.classList.contains('toggle')){ d.classList.remove('pg-settling'); return; }
       var pane = d.querySelector('.sticky-in-panel');
-      var done = Date.now() - start > 900;
+      var done = Date.now() - start > 1200;   /* safety only -- stability reveals first */
       if (pane){
         var top = Math.round(pane.getBoundingClientRect().top);
         if (top === lastTop) stable++; else { stable = 0; lastTop = top; }
-        if (stable >= 2) done = true;
+        if (stable >= 1) done = true;
       }
       if (done){ d.classList.remove('pg-settling'); return; }
-      setTimeout(wait, 80);
+      setTimeout(wait, 50);
     })();
   }
 
