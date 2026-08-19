@@ -13,10 +13,26 @@
   "sections": {
     "side-cart": {
       "type": "side-cart",
-      "settings": {}
+      "settings": {
+        "empty_cart_text": "<p>Your cart is empty..</p>",
+        "enable_cart_drawer_undo_remove": true,
+        "enable_cart_drawer_undo_remove_delay": true,
+        "cart_drawer_undo_remove_delay": 5,
+        "cart_drawer_view_button": true,
+        "cart_drawer_checkout_button": true,
+        "cart_drawer_discount_tab": false,
+        "cart_drawer_order_notes": false,
+        "cart_drawer_order_notes_default_open": true,
+        "show_trustbadge": true,
+        "enable_cart_drawer_upsell_complementary": true,
+        "enable_cart_drawer_upsell_related": true,
+        "cart_drawer_upsell_limit": 4,
+        "enable_cart_drawer_upsell_variants": true
+      }
     },
     "shop-the-look-drawer": {
       "type": "shop-the-look-drawer",
+      "disabled": true,
       "settings": {
         "shop_the_look_title": "<h2>Shop the look</h2>",
         "shop_the_look_subtitle": "",
@@ -26,17 +42,33 @@
     "newsletter-popup": {
       "type": "newsletter-popup",
       "disabled": true,
-      "settings": {}
+      "settings": {
+        "newsletter_popup_seconds": 5,
+        "enable_newsletter_terms_checkbox": false,
+        "newsletter_terms_text": ""
+      }
     },
     "age-verify-popup": {
       "type": "age-verify-popup",
       "disabled": true,
-      "settings": {}
+      "settings": {
+        "age_verify_popup_title": "Age verification",
+        "age_verify_popup_text": "<p>Please confirm that you are 18 years or older to enter the shop.</p>",
+        "age_verify_popup_cookie_text": "<p>Our shop uses cookies, by confirming you are agreeing to our <a href=\"/policies/terms-of-service\" target=\"_blank\" title=\"Terms of Service\">terms of service</a> and <a href=\"/policies/privacy-policy\" target=\"_blank\" title=\"Privacy Policy\">privacy policy</a></p>",
+        "age_verify_popup_accept_text": "Yes, I'm 18 years or older",
+        "age_verify_popup_deny_text": "No",
+        "age_verify_popup_denied_title": "Have patience...",
+        "age_verify_popup_denied_text": "<p>You are not old enough to visit the shop yet.</p>"
+      }
     },
     "cookie-banner": {
       "type": "cookie-banner",
       "disabled": true,
-      "settings": {}
+      "settings": {
+        "show_cookiebanner": "banner",
+        "cookiebanner_title": "Cookies",
+        "cookiebanner_text": "<p>Our site uses cookies. By clicking on accept you agree with our <a href=\"/policies/terms-of-service\" target=\"_blank\" title=\"Terms of Service\">voorwaarden</a> and <a href=\"/policies/privacy-policy\" target=\"_blank\" title=\"Privacy Policy\">privacy policy</a>.</p>"
+      }
     },
     "nc-pdp3": {
       "type": "nc-pdp3",
@@ -66,33 +98,21 @@
       "type": "nc-cartcount",
       "settings": {}
     },
-    "nc-woodroller": {
-      "type": "nc-woodroller",
-      "settings": {}
-    },
     "nc-navsale-first": {
       "type": "nc-navsale-first",
-      "settings": {}
-    },
-    "nc-birch-copy": {
-      "type": "nc-birch-copy",
-      "settings": {}
-    },
-    "nc-cart-tweaks": {
-      "type": "nc-cart-tweaks",
       "settings": {}
     },
     "pg-drawer": {
       "type": "pg-drawer",
       "settings": {
-        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_image": "shopify://shop_images/768205661_122117213481364394_2003014125810604411_n.jpg",
         "keep_match": "data-frog"
       }
     },
     "pg-footer": {
       "type": "pg-footer",
       "settings": {
-        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_image": "shopify://shop_images/768205661_122117213481364394_2003014125810604411_n.jpg",
         "tagline": "Retro gaming, pocket-sized."
       }
     },
@@ -123,6 +143,10 @@
     "pg-cart-total": {
       "type": "pg-cart-total",
       "settings": {}
+    },
+    "pg-cart-imglink": {
+      "type": "pg-cart-imglink",
+      "settings": {}
     }
   },
   "order": [
@@ -138,10 +162,7 @@
     "nc-recs",
     "nc-linesave",
     "nc-cartcount",
-    "nc-woodroller",
     "nc-navsale-first",
-    "nc-birch-copy",
-    "nc-cart-tweaks",
     "pg-drawer",
     "pg-footer",
     "pg-giftguard",
@@ -150,6 +171,7 @@
     "pg-no-promo",
     "pg-cart-variants",
     "pg-unlock",
-    "pg-cart-total"
+    "pg-cart-total",
+    "pg-cart-imglink"
   ]
 }
