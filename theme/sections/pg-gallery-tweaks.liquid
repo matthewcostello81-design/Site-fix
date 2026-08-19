@@ -29,11 +29,25 @@
   picture of the product: desktop gets the same one-per-view sizing, paged by
   the arrows pg-landing already draws on that breakpoint.
 
-  THE SWIPE HINT stays. pg-gallery-mobile deliberately hides those arrows on
-  phones, because they sat on top of the orbs -- which left no sign the strip
-  scrolls. The hint sits UNDER the strip rather than over it, so nothing is
-  covered, and it disappears for good the moment the strip is scrolled, which is
-  remembered, so it teaches once instead of nagging. Mobile only.
+  THE SWIPE HINT. pg-gallery-mobile deliberately hides the carousel arrows on
+  phones, because they sat on top of the orbs. That fixed the covering but left
+  no sign the strip scrolls, so the photos read as a dead row.
+
+  IT SITS ABOVE THE STRIP, and that placement is the whole point of this pass.
+  It used to sit under it, which measured at y=925 on a 390x844 phone: the strip
+  is ~358px tall, so the note telling you to swipe was itself below the fold,
+  under the very photos it was describing. Nobody scrolls past a row to be told
+  the row scrolls. Above the strip it lands around y=550 -- on screen at the
+  same moment the first orb is -- and it still covers nothing, because it is a
+  sibling in the column rather than an overlay.
+
+  IT COMES BACK ON A NEW VISIT. It used to be suppressed for good, in
+  localStorage, the first time the strip was scrolled -- so one stray swipe,
+  ever, and the hint was gone from that browser permanently, including for a
+  shopper who came back a week later and had forgotten. It now clears on the
+  first swipe of THIS page view and returns on the next one: still silent the
+  instant the shopper shows they know, never permanently spent. Mobile only;
+  desktop keeps its arrows.
 
   Registered in templates/product.pg-crystal.json rather than a section group:
   the overlay group is at Shopify's hard limit of 25 sections, and this belongs
@@ -54,7 +68,7 @@
   #pgx .pg-gt-swipe{
     display:none;
     align-items:center;justify-content:center;gap:8px;
-    margin:9px auto 0;
+    margin:0 auto 9px;
     padding:6px 14px;
     width:max-content;max-width:100%;
     border-radius:999px;
@@ -83,7 +97,6 @@
 (function(){
   if (window.pgGalTweaks) return; window.pgGalTweaks = 1;
 
-  var SEEN = 'pgGtSwiped';
   var hinted = false;
 
   function hint(){
@@ -93,21 +106,19 @@
     var strip = wrap.querySelector('.pgx-thumbs');
     if (!strip) return;
 
-    var seen = false;
-    try { seen = localStorage.getItem(SEEN) === '1'; } catch(e){}
-    if (seen) { hinted = true; return; }
     if (strip.scrollWidth <= strip.clientWidth + 4) return;   /* nothing to swipe to */
+    if (strip.scrollLeft > 4) { hinted = true; return; }      /* already swiped */
 
     var el = document.createElement('div');
     el.className = 'pg-gt-swipe pg-gt-on';
     el.setAttribute('aria-hidden', 'true');
     el.innerHTML = '<span class="pg-gt-l">&lsaquo;</span> Swipe for more <span>&rsaquo;</span>';
-    wrap.parentNode.insertBefore(el, wrap.nextSibling);
+    /* ABOVE the strip -- see the note above */
+    wrap.parentNode.insertBefore(el, wrap);
     hinted = true;
 
     function done(){
       if (el.parentNode) el.parentNode.removeChild(el);
-      try { localStorage.setItem(SEEN, '1'); } catch(e){}
       strip.removeEventListener('scroll', done);
       strip.removeEventListener('touchmove', done);
     }

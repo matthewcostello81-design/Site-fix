@@ -9,8 +9,9 @@
   and y=-2067 on desktop: off screen, unreachable. A shopper who adds an orb and
   keeps browsing has no way back to the cart short of scrolling to the very top.
 
-  WHAT THIS ADDS. A full-width bar pinned across the top, which fades in once
-  the real header cart has scrolled out of view. It carries the live item count
+  WHAT THIS ADDS. A full-width bar pinned across the top, on screen from the
+  moment the page opens rather than fading in after a scroll. It carries the
+  live item count
   and, while the 10-minute offer window is open, the countdown and the 5% OFF
   label -- so the reason to check out travels with the shopper down a nine-screen
   page instead of living only inside the cart. Tapping anywhere on it opens the
@@ -41,8 +42,35 @@
   z-index 90: above the page and above #pg-sticky's 55, below the cart drawer's
   160 so an open drawer covers it, and far below the cookie/consent banners.
 
-  Hidden when the cart is empty (nothing to go back to) and while the drawer is
-  open. Gated on #pgx so it appears on product pages only, as asked.
+  IT NO LONGER WAITS FOR A SCROLL. It used to appear only once the header's own
+  cart icon had left the screen, on the reasoning that the two should not both be
+  on screen at once. In practice that meant the offer -- the part that actually
+  drives the checkout -- was invisible at the top of the page, which is where the
+  shopper starts. It is now on from the first paint and stays for the whole
+  scroll, on phones and on desktop alike.
+
+  AND IT NO LONGER HIDES ON AN EMPTY CART. Hiding it there was the same mistake
+  one step earlier: the shopper with nothing in the cart is exactly the one the
+  offer is aimed at, and they were the only one who never saw it. With an empty
+  cart the bar reads ADD TO CART FOR EXTRA 5% OFF and runs its own ten-minute
+  clock so the offer is visible before there is anything to discount.
+
+  THAT CLOCK IS A SEPARATE, HONEST ONE. pg-cart-timer's window only exists once
+  there is a cart -- it clears its deadline when the cart empties -- so this
+  keeps its own deadline under pgRushPeek. It is persisted, so it does not
+  restart on every page view, and it is cleared as soon as something is added,
+  because from that point pg-cart-timer's real window is the one that counts (an
+  add opens a fresh ten minutes, so nobody is ever shown less time than they
+  get). When it runs out the clock simply goes away and the bar keeps offering
+  the deal, rather than resetting to 10:00 and pretending the urgency renewed.
+
+  The one place the wording is shortened is here: ENTIRE ORDER does not fit
+  beside a clock and a 40px bag on a 390px phone, so the empty-cart line reads
+  ADD TO CART FOR EXTRA 5% OFF. The full ENTIRE ORDER wording appears the moment
+  there is a cart, in this bar and in the drawer.
+
+  Hidden while the drawer is open. Gated on #pgx so it appears on product pages
+  only, as asked.
 {%- endcomment -%}
 <style>
   #pg-cartfab{
@@ -150,6 +178,23 @@
   function headerCart(){ return document.querySelector('#pgx a.pgx-cart, a.pgx-cart'); }
   function rush(){ return window.pgRush && window.pgRush.active() ? window.pgRush : null; }
 
+  /* the empty-cart preview window -- see the note above */
+  var PKEY = 'pgRushPeek', PEEK_MS = 10 * 60 * 1000;
+  function peekLeft(){
+    var end = 0;
+    try { end = parseInt(localStorage.getItem(PKEY), 10) || 0; } catch(e){}
+    if (!end){
+      end = Date.now() + PEEK_MS;
+      try { localStorage.setItem(PKEY, String(end)); } catch(e){}
+    }
+    return Math.max(0, end - Date.now());
+  }
+  function peekClear(){ try { localStorage.removeItem(PKEY); } catch(e){} }
+  function clockMs(ms){
+    var s = Math.ceil(ms / 1000), m = Math.floor(s / 60), r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
   function build(){
     if (fab) return fab;
     fab = document.createElement('div');
@@ -187,8 +232,13 @@
     if (r){
       html = '<span class="pg-cs-clock">' + r.fmt() + '</span>' +
              '<span class="pg-cs-sub">EXTRA <b>5% OFF</b> ENTIRE ORDER</span>';
-    } else {
+    } else if (count > 0){
       html = '<span class="pg-cs-sub">' + (count === 1 ? '1 ITEM IN YOUR CART' : count + ' ITEMS IN YOUR CART') + '</span>';
+    } else {
+      /* nothing in the cart yet: show the offer anyway, with its own clock */
+      var p = peekLeft();
+      html = (p > 0 ? '<span class="pg-cs-clock">' + clockMs(p) + '</span>' : '') +
+             '<span class="pg-cs-sub">ADD TO CART FOR EXTRA <b>5% OFF</b></span>';
     }
     if (msg.innerHTML !== html) msg.innerHTML = html;
     if (badge){
@@ -197,20 +247,14 @@
     }
   }
 
-  /* visible once the header's own cart icon has left the screen, and only when
-     there is something in the cart to go back to */
+  /* on for the whole page, cart or no cart -- see the note above */
   function sync(){
     if (!document.getElementById('pgx')) return;
     var f = build();
-    var h = headerCart();
-    var gone = true;
-    if (h){
-      var r = h.getBoundingClientRect();
-      /* treat a zero-box icon as gone too -- it is hidden, not merely scrolled */
-      gone = (r.width === 0 && r.height === 0) || r.bottom <= 0;
-    }
-    if (gone && count > 0) f.classList.add('pg-cs-on');
-    else f.classList.remove('pg-cs-on');
+    /* once there is a cart, pg-cart-timer's window is the real one, so the
+       preview deadline is dropped and a later empty cart starts a fresh one */
+    if (count > 0) peekClear();
+    f.classList.add('pg-cs-on');
     paint();
   }
 
