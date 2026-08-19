@@ -125,6 +125,16 @@
   #pg-cartfab:active{transform:scale(.99)}
   html.m6pn-open #pg-cartfab{opacity:0 !important;pointer-events:none !important}
 
+  /* the copy is longer than it was, so tighten it on narrow phones rather than
+     let it ellipsis away the words that carry the offer */
+  @media (max-width:430px){
+    #pg-cartfab{padding:0 8px 0 14px;gap:9px}
+    #pg-cartfab .pg-cs-msg{font-size:12.5px;letter-spacing:.02em;gap:6px}
+    #pg-cartfab .pg-cs-clock{font-size:13.5px;padding:3px 7px}
+    #pg-cartfab .pg-cs-ic{width:40px;height:40px}
+    #pg-cartfab svg{width:23px;height:23px}
+  }
+
   @media (min-width:900px){
     /* a full-width bar across a desktop page reads as a site banner, so cap it
        and keep it in the corner the cart already occupies */
@@ -176,7 +186,7 @@
     var html;
     if (r){
       html = '<span class="pg-cs-clock">' + r.fmt() + '</span>' +
-             '<span class="pg-cs-sub">LEFT &mdash; EXTRA <b>5% OFF</b></span>';
+             '<span class="pg-cs-sub">EXTRA <b>5% OFF</b> ENTIRE ORDER</span>';
     } else {
       html = '<span class="pg-cs-sub">' + (count === 1 ? '1 ITEM IN YOUR CART' : count + ' ITEMS IN YOUR CART') + '</span>';
     }

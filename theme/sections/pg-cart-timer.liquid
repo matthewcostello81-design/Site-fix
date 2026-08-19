@@ -80,7 +80,8 @@
     border-radius:10px;
     background:linear-gradient(120deg,rgba(139,68,190,.16),rgba(199,155,234,.12));
     border:1px solid rgba(168,120,214,.42);
-    font-size:12.5px;line-height:1.2;font-weight:700;
+    font-size:12.5px;line-height:1.2;font-weight:800;
+    text-transform:uppercase;letter-spacing:.03em;
     color:#3B2352;
     text-align:center;
   }
@@ -166,7 +167,7 @@
       el = document.createElement('div');
       el.id = 'pg-rush';
       el.innerHTML = '<span class="pg-rush-c">0:00</span>' +
-                     '<span class="pg-rush-x">left &mdash; extra <b>5% OFF</b> applied at checkout</span>';
+                     '<span class="pg-rush-x">EXTRA <b>5% OFF</b> ENTIRE ORDER</span>';
     }
     if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
     var c = el.querySelector('.pg-rush-c');
