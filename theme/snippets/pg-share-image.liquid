@@ -163,3 +163,69 @@
   }
   .nc-cookie-accept:hover{background:#7A2FA2 !important}
 </style>
+{%- comment -%}
+  ================================================================
+  5. LOAD CURTAIN -- everything appears together, not in stages
+
+  Killing the white flash made the FIRST frame dark, but a cold load still
+  paints in stages: the dark canvas lands first, then the header band, then the
+  purple footer, the cookie bar and the product cards each pop in as the browser
+  reaches the section-group style blocks at the end of the body, and images fade
+  in on top of that. The page assembles itself on screen instead of arriving
+  whole.
+
+  This holds a single full-viewport cover -- painted in the EXACT canvas
+  gradient, so there is no seam against the page behind it -- over the whole
+  document from the very first frame, while all that staged painting happens
+  underneath it, and lifts it in one short fade the moment the document is
+  parsed (DOMContentLoaded: every section-group <style> block has been read by
+  then, so every colour is already in place). The finished page is revealed all
+  at once instead of building up piece by piece.
+
+  Safeguards, in order of importance:
+   - The cover is opt-IN via a class the inline script adds to <html> before the
+     first paint, so with JavaScript off it never appears and the page just
+     loads the old way -- it can never trap a no-JS visitor behind a blank
+     screen.
+   - pointer-events:none, so even mid-hold nothing is ever blocked.
+   - A hard 1.5s cap reveals regardless, and the cover element is removed
+     outright just after the fade, so nothing can leave it stuck on screen.
+   - It keys off a full document parse, so it only affects a real page load; the
+     theme's instant-page tab navigation (which swaps the body without
+     reparsing) never re-triggers it and is left exactly as it is.
+{%- endcomment -%}
+<script>
+  (function(){
+    var h = document.documentElement;
+    h.className += ' pg-hold';
+    var done = false;
+    function reveal(){
+      if (done) return; done = true;
+      h.classList.add('pg-ready');
+      /* drop the cover outright once the fade is done so it can never trap anything */
+      setTimeout(function(){ h.classList.remove('pg-hold'); }, 300);
+    }
+    function schedule(){
+      /* two frames: guarantees the page has painted its colours under the cover
+         before it lifts, so the reveal shows a finished page, not a blank one */
+      requestAnimationFrame(function(){ requestAnimationFrame(reveal); });
+    }
+    if (document.readyState === 'interactive' || document.readyState === 'complete') schedule();
+    else document.addEventListener('DOMContentLoaded', schedule);
+    /* hard safety cap -- never hold longer than 1.5s no matter what */
+    setTimeout(reveal, 1500);
+  })();
+</script>
+<style>
+  html.pg-hold::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    z-index:2147483647;
+    background:linear-gradient(180deg,#0B0710 0%,#140C1E 52%,#0B0710 100%);
+    pointer-events:none;
+    opacity:1;
+    transition:opacity .2s ease;
+  }
+  html.pg-ready::before{opacity:0}
+</style>
