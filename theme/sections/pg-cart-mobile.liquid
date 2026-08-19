@@ -66,6 +66,28 @@
   pointer-events:none;
 }
 
+/* 9. SMOOTH OPEN (the drawer "pop-in"), all widths.
+   The drawer slides in over 0.4s while its contents are still being built:
+   the item rows fill out, the upsell lands, and the totals pane (Shipping
+   Protection, You saved, Total, CHECKOUT) does not appear until ~0.7s and then
+   settles for another few tenths. So the open is followed by a visible reshuffle.
+
+   When the drawer opens with its content not yet assembled, the rows below the
+   header are held invisible and faded in together once the pane has landed --
+   see the JS. This trades a brief settling beat for a clean single reveal
+   instead of a scramble. The header (close button, item count) stays visible
+   throughout, the hold is capped hard in JS so nothing can stay hidden, and a
+   re-open of an already-built cart skips the hold and is instant. */
+#cart .nc-drawer-top,#cart .l4ca,
+#cart #pg-unlock-slot,#cart .pg-unlock,#cart .sticky-in-panel{
+  transition:opacity .2s ease;
+}
+#cart.pg-settling .nc-drawer-top,#cart.pg-settling .l4ca,
+#cart.pg-settling #pg-unlock-slot,#cart.pg-settling .pg-unlock,
+#cart.pg-settling .sticky-in-panel{
+  opacity:0 !important;
+}
+
 @media (max-width:760px){
   /* 3. compact the pane */
   #cart .sticky-in-panel{padding-top:3px !important}
@@ -231,10 +253,51 @@
 
   function apply(){ placeUnlock(); seatPane(); fixLabels(); unstickSP(); }
 
+  /* 9. SMOOTH OPEN. The theme adds `m6pn-open` to <html> when the drawer opens.
+     If the cart's totals pane is not rendered yet at that moment, the drawer is
+     opening onto content that is still assembling, so hold the rows invisible
+     (CSS class pg-settling) and clear it -- fading them in -- once the pane has
+     appeared and held the same position for two ticks. A hard 900ms cap and a
+     close-resets guard mean the rows can never be stuck hidden, and a cart that
+     is already built when it opens skips the hold entirely (instant re-open). */
+  function smoothOpen(){
+    var drawer = document.getElementById('cart');
+    if (!drawer || drawer.classList.contains('pg-settling')) return;
+    if (drawer.querySelector('.sticky-in-panel')) return;   /* already built -- instant */
+    drawer.classList.add('pg-settling');
+    var start = Date.now(), lastTop = null, stable = 0;
+    (function wait(){
+      var d = document.getElementById('cart');
+      if (!d) return;
+      if (!d.classList.contains('toggle')){ d.classList.remove('pg-settling'); return; }
+      var pane = d.querySelector('.sticky-in-panel');
+      var done = Date.now() - start > 900;
+      if (pane){
+        var top = Math.round(pane.getBoundingClientRect().top);
+        if (top === lastTop) stable++; else { stable = 0; lastTop = top; }
+        if (stable >= 2) done = true;
+      }
+      if (done){ d.classList.remove('pg-settling'); return; }
+      setTimeout(wait, 80);
+    })();
+  }
+
   function boot(){
     apply();
     window.addEventListener('resize', apply);
     if (window.visualViewport) window.visualViewport.addEventListener('resize', apply);
+    /* watch the drawer's own class: the theme adds `toggle` to #cart when it
+       opens. Firing off that (rather than the <html> open class) is the reliable
+       hook -- the reveal starts the instant the drawer opens, before the
+       reshuffle can show. */
+    var drawerEl = document.getElementById('cart');
+    if (window.MutationObserver && drawerEl){
+      new MutationObserver(function(){
+        if (drawerEl.classList.contains('toggle')) smoothOpen();
+        else drawerEl.classList.remove('pg-settling');
+      }).observe(drawerEl, {attributes:true, attributeFilter:['class']});
+      if (drawerEl.classList.contains('toggle')) smoothOpen();
+    }
     /* the theme replaces the drawer contents wholesale on every add, remove and
        quantity change, and an add-to-cart round trip outruns fixed timers, so
        watch for the re-render and re-apply. childList only. */
