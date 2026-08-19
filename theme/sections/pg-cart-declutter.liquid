@@ -1,0 +1,41 @@
+{%- comment -%}
+  PG Cart Declutter: drop the "recommended purchase" rows from the cart drawer,
+  and keep the real upsells.
+
+  WHAT IS BEING REMOVED. nc-recs renders TWO blocks of optional add-to-cart
+  products, both built client-side by assets/nc-recs.js:
+
+    #cart .nc-recs        -- "You may also like", sitting under the item list
+    #cart .nc-recs-panel  -- "Add & save more", inside the checkout panel under
+                             the order total
+
+  Each row is a product with a price and its own Add button. They are the last
+  thing above checkout, so a cart with two items reads as a small catalogue and
+  the actual total gets pushed down.
+
+  WHAT IS DELIBERATELY KEPT. The pg-unlock offer rows (#pg-unlock-slot /
+  .pg-unlock -- "Buy 1 more, get 1 FREE", "Add a 2nd PocketBoy R36") are the
+  store's own upsells and are untouched. So is everything else nc-recs does,
+  which is most of what that file actually is: the compact drawer top and logo,
+  the 120px line-item thumbnails, the bundle-savings progress bar (.nc-tiers),
+  the slim free-shipping bar, the duplicate-price fix and the quantity stepper.
+  That is why this hides two blocks instead of removing the nc-recs section --
+  dropping the section would take the whole cart's styling with it.
+
+  WHY CSS RATHER THAN STOPPING THE SCRIPT. nc-recs.js fetches the related
+  products and injects these blocks on its own schedule, re-running as the cart
+  changes. Racing it from another file to delete nodes would mean re-deleting
+  them on every cart mutation -- the same fight that made the upsell rows swap
+  places earlier in this project. display:none settles it once: the blocks never
+  take up space no matter how often the script rebuilds them.
+
+  Registered after nc-recs in overlay-group.json so these rules are emitted
+  last; !important is belt and braces, since nc-recs styles the same selectors.
+{%- endcomment -%}
+<style>
+  #cart .nc-recs,
+  #cart .nc-recs-panel{display:none !important}
+</style>
+{% schema %}
+{"name": "PG Cart Declutter", "settings": [], "presets": [{"name": "PG Cart Declutter"}]}
+{% endschema %}

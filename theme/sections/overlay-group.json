@@ -147,6 +147,14 @@
     "pg-cart-imglink": {
       "type": "pg-cart-imglink",
       "settings": {}
+    },
+    "pg-cart-declutter": {
+      "type": "pg-cart-declutter",
+      "settings": {}
+    },
+    "pg-cart-sticky": {
+      "type": "pg-cart-sticky",
+      "settings": {}
     }
   },
   "order": [
@@ -172,6 +180,8 @@
     "pg-cart-variants",
     "pg-unlock",
     "pg-cart-total",
-    "pg-cart-imglink"
+    "pg-cart-imglink",
+    "pg-cart-declutter",
+    "pg-cart-sticky"
   ]
 }

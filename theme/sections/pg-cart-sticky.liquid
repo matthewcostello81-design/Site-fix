@@ -1,0 +1,189 @@
+{%- comment -%}
+  PG Cart Sticky: keep the cart reachable while the product page is browsed.
+
+  THE PROBLEM, MEASURED. The product page (#pgx) is 7433px tall on a 390px
+  phone -- about nine screens -- and 4029px on desktop. Its header, #pgx
+  .pgx-head, is position:relative, so it and the only cart control on the page
+  (a.pgx-cart, a bare SVG in .pgx-ic) scroll away for good after roughly the
+  first 180px. Measured at scrollY 2200 the cart icon sits at y=-2116 on mobile
+  and y=-2067 on desktop: off screen, unreachable. A shopper who adds an orb and
+  keeps browsing has no way back to the cart short of scrolling to the very top.
+
+  WHAT THIS ADDS. A small round cart button pinned to the top-right corner, which
+  fades in once the real header cart has scrolled out of view and carries a badge
+  with the live item count. Tapping it opens the cart exactly the way the header
+  icon does -- see below.
+
+  WHY TOP-RIGHT, NOT THE USUAL BOTTOM-RIGHT. The bottom of the product page is
+  already taken: #pg-sticky (z-index 55) is a fixed full-width bar 87px tall
+  carrying the price and ADD TO CART, and it is visible for the whole scroll. A
+  bottom-right bubble would land on top of it. Top-right is free, and it is where
+  the cart already lives in the header, so it matches the shopper's muscle memory
+  rather than teaching a second location.
+
+  WHY IT CLICKS THE HEADER ICON INSTEAD OF OPENING THE DRAWER ITSELF. The theme
+  binds cart opening through document-delegated handlers, and pg-no-cart-page
+  intercepts /cart navigation. Rather than duplicate any of that -- and risk
+  drifting from it later -- this button forwards to the real a.pgx-cart element
+  and lets the theme do what it already does. If that element is ever missing,
+  it falls back to a plain /cart navigation, which pg-no-cart-page then handles.
+
+  THE COUNT comes from /cart.js, because a.pgx-cart is only an SVG with no badge
+  to mirror. It is re-read after anything that can change the cart: a click on an
+  add-to-cart control, and any mutation of the drawer's own item list. Counting
+  <li> rows in the drawer was rejected -- that counts LINES, not quantities, so a
+  single line with quantity 3 would read as 1.
+
+  z-index 90: above the page and above #pg-sticky's 55, below the cart drawer's
+  160 so an open drawer covers it, and far below the cookie/consent banners.
+
+  The button is hidden entirely when the cart is empty (nothing to go back to),
+  and while the drawer is open (html.m6pn-open). Gated on #pgx so it appears on
+  product pages only, which is what was asked for.
+{%- endcomment -%}
+<style>
+  #pg-cartfab{
+    position:fixed;
+    top:max(10px, env(safe-area-inset-top));
+    right:12px;
+    z-index:90;
+    width:46px;height:46px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:50%;
+    background:rgba(11,7,16,.92);
+    border:1px solid rgba(168,120,214,.34);
+    box-shadow:0 8px 24px -10px rgba(0,0,0,.75);
+    color:#F1EDF7;
+    -webkit-tap-highlight-color:transparent;
+    cursor:pointer;
+    /* hidden until the header cart scrolls away */
+    opacity:0;
+    transform:translateY(-8px);
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  #pg-cartfab.pg-cs-on{opacity:1;transform:none;pointer-events:auto}
+  #pg-cartfab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;
+    stroke-linecap:round;stroke-linejoin:round}
+  #pg-cartfab .pg-cs-n{
+    position:absolute;top:-4px;right:-4px;
+    min-width:19px;height:19px;padding:0 5px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:10px;
+    background:#8B44BE;color:#fff;
+    font-size:11px;font-weight:800;line-height:1;
+    box-shadow:0 0 0 2px rgba(11,7,16,.92);
+  }
+  #pg-cartfab:active{transform:scale(.94)}
+  /* an open drawer owns the screen */
+  html.m6pn-open #pg-cartfab{opacity:0 !important;pointer-events:none !important}
+</style>
+<script>
+(function(){
+  if (window.pgCartSticky) return; window.pgCartSticky = 1;
+
+  var fab, badge, count = 0;
+
+  function headerCart(){ return document.querySelector('#pgx a.pgx-cart, a.pgx-cart'); }
+
+  function build(){
+    if (fab) return fab;
+    fab = document.createElement('div');
+    fab.id = 'pg-cartfab';
+    fab.setAttribute('role', 'button');
+    fab.setAttribute('tabindex', '0');
+    fab.setAttribute('aria-label', 'Open cart');
+    fab.innerHTML =
+      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+        '<path d="M6 7h12l1 13H5L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path>' +
+      '</svg><span class="pg-cs-n" hidden>0</span>';
+    badge = fab.querySelector('.pg-cs-n');
+
+    function go(){
+      var h = headerCart();
+      if (h) h.click();                 /* reuse the theme's own cart opening */
+      else window.location.href = '/cart';
+    }
+    fab.addEventListener('click', go);
+    fab.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); }
+    });
+    document.body.appendChild(fab);
+    return fab;
+  }
+
+  /* visible once the header's own cart icon has left the screen, and only when
+     there is something in the cart to go back to */
+  function sync(){
+    if (!document.getElementById('pgx')) return;
+    var f = build();
+    var h = headerCart();
+    var gone = true;
+    if (h){
+      var r = h.getBoundingClientRect();
+      /* treat a zero-box icon as gone too -- it is hidden, not merely scrolled */
+      gone = (r.width === 0 && r.height === 0) || r.bottom <= 0;
+    }
+    if (gone && count > 0) f.classList.add('pg-cs-on');
+    else f.classList.remove('pg-cs-on');
+  }
+
+  function paint(){
+    if (!badge) return;
+    if (count > 0){ badge.textContent = count > 99 ? '99+' : String(count); badge.hidden = false; }
+    else badge.hidden = true;
+  }
+
+  var busy = false;
+  function refresh(){
+    if (busy) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (j && typeof j.item_count === 'number') count = j.item_count;
+        busy = false; paint(); sync();
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  function boot(){
+    if (!document.getElementById('pgx')) return;   /* product pages only */
+    build();
+    refresh();
+
+    window.addEventListener('scroll', sync, {passive: true});
+    window.addEventListener('resize', sync);
+
+    /* anything that can change the cart -> re-read the count. The add round trip
+       is not instant, so it is read again shortly after. */
+    document.addEventListener('click', function(e){
+      if (!e.target.closest) return;
+      if (e.target.closest('[name="add"], .pgx-atc, #pg-sticky, .pg-unlock-go, form[action*="/cart/add"] button')){
+        setTimeout(refresh, 500); setTimeout(refresh, 1600);
+      }
+    }, true);
+
+    /* the drawer is rebuilt on every add, remove and quantity change */
+    if (window.MutationObserver){
+      var drawer = document.getElementById('cart');
+      if (drawer){
+        var queued = false;
+        new MutationObserver(function(){
+          if (queued) return;
+          queued = true;
+          setTimeout(function(){ queued = false; refresh(); }, 250);
+        }).observe(drawer, {childList: true, subtree: true});
+      }
+    }
+
+    [800, 2500].forEach(function(t){ setTimeout(refresh, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Sticky", "settings": [], "presets": [{"name": "PG Cart Sticky"}]}
+{% endschema %}
