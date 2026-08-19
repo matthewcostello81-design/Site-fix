@@ -230,6 +230,19 @@
     var drawer = document.getElementById('cart');
     if (!drawer) return;
     drawer.querySelectorAll('.pg-unlock').forEach(function(row){
+      /* 7b. the offer NAME. pg-unlock's LADDERS still calls the free orb
+         "Crystal PokeOrb", so the row reads "Add your FREE 3rd Crystal PokeOrb".
+         The product is the Crystal Legends Orb -- rebrand it here (same reason
+         as the noun fix: pg-unlock is 34KB and impractical to redeploy live).
+         Fixed on the title element and idempotent. When pg-unlock is next
+         redeployed clean (its LADDERS name is already updated in source) this
+         finds nothing to change. */
+      var ttl = row.querySelector('.pg-unlock-t b') || row.querySelector('.pg-unlock-t');
+      if (ttl && /PokeOrb/i.test(ttl.textContent)){
+        ttl.textContent = ttl.textContent
+          .replace(/Crystal\s+PokeOrb/gi, 'Crystal Legends Orb')
+          .replace(/PokeOrb/gi, 'Legends Orb');
+      }
       var go = row.querySelector('.pg-unlock-go');
       if (!go) return;
       var h = row.getAttribute('data-pg-unlock') || '';
