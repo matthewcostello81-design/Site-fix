@@ -60,15 +60,28 @@
   So the moment the panel expands, the whole picker is behind an opaque panel.
   Nothing is broken -- it is covered.
 
-  The fix is to scroll it out from under the pane rather than to paint it over
-  the pane. Raising the row above z-index 5 would have put a dropdown on top of
-  the CHECKOUT button, which trades one broken state for a worse one.
+  THE FIRST FIX FOR THIS DID NOT WORK, and the reason is recorded here because it
+  is the same fact that explains the freeze below. It scrolled the drawer by the
+  overlap -- but this scroller IGNORES scrollTop: assigning it reads back 0
+  (measured, twice). So the scroll was a silent no-op on a real device. The check
+  that passed it only passed because that particular run had already ended up
+  clear for an unrelated reason. A verification that cannot fail is not a
+  verification.
 
-  So on open, the drawer's scroller is advanced by exactly the overlap plus a
-  small margin, and only when there IS an overlap, so a chooser that already
-  had room does not jump. It is done on a short timeout because the panel is
-  built asynchronously (buildChooser resolves after a fetch), and re-checked
-  once more a moment later in case the drawer re-rendered underneath it.
+  So the row is now RAISED instead of scrolled: while it is open it gets
+  position:relative and z-index:6, one above the pane's 5, and paints over it.
+  That depends on nothing but stacking order, which cannot silently do nothing.
+
+  The objection to this the first time round was that it puts the picker over the
+  CHECKOUT button. It does, and that is the right trade: the alternative is a
+  shopper who cannot pick their free orb at all. It is also brief -- only while
+  the row is open -- and the select itself opens as a native OS sheet, not as an
+  in-page dropdown, so the overlap is a closed select box sitting above the
+  button for as long as it takes to choose, and gone afterwards.
+
+  scrollIntoView is still attempted first, on the chance the drawer can scroll:
+  it uses the browser's own scrolling and works on nested scrollers where a
+  scrollTop assignment does not. It is a bonus, not the mechanism.
 
   ================================================================
   3. THE DEAD SCROLL AT THE BOTTOM, AND THE WHITE SPACE UNDER CHECKOUT
@@ -84,19 +97,63 @@
   and won't let you scroll back up for a second or two". `contain` keeps the
   gesture inside the drawer, so the dead end stops rather than bounces.
 
-  THE WHITE SPACE UNDER CHECKOUT IS NOT FIXED, AND bottom:-34px IS NOT THE CAUSE.
-  It looked like the obvious culprit, so it was tried: the pane is pinned with
-  bottom:-34px, which reads like 34px of pane hanging off the bottom. Forcing it
-  to 0 was measurably WORSE -- the pane's bottom edge moved from y=844 (flush
-  with an 844px viewport) to y=810, opening a real 34px gap underneath it. The
-  negative offset is load-bearing: it cancels a 34px offset the drawer applies
-  further up, and with it removed the white space is created rather than closed.
+  THE WHITE SPACE UNDER CHECKOUT. Two wrong guesses came first, and both are
+  worth recording so they are not tried a fourth time:
 
-  So that change is reverted and the pane is left exactly as the theme sets it.
-  The trailing space reported on a phone is still unexplained -- it is not this
-  property -- and rather than guess again at something that is visibly holding
-  the layout together, it is left for a screenshot showing where the space
-  actually appears. The freeze below IS fixed and was a separate fault.
+    - bottom:-34px is NOT the cause. Forcing it to 0 measured WORSE: the pane's
+      bottom edge moved from y=844 (flush) to y=810, opening a real 34px gap.
+      That negative offset cancels the drawer's own 34px bottom padding.
+    - The layout is not broken in Chrome at all. Measured at viewport heights
+      620, 660, 900 and 1000 with one item, the pane's bottom sat exactly on the
+      viewport bottom every time -- gap 0. Chasing it in a desktop browser was
+      never going to find it.
+
+  WHAT IT ACTUALLY IS. The drawer (.m6pn) is position:fixed with height:100%.
+  On iOS Safari that resolves against the LAYOUT viewport -- the full screen,
+  including the strip behind the browser's own toolbar -- while what the shopper
+  sees is the VISUAL viewport, which is shorter whenever the toolbar (and, in a
+  theme preview, the Shopify bar) is showing. So the drawer is taller than the
+  visible area, its bottom edge is off-screen behind those bars, and the last
+  thing actually visible above them is white drawer with nothing in it.
+
+  Two changes close it, and they work together:
+
+    - The drawer's height is set from window.visualViewport.height, and kept in
+      step as that changes (the toolbar collapsing on scroll fires resize). The
+      drawer then ends exactly where the visible area ends. In Chrome
+      visualViewport.height equals innerHeight, so nothing moves there -- which
+      is why this is safe to ship without regressing the desktop that already
+      measured correct.
+    - .sticky-in-panel gets margin-top:auto. .m6pn is already a flex column, so
+      this pins the pane to the BOTTOM of that column whenever the content is
+      shorter than the drawer, instead of leaving it stranded mid-way with white
+      underneath. It is inert when the content overflows, which is the case the
+      sticky positioning already handled.
+
+  The result is CHECKOUT sitting on the bottom edge of what the shopper can see,
+  which is what was asked for.
+
+  ================================================================
+  4. THE FREE-SHIPPING BAR MATCHES THE WORDMARK BOX ABOVE IT
+
+  Measured, the two boxes in .nc-drawer-top disagreed on every dimension:
+
+      .pg-cart-mark   x=32  w=329  radius 12px   padding 11px 10px 9px   #0B0710
+      .nc-dship       x=55  w=284  radius 100px  padding 7px 20px        transparent
+
+  -- a full-width dark rounded-rectangle with a narrower transparent pill
+  floating under it. The shipping bar now takes the same width (a block with the
+  same margins, so it tracks the wordmark box at any drawer width rather than
+  being pinned to 329px), the same 12px corners, the same padding and the same
+  fill, with its text and icon lightened to sit on that fill. Both breakpoints.
+
+  ================================================================
+  5. STARS EITHER SIDE OF THE WORDMARK
+
+  Three small stars each side of POCKETERA, injected rather than written into
+  the markup because .nc-drawer-top is rendered by pg-drawer and rebuilt on every
+  cart change; they are re-applied on each rebuild and are aria-hidden, so the
+  drawer still announces the shop name once.
 {%- endcomment -%}
 <style>
   /* --- 3. see note above --- */
@@ -108,6 +165,46 @@
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
   }
+  /* --- 3. the pane sits at the bottom of the drawer column -- see note above --- */
+  #cart .sticky-in-panel{margin-top:auto}
+
+  /* --- 2. an OPEN chooser paints above the pinned pane -- see note above.
+     Only while .is-open, so nothing overlaps CHECKOUT in the normal state. --- */
+  #cart .pg-unlock.is-open{position:relative;z-index:6}
+  #cart .pg-unlock.is-open .pg-unlock-pick{position:relative;z-index:6}
+
+  /* --- 4. the free-shipping bar wears the wordmark box's shape --- */
+  #cart .nc-dship,
+  .nc-drawer-top .nc-dship{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:auto !important;
+    margin:0 0 8px !important;
+    padding:11px 10px 9px !important;
+    border-radius:12px !important;
+    background:#0B0710 !important;
+    color:#E4D9F0 !important;
+  }
+  #cart .nc-dship svg,
+  .nc-drawer-top .nc-dship svg{stroke:#C79BEA !important}
+
+  /* --- 5. the stars --- */
+  #cart .pg-cart-star,
+  .nc-drawer-top .pg-cart-star{
+    color:#C79BEA;
+    opacity:.75;
+    font-size:10px;
+    letter-spacing:.22em;
+    vertical-align:middle;
+    pointer-events:none;
+  }
+  #cart .pg-cart-star.pg-cs-l,
+  .nc-drawer-top .pg-cart-star.pg-cs-l{margin-right:9px}
+  #cart .pg-cart-star.pg-cs-r,
+  .nc-drawer-top .pg-cart-star.pg-cs-r{margin-left:9px}
+
   @media (max-width:760px){
     /* make the picture read as tappable: a pointer, a suppressed grey iOS tap
        flash (the row supplies its own feedback below), and no long-press image
@@ -192,11 +289,83 @@
       var pn = pane.getBoundingClientRect();
       var over = pk.bottom - pn.top;          /* how far the picker runs under the pane */
       if (over <= 0) return;                  /* already clear: never jump for nothing */
+
+      /* the z-index rule above has already made it visible; this only tries to
+         bring it fully into view as well. scrollIntoView first because it works
+         on nested scrollers that ignore a scrollTop assignment -- which this one
+         does. Both are best-effort: neither is what makes the picker usable. */
+      try { pick.scrollIntoView({block: 'center', behavior: 'smooth'}); } catch(e2){}
       var sc = scroller();
-      if (!sc) return;
-      sc.scrollTop += over + 14;
+      if (sc) sc.scrollTop += over + 14;
     } catch(e){ /* a failed scroll must never break the cart */ }
   }
+
+  /* ---- 3. the drawer ends where the shopper's screen ends ----
+     see the note above: height:100% on a fixed element is the LAYOUT viewport on
+     iOS, which is taller than what is visible whenever the browser toolbar is
+     up. visualViewport reports the visible box, so the drawer is sized from it
+     and kept in step. Guarded on the API existing, and a no-op in browsers where
+     the two are already equal. */
+  function fitDrawer(){
+    try {
+      var vv = window.visualViewport;
+      if (!vv) return;
+      var aside = document.querySelector('.m6pn');
+      if (!aside) return;
+      if (!window.matchMedia('(max-width:760px)').matches){
+        aside.style.removeProperty('height');
+        aside.removeAttribute('data-pg-h');
+        return;
+      }
+      var h = Math.round(vv.height);
+      if (aside.getAttribute('data-pg-h') === String(h)) return;   /* settle */
+      aside.setAttribute('data-pg-h', String(h));
+      aside.style.setProperty('height', h + 'px', 'important');
+    } catch(e){}
+  }
+  fitDrawer();
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', fitDrawer);
+    window.visualViewport.addEventListener('scroll', fitDrawer);
+  }
+  window.addEventListener('resize', fitDrawer);
+  window.addEventListener('orientationchange', function(){ setTimeout(fitDrawer, 250); });
+
+  /* ---- 5. stars either side of the wordmark ---- */
+  function stars(){
+    try {
+      var mark = document.querySelector('.nc-drawer-top .pg-cart-mark');
+      if (!mark) return;
+      if (mark.querySelector('.pg-cart-star')) return;     /* already dressed */
+      var word = mark.querySelector('.pg-wordmark');
+      if (!word) return;
+      var l = document.createElement('span');
+      l.className = 'pg-cart-star pg-cs-l';
+      l.setAttribute('aria-hidden', 'true');
+      l.textContent = '\u2726\u2726\u2726';
+      var r = l.cloneNode(true);
+      r.className = 'pg-cart-star pg-cs-r';
+      mark.insertBefore(l, word);
+      if (word.nextSibling) mark.insertBefore(r, word.nextSibling);
+      else mark.appendChild(r);
+    } catch(e){}
+  }
+  stars();
+
+  /* the drawer is rebuilt wholesale on every cart change, which throws both of
+     the above away -- re-apply on each rebuild */
+  if (window.MutationObserver){
+    var drawerEl = document.getElementById('cart') || document.querySelector('.m6pn');
+    if (drawerEl){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; fitDrawer(); stars(); }, 120);
+      }).observe(drawerEl, {childList: true, subtree: true});
+    }
+  }
+  [400, 1200, 2600].forEach(function(t){ setTimeout(function(){ fitDrawer(); stars(); }, t); });
 
   document.addEventListener('click', function(e){
     if (!e.target.closest) return;
