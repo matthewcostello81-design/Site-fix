@@ -70,6 +70,16 @@
   /* 3. compact the pane */
   #cart .sticky-in-panel{padding-top:3px !important}
 
+  /* 3b. pin the pane -- and the CHECKOUT button with it -- to the bottom of the
+     drawer on a SHORT cart. #cart is a flex column and every child is
+     flex:0 1 auto, so when the contents do not fill the screen the leftover
+     space falls BELOW the last child (the pane), leaving a tall white gap under
+     CHECKOUT. margin-top:auto hands that free space to the top of the pane
+     instead, so the pane sits on the bottom edge and the empty room reads as
+     ordinary drawer space above it. When the cart is tall enough to scroll
+     there is no free space and this is a no-op. */
+  #cart .sticky-in-panel{margin-top:auto !important}
+
   #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
   #cart .sticky-in-panel .pg-sp-ic{width:24px !important;height:24px !important}
   #cart .sticky-in-panel .pg-sp-ic svg{width:14px !important;height:14px !important}
