@@ -1,0 +1,114 @@
+{%- comment -%}
+  PG Pick Size: keep the bundle legend pickers one fixed size on phones.
+
+  The Buy 2 Get 1 Free tile carries three legend pickers (.pg-drop) and the
+  Single Item tile one. pgLadder (in pg-theme-css) lays them out as a NOWRAP
+  flex ROW where each picker is min-width:160px and flex:0 1 auto -- so each box
+  is sized to whatever legend name is showing in it. Three 160px boxes cannot
+  fit the ~293px mobile column, so they fight for the space: they start one
+  size, resize as you pick each legend, and squeeze down together once the row
+  is full. pg-tile-copy also appends the third picker as a SECOND .pgx-lad-row,
+  so the three are split 2 + 1 across two rows and never line up.
+
+  On phones, stack every picker in a single full-width column: identical width
+  (the whole column), identical height, wide enough for any legend name, so a
+  box never changes size as you select -- and the Single Item picker gets the
+  same treatment. Desktop, where the row is wide enough, is untouched.
+
+  This is its own tiny section rather than another rule inside pg-tile-copy
+  (34KB after the ladder logic) so it can be deployed and reasoned about on its
+  own. It only needs to reach the product pages that carry the bundle, so it is
+  placed in those product templates.
+{%- endcomment -%}
+<style>
+  @media (max-width:768px){
+    #pgx .pgx-lad-picks .pgx-lad-row{
+      display:flex !important;
+      flex-direction:column !important;
+      flex-wrap:nowrap !important;
+      gap:8px !important;
+      width:100% !important;
+    }
+    #pgx .pgx-lad-picks .pgx-lad-row + .pgx-lad-row{margin-top:8px !important}
+    #pgx .pgx-lad-picks .pg-drop{
+      width:100% !important;
+      min-width:0 !important;
+      max-width:none !important;
+      flex:0 0 auto !important;
+      box-sizing:border-box !important;
+    }
+    /* keep the header one line so a long name never wraps and grows the box */
+    #pgx .pgx-lad-picks .pg-drop .pg-drop-h span{
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      min-width:0;
+      flex:1 1 auto;
+    }
+
+    /* ...and pin the HEIGHT, which moves for a different reason: the picker's
+       thumbnail is 58px wide in a box that has not been picked yet and 30px
+       once a legend is chosen, so the box was 68px tall and snapped to 40px as
+       you selected it. The thumbnail is sized by an INLINE style carrying
+       !important, which no stylesheet rule can outrank, so the actual sizing is
+       done in the script below -- these two rules only hold the box steady and
+       cover the case where that inline style is ever dropped. */
+    #pgx .pgx-lad-picks .pg-drop .pg-drop-h{min-height:40px !important}
+    #pgx .pgx-lad-picks .pg-drop .pg-drop-h img{
+      width:30px !important;
+      height:30px !important;
+      flex:0 0 30px !important;
+      object-fit:cover !important;
+    }
+  }
+</style>
+<script>
+(function(){
+  if (window.pgPickSize) return; window.pgPickSize = 1;
+
+  /* The unpicked picker's thumbnail carries
+       width:58px !important; height:auto !important; aspect-ratio:1/1 !important
+     as an INLINE style. Inline !important beats every stylesheet rule, so the
+     CSS above cannot shrink it and the box stayed 68px tall until the shopper
+     picked a legend, at which point it became 30px and the box snapped to 40px.
+     That is the "changes size as you select" the pickers were doing vertically.
+
+     The inline value is rewritten here to the picked size, so every box is 40px
+     tall from the start and never moves. Only the two properties that decide
+     the size are touched -- the border radius and object-fit it also sets are
+     left alone -- and it is skipped when already correct, so this settles
+     rather than fights. Mobile only; desktop keeps the larger thumbnail. */
+  var SIZE = '30px';
+
+  function fit(){
+    if (!window.matchMedia('(max-width:768px)').matches) return;
+    document.querySelectorAll('#pgx .pgx-lad-picks .pg-drop .pg-drop-h img').forEach(function(img){
+      if (img.style.width === SIZE && img.style.height === SIZE) return;
+      img.style.setProperty('width', SIZE, 'important');
+      img.style.setProperty('height', SIZE, 'important');
+    });
+  }
+
+  function boot(){
+    fit();
+    window.addEventListener('resize', fit);
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var queued = false;
+      /* pgLadder rebuilds the tiles and the pickers re-render on every pick, so
+         re-apply on the re-render rather than only once */
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; fit(); }, 60);
+      }).observe(root, {childList:true, subtree:true, attributes:true, attributeFilter:['style']});
+    }
+    [300, 900, 2000, 4000].forEach(function(t){ setTimeout(fit, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Pick Size", "settings": [], "presets": [{"name": "PG Pick Size"}]}
+{% endschema %}

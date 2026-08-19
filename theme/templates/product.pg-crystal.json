@@ -37,7 +37,8 @@
         "features_text": "<p>3D laser-engraved character inside a 50mm glass crystal ball<br>LED lamp base included, with a multi-color automatic gradient glow<br>36 characters to collect, all options include the base<br>Button battery included, simple switch operation<br>Ships protected in a foam box so ball and base arrive intact</p>",
         "shipping_text": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
       }
-    }
+    },
+    "pg_picksize": {"type": "pg-pick-size", "settings": {}}
   },
-  "order": ["pg_landing"]
+  "order": ["pg_landing", "pg_picksize"]
 }
