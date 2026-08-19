@@ -156,6 +156,24 @@
     margin:26px auto 4px !important;
     min-width:210px !important;
   }
+  /* ---------------- in-page header block (marquee + logo + nav) ----------------
+     The Contact and Track pages render their own header section (id ...__pg_header)
+     as the FIRST child of #content. The rules above -- #content's 52px top pad and
+     the 1000px centred column -- are meant for the form card, but they also pushed
+     that header down from the top edge and inset its announcement marquee, leaving
+     a dark gap above the bar and margins at its ends. Break the header block out to
+     full viewport width and pull it flush to the very top. calc(50% - 50vw) side
+     margins span the full width regardless of the wrappers' padding; the -52px top
+     margin cancels #content's top pad. Inner logo/nav keep their own centring, and
+     the marquee (overflow hidden) clips cleanly at the edges. Form card untouched. */
+  html body #content > [id$='__pg_header']{
+    max-width:none !important;
+    width:auto !important;
+    margin:-52px calc(50% - 50vw) 0 !important;
+  }
+  @media(max-width:600px){
+    html body #content > [id$='__pg_header']{margin:-34px calc(50% - 50vw) 0 !important}
+  }
 </style>
 <script>
 (function(){
