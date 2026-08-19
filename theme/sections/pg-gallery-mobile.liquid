@@ -1,5 +1,6 @@
 {%- comment -%}
-  PG Gallery Mobile: give the phone the same thumbnail carousel as desktop.
+  PG Gallery Mobile: give the phone the same thumbnail carousel as desktop, and
+  stop the hero and video being cropped square.
 
   pg-landing builds the carousel only above 900px:
 
@@ -54,10 +55,24 @@
     width:100% !important
   }
 
+  /* ---------------- let the column shrink below the filmstrip ----------------
+     The strip below is a nowrap flex row, so its min-content width is the whole
+     un-wrapped filmstrip. .pgx-main's `1fr` column is really minmax(auto,1fr),
+     and that `auto` floor is the item's min-content -- so the column stretched
+     to fit the filmstrip (~970px on a 390px phone) and carried the hero, the
+     video, the buy column and the accordions out past the screen with it.
+     #root and body both clip overflow-x, so the page could not be scrolled
+     across: it was simply cut off. A zero floor lets the column take the
+     viewport width and the strip scrolls inside its own box, which is the point
+     of making it a carousel in the first place. */
+  #pgx .pgx-main{grid-template-columns:minmax(0,1fr) !important}
+  #pgx .pgx-gallery,
+  #pgx .pgx-buy{min-width:0 !important}
+
   /* Bring the wrapper back so the arrows have something to anchor to. */
   #pgx .pgx-thumbwrap{display:block !important;position:relative !important;margin-top:14px !important}
 
-  /* Same horizontal, snapping, two-up strip as desktop. */
+  /* Horizontal, snapping strip. */
   #pgx .pgx-thumbwrap .pgx-thumbs{
     display:flex !important;flex-wrap:nowrap !important;
     overflow-x:auto !important;scroll-behavior:smooth;
@@ -67,20 +82,17 @@
     -webkit-overflow-scrolling:touch
   }
   #pgx .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
-  #pgx .pgx-thumbwrap .pgx-thumbs button{
-    flex:0 0 calc(50% - 5px) !important;scroll-snap-align:start
-  }
 
-  /* Arrows: visible again, and a touch smaller than the 48px desktop pair so
-     they sit inside a phone-width thumb without covering it. */
-  #pgx .pgx-thumbwrap .pgx-tharrow{
-    display:flex !important;width:40px !important;height:40px !important;
-    font-size:24px !important
+  /* ONE ORB AT A TIME. The strip used to show two thumbs per view
+     (flex:0 0 calc(50% - 5px)) and snapped two at a time, which read as a jumpy
+     carousel, and the overlaid arrows sat on top of the orbs. Make each thumb
+     take the full width so exactly one orb is in view and every swipe advances
+     by one, and drop the arrows on mobile -- the strip is swiped, and nothing
+     should cover the orb. */
+  #pgx .pgx-thumbwrap .pgx-thumbs button{
+    flex:0 0 100% !important;scroll-snap-align:center
   }
-  #pgx .pgx-thumbwrap .pgx-tharrow.prev{left:8px !important}
-  #pgx .pgx-thumbwrap .pgx-tharrow.next{right:8px !important}
-  /* ...but a strip that does not overflow still shows none. */
-  #pgx .pgx-thumbwrap .pgx-tharrow[hidden]{display:none !important}
+  #pgx .pgx-thumbwrap .pgx-tharrow{display:none !important}
 }
 </style>
 <script>
