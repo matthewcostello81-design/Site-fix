@@ -49,7 +49,7 @@
   skipped entirely unless the window is open: if anything at all goes wrong here,
   the click falls through to the theme's normal checkout.
 
-  THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED IN CART --
+  THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED --
   the shopper does not have to type a code or hunt for a field, the 10% is on
   their order automatically -- but no line, total or saving figure in the drawer
   is rewritten by this section. The only number that moves is the one Shopify
@@ -86,7 +86,8 @@
     border-radius:10px;
     background:linear-gradient(120deg,rgba(139,68,190,.16),rgba(199,155,234,.12));
     border:1px solid rgba(168,120,214,.42);
-    font-size:12.5px;line-height:1.2;font-weight:800;
+    flex-wrap:wrap;
+    font-size:14px;line-height:1.25;font-weight:800;
     text-transform:uppercase;letter-spacing:.03em;
     color:#3B2352;
     text-align:center;
@@ -98,9 +99,23 @@
     padding:3px 7px;border-radius:6px;
     letter-spacing:.02em;
   }
-  #pg-rush .pg-rush-x{color:#6B3E93}
+  /* the line was being truncated to "EXTRA 10% ..." on a phone. Nothing here
+     asked for an ellipsis, so it comes from the drawer's own styling; these
+     three declarations take it back and let the line WRAP instead, which is
+     what a two-line offer should do in a 366px pane. */
+  #pg-rush .pg-rush-x{
+    color:#6B3E93;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    min-width:0;
+  }
   @media (max-width:760px){
-    #pg-rush{font-size:10px;padding:6px 7px;margin-bottom:5px;letter-spacing:.02em}
+    /* bigger, by request -- it had been shrunk to 10px to dodge the truncation,
+       which was treating the symptom. With the line free to wrap it can be read
+       at a normal size again. */
+    #pg-rush{font-size:13px;padding:8px 10px;margin-bottom:6px;letter-spacing:.02em}
+    #pg-rush .pg-rush-c{font-size:13.5px}
   }
 </style>
 <script>
@@ -173,7 +188,7 @@
       el = document.createElement('div');
       el.id = 'pg-rush';
       el.innerHTML = '<span class="pg-rush-c">0:00</span>' +
-                     '<span class="pg-rush-x">EXTRA <b>10% OFF</b> ENTIRE ORDER &mdash; APPLIED IN CART</span>';
+                     '<span class="pg-rush-x">EXTRA <b>10% OFF</b> ENTIRE ORDER &mdash; APPLIED</span>';
     }
     if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
     var c = el.querySelector('.pg-rush-c');

@@ -64,6 +64,28 @@
 
   Mobile only; desktop keeps its arrows.
 
+  ================================================================
+  THE CHARACTER NAME, ON THE PHOTO AND PERMANENT.
+
+  The strip is 35 photos of 35 different characters and nothing on screen said
+  which one you were looking at -- the name only appeared once you opened the
+  size picker. The name now sits on the photo itself, in the same pill style as
+  the swipe hint but anchored to the BOTTOM so the two never collide, and unlike
+  the hint it never goes away: it is not a tip to be learned, it is a label.
+
+  WHERE THE NAMES COME FROM. Not from the strip markup -- pg-landing renders
+  every thumbnail with alt "Crystal Legends Orb view N", which carries no name.
+  The product's MEDIA does carry them, as "Crystal PokeOrb - 13 Arceus", so the
+  names are read once from /products/{handle}.js and the prefix trimmed off.
+
+  MATCHED ON FILENAME, NOT ON INDEX. The obvious mapping -- strip button i to
+  media[i+1] -- happens to work today but is one media upload away from labelling
+  every orb with its neighbour's name. The counts already disagree (37 media, 36
+  images, 35 buttons: media[0] is the group shot, and one media entry is the
+  video, which is not an image). So each button's own <img> src filename is
+  matched against the media list instead, which cannot drift: an unmatched photo
+  simply gets no label rather than a wrong one.
+
   Registered in templates/product.pg-crystal.json rather than a section group:
   the overlay group is at Shopify's hard limit of 25 sections, and this belongs
   to one product page anyway.
@@ -92,6 +114,30 @@
     border-color:rgba(190,140,235,.55);
     box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
   }
+  /* the character name -- see the note above. Bottom-anchored so it can never
+     collide with the swipe hint at the top, and pointer-events:none so it is a
+     label rather than a control. */
+  #pgx .pgx-thumbwrap .pg-gt-name{
+    position:absolute;
+    bottom:10px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    max-width:calc(100% - 24px);
+    padding:6px 14px;
+    border-radius:999px;
+    background:rgba(11,7,16,.82);
+    border:1px solid rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+    color:#F1EDF7;
+    font-size:12.5px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;
+    pointer-events:none;
+  }
+  @media (max-width:430px){
+    #pgx .pgx-thumbwrap .pg-gt-name{font-size:11.5px;padding:5px 12px}
+  }
+
   #pgx .pg-gt-swipe{
     display:none;
     align-items:center;justify-content:center;gap:8px;
@@ -126,6 +172,73 @@
 
   var hinted = false, el = null;
 
+  /* ---- the character name on the photo ---- */
+  var NAMES = null;                       /* filename fragment -> character name */
+
+  function loadNames(){
+    if (NAMES) return Promise.resolve(NAMES);
+    var h = (location.pathname.match(/\/products\/([^\/?#]+)/) || [])[1];
+    if (!h) { NAMES = {}; return Promise.resolve(NAMES); }
+    return fetch('/products/' + h + '.js', {headers: {'Accept': 'application/json'}})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        NAMES = {};
+        (j && j.media || []).forEach(function(m){
+          var alt = m.alt || '';
+          var src = m.src || '';
+          /* "Crystal PokeOrb - 13 Arceus" -> "13 Arceus"; anything without a
+             separator is left whole rather than guessed at */
+          var name = alt.split(/\s[-\u2013\u2014]\s/).pop().trim();
+          if (!name || /hero/i.test(alt)) return;
+          var file = (src.split('/').pop() || '').split('?')[0];
+          if (file) NAMES[file] = name;
+        });
+        return NAMES;
+      })
+      .catch(function(){ NAMES = {}; return NAMES; });
+  }
+
+  function nameFor(img){
+    if (!NAMES || !img) return '';
+    var file = ((img.getAttribute('src') || '').split('/').pop() || '').split('?')[0];
+    if (NAMES[file]) return NAMES[file];
+    /* the strip requests a resized copy, so the stored name is looked up by the
+       filename STEM as well -- still a filename match, never an index guess */
+    var stem = file.replace(/\.(png|jpg|jpeg|webp|gif)$/i, '');
+    for (var k in NAMES){ if (k.indexOf(stem) === 0 || stem.indexOf(k.replace(/\.[^.]+$/, '')) === 0) return NAMES[k]; }
+    return '';
+  }
+
+  function label(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+    loadNames().then(function(){
+      var btns = strip.querySelectorAll('button');
+      if (!btns.length) return;
+      /* which photo is in view: the one whose centre is nearest the strip's */
+      var mid = strip.scrollLeft + strip.clientWidth / 2;
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < btns.length; i++){
+        var c = btns[i].offsetLeft + btns[i].offsetWidth / 2;
+        var d = Math.abs(c - mid);
+        if (d < bestD){ bestD = d; best = btns[i]; }
+      }
+      if (!best) return;
+      var text = nameFor(best.querySelector('img'));
+      var tag = wrap.querySelector('.pg-gt-name');
+      if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
+      if (!tag){
+        tag = document.createElement('div');
+        tag.className = 'pg-gt-name';
+        tag.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(tag);
+      }
+      if (tag.textContent !== text) tag.textContent = text;
+    });
+  }
+
   function hint(){
     if (hinted) return;                        /* the shopper has swiped */
     if (el && el.isConnected) return;          /* still on screen, nothing to do */
@@ -157,6 +270,12 @@
   function boot(){
     if (!document.getElementById('pgx')) return;
     hint();
+    label();
+    var strip0 = document.querySelector('#pgx .pgx-thumbs');
+    if (strip0) strip0.addEventListener('scroll', function(){
+      clearTimeout(label._t);
+      label._t = setTimeout(label, 90);      /* settle after the snap */
+    }, {passive: true});
     var root = document.getElementById('pgx');
     if (root && window.MutationObserver){
       var queued = false;
@@ -164,10 +283,10 @@
       new MutationObserver(function(){
         if (queued) return;
         queued = true;
-        setTimeout(function(){ queued = false; hint(); }, 80);
+        setTimeout(function(){ queued = false; hint(); label(); }, 80);
       }).observe(root, {childList: true, subtree: true});
     }
-    [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(hint, t); });
+    [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(hint, t); setTimeout(label, t); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

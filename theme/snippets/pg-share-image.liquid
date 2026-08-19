@@ -229,3 +229,60 @@
   }
   html.pg-ready::before{opacity:0}
 </style>
+{%- comment -%}
+  ================================================================
+  6. THE FAVICON (the last piece of North Cove branding on screen)
+
+  The browser tab still showed North Cove's icon. It is not in any template --
+  it is a THEME SETTING, config/settings_data.json:
+
+      "favicon": "shopify://shop_images/Gemini_Generated_Image_m5rlmgm5rlmgm5rl.png"
+
+  left behind when this theme was duplicated from the North Cove build, exactly
+  like the logo in note 2 and the cookie skin in note 4. layout/theme.liquid
+  renders it into a <link rel="icon"> and nothing downstream can change what
+  that setting points at.
+
+  So the icon is re-declared here, from assets/pe-badge.svg -- the same Pocket
+  Era mark note 2 already swaps the logos to, so the tab and the header cannot
+  drift apart. SVG is used deliberately: it is the one favicon format that stays
+  sharp at every size a browser asks for, from a 16px tab to a 128px bookmark
+  tile, and the badge is vector artwork already.
+
+  WHY THE SCRIPT. Two <link rel="icon"> tags leave the choice to the browser --
+  most take the last in document order, but that is convention rather than
+  guarantee, and Safari has gone the other way. Rather than rely on it, the
+  script deletes every icon link that is not the badge. It runs twice: once
+  inline (catching the theme's link when it is emitted ABOVE this snippet) and
+  once on DOMContentLoaded (catching it when it is emitted below). Matching is
+  on the pe-badge filename, so a future icon of ours survives and only foreign
+  ones are removed, and the whole thing is wrapped in try/catch -- a failure
+  here leaves the old icon, never a broken head.
+
+  A NOTE ON THE PROPER FIX. The setting itself is still wrong, and this override
+  hides that rather than correcting it. Changing it means rewriting the 54KB
+  admin-generated settings_data.json wholesale, which the API only accepts as a
+  full-file write. The one-click path is Customize -> Theme settings -> Favicon.
+  If that is ever done, this block becomes redundant but stays harmless: it
+  would simply re-declare the icon the setting already points at.
+{%- endcomment -%}
+{%- assign pg_icon = 'pe-badge.svg' | asset_url -%}
+<link rel="icon" type="image/svg+xml" href="{{ pg_icon }}">
+<link rel="shortcut icon" type="image/svg+xml" href="{{ pg_icon }}">
+<script>
+  (function(){
+    function only(){
+      try {
+        var links = document.querySelectorAll('link[rel~="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"], link[rel="mask-icon"]');
+        for (var i = 0; i < links.length; i++){
+          var l = links[i];
+          if ((l.getAttribute('href') || '').indexOf('pe-badge') > -1) continue;
+          if (l.parentNode) l.parentNode.removeChild(l);
+        }
+      } catch(e){ /* never break the head */ }
+    }
+    only();
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', only);
+    else only();
+  })();
+</script>

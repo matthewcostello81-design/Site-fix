@@ -1,5 +1,11 @@
 {%- comment -%}
-  PG Cart Imglink: tapping a cart item's picture opens that product's page.
+  PG Cart Imglink: three mobile cart-drawer fixes that are all about TAP and
+  SCROLL behaviour in #cart. Named for the first; the other two live here
+  because overlay-group is at Shopify's hard limit of 25 sections and this is
+  the drawer's interaction file.
+
+  ================================================================
+  1. TAPPING A CART ITEM'S PICTURE OPENS THAT PRODUCT'S PAGE.
 
   In the cart drawer each line item draws its thumbnail as
 
@@ -38,8 +44,70 @@
   Mobile only (760px, the same breakpoint the rest of the cart work uses), which
   is where the request came from; desktop rows are wider and the title link is
   an easy target there.
+  ================================================================
+  2. THE FREE-3rd-ORB CHOOSER OPENED WHERE NOBODY COULD SEE IT
+
+  Reported as "it shows the option to add a 3rd free but when you do it doesn't
+  let you select -- the selection drawer doesn't open". The drawer DOES open.
+  Measured on a 390x844 phone with two orbs in the cart: tapping Add sets
+  is-open on the row and .pg-unlock-pick becomes display:block, 137px tall, with
+  its select inside. It is simply invisible.
+
+  The reason is the pinned checkout pane. .sticky-in-panel is
+  position:sticky, bottom:-34px, z-index:5 and painted solid white, 291px tall,
+  and it sits across the bottom of the drawer. The offer row is in normal flow
+  BEHIND it: measured, the row spans y=535..799 while the pane starts at y=553.
+  So the moment the panel expands, the whole picker is behind an opaque panel.
+  Nothing is broken -- it is covered.
+
+  The fix is to scroll it out from under the pane rather than to paint it over
+  the pane. Raising the row above z-index 5 would have put a dropdown on top of
+  the CHECKOUT button, which trades one broken state for a worse one.
+
+  So on open, the drawer's scroller is advanced by exactly the overlap plus a
+  small margin, and only when there IS an overlap, so a chooser that already
+  had room does not jump. It is done on a short timeout because the panel is
+  built asynchronously (buildChooser resolves after a fetch), and re-checked
+  once more a moment later in case the drawer re-rendered underneath it.
+
+  ================================================================
+  3. THE DEAD SCROLL AT THE BOTTOM, AND THE WHITE SPACE UNDER CHECKOUT
+
+  Two measured faults, one cause each.
+
+  THE FREEZE: the drawer's scrolling element reports scrollHeight 1392 against
+  clientHeight 844 -- 548px of content it cannot reach, because assigning
+  scrollTop to it does nothing (it reads back 0). With overscroll-behavior at
+  its default of `auto`, dragging past that dead end CHAINS the gesture to the
+  page behind the drawer, and iOS spends a beat rubber-banding the wrong
+  element before it will accept an upward drag again. That is the "pane freezes
+  and won't let you scroll back up for a second or two". `contain` keeps the
+  gesture inside the drawer, so the dead end stops rather than bounces.
+
+  THE WHITE SPACE UNDER CHECKOUT IS NOT FIXED, AND bottom:-34px IS NOT THE CAUSE.
+  It looked like the obvious culprit, so it was tried: the pane is pinned with
+  bottom:-34px, which reads like 34px of pane hanging off the bottom. Forcing it
+  to 0 was measurably WORSE -- the pane's bottom edge moved from y=844 (flush
+  with an 844px viewport) to y=810, opening a real 34px gap underneath it. The
+  negative offset is load-bearing: it cancels a 34px offset the drawer applies
+  further up, and with it removed the white space is created rather than closed.
+
+  So that change is reverted and the pane is left exactly as the theme sets it.
+  The trailing space reported on a phone is still unexplained -- it is not this
+  property -- and rather than guess again at something that is visibly holding
+  the layout together, it is left for a screenshot showing where the space
+  actually appears. The freeze below IS fixed and was a separate fault.
 {%- endcomment -%}
 <style>
+  /* --- 3. see note above --- */
+  /* .m6pn is a SIBLING of #cart, not a descendant -- measured: a `#cart .m6pn`
+     rule matched nothing. Listed bare, and #cart kept for the drawer itself. */
+  #cart,
+  .m6pn,
+  #cart .l4ca{
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
   @media (max-width:760px){
     /* make the picture read as tappable: a pointer, a suppressed grey iOS tap
        flash (the row supplies its own feedback below), and no long-press image
@@ -101,6 +169,42 @@
 
     e.preventDefault();
     window.location.href = href;
+  }, true);
+
+  /* ---- 2. bring the free-orb chooser out from behind the pinned pane ---- */
+  function scroller(){
+    var el = document.querySelector('#cart .l4ca');
+    while (el && el !== document.body){
+      var s = getComputedStyle(el);
+      if (/auto|scroll/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 4) return el;
+      el = el.parentElement;
+    }
+    return document.querySelector('#cart .m6pn') || document.querySelector('.m6pn');
+  }
+
+  function reveal(){
+    try {
+      var pick = document.querySelector('#cart .pg-unlock.is-open .pg-unlock-pick');
+      if (!pick) return;
+      var pane = document.querySelector('#cart .sticky-in-panel');
+      if (!pane) return;
+      var pk = pick.getBoundingClientRect();
+      var pn = pane.getBoundingClientRect();
+      var over = pk.bottom - pn.top;          /* how far the picker runs under the pane */
+      if (over <= 0) return;                  /* already clear: never jump for nothing */
+      var sc = scroller();
+      if (!sc) return;
+      sc.scrollTop += over + 14;
+    } catch(e){ /* a failed scroll must never break the cart */ }
+  }
+
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    if (!e.target.closest('.pg-unlock-add')) return;
+    /* the panel is built after a fetch, so look once it can exist, then again
+       in case the drawer re-rendered under it */
+    setTimeout(reveal, 260);
+    setTimeout(reveal, 900);
   }, true);
 })();
 </script>
