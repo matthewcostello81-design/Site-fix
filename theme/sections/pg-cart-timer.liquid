@@ -1,10 +1,10 @@
 {%- comment -%}
-  PG Cart Timer: a 10-minute "extra 5% off" window that starts when the shopper
+  PG Cart Timer: a 10-minute "extra 10% off" window that starts when the shopper
   first has something in the cart, shown at the bottom of the cart drawer and
   applied to their order automatically.
 
   THE OFFER IS REAL, AND SO IS THE CLOCK. The discount is a genuine Shopify code
-  (RUSH5, 5% off all items, combines with product discounts so it stacks on top
+  (RUSH10, 10% off all items, combines with product discounts so it stacks on top
   of the Buy 2 Get 1 bundle rather than replacing it). Two deliberate choices
   keep the countdown honest rather than theatrical:
 
@@ -41,7 +41,7 @@
   contention at all.
 
   HOW THE DISCOUNT IS APPLIED. Clicking CHECKOUT while the window is open goes
-  to /discount/RUSH5?redirect=/checkout -- Shopify's own endpoint, which records
+  to /discount/RUSH10?redirect=/checkout -- Shopify's own endpoint, which records
   the code against the session and forwards to checkout, so the saving is already
   on the order summary when the page opens. Nothing is typed and nothing is
   stored in the cart, so an expired window simply stops redirecting and the next
@@ -50,7 +50,7 @@
   the click falls through to the theme's normal checkout.
 
   THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED IN CART --
-  the shopper does not have to type a code or hunt for a field, the 5% is on
+  the shopper does not have to type a code or hunt for a field, the 10% is on
   their order automatically -- but no line, total or saving figure in the drawer
   is rewritten by this section. The only number that moves is the one Shopify
   itself computes once the code is recorded.
@@ -100,14 +100,14 @@
   }
   #pg-rush .pg-rush-x{color:#6B3E93}
   @media (max-width:760px){
-    #pg-rush{font-size:10.5px;padding:6px 8px;margin-bottom:5px;letter-spacing:.02em}
+    #pg-rush{font-size:10px;padding:6px 7px;margin-bottom:5px;letter-spacing:.02em}
   }
 </style>
 <script>
 (function(){
   if (window.pgRush) return;
 
-  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000, CODE = 'RUSH5';
+  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000, CODE = 'RUSH10';
 
   function read(){
     try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch(e){ return 0; }
@@ -173,7 +173,7 @@
       el = document.createElement('div');
       el.id = 'pg-rush';
       el.innerHTML = '<span class="pg-rush-c">0:00</span>' +
-                     '<span class="pg-rush-x">EXTRA <b>5% OFF</b> ENTIRE ORDER &mdash; APPLIED IN CART</span>';
+                     '<span class="pg-rush-x">EXTRA <b>10% OFF</b> ENTIRE ORDER &mdash; APPLIED IN CART</span>';
     }
     if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
     var c = el.querySelector('.pg-rush-c');

@@ -12,7 +12,7 @@
   WHAT THIS ADDS. A full-width bar pinned across the top, on screen from the
   moment the page opens rather than fading in after a scroll. It carries the
   live item count
-  and, while the 10-minute offer window is open, the countdown and the 5% OFF
+  and, while the 10-minute offer window is open, the countdown and the 10% OFF
   label -- so the reason to check out travels with the shopper down a nine-screen
   page instead of living only inside the cart. Tapping anywhere on it opens the
   cart the same way the header icon does.
@@ -52,7 +52,7 @@
   AND IT NO LONGER HIDES ON AN EMPTY CART. Hiding it there was the same mistake
   one step earlier: the shopper with nothing in the cart is exactly the one the
   offer is aimed at, and they were the only one who never saw it. With an empty
-  cart the bar reads ADD TO CART FOR EXTRA 5% OFF and runs its own ten-minute
+  cart the bar reads ADD TO CART FOR EXTRA 10% OFF and runs its own ten-minute
   clock so the offer is visible before there is anything to discount.
 
   THAT CLOCK IS A SEPARATE, HONEST ONE. pg-cart-timer's window only exists once
@@ -66,7 +66,7 @@
 
   The one place the wording is shortened is here: ENTIRE ORDER does not fit
   beside a clock and a 40px bag on a 390px phone, so the empty-cart line reads
-  ADD TO CART FOR EXTRA 5% OFF. The full ENTIRE ORDER wording appears the moment
+  ADD TO CART FOR EXTRA 10% OFF. The full ENTIRE ORDER wording appears the moment
   there is a cart, in this bar and in the drawer.
 
   Hidden while the drawer is open. Gated on #pgx so it appears on product pages
@@ -231,14 +231,14 @@
     var html;
     if (r){
       html = '<span class="pg-cs-clock">' + r.fmt() + '</span>' +
-             '<span class="pg-cs-sub">EXTRA <b>5% OFF</b> ENTIRE ORDER</span>';
+             '<span class="pg-cs-sub">EXTRA <b>10% OFF</b> ENTIRE ORDER</span>';
     } else if (count > 0){
       html = '<span class="pg-cs-sub">' + (count === 1 ? '1 ITEM IN YOUR CART' : count + ' ITEMS IN YOUR CART') + '</span>';
     } else {
       /* nothing in the cart yet: show the offer anyway, with its own clock */
       var p = peekLeft();
       html = (p > 0 ? '<span class="pg-cs-clock">' + clockMs(p) + '</span>' : '') +
-             '<span class="pg-cs-sub">ADD TO CART FOR EXTRA <b>5% OFF</b></span>';
+             '<span class="pg-cs-sub">ADD TO CART FOR EXTRA <b>10% OFF</b></span>';
     }
     if (msg.innerHTML !== html) msg.innerHTML = html;
     if (badge){

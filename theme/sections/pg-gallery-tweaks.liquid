@@ -33,21 +33,36 @@
   phones, because they sat on top of the orbs. That fixed the covering but left
   no sign the strip scrolls, so the photos read as a dead row.
 
-  IT SITS ABOVE THE STRIP, and that placement is the whole point of this pass.
-  It used to sit under it, which measured at y=925 on a 390x844 phone: the strip
-  is ~358px tall, so the note telling you to swipe was itself below the fold,
-  under the very photos it was describing. Nobody scrolls past a row to be told
-  the row scrolls. Above the strip it lands around y=550 -- on screen at the
-  same moment the first orb is -- and it still covers nothing, because it is a
-  sibling in the column rather than an overlay.
+  IT SITS ON THE PHOTO, pinned to the top edge of the orb the strip is showing.
+  Placement has been the whole problem with this hint and it took two passes:
 
-  IT COMES BACK ON A NEW VISIT. It used to be suppressed for good, in
-  localStorage, the first time the strip was scrolled -- so one stray swipe,
-  ever, and the hint was gone from that browser permanently, including for a
-  shopper who came back a week later and had forgotten. It now clears on the
-  first swipe of THIS page view and returns on the next one: still silent the
-  instant the shopper shows they know, never permanently spent. Mobile only;
-  desktop keeps its arrows.
+    - UNDER the strip it measured y=925 on a 390x844 phone. The strip is ~358px
+      tall, so the note telling you to swipe was itself below the fold, beneath
+      the very photos it described. Nobody scrolls past a row to be told the row
+      scrolls.
+    - BETWEEN the video and the strip it was on screen, but it read as a caption
+      for the VIDEO -- it was a sibling sitting directly under the clip, and
+      nothing tied it to the photos below it.
+
+  So it is now absolutely positioned inside .pgx-thumbwrap, centred at the top of
+  the first photo. It is unambiguously about the strip, because it is ON the
+  strip. It stays pointer-events:none and only overlaps the top ~32px of the
+  orb, so nothing is blocked and the subject is not covered.
+
+  IT COMES BACK. Two separate ways it used to stay gone:
+
+    - It was suppressed for good in localStorage the first time the strip was
+      scrolled, so one stray swipe ever and the hint was dead in that browser --
+      including for a shopper returning a week later who had forgotten. It now
+      clears on the first swipe of THIS page view and returns on the next.
+    - pg-landing rebuilds the gallery after its fetch, which throws away the
+      injected node. The old code latched a `hinted` flag on insert and never
+      looked again, so a rebuild deleted the hint permanently -- it appeared and
+      then simply vanished. The flag now means "the shopper has swiped", not
+      "drawn once": every pass re-checks that the element is still in the
+      document and re-inserts it if it is not.
+
+  Mobile only; desktop keeps its arrows.
 
   Registered in templates/product.pg-crystal.json rather than a section group:
   the overlay group is at Shopify's hard limit of 25 sections, and this belongs
@@ -65,10 +80,22 @@
     #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
   }
 
+  /* pinned to the top of the photo the strip is showing -- see the note above.
+     .pgx-thumbwrap is position:relative on both breakpoints (pg-landing sets it,
+     pg-gallery-mobile re-asserts it under 900px), so this anchors to the strip. */
+  #pgx .pgx-thumbwrap .pg-gt-swipe{
+    position:absolute;
+    top:8px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    margin:0;
+    background:rgba(11,7,16,.82);
+    border-color:rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+  }
   #pgx .pg-gt-swipe{
     display:none;
     align-items:center;justify-content:center;gap:8px;
-    margin:0 auto 9px;
+    margin:0 auto;
     padding:6px 14px;
     width:max-content;max-width:100%;
     border-radius:999px;
@@ -97,10 +124,11 @@
 (function(){
   if (window.pgGalTweaks) return; window.pgGalTweaks = 1;
 
-  var hinted = false;
+  var hinted = false, el = null;
 
   function hint(){
-    if (hinted) return;
+    if (hinted) return;                        /* the shopper has swiped */
+    if (el && el.isConnected) return;          /* still on screen, nothing to do */
     var wrap = document.querySelector('#pgx .pgx-thumbwrap');
     if (!wrap) return;
     var strip = wrap.querySelector('.pgx-thumbs');
@@ -109,16 +137,16 @@
     if (strip.scrollWidth <= strip.clientWidth + 4) return;   /* nothing to swipe to */
     if (strip.scrollLeft > 4) { hinted = true; return; }      /* already swiped */
 
-    var el = document.createElement('div');
+    el = document.createElement('div');
     el.className = 'pg-gt-swipe pg-gt-on';
     el.setAttribute('aria-hidden', 'true');
     el.innerHTML = '<span class="pg-gt-l">&lsaquo;</span> Swipe for more <span>&rsaquo;</span>';
-    /* ABOVE the strip -- see the note above */
-    wrap.parentNode.insertBefore(el, wrap);
-    hinted = true;
+    /* ON the strip, not above it -- see the note above */
+    wrap.appendChild(el);
 
     function done(){
-      if (el.parentNode) el.parentNode.removeChild(el);
+      hinted = true;                           /* they have swiped: stop offering */
+      if (el && el.parentNode) el.parentNode.removeChild(el);
       strip.removeEventListener('scroll', done);
       strip.removeEventListener('touchmove', done);
     }
