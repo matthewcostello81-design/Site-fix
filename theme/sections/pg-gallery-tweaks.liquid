@@ -1,47 +1,56 @@
 {%- comment -%}
-  PG Gallery Tweaks (orbs product page): open on a real orb, not the group shot,
-  and show that the filmstrip can be swiped.
+  PG Gallery Tweaks (orbs product page): the video first, then the swipeable
+  strip of orb photos. Nothing else.
 
-  1. THE GROUP SHOT. The product's media[0] is the five-orbs-together photo
-     (alt "Crystal PokeOrb - HERO"). It is also the product's featuredMedia, so
-     it is what the collection card shows -- and that is the right picture there,
-     because the card is selling the range.
+  WHAT PG-LANDING BUILDS. The gallery column renders three things in this order:
 
-     It is the wrong picture to OPEN the product page on: that page is selling
-     one orb, and the hero should be an orb. So the hero is advanced off it to
-     the first real character image.
+      .pgx-hero        one big still, driven by the strip below it
+      .pgx-vid         the product clip
+      .pgx-thumbwrap   the strip of every character image (media[1...])
 
-     It is NOT deleted, and the product's media is not touched at all: deleting
-     it would strip it from the product card too, which was explicitly to be
-     kept, and media deletion cannot be undone.
+  THE HERO IS GONE, by request. It was the five-orbs-together group shot
+  (media[0], alt "Crystal PokeOrb - HERO"), which is the right picture on a
+  collection card -- it is selling the range -- and the wrong one to open a page
+  that is selling a single orb. Earlier passes tried to move the hero off it to
+  the first real character image; the ask now is simpler, so the hero is hidden
+  outright and the video leads the page. With .pgx-hero out, the DOM order that
+  is left IS the requested order: video, then the strip.
 
-     WHY NOT HIDE A THUMBNAIL. An earlier version of this file hid the first
-     button in the filmstrip, on the assumption that the group shot led that
-     strip. It does not. The strip holds 35 buttons and they are media[1...],
-     one per character, starting at "13 Arceus" -- the group shot is not in the
-     strip at all, it is only the initial hero. Hiding button 0 therefore hid a
-     real variant and left the group shot exactly where it was. The check below
-     is on the HERO image instead, matched on the media's own filename and its
-     "HERO" alt text so it cannot catch a character image by accident.
+  It is HIDDEN, not deleted, and the product's media is untouched. Deleting the
+  group shot would strip it from the product card too, which was explicitly to
+  be kept, and media deletion cannot be undone. Hiding is also why the strip
+  keeps working unchanged: its buttons still set .pgx-hero's src, they simply
+  set it on something nobody sees.
 
-     The swap is re-checked rather than done once, because pg-landing rebuilds
-     the gallery after its fetch. It is inherently idempotent: the group shot is
-     not in the strip, so once the hero has moved off it the condition is false
-     and nothing more happens -- it cannot fight a shopper's own selection.
+  ONE PHOTO PER VIEW ON DESKTOP TOO. pg-gallery-mobile already makes the strip
+  one-orb-at-a-time under 900px. Above it, pg-landing lays the strip out two-up,
+  which was sized to sit UNDER a big hero as thumbnails. With the hero gone the
+  strip is the gallery, so a thumbnail-sized pair is too small to be the only
+  picture of the product: desktop gets the same one-per-view sizing, paged by
+  the arrows pg-landing already draws on that breakpoint.
 
-  2. THE SWIPE HINT. pg-gallery-mobile deliberately hides the carousel arrows on
-     phones, because they sat on top of the orbs. That fixed the covering but
-     left no sign the strip scrolls, so the photos under the hero read as a dead
-     row. This adds a hint UNDER the strip rather than over it -- nothing is
-     covered -- with chevrons that drift to suggest the direction. It disappears
-     for good the moment the strip is scrolled, and that is remembered, so it
-     teaches once instead of nagging. Mobile only; desktop keeps its arrows.
+  THE SWIPE HINT stays. pg-gallery-mobile deliberately hides those arrows on
+  phones, because they sat on top of the orbs -- which left no sign the strip
+  scrolls. The hint sits UNDER the strip rather than over it, so nothing is
+  covered, and it disappears for good the moment the strip is scrolled, which is
+  remembered, so it teaches once instead of nagging. Mobile only.
 
   Registered in templates/product.pg-crystal.json rather than a section group:
   the overlay group is at Shopify's hard limit of 25 sections, and this belongs
   to one product page anyway.
 {%- endcomment -%}
 <style>
+  /* the group shot -- see the note above */
+  #pgx .pgx-hero{display:none !important}
+  /* the video now leads the column, so it does not need the gap that separated
+     it from the hero */
+  #pgx .pgx-vid{margin-top:0 !important}
+
+  /* the strip is the gallery now, not a row of thumbnails under one */
+  @media (min-width:901px){
+    #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
+  }
+
   #pgx .pg-gt-swipe{
     display:none;
     align-items:center;justify-content:center;gap:8px;
@@ -74,33 +83,9 @@
 (function(){
   if (window.pgGalTweaks) return; window.pgGalTweaks = 1;
 
-  /* the group shot, identified two independent ways */
-  var HERO_FILE = 'f32899a3';
-  var HERO_ALT  = /HERO/i;
   var SEEN = 'pgGtSwiped';
   var hinted = false;
 
-  function isGroupShot(img){
-    if (!img) return false;
-    var src = img.getAttribute('src') || '';
-    var alt = img.getAttribute('alt') || '';
-    return src.indexOf(HERO_FILE) > -1 || HERO_ALT.test(alt);
-  }
-
-  /* 1. never open on the group shot */
-  function dropHero(){
-    var hero = document.getElementById('pgx-hero-img') ||
-               document.querySelector('#pgx .pgx-hero img');
-    if (!isGroupShot(hero)) return;            /* already on a real orb */
-
-    var strip = document.querySelector('#pgx .pgx-thumbwrap .pgx-thumbs');
-    if (!strip) return;
-    var btn = strip.querySelector('button');
-    if (!btn) return;                          /* nothing to move to yet */
-    try { btn.click(); } catch(e){}
-  }
-
-  /* 2. the swipe hint */
   function hint(){
     if (hinted) return;
     var wrap = document.querySelector('#pgx .pgx-thumbwrap');
@@ -130,21 +115,20 @@
     strip.addEventListener('touchmove', done, {passive: true});
   }
 
-  function pass(){ dropHero(); hint(); }
-
   function boot(){
     if (!document.getElementById('pgx')) return;
-    pass();
+    hint();
     var root = document.getElementById('pgx');
     if (root && window.MutationObserver){
       var queued = false;
+      /* pg-landing rebuilds the gallery after its fetch */
       new MutationObserver(function(){
         if (queued) return;
         queued = true;
-        setTimeout(function(){ queued = false; pass(); }, 80);
+        setTimeout(function(){ queued = false; hint(); }, 80);
       }).observe(root, {childList: true, subtree: true});
     }
-    [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(pass, t); });
+    [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(hint, t); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
