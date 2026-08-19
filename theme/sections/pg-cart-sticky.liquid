@@ -9,82 +9,136 @@
   and y=-2067 on desktop: off screen, unreachable. A shopper who adds an orb and
   keeps browsing has no way back to the cart short of scrolling to the very top.
 
-  WHAT THIS ADDS. A small round cart button pinned to the top-right corner, which
-  fades in once the real header cart has scrolled out of view and carries a badge
-  with the live item count. Tapping it opens the cart exactly the way the header
-  icon does -- see below.
+  WHAT THIS ADDS. A full-width bar pinned across the top, which fades in once
+  the real header cart has scrolled out of view. It carries the live item count
+  and, while the 10-minute offer window is open, the countdown and the 5% OFF
+  label -- so the reason to check out travels with the shopper down a nine-screen
+  page instead of living only inside the cart. Tapping anywhere on it opens the
+  cart the same way the header icon does.
 
-  WHY TOP-RIGHT, NOT THE USUAL BOTTOM-RIGHT. The bottom of the product page is
-  already taken: #pg-sticky (z-index 55) is a fixed full-width bar 87px tall
-  carrying the price and ADD TO CART, and it is visible for the whole scroll. A
-  bottom-right bubble would land on top of it. Top-right is free, and it is where
-  the cart already lives in the header, so it matches the shopper's muscle memory
-  rather than teaching a second location.
+  IT IS A BAR, NOT A BUBBLE. This began as a 46px round button in the corner and
+  the empty strip beside it was dead space; the bar uses that width for the
+  countdown, which is the part that actually drives the checkout.
+
+  WHY THE TOP AND NOT THE USUAL BOTTOM. The bottom of the product page is already
+  taken: #pg-sticky (z-index 55) is a fixed full-width bar 87px tall carrying the
+  price and ADD TO CART, visible for the whole scroll. A bottom bar would land on
+  top of it. The top is free, and it is where the cart already lives in the
+  header, so it matches the shopper's muscle memory.
 
   WHY IT CLICKS THE HEADER ICON INSTEAD OF OPENING THE DRAWER ITSELF. The theme
   binds cart opening through document-delegated handlers, and pg-no-cart-page
   intercepts /cart navigation. Rather than duplicate any of that -- and risk
-  drifting from it later -- this button forwards to the real a.pgx-cart element
-  and lets the theme do what it already does. If that element is ever missing,
-  it falls back to a plain /cart navigation, which pg-no-cart-page then handles.
+  drifting from it later -- this forwards to the real a.pgx-cart element and lets
+  the theme do what it already does, falling back to a plain /cart navigation.
 
   THE COUNT comes from /cart.js, because a.pgx-cart is only an SVG with no badge
-  to mirror. It is re-read after anything that can change the cart: a click on an
-  add-to-cart control, and any mutation of the drawer's own item list. Counting
-  <li> rows in the drawer was rejected -- that counts LINES, not quantities, so a
-  single line with quantity 3 would read as 1.
+  to mirror. Counting <li> rows in the drawer was rejected -- that counts LINES,
+  not quantities, so one line of quantity 3 would read as 1. The COUNTDOWN is
+  read from window.pgRush (pg-cart-timer) rather than kept here, so the bar and
+  the cart can never show two different times.
 
   z-index 90: above the page and above #pg-sticky's 55, below the cart drawer's
   160 so an open drawer covers it, and far below the cookie/consent banners.
 
-  The button is hidden entirely when the cart is empty (nothing to go back to),
-  and while the drawer is open (html.m6pn-open). Gated on #pgx so it appears on
-  product pages only, which is what was asked for.
+  Hidden when the cart is empty (nothing to go back to) and while the drawer is
+  open. Gated on #pgx so it appears on product pages only, as asked.
 {%- endcomment -%}
 <style>
   #pg-cartfab{
     position:fixed;
     top:max(10px, env(safe-area-inset-top));
-    right:12px;
+    left:12px;right:12px;
     z-index:90;
-    width:46px;height:46px;
-    display:flex;align-items:center;justify-content:center;
-    border-radius:50%;
-    background:rgba(11,7,16,.92);
-    border:1px solid rgba(168,120,214,.34);
-    box-shadow:0 8px 24px -10px rgba(0,0,0,.75);
+    height:54px;
+    display:flex;align-items:center;gap:11px;
+    padding:0 9px 0 18px;
+    border-radius:27px;
+    background:rgba(11,7,16,.94);
+    border:1px solid rgba(190,140,235,.75);
+    /* purple glow: a lift shadow plus two coloured halos, gently pulsing so the
+       bar reads as live without strobing. Motion is dropped for anyone who asks
+       for reduced motion; the glow itself stays. */
+    box-shadow:0 10px 28px -10px rgba(0,0,0,.8),
+               0 0 22px rgba(139,68,190,.75),
+               0 0 54px rgba(139,68,190,.38);
+    animation:pgCsGlow 2.6s ease-in-out infinite;
     color:#F1EDF7;
     -webkit-tap-highlight-color:transparent;
     cursor:pointer;
-    /* hidden until the header cart scrolls away */
     opacity:0;
     transform:translateY(-8px);
     pointer-events:none;
     transition:opacity .18s ease, transform .18s ease;
   }
   #pg-cartfab.pg-cs-on{opacity:1;transform:none;pointer-events:auto}
-  #pg-cartfab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;
+  @keyframes pgCsGlow{
+    0%,100%{box-shadow:0 10px 28px -10px rgba(0,0,0,.8),
+                       0 0 18px rgba(139,68,190,.60),
+                       0 0 44px rgba(139,68,190,.28)}
+    50%    {box-shadow:0 10px 28px -10px rgba(0,0,0,.8),
+                       0 0 30px rgba(139,68,190,.95),
+                       0 0 72px rgba(139,68,190,.50)}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #pg-cartfab{animation:none}
+  }
+
+  /* the message fills the width the old round button wasted */
+  #pg-cartfab .pg-cs-msg{
+    flex:1 1 auto;min-width:0;
+    display:flex;align-items:center;gap:7px;
+    font-size:14.5px;font-weight:800;line-height:1.15;
+    text-transform:uppercase;letter-spacing:.045em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #pg-cartfab .pg-cs-clock{
+    font-variant-numeric:tabular-nums;font-weight:900;
+    font-size:15.5px;letter-spacing:.02em;
+    background:#8B44BE;color:#fff;
+    padding:4px 9px;border-radius:7px;
+    box-shadow:0 0 12px rgba(139,68,190,.7);
+    flex:0 0 auto;
+  }
+  #pg-cartfab .pg-cs-sub{color:#EFE6FA;font-weight:800;overflow:hidden;text-overflow:ellipsis}
+  #pg-cartfab .pg-cs-sub b{color:#D9B4FF;font-weight:900}
+
+  /* the icon keeps its old corner position at the right-hand end */
+  #pg-cartfab .pg-cs-ic{
+    position:relative;flex:0 0 auto;
+    width:44px;height:44px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(168,120,214,.22);
+    box-shadow:inset 0 0 0 1px rgba(190,140,235,.35);
+  }
+  #pg-cartfab svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.9;
     stroke-linecap:round;stroke-linejoin:round}
   #pg-cartfab .pg-cs-n{
-    position:absolute;top:-4px;right:-4px;
-    min-width:19px;height:19px;padding:0 5px;
+    position:absolute;top:-2px;right:-2px;
+    min-width:21px;height:21px;padding:0 6px;
     display:flex;align-items:center;justify-content:center;
-    border-radius:10px;
+    border-radius:9px;
     background:#8B44BE;color:#fff;
-    font-size:11px;font-weight:800;line-height:1;
-    box-shadow:0 0 0 2px rgba(11,7,16,.92);
+    font-size:12px;font-weight:900;line-height:1;
+    box-shadow:0 0 0 2px rgba(11,7,16,.94), 0 0 10px rgba(139,68,190,.8);
   }
-  #pg-cartfab:active{transform:scale(.94)}
-  /* an open drawer owns the screen */
+  #pg-cartfab:active{transform:scale(.99)}
   html.m6pn-open #pg-cartfab{opacity:0 !important;pointer-events:none !important}
+
+  @media (min-width:900px){
+    /* a full-width bar across a desktop page reads as a site banner, so cap it
+       and keep it in the corner the cart already occupies */
+    #pg-cartfab{left:auto;width:380px;max-width:calc(100vw - 24px)}
+  }
 </style>
 <script>
 (function(){
   if (window.pgCartSticky) return; window.pgCartSticky = 1;
 
-  var fab, badge, count = 0;
+  var fab, badge, msg, count = 0;
 
   function headerCart(){ return document.querySelector('#pgx a.pgx-cart, a.pgx-cart'); }
+  function rush(){ return window.pgRush && window.pgRush.active() ? window.pgRush : null; }
 
   function build(){
     if (fab) return fab;
@@ -94,9 +148,13 @@
     fab.setAttribute('tabindex', '0');
     fab.setAttribute('aria-label', 'Open cart');
     fab.innerHTML =
-      '<svg viewBox="0 0 24 24" aria-hidden="true">' +
-        '<path d="M6 7h12l1 13H5L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path>' +
-      '</svg><span class="pg-cs-n" hidden>0</span>';
+      '<span class="pg-cs-msg"></span>' +
+      '<span class="pg-cs-ic">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<path d="M6 7h12l1 13H5L6 7z"></path><path d="M9 7a3 3 0 0 1 6 0"></path>' +
+        '</svg><span class="pg-cs-n" hidden>0</span>' +
+      '</span>';
+    msg = fab.querySelector('.pg-cs-msg');
     badge = fab.querySelector('.pg-cs-n');
 
     function go(){
@@ -110,6 +168,23 @@
     });
     document.body.appendChild(fab);
     return fab;
+  }
+
+  function paint(){
+    if (!msg) return;
+    var r = rush();
+    var html;
+    if (r){
+      html = '<span class="pg-cs-clock">' + r.fmt() + '</span>' +
+             '<span class="pg-cs-sub">LEFT &mdash; EXTRA <b>5% OFF</b></span>';
+    } else {
+      html = '<span class="pg-cs-sub">' + (count === 1 ? '1 ITEM IN YOUR CART' : count + ' ITEMS IN YOUR CART') + '</span>';
+    }
+    if (msg.innerHTML !== html) msg.innerHTML = html;
+    if (badge){
+      if (count > 0){ badge.textContent = count > 99 ? '99+' : String(count); badge.hidden = false; }
+      else badge.hidden = true;
+    }
   }
 
   /* visible once the header's own cart icon has left the screen, and only when
@@ -126,12 +201,7 @@
     }
     if (gone && count > 0) f.classList.add('pg-cs-on');
     else f.classList.remove('pg-cs-on');
-  }
-
-  function paint(){
-    if (!badge) return;
-    if (count > 0){ badge.textContent = count > 99 ? '99+' : String(count); badge.hidden = false; }
-    else badge.hidden = true;
+    paint();
   }
 
   var busy = false;
@@ -142,7 +212,7 @@
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
         if (j && typeof j.item_count === 'number') count = j.item_count;
-        busy = false; paint(); sync();
+        busy = false; sync();
       })
       .catch(function(){ busy = false; });
   }
@@ -154,17 +224,15 @@
 
     window.addEventListener('scroll', sync, {passive: true});
     window.addEventListener('resize', sync);
+    setInterval(paint, 1000);                      /* keeps the countdown moving */
 
-    /* anything that can change the cart -> re-read the count. The add round trip
-       is not instant, so it is read again shortly after. */
     document.addEventListener('click', function(e){
       if (!e.target.closest) return;
       if (e.target.closest('[name="add"], .pgx-atc, #pg-sticky, .pg-unlock-go, form[action*="/cart/add"] button')){
-        setTimeout(refresh, 500); setTimeout(refresh, 1600);
+        setTimeout(refresh, 600); setTimeout(refresh, 1800);
       }
     }, true);
 
-    /* the drawer is rebuilt on every add, remove and quantity change */
     if (window.MutationObserver){
       var drawer = document.getElementById('cart');
       if (drawer){
@@ -177,7 +245,7 @@
       }
     }
 
-    [800, 2500].forEach(function(t){ setTimeout(refresh, t); });
+    [900, 2600].forEach(function(t){ setTimeout(refresh, t); });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

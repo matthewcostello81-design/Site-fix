@@ -148,8 +148,8 @@
       "type": "pg-cart-imglink",
       "settings": {}
     },
-    "pg-cart-declutter": {
-      "type": "pg-cart-declutter",
+    "pg-cart-timer": {
+      "type": "pg-cart-timer",
       "settings": {}
     },
     "pg-cart-sticky": {
@@ -181,7 +181,7 @@
     "pg-unlock",
     "pg-cart-total",
     "pg-cart-imglink",
-    "pg-cart-declutter",
+    "pg-cart-timer",
     "pg-cart-sticky"
   ]
 }

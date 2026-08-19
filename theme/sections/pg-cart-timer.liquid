@@ -1,0 +1,221 @@
+{%- comment -%}
+  PG Cart Timer: a 10-minute "extra 5% off" window that starts when the shopper
+  first has something in the cart, shown at the bottom of the cart drawer and
+  applied automatically at checkout.
+
+  THE OFFER IS REAL, AND SO IS THE CLOCK. The discount is a genuine Shopify code
+  (RUSH5, 5% off all items, combines with product discounts so it stacks on top
+  of the Buy 2 Get 1 bundle rather than replacing it). Two deliberate choices
+  keep the countdown honest rather than theatrical:
+
+    - The deadline is stored in localStorage, so it SURVIVES reloads and
+      navigation. A timer that restarts at 10:00 on every page view would be
+      telling the shopper something untrue.
+    - When it reaches zero the offer really stops: the block disappears and
+      checkout stops routing through the discount.
+
+  WHEN IT STARTS AND RESTARTS. The window opens the first time the cart is seen
+  non-empty, and opens again on any genuine ADD -- whenever the item count goes
+  UP. It is cleared when the cart is emptied.
+
+  It deliberately does NOT restart on a page view. That distinction is the whole
+  point: reopening the offer because someone reloaded would make the countdown a
+  prop, while reopening it when they actually add something is true -- the ten
+  minutes really do start from that add. The previous count is kept in
+  localStorage so navigating between pages is not mistaken for an add.
+
+  The consequence is intended: if the window runs out and the shopper adds
+  nothing further, the offer is over and the block disappears rather than
+  quietly resurrecting itself.
+
+  WHERE IT SITS. As the first child of .sticky-in-panel -- the pinned pane that
+  carries Shipping Protection, the total and CHECKOUT -- so it is the last thing
+  read before the button, which is the point of it.
+
+  It is NOT inserted directly before that pane, even though that is nearer the
+  literal "bottom of the cart". Two things already compete for that exact slot:
+  pg-cart-mobile's placeUnlock (the upsell) and its placeSpacer (the flex spacer
+  that pins the pane down on a short cart), each of which re-inserts itself
+  immediately before the pane on every apply() pass. Adding a third element to
+  that fight is how rows start swapping places. Inside the pane there is no
+  contention at all.
+
+  HOW THE DISCOUNT IS APPLIED. Clicking CHECKOUT while the window is open goes
+  to /discount/RUSH5?redirect=/checkout -- Shopify's own endpoint, which records
+  the code against the session and forwards to checkout, so the saving is already
+  on the order summary when the page opens. Nothing is typed and nothing is
+  stored in the cart, so an expired window simply stops redirecting and the next
+  click is an ordinary checkout. The interception is wrapped in try/catch and is
+  skipped entirely unless the window is open: if anything at all goes wrong here,
+  the click falls through to the theme's normal checkout.
+
+  window.pgRush is exposed so pg-cart-sticky can show the same countdown in the
+  product-page bar without a second clock that could drift out of step.
+
+  ================================================================
+  IT ALSO CARRIES THE RECOMMENDATION HIDE, for a platform reason rather than a
+  design one: Shopify caps a section group at 25 sections and overlay-group was
+  already full, so this could not ship as a 26th entry. The two rules below used
+  to be their own pg-cart-declutter section; they are cart-drawer styling like
+  everything else here, so this is where they went.
+
+  They hide nc-recs' two optional add-to-cart blocks -- .nc-recs ("You may also
+  like", under the item list) and .nc-recs-panel ("Add & save more", inside the
+  checkout panel) -- which pushed the order total down and made the cart read as
+  a catalogue. The pg-unlock offer rows are untouched. Only these two blocks are
+  hidden rather than the nc-recs section removed, because that same file supplies
+  most of the drawer's styling: the compact top, the 120px thumbnails, the
+  bundle-savings progress bar, the slim shipping bar and the quantity stepper.
+  CSS rather than deleting the nodes, since nc-recs.js re-injects them whenever
+  the cart changes.
+{%- endcomment -%}
+<style>
+  /* the optional "recommended purchase" rows -- see the note above */
+  #cart .nc-recs,
+  #cart .nc-recs-panel{display:none !important}
+
+  #pg-rush{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin:0 0 6px;padding:7px 10px;
+    border-radius:10px;
+    background:linear-gradient(120deg,rgba(139,68,190,.16),rgba(199,155,234,.12));
+    border:1px solid rgba(168,120,214,.42);
+    font-size:12.5px;line-height:1.2;font-weight:700;
+    color:#3B2352;
+    text-align:center;
+  }
+  #pg-rush .pg-rush-c{
+    font-variant-numeric:tabular-nums;
+    font-weight:800;
+    background:#8B44BE;color:#fff;
+    padding:3px 7px;border-radius:6px;
+    letter-spacing:.02em;
+  }
+  #pg-rush .pg-rush-x{color:#6B3E93}
+  @media (max-width:760px){
+    #pg-rush{font-size:11.5px;padding:6px 8px;margin-bottom:5px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgRush) return;
+
+  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000, CODE = 'RUSH5';
+
+  function read(){
+    try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch(e){ return 0; }
+  }
+  function write(v){ try { localStorage.setItem(KEY, String(v)); } catch(e){} }
+  function drop(){ try { localStorage.removeItem(KEY); } catch(e){} }
+
+  function left(){
+    var end = read();
+    if (!end) return 0;
+    return Math.max(0, end - Date.now());
+  }
+  function active(){ return left() > 0; }
+  function fmt(){
+    var s = Math.ceil(left() / 1000);
+    var m = Math.floor(s / 60);
+    var r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  window.pgRush = {left: left, active: active, fmt: fmt, code: CODE};
+
+  /* Start on the first non-empty cart; restart on a real ADD (count goes up);
+     clear when the cart empties. The previous count is persisted so that moving
+     between pages is not read as an add. */
+  var CKEY = 'pgRushCount';
+  function lastCount(){
+    try { var v = localStorage.getItem(CKEY); return v === null ? -1 : (parseInt(v, 10) || 0); }
+    catch(e){ return -1; }
+  }
+  function keepCount(n){ try { localStorage.setItem(CKEY, String(n)); } catch(e){} }
+
+  function onCount(n){
+    var prev = lastCount();
+    keepCount(n);
+    if (n === 0){ drop(); return; }
+    if (prev >= 0 && n > prev){ write(Date.now() + WINDOW_MS); return; }  /* a real add */
+    if (!read()) write(Date.now() + WINDOW_MS);                          /* first sighting */
+  }
+
+  var busy = false;
+  function poll(){
+    if (busy) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (j && typeof j.item_count === 'number') onCount(j.item_count);
+        busy = false; render();
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  function render(){
+    var pane = document.querySelector('#cart .sticky-in-panel');
+    var el = document.getElementById('pg-rush');
+    if (!active()){
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      return;
+    }
+    if (!pane) return;
+    if (!el){
+      el = document.createElement('div');
+      el.id = 'pg-rush';
+      el.innerHTML = '<span class="pg-rush-c">0:00</span>' +
+                     '<span class="pg-rush-x">left &mdash; extra <b>5% OFF</b> applied at checkout</span>';
+    }
+    if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
+    var c = el.querySelector('.pg-rush-c');
+    var t = fmt();
+    if (c && c.textContent !== t) c.textContent = t;
+  }
+
+  /* CHECKOUT -> apply the code first, then go to checkout */
+  document.addEventListener('click', function(e){
+    try {
+      if (!e.target.closest) return;
+      var btn = e.target.closest('button[name="checkout"], input[name="checkout"], [data-pg-checkout]');
+      if (!btn) return;
+      if (!active()) return;                 /* window closed: ordinary checkout */
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.location.href = '/discount/' + CODE + '?redirect=%2Fcheckout';
+    } catch(err){ /* never block checkout */ }
+  }, true);
+
+  function boot(){
+    poll();
+    setInterval(render, 1000);
+
+    /* the drawer is rebuilt on every add, remove and quantity change */
+    if (window.MutationObserver){
+      var drawer = document.getElementById('cart');
+      if (drawer){
+        var queued = false;
+        new MutationObserver(function(){
+          if (queued) return;
+          queued = true;
+          setTimeout(function(){ queued = false; poll(); }, 250);
+        }).observe(drawer, {childList: true, subtree: true});
+      }
+    }
+    document.addEventListener('click', function(e){
+      if (!e.target.closest) return;
+      if (e.target.closest('[name="add"], .pgx-atc, #pg-sticky, .pg-unlock-go, form[action*="/cart/add"] button')){
+        setTimeout(poll, 600); setTimeout(poll, 1800);
+      }
+    }, true);
+    [900, 2600].forEach(function(t){ setTimeout(poll, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Timer", "settings": [], "presets": [{"name": "PG Cart Timer"}]}
+{% endschema %}
