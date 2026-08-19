@@ -9,8 +9,9 @@
   and y=-2067 on desktop: off screen, unreachable. A shopper who adds an orb and
   keeps browsing has no way back to the cart short of scrolling to the very top.
 
-  WHAT THIS ADDS. A full-width bar pinned across the top, on screen from the
-  moment the page opens rather than fading in after a scroll. It carries the
+  WHAT THIS ADDS. A full-width bar pinned across the top, sliding in once the
+  page's own cart control has scrolled slightly out of view so it never sits on
+  top of the wordmark or the announcement carousel. It carries the
   live item count
   and, while the 10-minute offer window is open, the countdown and the 10% OFF
   label -- so the reason to check out travels with the shopper down a nine-screen
@@ -42,12 +43,13 @@
   z-index 90: above the page and above #pg-sticky's 55, below the cart drawer's
   160 so an open drawer covers it, and far below the cookie/consent banners.
 
-  IT NO LONGER WAITS FOR A SCROLL. It used to appear only once the header's own
-  cart icon had left the screen, on the reasoning that the two should not both be
-  on screen at once. In practice that meant the offer -- the part that actually
-  drives the checkout -- was invisible at the top of the page, which is where the
-  shopper starts. It is now on from the first paint and stays for the whole
-  scroll, on phones and on desktop alike.
+  IT WAITS FOR A SMALL SCROLL, AND ONLY A SMALL ONE. For a while it was on from
+  the first paint, and on a phone that was worse than the problem it solved: the
+  bar sat on top of the POCKET ERA wordmark and the announcement carousel, the
+  two things a shopper sees first. It now slides in the moment the page's own
+  cart control clears the top edge -- not a screen later, six pixels later --
+  so the top of the page is clean and the bar is there for the whole of the
+  remaining eight screens, on phones and on desktop alike.
 
   AND IT NO LONGER HIDES ON AN EMPTY CART. Hiding it there was the same mistake
   one step earlier: the shopper with nothing in the cart is exactly the one the
@@ -247,14 +249,32 @@
     }
   }
 
-  /* on for the whole page, cart or no cart -- see the note above */
+  /* WHEN IT COMES IN. It used to be on from first paint, and on a phone that
+     put it straight over the POCKET ERA wordmark and the announcement carousel
+     at the very top of the page -- it was hiding the two things a shopper looks
+     at first. It now waits until the page's own cart control has scrolled
+     slightly out of view, which is the exact moment the bar starts being
+     useful: before that the header icon is right there, after it there is
+     nothing else to tap. The anchor is the header cart link, falling back to
+     the header itself and then to a plain 140px of scroll if neither is in the
+     DOM yet. GRACE of 6px means "slightly", not "completely" -- the bar arrives
+     as the icon clears the top edge rather than a screen later. */
+  var GRACE = 6;
+  function pastHeader(){
+    var a = document.querySelector('#pgx .pgx-cart') ||
+            document.querySelector('#pgx .pgx-ic') ||
+            document.querySelector('#pgx .pgx-head');
+    if (!a) return (window.pageYOffset || document.documentElement.scrollTop || 0) > 140;
+    return a.getBoundingClientRect().bottom < GRACE;
+  }
+
   function sync(){
     if (!document.getElementById('pgx')) return;
     var f = build();
     /* once there is a cart, pg-cart-timer's window is the real one, so the
        preview deadline is dropped and a later empty cart starts a fresh one */
     if (count > 0) peekClear();
-    f.classList.add('pg-cs-on');
+    f.classList.toggle('pg-cs-on', pastHeader());
     paint();
   }
 

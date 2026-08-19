@@ -1,159 +1,74 @@
 {%- comment -%}
-  PG Cart Imglink: three mobile cart-drawer fixes that are all about TAP and
-  SCROLL behaviour in #cart. Named for the first; the other two live here
-  because overlay-group is at Shopify's hard limit of 25 sections and this is
-  the drawer's interaction file.
+  PG Cart Imglink: the cart drawer's tap/scroll/layout fixes. Named for the
+  first; the rest live here because overlay-group is at Shopify's hard limit of
+  25 sections and this is the drawer's interaction file.
 
-  ================================================================
-  1. TAPPING A CART ITEM'S PICTURE OPENS THAT PRODUCT'S PAGE.
+  1. TAPPING A LINE ITEM'S PICTURE OPENS THAT PRODUCT.
+     The theme renders the thumbnail as <figure><picture><img> with no anchor
+     above it -- the only link in the row is the small title. A DELEGATED
+     listener is used rather than an <a> wrapper: the drawer is re-rendered
+     wholesale on every cart change and pg-cart-smooth's morph re-uses surviving
+     nodes, so a wrapper would have to be re-applied after every pass, and
+     re-parenting under the morph is what produced the old upsell "spazzing".
+     The href comes from the row's own product link, so the picture can never
+     point somewhere the row does not. The R36S case is excluded by handle (both
+     variants): it is a free gift with the console, not something to shop for.
+     Bails on any existing control, on a text selection, and on anything but an
+     unmodified primary click. Mobile only (760px).
 
-  In the cart drawer each line item draws its thumbnail as
+  2. THE FREE-3rd-ORB CHOOSER OPENED WHERE NOBODY COULD SEE IT.
+     The drawer DOES open. Measured at 390x844 with two orbs: .pg-unlock-pick
+     becomes display:block, 137px tall, select inside. It is COVERED.
+     .sticky-in-panel is position:sticky, bottom:-34px, z-index:5, opaque white,
+     291px tall; the offer row spans y=535..799 and the pane starts at y=553.
 
-      <li> ... <figure><picture><img ...></picture></figure> ... </li>
+     THE FIRST FIX WAS A SILENT NO-OP: it scrolled by the overlap, but this
+     scroller IGNORES scrollTop (assigning it reads back 0 -- measured twice).
+     The check that passed it only passed because that run happened to be clear
+     already. A verification that cannot fail is not a verification.
 
-  with NO anchor anywhere above the image -- the only link in the row is the
-  product TITLE. On a phone that title is a small target sitting beside a big
-  photo, and the photo is the thing shoppers actually tap, so tapping it did
-  nothing and the row felt broken.
+     So the row is RAISED, not scrolled: while .is-open it takes z-index 6, one
+     above the pane's 5. That depends on nothing but stacking order. It does put
+     the picker over CHECKOUT, and that is the right trade -- the alternative is
+     a shopper who cannot pick their free orb at all. It lasts only while the row
+     is open, and the select opens as a native OS sheet, not an in-page dropdown.
 
-  WHY A DELEGATED LISTENER, NOT AN <a> WRAPPER. Wrapping the figure in an
-  anchor would give real link semantics (long-press, open in new tab), but the
-  theme replaces the drawer's contents wholesale on every add, remove and
-  quantity change, and pg-cart-smooth's morph re-uses the surviving nodes. A
-  wrapper would have to be re-applied after every one of those passes, and
-  re-parenting nodes underneath the morph is exactly the kind of fight that
-  produced the earlier upsell "spazzing". One listener bound once to the
-  document, matched with closest(), survives every re-render without touching
-  the DOM at all.
+  3. THE DEAD SCROLL, AND THE WHITE SPACE UNDER CHECKOUT.
+     FREEZE: the scroller reports scrollHeight 1392 vs clientHeight 844 and
+     ignores scrollTop, so with overscroll-behavior at its default `auto` a drag
+     past the dead end CHAINS to the page behind and iOS spends a beat
+     rubber-banding the wrong element. `contain` keeps the gesture inside.
 
-  THE CASE IS EXCLUDED, deliberately and by request. The R36S Protective Case
-  ships as a free gift with the console, so its line in the cart is an outcome
-  of the console purchase rather than something to go shopping for -- sending
-  someone to its product page mid-cart is a detour, not a feature. It is matched
-  on the product handle rather than on price or a "free" label, so the spare
-  case (a real, paid variant of the same product) is excluded with it and a
-  future change to the gift's price cannot silently switch the link back on.
+     WHITE SPACE -- two wrong guesses first, recorded so they are not retried:
+       - bottom:-34px is NOT the cause. Forcing it to 0 measured WORSE: the
+         pane's bottom moved from y=844 (flush) to y=810, opening a real 34px
+         gap. That offset cancels the drawer's own 34px bottom padding.
+       - Chrome is not broken at all. At viewport heights 620/660/900/1000 the
+         gap measured 0 every time. It was never findable on desktop.
 
-  WHAT IT WILL NOT SWALLOW. The handler bails on anything that is already
-  interactive -- the title link, the Remove and Undo links, the quantity
-  steppers, any button, input or label -- so every existing control keeps its
-  own behaviour. It also bails when the shopper is dragging out a text
-  selection, and on anything but an unmodified primary click, so long-press and
-  middle-click are left alone.
+     WHAT IT IS: .m6pn is position:fixed with height:100%, which on iOS Safari
+     resolves against the LAYOUT viewport (full screen, including the strip
+     behind the toolbar) while the shopper sees the shorter VISUAL viewport. So
+     the drawer's bottom edge is off-screen behind the toolbar and the last
+     visible thing is empty white drawer. Fixed by sizing .m6pn from
+     window.visualViewport.height and keeping it in step, plus margin-top:auto on
+     .sticky-in-panel so the pane pins to the bottom of the flex column when the
+     content is short. In Chrome visualViewport.height == innerHeight, so the
+     desktop that already measured correct does not move.
 
-  Mobile only (760px, the same breakpoint the rest of the cart work uses), which
-  is where the request came from; desktop rows are wider and the title link is
-  an easy target there.
-  ================================================================
-  2. THE FREE-3rd-ORB CHOOSER OPENED WHERE NOBODY COULD SEE IT
+  4. THE FREE-SHIPPING BAR MATCHES THE WORDMARK BOX ABOVE IT.
+     Measured, they agreed on nothing:
+       .pg-cart-mark  x=32 w=329 radius 12px  padding 11px 10px 9px  #0B0710
+       .nc-dship      x=55 w=284 radius 100px padding 7px 20px       transparent
+     The bar now takes the same margins (so it tracks the wordmark box at any
+     drawer width rather than being pinned to 329px), corners, padding and fill.
 
-  Reported as "it shows the option to add a 3rd free but when you do it doesn't
-  let you select -- the selection drawer doesn't open". The drawer DOES open.
-  Measured on a 390x844 phone with two orbs in the cart: tapping Add sets
-  is-open on the row and .pg-unlock-pick becomes display:block, 137px tall, with
-  its select inside. It is simply invisible.
-
-  The reason is the pinned checkout pane. .sticky-in-panel is
-  position:sticky, bottom:-34px, z-index:5 and painted solid white, 291px tall,
-  and it sits across the bottom of the drawer. The offer row is in normal flow
-  BEHIND it: measured, the row spans y=535..799 while the pane starts at y=553.
-  So the moment the panel expands, the whole picker is behind an opaque panel.
-  Nothing is broken -- it is covered.
-
-  THE FIRST FIX FOR THIS DID NOT WORK, and the reason is recorded here because it
-  is the same fact that explains the freeze below. It scrolled the drawer by the
-  overlap -- but this scroller IGNORES scrollTop: assigning it reads back 0
-  (measured, twice). So the scroll was a silent no-op on a real device. The check
-  that passed it only passed because that particular run had already ended up
-  clear for an unrelated reason. A verification that cannot fail is not a
-  verification.
-
-  So the row is now RAISED instead of scrolled: while it is open it gets
-  position:relative and z-index:6, one above the pane's 5, and paints over it.
-  That depends on nothing but stacking order, which cannot silently do nothing.
-
-  The objection to this the first time round was that it puts the picker over the
-  CHECKOUT button. It does, and that is the right trade: the alternative is a
-  shopper who cannot pick their free orb at all. It is also brief -- only while
-  the row is open -- and the select itself opens as a native OS sheet, not as an
-  in-page dropdown, so the overlap is a closed select box sitting above the
-  button for as long as it takes to choose, and gone afterwards.
-
-  scrollIntoView is still attempted first, on the chance the drawer can scroll:
-  it uses the browser's own scrolling and works on nested scrollers where a
-  scrollTop assignment does not. It is a bonus, not the mechanism.
-
-  ================================================================
-  3. THE DEAD SCROLL AT THE BOTTOM, AND THE WHITE SPACE UNDER CHECKOUT
-
-  Two measured faults, one cause each.
-
-  THE FREEZE: the drawer's scrolling element reports scrollHeight 1392 against
-  clientHeight 844 -- 548px of content it cannot reach, because assigning
-  scrollTop to it does nothing (it reads back 0). With overscroll-behavior at
-  its default of `auto`, dragging past that dead end CHAINS the gesture to the
-  page behind the drawer, and iOS spends a beat rubber-banding the wrong
-  element before it will accept an upward drag again. That is the "pane freezes
-  and won't let you scroll back up for a second or two". `contain` keeps the
-  gesture inside the drawer, so the dead end stops rather than bounces.
-
-  THE WHITE SPACE UNDER CHECKOUT. Two wrong guesses came first, and both are
-  worth recording so they are not tried a fourth time:
-
-    - bottom:-34px is NOT the cause. Forcing it to 0 measured WORSE: the pane's
-      bottom edge moved from y=844 (flush) to y=810, opening a real 34px gap.
-      That negative offset cancels the drawer's own 34px bottom padding.
-    - The layout is not broken in Chrome at all. Measured at viewport heights
-      620, 660, 900 and 1000 with one item, the pane's bottom sat exactly on the
-      viewport bottom every time -- gap 0. Chasing it in a desktop browser was
-      never going to find it.
-
-  WHAT IT ACTUALLY IS. The drawer (.m6pn) is position:fixed with height:100%.
-  On iOS Safari that resolves against the LAYOUT viewport -- the full screen,
-  including the strip behind the browser's own toolbar -- while what the shopper
-  sees is the VISUAL viewport, which is shorter whenever the toolbar (and, in a
-  theme preview, the Shopify bar) is showing. So the drawer is taller than the
-  visible area, its bottom edge is off-screen behind those bars, and the last
-  thing actually visible above them is white drawer with nothing in it.
-
-  Two changes close it, and they work together:
-
-    - The drawer's height is set from window.visualViewport.height, and kept in
-      step as that changes (the toolbar collapsing on scroll fires resize). The
-      drawer then ends exactly where the visible area ends. In Chrome
-      visualViewport.height equals innerHeight, so nothing moves there -- which
-      is why this is safe to ship without regressing the desktop that already
-      measured correct.
-    - .sticky-in-panel gets margin-top:auto. .m6pn is already a flex column, so
-      this pins the pane to the BOTTOM of that column whenever the content is
-      shorter than the drawer, instead of leaving it stranded mid-way with white
-      underneath. It is inert when the content overflows, which is the case the
-      sticky positioning already handled.
-
-  The result is CHECKOUT sitting on the bottom edge of what the shopper can see,
-  which is what was asked for.
-
-  ================================================================
-  4. THE FREE-SHIPPING BAR MATCHES THE WORDMARK BOX ABOVE IT
-
-  Measured, the two boxes in .nc-drawer-top disagreed on every dimension:
-
-      .pg-cart-mark   x=32  w=329  radius 12px   padding 11px 10px 9px   #0B0710
-      .nc-dship       x=55  w=284  radius 100px  padding 7px 20px        transparent
-
-  -- a full-width dark rounded-rectangle with a narrower transparent pill
-  floating under it. The shipping bar now takes the same width (a block with the
-  same margins, so it tracks the wordmark box at any drawer width rather than
-  being pinned to 329px), the same 12px corners, the same padding and the same
-  fill, with its text and icon lightened to sit on that fill. Both breakpoints.
-
-  ================================================================
-  5. STARS EITHER SIDE OF THE WORDMARK
-
-  Three small stars each side of POCKETERA, injected rather than written into
-  the markup because .nc-drawer-top is rendered by pg-drawer and rebuilt on every
-  cart change; they are re-applied on each rebuild and are aria-hidden, so the
-  drawer still announces the shop name once.
+  5. STARS EITHER SIDE OF THE WORDMARK.
+     Five four-point sparkles per side at five sizes, spread apart, at different
+     heights and brightnesses, each with a purple halo and an offset twinkle.
+     Injected rather than written into the markup because .nc-drawer-top is
+     rendered by pg-drawer and rebuilt on every cart change; re-applied on each
+     rebuild and aria-hidden, so the shop name is still announced once.
 {%- endcomment -%}
 <style>
   /* --- 3. see note above --- */
@@ -190,20 +105,61 @@
   #cart .nc-dship svg,
   .nc-drawer-top .nc-dship svg{stroke:#C79BEA !important}
 
-  /* --- 5. the stars --- */
+  /* --- 5. the stars ---
+     Not a row of identical glyphs. The reference is a little scatter of
+     four-point sparkles at five sizes, sitting at different heights and
+     brightnesses, each with a purple halo -- so they read as glints rather than
+     as punctuation. Sizes and offsets are per-star classes; the right-hand group
+     is the same markup mirrored, so the pair frames the wordmark evenly. */
   #cart .pg-cart-star,
   .nc-drawer-top .pg-cart-star{
-    color:#C79BEA;
-    opacity:.75;
-    font-size:10px;
-    letter-spacing:.22em;
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
     vertical-align:middle;
     pointer-events:none;
+    line-height:1;
   }
+  #cart .pg-cart-star i,
+  .nc-drawer-top .pg-cart-star i{
+    font-style:normal;
+    color:#C89BF0;
+    line-height:1;
+    /* the halo: a tight bright core and a wider soft bloom */
+    text-shadow:0 0 6px rgba(200,155,240,.95), 0 0 16px rgba(150,80,220,.7);
+  }
+  #cart .pg-cart-star .pg-st-a,
+  .nc-drawer-top .pg-cart-star .pg-st-a{font-size:21px;opacity:1;transform:translateY(-6px)}
+  #cart .pg-cart-star .pg-st-b,
+  .nc-drawer-top .pg-cart-star .pg-st-b{font-size:12px;opacity:.85;transform:translateY(6px)}
+  #cart .pg-cart-star .pg-st-c,
+  .nc-drawer-top .pg-cart-star .pg-st-c{font-size:16px;opacity:.95;transform:translateY(-2px)}
+  #cart .pg-cart-star .pg-st-d,
+  .nc-drawer-top .pg-cart-star .pg-st-d{font-size:9px;opacity:.7;transform:translateY(-8px)}
+  #cart .pg-cart-star .pg-st-e,
+  .nc-drawer-top .pg-cart-star .pg-st-e{font-size:14px;opacity:.8;transform:translateY(4px)}
+
   #cart .pg-cart-star.pg-cs-l,
-  .nc-drawer-top .pg-cart-star.pg-cs-l{margin-right:9px}
+  .nc-drawer-top .pg-cart-star.pg-cs-l{margin-right:11px}
   #cart .pg-cart-star.pg-cs-r,
-  .nc-drawer-top .pg-cart-star.pg-cs-r{margin-left:9px}
+  .nc-drawer-top .pg-cart-star.pg-cs-r{margin-left:11px;flex-direction:row-reverse}
+
+  @media (prefers-reduced-motion:no-preference){
+    #cart .pg-cart-star .pg-st-a,
+    .nc-drawer-top .pg-cart-star .pg-st-a{animation:pgStarTwinkle 3.4s ease-in-out infinite}
+    #cart .pg-cart-star .pg-st-b,
+    .nc-drawer-top .pg-cart-star .pg-st-b{animation:pgStarTwinkle 3.4s ease-in-out infinite .9s}
+    #cart .pg-cart-star .pg-st-c,
+    .nc-drawer-top .pg-cart-star .pg-st-c{animation:pgStarTwinkle 3.4s ease-in-out infinite 1.8s}
+    #cart .pg-cart-star .pg-st-d,
+    .nc-drawer-top .pg-cart-star .pg-st-d{animation:pgStarTwinkle 3.4s ease-in-out infinite 2.4s}
+    #cart .pg-cart-star .pg-st-e,
+    .nc-drawer-top .pg-cart-star .pg-st-e{animation:pgStarTwinkle 3.4s ease-in-out infinite 1.3s}
+  }
+  @keyframes pgStarTwinkle{
+    0%,100%{filter:brightness(1)}
+    50%    {filter:brightness(1.45)}
+  }
 
   @media (max-width:760px){
     /* make the picture read as tappable: a pointer, a suppressed grey iOS tap
@@ -342,7 +298,12 @@
       var l = document.createElement('span');
       l.className = 'pg-cart-star pg-cs-l';
       l.setAttribute('aria-hidden', 'true');
-      l.textContent = '\u2726\u2726\u2726';
+      /* five per side, no two the same size -- the CSS above spaces them out */
+      l.innerHTML = '<i class="pg-st-d">✦</i>' +
+                    '<i class="pg-st-b">✦</i>' +
+                    '<i class="pg-st-a">✦</i>' +
+                    '<i class="pg-st-e">✦</i>' +
+                    '<i class="pg-st-c">✦</i>';
       var r = l.cloneNode(true);
       r.className = 'pg-cart-star pg-cs-r';
       mark.insertBefore(l, word);
