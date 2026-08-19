@@ -1,0 +1,109 @@
+{%- comment -%}
+  PG Cart Imglink: tapping a cart item's picture opens that product's page.
+
+  In the cart drawer each line item draws its thumbnail as
+
+      <li> ... <figure><picture><img ...></picture></figure> ... </li>
+
+  with NO anchor anywhere above the image -- the only link in the row is the
+  product TITLE. On a phone that title is a small target sitting beside a big
+  photo, and the photo is the thing shoppers actually tap, so tapping it did
+  nothing and the row felt broken.
+
+  WHY A DELEGATED LISTENER, NOT AN <a> WRAPPER. Wrapping the figure in an
+  anchor would give real link semantics (long-press, open in new tab), but the
+  theme replaces the drawer's contents wholesale on every add, remove and
+  quantity change, and pg-cart-smooth's morph re-uses the surviving nodes. A
+  wrapper would have to be re-applied after every one of those passes, and
+  re-parenting nodes underneath the morph is exactly the kind of fight that
+  produced the earlier upsell "spazzing". One listener bound once to the
+  document, matched with closest(), survives every re-render without touching
+  the DOM at all.
+
+  THE CASE IS EXCLUDED, deliberately and by request. The R36S Protective Case
+  ships as a free gift with the console, so its line in the cart is an outcome
+  of the console purchase rather than something to go shopping for -- sending
+  someone to its product page mid-cart is a detour, not a feature. It is matched
+  on the product handle rather than on price or a "free" label, so the spare
+  case (a real, paid variant of the same product) is excluded with it and a
+  future change to the gift's price cannot silently switch the link back on.
+
+  WHAT IT WILL NOT SWALLOW. The handler bails on anything that is already
+  interactive -- the title link, the Remove and Undo links, the quantity
+  steppers, any button, input or label -- so every existing control keeps its
+  own behaviour. It also bails when the shopper is dragging out a text
+  selection, and on anything but an unmodified primary click, so long-press and
+  middle-click are left alone.
+
+  Mobile only (760px, the same breakpoint the rest of the cart work uses), which
+  is where the request came from; desktop rows are wider and the title link is
+  an easy target there.
+{%- endcomment -%}
+<style>
+  @media (max-width:760px){
+    /* make the picture read as tappable: a pointer, a suppressed grey iOS tap
+       flash (the row supplies its own feedback below), and no long-press image
+       callout, which otherwise offers "Save Image" instead of following it */
+    #cart .l4ca li figure{
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;
+    }
+    #cart .l4ca li figure img{pointer-events:none}
+    /* a brief press state so the tap is acknowledged even before the page moves */
+    #cart .l4ca li figure:active{opacity:.72;transition:opacity .06s ease}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartImgLink) return; window.pgCartImgLink = 1;
+
+  /* Products whose picture is NOT a link. Matched on a handle FRAGMENT so the
+     rule survives the handle being renamed around it (the case's handle carries
+     a "-free-gift" suffix today). Both of the case's variants -- the free one
+     and the paid spare -- share this handle, so both are covered. */
+  var SKIP = ['r36s-protective-case'];
+
+  function excluded(href){
+    for (var i = 0; i < SKIP.length; i++){
+      if (href.indexOf(SKIP[i]) > -1) return true;
+    }
+    return false;
+  }
+
+  /* The row's own product link is the source of truth for where the picture
+     should go: it is what the theme itself rendered for this line, so the
+     picture can never point somewhere the row does not. */
+  function hrefFor(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    return a ? a.getAttribute('href') : '';
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!window.matchMedia('(max-width:760px)').matches) return;
+
+    var fig = e.target.closest && e.target.closest('#cart .l4ca li figure');
+    if (!fig) return;
+
+    /* never take a tap that belongs to a control that was already there */
+    if (e.target.closest('a, button, input, select, textarea, label, [role="button"]')) return;
+
+    /* a tap that ends a text selection is not a tap on the picture */
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.type === 'Range' && String(sel).length) return;
+
+    var li = fig.closest('li');
+    if (!li) return;
+
+    var href = hrefFor(li);
+    if (!href || excluded(href)) return;
+
+    e.preventDefault();
+    window.location.href = href;
+  }, true);
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Imglink", "settings": [], "presets": [{"name": "PG Cart Imglink"}]}
+{% endschema %}
