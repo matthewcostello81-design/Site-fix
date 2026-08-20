@@ -1,3 +1,43 @@
+# The sticky bar's offer was being cut off on phones
+
+"ADD TO CART FOR EXTRA 10% OFF" wants **225px**. Beside a countdown and a 44px
+bag, the message box is:
+
+| screen | box | needed | result |
+|---|---|---|---|
+| 320px | 175px | 225px | **cut off** |
+| 360px | 215px | 225px | **cut off** |
+| 390px | 225px | 225px | fits with *zero* slack |
+| 430px | 225px | 225px | fits with zero slack |
+
+390px "fitting" is the trap — it fits only because the headless fallback font is
+narrower than real Poppins. On a real phone that's a clip too, which is what was
+reported.
+
+Under 431px the words **TO CART** are now hidden, leaving "ADD FOR EXTRA 10% OFF"
+at about 165px. The full sentence returns above that width. The item wording
+("1 ITEM · EXTRA 10% OFF") always fitted and is untouched.
+
+Two supporting changes:
+
+- `.pg-cs-sub` goes from `text-overflow:ellipsis` to `clip`. The parent was
+  switched to clip a while back so a tight fit couldn't put dots on the end of
+  the offer — but leaving ellipsis on the *child* meant the dots came back the
+  moment the child was the thing overflowing. That is exactly what happened.
+- The bar's side inset drops 12px → 8px under 431px, which hands 8px back to the
+  message.
+
+## The measurement that was wrong the first time
+
+The obvious check — `sub.scrollWidth > sub.clientWidth` — reports "fits" no
+matter what, because `.pg-cs-sub` is a shrink-to-fit flex item: its box is always
+exactly its content. It tells you nothing about headroom.
+
+The harness now clones the element off-layout at `width:max-content` to get the
+width the text actually *wants*, and compares that against what the row can give
+it after the clock. Slack now reads 18px at 320px through 128px at 430px, across
+three message variants and four widths.
+
 # The pinned upsell was eating the cart
 
 Two changes landed on the same row and compounded: it was made ~20% bigger, and

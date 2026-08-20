@@ -66,10 +66,14 @@
   get). When it runs out the clock simply goes away and the bar keeps offering
   the deal, rather than resetting to 10:00 and pretending the urgency renewed.
 
-  The one place the wording is shortened is here: ENTIRE ORDER does not fit
-  beside a clock and a 40px bag on a 390px phone, so the empty-cart line reads
-  ADD TO CART FOR EXTRA 10% OFF. The full ENTIRE ORDER wording appears the moment
-  there is a cart, in this bar and in the drawer.
+  THE WORDING SHORTENS ON A PHONE, AND IT IS MEASURED. "ADD TO CART FOR EXTRA
+  10% OFF" wants 225px. Beside a clock and a 44px bag the message box is 175px
+  on a 320px phone and 215px on a 360px one, so it was cut off on both; at 390px
+  it fitted in exactly 225px -- zero slack -- which real Poppins, wider than a
+  fallback face, turns into a clip as well. Under 431px the words TO CART are
+  hidden, leaving "ADD FOR EXTRA 10% OFF" at about 165px, which clears even a
+  320px screen with 18px to spare. The full sentence returns above that width.
+  The item wording ("1 ITEM . EXTRA 10% OFF") always fitted and is untouched.
 
   Hidden while the drawer is open. Gated on #pgx so it appears on product pages
   only, as asked.
@@ -146,8 +150,13 @@
      the left. Nothing is centred, so a long message and a short one both look
      deliberate. */
   #pg-cartfab .pg-cs-sub{
-    margin-left:auto;
-    color:#EFE6FA;font-weight:800;overflow:hidden;text-overflow:ellipsis;
+    margin-left:auto;min-width:0;
+    color:#EFE6FA;font-weight:800;overflow:hidden;
+    /* clip, NOT ellipsis. The parent was already switched to clip so a tight
+       fit could not put dots back on the end of the offer; leaving ellipsis on
+       the child meant the dots came back the moment the child was the thing
+       that overflowed, which is exactly what happened on a 360px phone. */
+    text-overflow:clip;
   }
   #pg-cartfab .pg-cs-sub b{color:#D9B4FF;font-weight:900}
 
@@ -176,6 +185,17 @@
   /* the copy is longer than it was, so tighten it on narrow phones rather than
      let it ellipsis away the words that carry the offer */
   @media (max-width:430px){
+    /* MEASURED. "ADD TO CART FOR EXTRA 10% OFF" wants 225px. On a 320px phone
+       the message box is 175px and on a 360px phone 215px, so it was cut off on
+       both; at 390px it fitted in exactly 225px, i.e. with zero slack, which
+       real Poppins (wider than the headless fallback) turns into a clip too.
+       The wording drops to "ADD FOR EXTRA 10% OFF" here -- 21 characters
+       instead of 29, about 165px -- which clears 320px with 18px to spare. The
+       item wording ("1 ITEM . EXTRA 10% OFF") already fitted everywhere and is
+       untouched. */
+    #pg-cartfab .pg-cs-long{display:none}
+    /* and 4px of the bar's own inset back on each side, which is 8px of message */
+    #pg-cartfab{left:8px;right:8px}
     #pg-cartfab{padding:0 8px 0 14px;gap:9px}
     #pg-cartfab .pg-cs-msg{font-size:12.5px;letter-spacing:.02em;gap:6px}
     #pg-cartfab .pg-cs-clock{font-size:13.5px;padding:3px 7px}
@@ -261,10 +281,12 @@
       html = (r ? '<span class="pg-cs-clock">' + r.fmt() + '</span>' : '') +
              '<span class="pg-cs-sub">' + items + ' &middot; EXTRA <b>10% OFF</b></span>';
     } else {
-      /* nothing in the cart yet: show the offer anyway, with its own clock */
+      /* nothing in the cart yet: show the offer anyway, with its own clock.
+         TO CART is wrapped so the narrow-phone rule can drop it -- see the
+         measurement in the note at the top of the file. */
       var p = peekLeft();
       html = (p > 0 ? '<span class="pg-cs-clock">' + clockMs(p) + '</span>' : '') +
-             '<span class="pg-cs-sub">ADD TO CART FOR EXTRA <b>10% OFF</b></span>';
+             '<span class="pg-cs-sub">ADD<span class="pg-cs-long"> TO CART</span> FOR EXTRA <b>10% OFF</b></span>';
     }
     /* against what we last wrote, not innerHTML read back: `&middot;`
        parses to a literal character, so the read-back never matched the
