@@ -1,3 +1,103 @@
+# Orb volume tiers + the blank slab under the cart's subtotal pane
+
+Shop `www.thepocketera.com` (Pocket Era). Both changes are in a NEW DRAFT theme
+duplicated from the live one, `163067101412` — "PE orb volume tiers + cart pane
+(Claude)". Nothing was written to the live theme.
+
+## 1. Two more volume tiers on the Crystal Legends Orb
+
+The upsell ladder on the orb PDP is built at runtime by `window.pgLadder`
+(`sections/pg-theme-css.liquid`), then rewritten by `sections/pg-tile-copy.liquid`,
+which deletes pgLadder's dead Trio/Quad tiers and turns the Duo tile into
+Buy 2 Get 1 Free. So `pg-tile-copy` is where the ladder actually is, and where
+the new tiers were added — as additions:
+
+| tier | tile               | orbs | shown   | struck  | badge    |
+|------|--------------------|------|---------|---------|----------|
+| 0    | Single Item        | 1    | $34.99  | —       | —        |
+| 1    | Buy 2, Get 1 FREE  | 3    | $69.98  | $210.00 | Best Deal! |
+| 4    | Buy 4, Get 2 FREE  | 6    | $134.20 | $420.00 | SAVE 68% |
+| 5    | Buy 5, Get 3 FREE  | 8    | $169.95 | $560.00 | SAVE 70% |
+
+Tiers 0 and 1 are untouched — copy, prices and the "Best Deal!" badge all as
+they were. The new tiles are built with pgLadder's own classes and its own
+picker factory (`window.pgDrop`), one picker per orb, so its existing
+add-to-cart posts 6 and 8 units with no interception.
+
+Two things the shape of the existing code forced:
+
+- **Tier numbers 4 and 5, not 2 and 3.** `ladder()` deletes any tile numbered
+  2 or 3 (pgLadder's dead offers), so 2/3 would be built and destroyed on
+  alternating passes.
+- **Selection is normalised on the document.** pgLadder's per-tile click
+  handler is closed over the array of tiles *it* built, so it cannot clear
+  `pgx-sel` from a new tile — and add-to-cart reads the FIRST selected tile in
+  the document. One delegated listener now owns selection for every `.pgx-lad`.
+
+The shown prices are literal (in `EXTRA`, in cents): they are chosen price
+points, not arithmetic on $34.99. The struck-through figure is derived the same
+way tier 1 derives its own — compare-at × orbs in the pack.
+
+**Still needed before this draft goes live:** the matching automatic discounts.
+The store runs "PokeOrb - Buy 2 Get 1 Free" (repeating) and "Extra 10% off
+entire order", so 6 orbs currently bill $139.96 and 8 orbs $209.94 before the
+10%. Create `PokeOrb - Buy 4 Get 2 Free` (buy 4, get 2 at 100% off) and
+`PokeOrb - Buy 5 Get 3 Free` (buy 5, get 3 at 100% off) or the tiles promise a
+price checkout will not honour. Discounts are a live-store change, so they were
+deliberately left out of a draft-theme task.
+
+Verified in headless Chromium against a harness reproducing pgLadder's tiles,
+`pgDrop` and its add-to-cart: 37 checks — order, copy, prices, badges, picker
+counts, tiers 0/1 unchanged, one-tile-selected on every click, 6 / 8 / 3 / 1
+units posted per tier, sold-out variants never offered, no duplicate tiles under
+the 1.2s poll, and the new tiles removed if the ladder is torn down (leaving
+them would stop pgLadder rebuilding — its guard is `if
+(document.querySelector('.pgx-lad')) return`).
+
+## 2. The blank white slab under CHECKOUT in the cart drawer
+
+Three causes, all in `sections/pg-cart-mobile.liquid`, measured before and after
+in headless Chromium at 1280×900, 1024×1250 and 390×844, with 1, 2 and 12 items:
+
+| | before | after |
+|---|---|---|
+| scrollable white void below the pane | 346px | 0px |
+| blank strip inside the pane under CHECKOUT | 34px | 6px |
+| bare drawer ground below the last row | 14px | 0px |
+
+- **The skirt was laid out, not just painted.** `#cart .sticky-in-panel::after`
+  was a 400px-tall absolutely positioned box, and an abspos descendant extends
+  its scroll container's scrollable overflow — so every cart carried ~360px of
+  scrollable white below CHECKOUT. Measured: content 900px, `scrollHeight`
+  1260px; with the skirt suppressed, 900px and not scrollable at all. It is now
+  a 400px box-shadow **spread** from a zero-height box (shadows never contribute
+  to overflow), clipped downward. Not the offset shadow the file's own note
+  rejected — that one was `0 400px 0 0`, which slid the cover past the strip it
+  was meant to hide.
+- **The flex spacer was phones-only.** `#cart` is a flex column, so a short cart
+  drops its leftover height below the last child. `pg-cart-spacer` fixed that
+  under 760px and was removed on desktop. It is unconditional now, and is zero
+  pixels tall when there is nothing to absorb.
+- **`:last-child` was landing on a hidden node.** `pg-drawer`'s `pgPane()` moves
+  the payment strip into the pane as its last child and rule 4 hides it, so
+  pg-cart-fast's `> *:last-child{margin-bottom:0}` never reached the real last
+  visible row. The trailing margins are named explicitly now, and the pane's
+  bottom padding is trimmed at every width rather than under 600px only.
+
+Checkout button visibility is asserted in every case; the pane stays pinned
+(`position:sticky` untouched — the iOS Safari failure mode the file warns about
+is not gone near).
+
+## Applied to
+Shopify draft theme `163067101412` on `www.thepocketera.com`, via Admin API
+(`themeDuplicate` from live `163046228196`, then `themeFilesUpsert`).
+
+Files changed:
+- sections/pg-tile-copy.liquid
+- sections/pg-cart-mobile.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

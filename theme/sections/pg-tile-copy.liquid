@@ -1,0 +1,429 @@
+{%- comment -%}
+  PG Tile Copy: collapse the bundle ladder to one Buy 2 Get 1 Free tile.
+
+  WHERE THE TILES ACTUALLY COME FROM. There are two tile builders in this
+  theme and they look identical on screen:
+
+    - pg-landing renders server-side tiles, data-pgx-tile="single"/"double".
+    - pg-theme-css (window.pgLadder) renders .pgx-lad tiles from a TIERS array
+      -- Buy 1 / Duo 25% / Trio 50% / Quad +1 FREE -- and HIDES pg-landing's
+      with display:none.
+
+  The ladder wins, so the ladder is what a shopper sees, and it is what has to
+  change. An earlier pass rewrote pg-landing's tiles instead: correct code
+  aimed at markup that is display:none on every product page.
+
+  WHY NOT EDIT pg-theme-css. That file is 73KB and holds the storefront's
+  entire visual layer. Its TIERS array is four lines of it. Rewriting the whole
+  file through the API to change four lines risks the other 73KB for no reason,
+  so the ladder is edited after it is built instead.
+
+  WHAT THIS DOES on the orb and the wall art:
+
+    - deletes the Trio and Quad tiles (tiers 2 and 3). Neither offer exists any
+      more: the only discount on these products is Buy 2 Get 1 Free.
+    - rewrites the Duo tile into that offer -- title, badge, chip, the free-unit
+      line, and the price: two units paid against three at MSRP.
+    - makes it add THREE units.
+
+  HOW THE THIRD UNIT IS ADDED. pgLadder's own add-to-cart counts the .pg-drop
+  pickers inside the selected tile and multiplies by data-pg-mul. So there is
+  nothing to intercept -- give the tile a third picker, or raise the
+  multiplier, and it posts three units through pgLadder's existing path.
+
+  Two shapes, because pgLadder builds the tile differently depending on how
+  many variants a product has:
+
+    - MANY variants (the orb): one picker per unit. A third picker is appended,
+      built with window.pgDrop -- the same factory pgLadder uses. It is NOT
+      cloned: .pg-drop carries a pgValue() method on the element, and
+      cloneNode copies markup but not properties, so a cloned picker would
+      throw the moment add-to-cart read it.
+    - ONE variant (the wall art): a single picker, and data-pg-mul carries the
+      count. The multiplier moves to 3 and pgLadder's x N badge is removed.
+
+  Anything not on Buy 2 Get 1 Free -- the R36S with its own Duo Pack, any
+  future product -- is left exactly as pgLadder built it.
+
+  ------------------------------------------------------------------ VOLUME
+
+  THE EXTRA VOLUME TIERS, ORB ONLY. Two more tiles are appended below the Buy 2
+  Get 1 Free tile:
+
+      Buy 4, Get 2 FREE ..... 6 orbs ..... $134.20
+      Buy 5, Get 3 FREE ..... 8 orbs ..... $169.95
+
+  Single and Buy 2 Get 1 Free are NOT touched -- not their copy, not their
+  prices, not their badge. The new tiles are additions and nothing else.
+
+  WHY THE PRICES ARE LITERAL. Every other figure on the ladder is derived from
+  the variant price, but these two are chosen price points, not arithmetic on
+  $34.99 (6 x 34.99 = $209.94, and 4 paid units is $139.96 -- neither is
+  $134.20). They are carried in EXTRA below in cents, which is the one place to
+  edit them. The struck-through figure IS derived, the same way tier 1 derives
+  its own: compare-at x the number of orbs in the pack, so the two tiles are
+  measured against MSRP exactly like the tile above them.
+
+  THE BADGE IS THE SAVING, NOT A SUPERLATIVE. Tier 1 carries "Best Deal!" and
+  keeping it there was the instruction, so the new tiles cannot claim to be the
+  best of anything without contradicting it. They carry the percentage they
+  actually save against the struck price shown beside it -- 68% and 70% against
+  tier 1's implied 67% -- which rises with the pack and argues for itself.
+
+  TIER NUMBERS 4 AND 5, NOT 2 AND 3. ladder() above deletes any tile whose
+  data-pg-tier is '2' or '3' -- those are pgLadder's dead Trio and Quad offers.
+  Numbering the new tiles 2 and 3 would have them built and deleted on
+  alternating passes, about once a second.
+
+  SELECTION HAS TO BE NORMALISED. pgLadder gives each tile it builds a click
+  handler closed over ITS OWN array of tiles, so a click on one of those clears
+  pgx-sel from pgLadder's tiles only -- a selected tile of ours would stay
+  selected alongside it, and add-to-cart reads the FIRST selected tile in the
+  document. One delegated listener on the document therefore owns selection for
+  every .pgx-lad: it runs after pgLadder's own handler and leaves exactly one
+  tile selected either way. Nothing else about add-to-cart changes -- the new
+  tiles are ordinary .pgx-lad tiles with one .pg-drop per orb and
+  data-pg-mul="1", so pgLadder's existing path posts 6 or 8 units unaided.
+
+  THE CHECKOUT SIDE IS NOT THEME WORK. pgLadder's own note says it: a tile
+  promises a price that only a matching automatic discount can honour. The
+  discounts for these two tiers do not exist yet -- the store currently runs
+  "PokeOrb - Buy 2 Get 1 Free" (repeating) and "Extra 10% off entire order" --
+  so 6 orbs bill at $139.96 before the 10% and 8 orbs at $209.94 before it.
+  Creating discounts is a live-store change, not a draft-theme one, so it is
+  deliberately left to the owner:
+
+      PokeOrb - Buy 4 Get 2 Free ... buy 4 of the orb, get 2 at 100% off
+      PokeOrb - Buy 5 Get 3 Free ... buy 5 of the orb, get 3 at 100% off
+
+  Both must exist before this draft is published.
+{%- endcomment -%}
+<style>
+  #pgx .pgx-deal-note{
+    margin:2px 0 12px !important;
+    font-size:12.5px;
+    line-height:1.45;
+    color:#A99BC0;
+    text-align:center;
+  }
+  #pgx .pgx-deal-note b{color:#C79BEA;font-weight:700}
+</style>
+<script>
+(function(){
+  if (window.pgTileCopy) return; window.pgTileCopy = 1;
+
+  var FROM = /^buy\s*1$/i;
+  var TO = 'Single Item';
+  var TILES = '#pgx .pgx-tile, #pgx [class*="pgx-lad"]';
+
+  /* Products running Buy 2 Get 1 Free. */
+  var B2G1 = {
+    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {noun: 'Orb', chip: '+3 FREE LED Bases'},
+    'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {noun: 'Print', chip: '+3 PRINTS'}
+  };
+
+  function handle(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    return m ? m[1] : '';
+  }
+  var HANDLE = handle();
+  var PACK = B2G1[HANDLE] || null;
+
+  /* The extra volume tiers, orb only. `pay` is the price shown, in cents, and
+     is a chosen price point rather than arithmetic on the variant price -- see
+     the note at the top of the file. `units` is how many orbs the tile adds to
+     the cart, and how many pickers it therefore draws. The struck-through
+     figure is NOT here: it is compare-at x units, derived at render time so it
+     matches the tile above. */
+  var EXTRA_ON = HANDLE.indexOf('pokemon-crystal') !== -1;
+  var EXTRA = [
+    {tier: '4', units: 6, free: 2, pay: 13420, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
+    {tier: '5', units: 8, free: 3, pay: 16995, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases'}
+  ];
+
+  var NOTE = PACK
+    ? 'Buy 2, get your <b>3rd free</b> &mdash; the free one comes off automatically at checkout.'
+    : 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  function swapIn(root){
+    if (!root || root.nodeType !== 1) return;
+    var walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
+    var hits = [], n;
+    while ((n = walker.nextNode())){
+      if (FROM.test((n.nodeValue || '').trim())) hits.push(n);
+    }
+    hits.forEach(function(t){ t.nodeValue = t.nodeValue.replace(/buy\s*1/i, TO); });
+    return hits.length > 0;
+  }
+
+  var variants = null;
+  function vdata(){
+    if (variants) return variants;
+    var el = document.getElementById('pgx-vdata');
+    if (!el) return null;
+    try { variants = JSON.parse(el.textContent); } catch(e){ variants = null; }
+    return variants;
+  }
+
+  /* ---------------- picker options ----------------
+     #pgx-vdata carries id / size / price / cap and NO images, which is fine
+     for pricing and wrong for a picker: pgDrop renders a thumbnail per row, so
+     options built from vdata gave the third picker a column of broken-image
+     icons and a list wide enough to need a horizontal scrollbar.
+
+     So the options come from the same place pgLadder gets its own -- the
+     product JSON, with each variant's featured image and the product's first
+     image as the fallback. Fetched once and cached; ladder() runs on an
+     interval, so the picker is built on whichever pass the fetch lands by. */
+  var VOPTS = null, optsBusy = false;
+  function loadOpts(){
+    if (VOPTS || optsBusy || !HANDLE) return VOPTS;
+    optsBusy = true;
+    fetch('/products/' + HANDLE + '.js').then(function(r){ return r.json(); }).then(function(p){
+      var fallback = (p.images && p.images[0]) || '';
+      VOPTS = (p.variants || []).filter(function(v){ return v.available !== false; })
+        .map(function(v){
+          return {
+            id: v.id,
+            t: v.title,
+            img: (v.featured_image && v.featured_image.src) || fallback
+          };
+        });
+      optsBusy = false;
+    }).catch(function(){ optsBusy = false; });
+    return VOPTS;
+  }
+
+  function put(el, text){
+    if (el && el.textContent !== text) el.textContent = text;
+  }
+
+  /* ---------------- the ladder ---------------- */
+
+  function ladder(){
+    if (!PACK) return;
+    var tiles = document.querySelectorAll('#pgx .pgx-lad');
+    if (!tiles.length) return;                 /* pgLadder has not built yet */
+
+    /* 1. the offers that no longer exist */
+    tiles.forEach(function(t){
+      var tier = t.getAttribute('data-pg-tier');
+      if (tier === '2' || tier === '3'){
+        /* if the shopper had one of them selected, hand selection back to Buy 1 */
+        var wasSel = t.classList.contains('pgx-sel');
+        if (t.parentNode) t.parentNode.removeChild(t);
+        if (wasSel){
+          var first = document.querySelector('#pgx .pgx-lad[data-pg-tier="0"]');
+          if (first){ first.classList.add('pgx-sel'); first.setAttribute('aria-checked', 'true'); }
+        }
+      }
+    });
+
+    /* 2. the pack tile */
+    var tile = document.querySelector('#pgx .pgx-lad[data-pg-tier="1"]');
+    if (!tile) return;
+
+    var vs = vdata();
+    if (!vs || !vs.length) return;
+    var unit = vs[0].price;
+    var cap  = vs[0].cap > unit ? vs[0].cap : unit;
+
+    put(tile.querySelector('.pgx-lad-t b'), 'Buy 2, Get 1 FREE');
+    put(tile.querySelector('.pgx-lad-chip'), PACK.chip);
+    put(tile.querySelector('.pgx-lad-save'), '3rd ' + PACK.noun + ' = FREE!');
+    put(tile.querySelector('.pgx-lad-badge'), 'Best Deal!');
+    put(tile.querySelector('.pgx-lad-px b'), money(unit * 2));
+    put(tile.querySelector('.pgx-lad-px s'), money(cap * 3));
+
+    /* 3. three units, through pgLadder's own add-to-cart */
+    var picks = tile.querySelector('.pgx-lad-picks');
+    if (!picks) return;
+    var drops = picks.querySelectorAll('.pg-drop');
+
+    if (drops.length > 1){
+      /* one picker per unit: add the third, built the way pgLadder builds them */
+      if (drops.length >= 3) return;
+      if (typeof window.pgDrop !== 'function') return;   /* no factory, no guess */
+      var opts = loadOpts();
+      if (!opts || !opts.length) return;                 /* still loading: next pass */
+      var row = document.createElement('div');
+      row.className = 'pgx-lad-row';
+      row.appendChild(window.pgDrop(opts, opts[2 % opts.length].id, null));
+      picks.appendChild(row);
+      tile.dataset.pgMul = '1';
+    } else if (drops.length === 1){
+      /* Single design (the wall art): pgLadder gives the tile ONE picker and
+         carries the count on data-pg-mul, with a x N badge beside it.
+
+         The multiplier moves to 3 -- that is what actually decides how many
+         units add-to-cart posts. The badge is REMOVED rather than relabelled:
+         it is the only place in the tile that repeats the count, the title and
+         the "+3 PRINTS" chip already say it, and while it was drawn by
+         pgLadder it kept showing the old x2 next to an offer that gives three.
+         One fewer number, and no chance of it disagreeing with the cart. */
+      tile.dataset.pgMul = '3';
+      var pickRow = picks.querySelector('.pgx-lad-row');
+      if (pickRow){
+        var xb = pickRow.querySelector('b');
+        if (xb && xb.parentNode) xb.parentNode.removeChild(xb);
+      }
+    }
+  }
+
+  /* ---------------- the extra volume tiers ----------------
+
+     Built exactly the way pgLadder builds its own -- same classes, same head /
+     price / picks structure, same picker factory -- so they inherit the
+     ladder's styling and its add-to-cart without either being told about them.
+     Appended after the last ladder tile, which is the Buy 2 Get 1 Free tile
+     once ladder() has removed the dead ones, so the order on screen reads
+     Single, Buy 2 Get 1, Buy 4 Get 2, Buy 5 Get 3.
+
+     Everything here is a no-op unless the pack tile is on screen: if pgLadder
+     tears the ladder down (it rebuilds whenever no .pgx-lad is left) these
+     tiles go with it, because leaving them standing is what would stop it
+     rebuilding at all -- its own guard is `if (document.querySelector('.pgx-lad')) return`. */
+
+  function ord(k){
+    var t = k % 10, h = k % 100;
+    if (t === 1 && h !== 11) return k + 'st';
+    if (t === 2 && h !== 12) return k + 'nd';
+    if (t === 3 && h !== 13) return k + 'rd';
+    return k + 'th';
+  }
+
+  /* "5th & 6th Orb = FREE!", "6th, 7th & 8th Orb = FREE!" -- the same sentence
+     tier 1 gets from ladder(), widened to name more than one free unit. */
+  function freeLine(units, free, noun){
+    var parts = [];
+    for (var i = units - free + 1; i <= units; i++) parts.push(ord(i));
+    var last = parts.pop();
+    return (parts.length ? parts.join(', ') + ' & ' : '') + last + ' ' + noun + ' = FREE!';
+  }
+
+  function extraTile(E, cap, opts){
+    var full = cap * E.units;
+    var pct = full > E.pay ? Math.round((full - E.pay) / full * 100) : 0;
+
+    var tile = document.createElement('div');
+    tile.className = 'pgx-tile pgx-lad';
+    tile.setAttribute('role', 'radio');
+    tile.setAttribute('aria-checked', 'false');
+    tile.setAttribute('tabindex', '0');
+    tile.setAttribute('data-pg-tier', E.tier);
+    tile.setAttribute('data-pg-extra', '1');
+    tile.dataset.pgMul = '1';
+
+    tile.innerHTML = (pct > 0 ? '<span class="pgx-lad-badge">SAVE ' + pct + '%</span>' : '')
+      + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
+      + '<div class="pgx-lad-t"><b>' + E.title + '</b>'
+      + '<span class="pgx-lad-chip">' + E.chip + '</span>'
+      + '<div class="pgx-lad-save">' + freeLine(E.units, E.free, PACK.noun) + '</div></div>'
+      + '<div class="pgx-lad-px"><b>' + money(E.pay) + '</b><s>' + money(full) + '</s></div></div>'
+      + '<div class="pgx-lad-picks"><div class="lbl">Choose your Poke Balls</div></div>';
+
+    /* One picker per orb, built with pgLadder's own factory rather than cloned
+       -- .pg-drop carries pgValue() as a property on the element, and cloneNode
+       copies markup but not properties, so a cloned picker throws the moment
+       add-to-cart reads it. */
+    var picks = tile.querySelector('.pgx-lad-picks');
+    for (var i = 0; i < E.units; i++){
+      var row = document.createElement('div');
+      row.className = 'pgx-lad-row';
+      row.appendChild(window.pgDrop(opts, opts[i % opts.length].id, null));
+      picks.appendChild(row);
+    }
+    return tile;
+  }
+
+  function extras(){
+    if (!EXTRA_ON || !PACK) return;
+
+    var pack = document.querySelector('#pgx .pgx-lad[data-pg-tier="1"]');
+    if (!pack){
+      /* no pack tile means no ladder (or one mid-rebuild): ours must not
+         outlive it, or pgLadder never rebuilds */
+      document.querySelectorAll('#pgx .pgx-lad[data-pg-extra]').forEach(function(t){
+        if (t.parentNode) t.parentNode.removeChild(t);
+      });
+      return;
+    }
+
+    if (typeof window.pgDrop !== 'function') return;
+    var vs = vdata();
+    if (!vs || !vs.length) return;
+    var unit = vs[0].price;
+    var cap  = vs[0].cap > unit ? vs[0].cap : unit;
+    var opts = loadOpts();
+    if (!opts || !opts.length) return;                  /* still loading: next pass */
+
+    EXTRA.forEach(function(E){
+      if (document.querySelector('#pgx .pgx-lad[data-pg-tier="' + E.tier + '"]')) return;
+      var all = document.querySelectorAll('#pgx .pgx-lad');
+      var after = all[all.length - 1];
+      if (!after || !after.parentNode) return;
+      after.parentNode.insertBefore(extraTile(E, cap, opts), after.nextSibling);
+    });
+  }
+
+  /* ONE OWNER FOR SELECTION. pgLadder's per-tile handler is closed over the
+     array of tiles IT built, so it cannot clear pgx-sel from ours and ours
+     could not clear it from its. Add-to-cart reads the first selected tile in
+     the document, so two selected tiles silently charge for the wrong one.
+     This delegated listener runs after whichever handler fired and leaves
+     exactly one .pgx-lad selected, whoever built it. */
+  function ownSelection(){
+    document.addEventListener('click', function(e){
+      if (!e.target || !e.target.closest) return;
+      var hit = e.target.closest('#pgx .pgx-lad');
+      if (!hit) return;
+      document.querySelectorAll('#pgx .pgx-lad').forEach(function(t){
+        var on = t === hit;
+        t.classList.toggle('pgx-sel', on);
+        t.setAttribute('aria-checked', on ? 'true' : 'false');
+      });
+    });
+  }
+
+  function note(){
+    var root = document.getElementById('pgx');
+    if (!root || root.querySelector('.pgx-deal-note')) return;
+    if (!root.querySelector('.pgx-tile, [class*="pgx-lad"]')) return;
+    var atc = root.querySelector('.pgx-atc');
+    if (!atc || !atc.parentNode) return;
+    var p = document.createElement('p');
+    p.className = 'pgx-deal-note';
+    p.innerHTML = NOTE;
+    atc.parentNode.insertBefore(p, atc);
+  }
+
+  function pass(){
+    document.querySelectorAll(TILES).forEach(function(tile){
+      if (tile.dataset.pgCopy) return;
+      if (swapIn(tile)) tile.dataset.pgCopy = '1';
+    });
+    ladder();
+    extras();
+    note();
+  }
+
+  function boot(){
+    ownSelection();
+    pass();
+    var root = document.getElementById('pgx');
+    if (root){
+      try { new MutationObserver(pass).observe(root, {childList: true, subtree: true}); } catch(e){}
+    }
+    /* pgLadder rebuilds on its own 3s timer whenever .pgx-lad is missing, so
+       this keeps pace with it rather than running once */
+    setInterval(pass, 1200);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Tile Copy", "settings": []}
+{% endschema %}
