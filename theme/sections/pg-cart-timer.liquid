@@ -48,7 +48,16 @@
 
   It is now an automatic discount, so Shopify does the applying. Nothing is
   intercepted, the cart total arrives already reduced, and checkout charges what
-  the cart said. RUSH10 is deactivated so it cannot be stacked a second time.
+  the cart said.
+
+  RUSH10 ITSELF IS LEFT ACTIVE, deliberately. It was deactivated first, and that
+  was wrong while an older theme was still published: that theme still routes
+  CHECKOUT through /discount/RUSH10, and a dead code there would have shown real
+  shoppers an invalid-code error on the way to paying. It is safe to leave on --
+  measured, walking a cart through /discount/RUSH10 with the automatic discount
+  live left the total unchanged at $62.99, because RUSH10 is set not to combine
+  with order discounts, so Shopify takes one or the other and never both. Once
+  this theme is the published one, RUSH10 can be retired.
 
   THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED --
   the shopper does not have to type a code or hunt for a field, the 10% is on
@@ -208,8 +217,10 @@
      The 10% is now an AUTOMATIC order discount instead, so Shopify applies it to
      the cart itself. total_price arrives already reduced, the drawer's own rows
      show it, the banner is true when it says APPLIED, and checkout charges the
-     same figure the cart showed. Nothing needs to be intercepted, and the code
-     RUSH10 is deactivated so it cannot be applied a second time on top. */
+     same figure the cart showed. Nothing needs to be intercepted. RUSH10 is left
+     active only so the previously published theme, which still redirects through
+     it, does not send shoppers to an invalid-code error; it cannot stack, since
+     it is set not to combine with order discounts. */
 
   function boot(){
     poll();

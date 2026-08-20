@@ -49,6 +49,21 @@
      a missing .pg-tt simply leaves the theme's own rows visible. */
   #cart .sticky-in-panel .l4tt:has(li.pg-tt) li:not(.pg-tt){display:none !important}
 
+  /* THE SECOND STAGE OF THE POP-IN. The rule above can only act once pg-drawer
+     has tagged its row, so for the first beat the theme's whole totals list is
+     on screen: measured 117px tall, collapsing to 27px when the tag lands. That
+     90px is the last real layout jump in the drawer -- it lifts CHECKOUT and
+     everything under it up the screen a moment after the cart opens.
+
+     So the list starts collapsed instead, and grows only if the tag never
+     arrives. pg-tt-wait is added by render() the moment an untagged .l4tt is
+     seen, which is before the first paint of the open drawer, and removed by a
+     timeout if .pg-tt has still not appeared -- so the safety the :has() guard
+     was written for survives: a pg-drawer that never runs, or that renames its
+     class, still ends up showing the theme's own rows rather than a pane with no
+     amount charged on it anywhere. */
+  #cart .sticky-in-panel .l4tt.pg-tt-wait li:not(.pg-tt){display:none !important}
+
   #cart .pg-tot{
     /* POP-IN. This box used to be created only once /cart.js came back, about
        two seconds after the drawer opened, and inserting a 38px block above the
@@ -179,11 +194,44 @@
     });
   }
 
+  /* THE BADGE AND THE STRUCK PRICE DISAGREED. nc-linesave draws each row as
+     was / now / a "Save N%" pill, and it worked the two figures out from
+     different bases: the struck figure is the COMPARE-AT ($210.00 for three
+     orbs) while the pill was the discount off the SELLING price ("Save 10%").
+     Measured on a nine-orb cart: $210.00 struck, $94.48 charged, pill "Save
+     10%" -- the real reduction from the number beside it is 55%. A shopper who
+     checks the arithmetic finds it wrong, and the pill undersells the offer by
+     a factor of five.
+
+     The pill is recomputed from the two figures the row is ALREADY showing, so
+     it cannot disagree with them whatever nc-linesave does upstream: no cart
+     lookup, no variant matching, no second source of truth to drift from. Rows
+     it cannot parse are left exactly as they were. */
+  function money2c(t){
+    if (!t) return null;
+    var m = String(t).replace(/,/g, '').match(/\$\s*([\d]+(?:\.\d{1,2})?)/);
+    return m ? Math.round(parseFloat(m[1]) * 100) : null;
+  }
+  function fixBadges(){
+    var rows = document.querySelectorAll('#cart .l4ca li');
+    Array.prototype.forEach.call(rows, function(li){
+      var off = li.querySelector('.nc-lsave-off');
+      if (!off) return;
+      var was = money2c((li.querySelector('.nc-lsave-was') || {}).textContent);
+      var now = money2c((li.querySelector('.nc-lsave-now') || {}).textContent);
+      if (was === null || now === null || was <= 0 || now > was) return;
+      var pct = Math.round((was - now) / was * 100);
+      var text = 'Save ' + pct + '%';
+      if (off.textContent.trim() !== text) off.textContent = text;
+    });
+  }
+
   function render(){
     /* ahead of the VMAP guard: the background must go white even if the
        product feed never loads */
     lightenBottom();
     sizeTotal();
+    fixBadges();
     var pane = document.querySelector('#cart .sticky-in-panel');
     if (!pane) return;
 
@@ -195,6 +243,21 @@
       box.className = 'pg-tot';
       pane.insertBefore(box, pane.querySelector('.l4tt') || pane.firstChild);
     }
+    /* collapse the theme's totals list up front -- see the pg-tt-wait note in
+       the stylesheet. The timeout is the escape hatch, not the mechanism. */
+    var tt = pane.querySelector('.l4tt');
+    if (tt){
+      if (tt.querySelector('li.pg-tt')){
+        tt.classList.remove('pg-tt-wait');
+      } else if (!tt.classList.contains('pg-tt-wait') && !tt.hasAttribute('data-pg-waited')){
+        tt.classList.add('pg-tt-wait');
+        tt.setAttribute('data-pg-waited', '1');
+        setTimeout(function(){
+          if (!tt.querySelector('li.pg-tt')) tt.classList.remove('pg-tt-wait');
+        }, 1500);
+      }
+    }
+
     if (!VMAP) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
       var items = c.items || [];
