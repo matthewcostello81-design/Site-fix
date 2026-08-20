@@ -73,10 +73,22 @@
 <style>
   /* --- 3. see note above --- */
   /* .m6pn is a SIBLING of #cart, not a descendant -- measured: a `#cart .m6pn`
-     rule matched nothing. Listed bare, and #cart kept for the drawer itself. */
-  #cart,
-  .m6pn,
-  #cart .l4ca{
+     rule matched nothing. Listed bare, and #cart kept for the drawer itself.
+
+     GATED ON THE DRAWER BEING OPEN. These two declarations turn the drawer into
+     a scroll container that swallows overscroll, which is right while it is on
+     screen and wrong the rest of the time: #cart and .m6pn are position:fixed at
+     the full size of the viewport on EVERY page, so unscoped this left a
+     full-screen scrollable overlay sitting over the site permanently. Measured
+     on a closed drawer: fixed, 0..844, overflow-y auto -- invisible and
+     pointer-events:none, but still a scroller as far as the engine is
+     concerned, which is the sort of thing iOS gets strange about at the end of a
+     page. html.m6pn-open is the theme's own open-state class (confirmed: absent
+     when closed, present when open), so the containment now exists only for the
+     moments it is needed. */
+  html.m6pn-open #cart,
+  html.m6pn-open .m6pn,
+  html.m6pn-open #cart .l4ca{
     overscroll-behavior:contain;
     -webkit-overflow-scrolling:touch;
   }
@@ -268,7 +280,12 @@
       if (!vv) return;
       var aside = document.querySelector('.m6pn');
       if (!aside) return;
-      if (!window.matchMedia('(max-width:760px)').matches){
+      /* only while the drawer is actually open, and only on a phone. This used
+         to stamp an inline height on the closed drawer on every mobile page --
+         a permanent inline size on a full-screen fixed overlay nobody was
+         looking at. Same reasoning as the CSS gate above. */
+      var open = document.documentElement.classList.contains('m6pn-open');
+      if (!open || !window.matchMedia('(max-width:760px)').matches){
         aside.style.removeProperty('height');
         aside.removeAttribute('data-pg-h');
         return;
@@ -286,6 +303,14 @@
   }
   window.addEventListener('resize', fitDrawer);
   window.addEventListener('orientationchange', function(){ setTimeout(fitDrawer, 250); });
+  /* the gate above means the drawer must be measured as it OPENS, not only when
+     the viewport changes -- the open-state class lands on <html>, which the
+     #cart observer below does not watch */
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    if (!e.target.closest('[href="/cart"], .pgx-cart, .nc-cart-toggle, #pg-cartfab, [data-cart-toggle]')) return;
+    [120, 400, 900].forEach(function(ms){ setTimeout(fitDrawer, ms); });
+  }, true);
 
   /* ---- 5. stars either side of the wordmark ---- */
   function stars(){
