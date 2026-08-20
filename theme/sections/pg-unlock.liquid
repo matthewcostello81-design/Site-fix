@@ -79,31 +79,31 @@
 {%- endcomment -%}
 <style>
   #cart .pg-unlock{
-    display:flex;align-items:center;gap:12px;
+    display:flex;align-items:center;gap:14px;
     flex-wrap:wrap;          /* the chooser panel is flex:1 1 100% -- without wrap
                                 at EVERY width it cannot drop to its own line, so
                                 on the ~485px desktop drawer it sat beside the
                                 copy and crushed the title to one word per line */
-    margin:10px 0 4px;padding:11px 13px;
+    margin:10px 0 4px;padding:13px 14px;
     border:1px solid rgba(122,47,162,.3);border-radius:14px;
     background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
     box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
     font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
   }
-  #cart .pg-unlock img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock img{width:66px;height:66px;border-radius:12px;object-fit:cover;flex:none;background:#efe4f8}
   #cart .pg-unlock-t{flex:1;min-width:0}
-  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
-  #cart .pg-unlock-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-t b{display:block;font-size:16px;line-height:1.28;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:13px;line-height:1.35;color:#6E5C80;margin-top:3px}
   #cart .pg-unlock-tag{
-    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
-    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    display:inline-block;margin-top:5px;padding:4px 11px;border-radius:999px;
+    font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
   }
   #cart .pg-unlock-add{
     flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
     background-image:none !important;color:#7A2FA2 !important;
-    border-radius:999px !important;padding:9px 18px !important;
-    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    border-radius:999px !important;padding:11px 20px !important;
+    font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;
     animation:none !important;transition:background .15s ease,color .15s ease;
   }
   #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
@@ -113,12 +113,12 @@
      desktop -- image, copy, button -- the button simply drops to its own full
      width line instead of shrinking the copy to nothing. */
   @media(max-width:600px){
-    #cart .pg-unlock{flex-wrap:wrap;gap:10px}
-    #cart .pg-unlock img{width:46px;height:46px}
+    #cart .pg-unlock{flex-wrap:wrap;gap:12px}
+    #cart .pg-unlock img{width:60px;height:60px}
     #cart .pg-unlock-t{flex:1 1 60%;min-width:0}
-    #cart .pg-unlock-t b{font-size:13px}
-    #cart .pg-unlock-t small{font-size:11.5px}
-    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:11px 18px !important;font-size:13.5px}
+    #cart .pg-unlock-t b{font-size:15.5px}
+    #cart .pg-unlock-t small{font-size:12.5px}
+    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:13px 18px !important;font-size:15px}
   }
 
   /* ---------------- the design chooser ----------------
@@ -410,6 +410,12 @@
         image: rec.item.image,
         price: rec.item.price,
         rung: rung,
+        /* the PDP tier this offer lands them on: `at` is the rung's paid units
+           and `freeUnits` what comes with it, i.e. exactly the "Buy 4, Get 2
+           FREE" the product page advertises. Carried so the cart row can name
+           the bundle instead of only describing the step. */
+        tierPaid: at,
+        tierFree: freeUnits,
         need: need,
         paidAdded: paidAdded,
         freeAdded: freeAdded,
@@ -506,13 +512,21 @@
         /* they have already paid their way to this rung: everything on offer
            is free, however many units that is */
         title = 'Add your FREE ' + o.freeNth + ' ' + o.name + (o.freeAdded === 1 ? '' : 's');
-        note = 'You already qualify - ' + (o.freeAdded === 1 ? 'this one costs' : 'these cost') + ' nothing';
+        note = 'You already qualify for Buy ' + o.tierPaid + ', Get ' + o.tierFree +
+               ' FREE - ' + (o.freeAdded === 1 ? 'this one costs' : 'these cost') + ' nothing';
       } else {
         /* They pay for N more and N+M arrive. That is the sentence -- not
            "add 3 more", which reads as though the offer moved further away the
            moment they bought one. */
-        title = 'Buy ' + o.paidAdded + ' more, get ' + o.freeAdded + ' FREE';
-        note = 'Adds ' + o.need + ' to your cart - you only pay for ' + o.paidAdded;
+        /* NAME THE BUNDLE. "Buy 1 more, get 1 FREE" is arithmetically right
+           but it never says WHICH deal it is walking them into, so a shopper
+           sitting on the 6-orb Buy 4 Get 2 could not tell the row was stepping
+           them up to the 8-orb Buy 5 Get 3 -- it read like a fourth, unrelated
+           offer. The tier goes in the headline and the step stays in the note,
+           so the row answers "what do I get" before "what does it cost". */
+        title = 'Unlock Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
+        note = 'Add ' + o.paidAdded + ' more (' + (o.tierPaid + o.tierFree) + ' ' +
+               o.name.toLowerCase() + 's total) - ' + o.freeAdded + ' of them free';
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;

@@ -171,6 +171,14 @@ html body .pgx-opt.has-select select option{background:#16101F !important;color:
 
 /* ---------- sticky buy bar ---------- */
 #pg-sticky{background:rgba(11,7,16,.96) !important;border-top-color:rgba(168,120,214,.22) !important}
+/* The announcement marquee crawls. pg-theme-css sets
+   `.pg-marq{animation:pgMarqScroll 45s linear infinite !important}` -- four
+   messages over 45 seconds is about eleven seconds a message, slow enough that
+   the bar reads as static. That rule is !important inside a 73KB shared file,
+   so it is beaten here on specificity rather than by editing it: `html body
+   .pg-marq` is (0,1,2) against its (0,1,0), which wins whatever the source
+   order turns out to be. 20s is roughly five seconds a message. */
+html body .pg-marq{animation:pgMarqScroll 20s linear infinite !important}
 .pgst-t{color:#F1EDF7 !important}
 .pgst-p{color:#C79BEA !important}
 .pgst-p s{color:#8A7C9C !important}

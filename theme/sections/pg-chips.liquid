@@ -92,7 +92,7 @@
     /* same geometry as STYLE below, so a pill painted before the stamp lands is
        already the right width instead of resizing under the shopper */
     width:fit-content;max-width:100%;min-width:0;
-    padding:5px 9px 5px 9px;text-indent:0
+    padding:4px 7px 4px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
   }
 
   /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
@@ -124,24 +124,37 @@
      word plus a tracked space trailing the % sign -- the badge read as a wide
      slab with the number floating in the middle of it.
 
-     Padding comes down to 9px, and the trailing space is taken back rather than
-     balanced: letter-spacing applies AFTER the last glyph too, so the old fix
-     was to indent by the same amount and re-centre, which kept the gap and
-     added one at the front. Trimming padding-right by the same .05em removes it
-     instead, and text-indent goes with it -- there is nothing left to
-     compensate for. */
+     Measured in Chromium against the drawer's own grid: the pill hugs its glyphs
+     exactly -- 0px of slack on either side -- so nothing is stretching it and
+     there is no layout bug to find. It was simply BUILT wide: 18px of padding
+     and .05em of tracking around a 13px word, 96.7px of purple for 79.3px of
+     letters. The width therefore comes off the things that actually hold it.
+     Padding to a symmetric 7px, size back to the 12px the theme drew it at, and
+     tracking off altogether -- 81.8px for 67.8px of letters.
+
+     letter-spacing goes to `normal` rather than a smaller number because it
+     applies AFTER the final glyph as well, so any non-zero value leaves a gap
+     trailing the % sign. Earlier passes tried to balance that (indent by the
+     same amount, then trim padding-right by it) and both kept the gap while
+     adding arithmetic; removing the tracking removes the problem, and
+     text-indent goes with it. word-spacing and column-gap are pinned for the
+     same reason: neither was ever reset, so an inherited value on either could
+     widen the pill at the space in "SAVED 55%" without appearing in any rule
+     here. */
   var STYLE = {
     'display': 'inline-flex',
     'align-items': 'center',
     'justify-content': 'center',
     'text-align': 'center',
-    'font-size': '13px',
+    'font-size': '12px',
     'line-height': '1',
-    'padding-top': '5px',
-    'padding-bottom': '5px',
-    'padding-left': '9px',
-    'padding-right': 'calc(9px - .05em)',
-    'letter-spacing': '.05em',
+    'padding-top': '4px',
+    'padding-bottom': '4px',
+    'padding-left': '7px',
+    'padding-right': '7px',
+    'letter-spacing': 'normal',
+    'word-spacing': 'normal',
+    'column-gap': '0',
     'text-indent': '0',
     'border-radius': '999px',
     'width': 'fit-content',
@@ -150,12 +163,29 @@
     'flex': 'none'
   };
 
+  /* THE STAMP RE-ASSERTS, AND IT DOES NOT WAIT. Two faults, one fix.
+     pg-drawer builds every pill with its OWN inline !important geometry
+     (font-size:12px, line-height:1.5, padding:4px 12px), and inline !important
+     can only be beaten by inline !important -- this stamp. It used to mark each
+     element with dataset.pgChip and skip it forever after, so any pill the
+     drawer rebuilt in place kept the wide slab; and it only ran on a 300ms
+     interval, so even a fresh pill wore that slab for up to a third of a second
+     and visibly snapped narrower under the shopper. The guard is now the
+     rendered value rather than a one-shot flag, and an observer runs it in the
+     same task the pill is inserted in. setProperty with an unchanged value is
+     free, so re-checking costs nothing. */
   function stamp(){
     document.querySelectorAll(SEL).forEach(function(el){
-      if (el.dataset.pgChip) return;
-      el.dataset.pgChip = '1';
+      if (el.style.paddingLeft === '7px' && el.style.letterSpacing === 'normal') return;
       for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
     });
+  }
+
+  if (window.MutationObserver){
+    /* childList only: the stamp writes STYLE attributes, and observing those
+       would have it re-trigger itself. */
+    new MutationObserver(function(){ stamp(); })
+      .observe(document.body, {childList: true, subtree: true});
   }
 
   /* ---------------- the honest percentage ---------------- */

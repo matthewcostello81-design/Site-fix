@@ -1,3 +1,117 @@
+# Nine cart and product-page fixes
+
+## The cart upsell was never clipped — it was painted over
+
+The offer rows were being cut off at the bottom of the drawer, and the cause was
+not an `overflow` or a `max-height`. `placeUnlock()` moved `#pg-unlock-slot` so
+it sat as the **immediate previous sibling** of `.sticky-in-panel`, and that pane
+is `position:sticky; bottom:0`. A bottom-anchored sticky box is lifted *upward*
+out of its flow position whenever that position would fall below the scrollport
+— so it renders across whatever precedes it. The pane is opaque white at the
+theme's `z-index:5`; the slot is unpositioned. The preceding sibling is exactly
+what gets covered, and rule 5 had just guaranteed that sibling was the upsell.
+
+The slot now goes **inside** the pane rather than under it — the one placement
+that box cannot occlude, and what "directly above Shipping Protection" meant in
+the first place. Raising the slot's z-index was rejected: it would park the
+upsell permanently over the CHECKOUT button.
+
+Measured with a probe that asks the compositor (`elementFromPoint`) rather than
+trusting the arithmetic:
+
+| | bottom of the offer row |
+|---|---|
+| before, 8 items @ 390×844 | `PANE` |
+| before, 6 items @ 375×667 | `PANE` |
+| after, both | `row` |
+
+CHECKOUT stays reachable and the pinned pane stays at 204px — under 72% of the
+viewport even on an iPhone SE.
+
+It also dissolves a live mutation loop: `placeUnlock()` wanted to be the pane's
+previous sibling and `placeSpacer()` wanted the same slot, both from the same
+`apply()`, so they re-inserted the slot on every tick.
+
+## The cart upsell's arithmetic was right; its wording was not
+
+"Buy 1 more, get 1 FREE" never says *which* deal it walks you into, so a shopper
+sitting on the 6-orb Buy 4 Get 2 could not tell the row was stepping them to the
+8-orb Buy 5 Get 3 — it read like a fourth, unrelated offer. `offers()` now
+carries the tier it lands on and the headline names it:
+
+| orbs held | headline |
+|---|---|
+| 1 | Unlock Buy 2, Get 1 FREE |
+| 3 | Unlock Buy 4, Get 2 FREE |
+| 6 | **Unlock Buy 5, Get 3 FREE** |
+| 8 | *(top of the ladder — no row)* |
+
+The ladder test now asserts the named tier is a real PDP bundle *and* that it
+equals the pack the offer actually lands on, so the copy cannot drift from the
+maths.
+
+## The SAVED% pill is not stretched — it is just wide
+
+Measured against the drawer's own grid: the pill hugs its glyphs with **0px of
+slack** on either side, so there was no layout bug to find. It was built wide.
+The width comes off the three things that hold it:
+
+| | before | after |
+|---|---|---|
+| pill | 96.7px | 81.8px |
+| padding | 9px, asymmetric | 7px, symmetric |
+| tracking | .05em | `normal` |
+| size | 13px | 12px |
+
+`letter-spacing` goes to `normal` rather than a smaller value because it applies
+after the *final* glyph too — any non-zero value leaves a gap trailing the `%`.
+Two earlier passes tried to balance that instead and both kept the gap.
+`word-spacing` and `column-gap` are pinned for the same reason: neither was ever
+reset, so an inherited value could widen the pill without appearing in any rule.
+
+The stamp also had two faults: it marked each pill with `dataset.pgChip` and
+skipped it forever after, so any pill the drawer rebuilt in place kept
+pg-drawer's inline `padding:4px 12px`; and it only ran on a 300ms interval, so
+even a fresh pill wore the wide slab for a third of a second and visibly snapped
+narrower. The guard is now the rendered value, and an observer runs it in the
+same task the pill is inserted in.
+
+## The orb name was waiting on the network
+
+The swipe counter is arithmetic over the DOM and paints on the first frame; the
+character name sat behind a `/products/{handle}.js` round trip worth 300–800ms
+on a phone. The same media list is already available to Liquid, so it now ships
+**with the page** — verified at zero fetches, name present on the first paint.
+The fetch is kept as a fallback and now shares one in-flight promise, so the
+scroll debounce and five boot timeouts can no longer start five requests for the
+same file.
+
+## The rest
+
+- **Sticky top bar dead space.** `.pg-cs-msg` is `flex:1 1 auto`, so it takes
+  the whole width the clock and bag leave over — and its children are
+  left-packed, parking every spare pixel in one lump between the offer and the
+  icon. The offer is pushed to the far end instead.
+- **The bottom buy bar shows the product.** A 46px thumbnail following the
+  design the shopper picked. Added from `pg-tile-copy` rather than by editing
+  the 73KB `pg-theme-css`, since that file writes `.pgst-in`'s innerHTML exactly
+  once and repaints only textContent afterwards. It keeps its last good frame
+  rather than blinking out on a tick that lands mid-rebuild.
+- **The upsell row is bigger** — title 13.5→16px, subtitle 11.5→13px, thumbnail
+  52→66px, ADD 13→14.5px, plus a mobile step.
+- **Two marquees, both faster.** The top strip goes 16s→10s per loop. The other
+  one — four messages over **45s**, about eleven seconds a message — is
+  `!important` inside `pg-theme-css`, so it is beaten on specificity from
+  `pg-dark` (`html body .pg-marq` is (0,1,2) against its (0,1,0)) rather than by
+  rewriting 73KB. 20s is roughly five seconds a message.
+
+## Tests
+
+Four suites, all green: the tile ladder and buy bar (56 checks), the gallery
+(23), the cart pane (18) and a new occlusion probe (24). The occlusion and
+counter checks were each confirmed to **fail** against a build with only the one
+line reverted, so they test the fixes rather than the harness.
+
 # The orb swipe hint: bigger, and the counter keeps up with the finger
 
 Two problems with the pill sitting on the orb photos (`pg-gallery-tweaks`).

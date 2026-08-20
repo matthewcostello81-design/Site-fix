@@ -254,9 +254,30 @@
 
     if (window.matchMedia('(max-width:760px)').matches){
       var pane = drawer.querySelector('.sticky-in-panel');
-      if (!pane || pane.previousElementSibling === card) return;
+      if (!pane) return;
+      /* INSIDE the pane, not above it. Parked as the pane's previous sibling
+         the upsell was not clipped -- it was PAINTED OVER. .sticky-in-panel is
+         position:sticky with bottom:0 (rule 2a), and a bottom-anchored sticky
+         box is lifted UP out of its flow position by however far that position
+         would fall below the scrollport; everything it is lifted across that is
+         not itself positioned disappears behind it, and the pane is opaque
+         white at the theme's z-index:5 while the slot is unpositioned. The
+         previous sibling is exactly what gets covered, and rule 5 had just
+         guaranteed that sibling was the upsell. pg-cart-imglink records the
+         measurement of it: a 291px pane at y=553..844 over an offer row at
+         y=535..799.
+         Raising the slot's z-index instead would park it permanently over the
+         CHECKOUT button, and reserving clearance under it needs a JS-measured
+         pane height that changes with every cart. Moving it inside the pinned
+         box is the one option that cannot be occluded by that box -- and it is
+         what "directly above Shipping Protection" meant in the first place.
+         It also dissolves the deadlock with placeSpacer(): that function wants
+         to BE the pane's previous sibling, this one wanted the same slot, and
+         both run in the same apply() -- so they re-inserted the slot on every
+         tick and fed the body observer an endless mutation loop. */
+      if (card.parentNode === pane && pane.firstElementChild === card) return;
       if (!card.pgHome) card.pgHome = {parent: card.parentNode, next: card.nextSibling};
-      pane.parentNode.insertBefore(card, pane);
+      pane.insertBefore(card, pane.firstChild);
     } else if (card.pgHome && card.pgHome.parent && card.pgHome.parent.isConnected){
       var home = card.pgHome;
       if (card.parentNode !== home.parent || card.nextSibling !== home.next){

@@ -161,6 +161,21 @@
      #pg-sticky is DARK under the pg-dark skin (rgba(11,7,16,.96)), not the
      white pg-theme-css paints, and pg_tile_copy loads after pg_dark in
      footer-group -- so the controls are styled for the dark bar. */
+  /* THE BAR SHOWS WHAT IT IS SELLING. #pg-sticky is built by pg-theme-css as
+     title + price + button; on a phone .pgst-t is display:none, so the bar was
+     a price and a button with nothing identifying the product. The thumbnail is
+     added from here rather than by editing pg-theme-css: that file assigns
+     .pgst-in's innerHTML exactly once, inside its `if(!bar)` branch, and
+     repaints only textContent afterwards -- so an element inserted alongside
+     the picker row survives every repaint, and the 73KB shared file stays
+     untouched. */
+  #pg-sticky .pgst-thumb{
+    flex:0 0 auto;width:46px;height:46px;border-radius:10px;object-fit:cover;
+    background:rgba(139,68,190,.16);
+    box-shadow:0 0 0 1px rgba(190,140,235,.45);
+  }
+  @media(max-width:430px){ #pg-sticky .pgst-thumb{width:42px;height:42px} }
+
   #pg-sticky .pgs-pick{
     display:flex;align-items:center;gap:10px;
     /* WRAPS RATHER THAN CRUSHES. Side by side on a 390px phone the two fields
@@ -638,6 +653,31 @@
       });
       inRow.parentNode.insertBefore(bbRow, inRow);
     }
+
+    /* the thumbnail lives in the price/button row, ahead of the title */
+    var thumb = inRow.querySelector('.pgst-thumb');
+    if (!thumb){
+      thumb = document.createElement('img');
+      thumb.className = 'pgst-thumb';
+      thumb.alt = '';
+      thumb.setAttribute('aria-hidden', 'true');
+      inRow.insertBefore(thumb, inRow.firstChild);
+    }
+    /* follow the shopper's own choice where there is one: the selected tile's
+       first design picker carries the character they picked, and that is what
+       is going in the bag. Fall back to the gallery photo on screen, then to
+       the first strip image, so the bar is never left with a broken frame. */
+    var pick = document.querySelector('#pgx .pgx-tile.pgx-sel .pgx-lad-picks .pg-drop img')
+            || document.querySelector('#pgx .pgx-thumbs button img')
+            || document.querySelector('#pgx img');
+    var psrc = pick && pick.getAttribute('src');
+    if (psrc && thumb.getAttribute('src') !== psrc) thumb.setAttribute('src', psrc);
+    /* shown on whether it HAS a picture, not on whether this tick found one.
+       buybar() runs on a timer against a ladder that is rebuilt underneath it,
+       so a tick can land in the gap where the selected tile's pickers do not
+       exist yet -- keyed off psrc the bar would blink its product image out and
+       back on every one of those. The last good frame stays up instead. */
+    thumb.style.display = thumb.getAttribute('src') ? '' : 'none';
 
     /* ---- the packs ---- */
     var tiles = visibleTiles();

@@ -137,7 +137,18 @@
     box-shadow:0 0 12px rgba(139,68,190,.7);
     flex:0 0 auto;
   }
-  #pg-cartfab .pg-cs-sub{color:#EFE6FA;font-weight:800;overflow:hidden;text-overflow:ellipsis}
+  /* .pg-cs-msg is flex:1 1 auto, so it takes the whole width the clock and the
+     bag leave over -- and its children are left-packed, which parked every
+     spare pixel in one lump between the offer text and the bag icon. The offer
+     is pushed to the far end instead: with a clock the bar reads timer-left /
+     offer-right with the gap between two things that want separating, and
+     without one the offer still sits against the bag rather than stranded at
+     the left. Nothing is centred, so a long message and a short one both look
+     deliberate. */
+  #pg-cartfab .pg-cs-sub{
+    margin-left:auto;
+    color:#EFE6FA;font-weight:800;overflow:hidden;text-overflow:ellipsis;
+  }
   #pg-cartfab .pg-cs-sub b{color:#D9B4FF;font-weight:900}
 
   /* the icon keeps its old corner position at the right-hand end */

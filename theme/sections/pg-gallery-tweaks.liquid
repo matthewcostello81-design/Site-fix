@@ -106,6 +106,21 @@
   the overlay group is at Shopify's hard limit of 25 sections, and this belongs
   to one product page anyway.
 {%- endcomment -%}
+{%- comment -%}
+  THE NAMES ARE RENDERED, NOT FETCHED. They used to arrive from
+  /products/{handle}.js, which is why the name pill appeared a beat after the
+  counter next to it: the counter is pure arithmetic over the DOM and paints on
+  the first frame, while the name sat behind a network round trip that costs
+  300-800ms on a phone. The same media list is already available to Liquid here,
+  so it ships with the page and the first paint has it. The fetch is kept only
+  as a fallback for the case where this section renders without a product in
+  scope.
+{%- endcomment -%}
+{%- if product and product.media.size > 0 -%}
+<script type="application/json" id="pg-gt-names">
+[{%- for m in product.media -%}{%- unless forloop.first -%},{%- endunless -%}{"a":{{ m.alt | default: '' | json }},"s":{{ m.preview_image.src | split: '?' | first | split: '/' | last | json }}}{%- endfor -%}]
+</script>
+{%- endif -%}
 <style>
   /* the group shot -- see the note above */
   #pgx .pgx-hero{display:none !important}
@@ -200,27 +215,55 @@
   /* ---- the character name on the photo ---- */
   var NAMES = null;                       /* filename fragment -> character name */
 
+  /* "Crystal PokeOrb - 13 Arceus" -> "13 Arceus"; anything without a separator
+     is left whole rather than guessed at */
+  function trimName(alt){
+    if (!alt || /hero/i.test(alt)) return '';
+    return alt.split(/\s[-–—]\s/).pop().trim();
+  }
+
+  /* the names the page shipped with -- no network, so the first paint has them */
+  function readInline(){
+    if (NAMES) return true;
+    var tag = document.getElementById('pg-gt-names');
+    if (!tag) return false;
+    var arr;
+    try { arr = JSON.parse(tag.textContent); } catch (e) { return false; }
+    if (!arr || !arr.length) return false;
+    NAMES = {};
+    for (var i = 0; i < arr.length; i++){
+      var name = trimName(arr[i] && arr[i].a);
+      if (name && arr[i].s) NAMES[arr[i].s] = name;
+    }
+    return true;
+  }
+
+  /* one fetch, however many callers. label() runs off a 120ms scroll debounce
+     AND five boot timeouts, and NAMES stays null until the response lands -- so
+     on the fallback path every one of those callers used to start its own
+     request for the same file. The in-flight promise is shared instead. */
+  var NAMESP = null;
+
   function loadNames(){
     if (NAMES) return Promise.resolve(NAMES);
+    if (readInline()) return Promise.resolve(NAMES);
+    if (NAMESP) return NAMESP;
     var h = (location.pathname.match(/\/products\/([^\/?#]+)/) || [])[1];
     if (!h) { NAMES = {}; return Promise.resolve(NAMES); }
-    return fetch('/products/' + h + '.js', {headers: {'Accept': 'application/json'}})
+    return (NAMESP = fetch('/products/' + h + '.js', {headers: {'Accept': 'application/json'}})
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(j){
         NAMES = {};
         (j && j.media || []).forEach(function(m){
-          var alt = m.alt || '';
           var src = m.src || '';
-          /* "Crystal PokeOrb - 13 Arceus" -> "13 Arceus"; anything without a
-             separator is left whole rather than guessed at */
-          var name = alt.split(/\s[-–—]\s/).pop().trim();
-          if (!name || /hero/i.test(alt)) return;
+          var name = trimName(m.alt);
+          if (!name) return;
           var file = (src.split('/').pop() || '').split('?')[0];
           if (file) NAMES[file] = name;
         });
         return NAMES;
       })
-      .catch(function(){ NAMES = {}; return NAMES; });
+      .catch(function(){ NAMES = {}; return NAMES; }));
   }
 
   function nameFor(img){
@@ -319,7 +362,9 @@
 
   function boot(){
     if (!document.getElementById('pgx')) return;
+    readInline();      /* so the very first paint already knows the names */
     hint();
+    paint();
     label();
     /* `scroll` does not bubble, but it DOES capture, so listening on the
        document catches the strip's own scrolling and -- unlike a listener bound
