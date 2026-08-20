@@ -1,3 +1,77 @@
+# The orb swipe hint: bigger, and the counter keeps up with the finger
+
+Two problems with the pill sitting on the orb photos (`pg-gallery-tweaks`).
+
+## The counter was frozen mid-swipe
+
+`3/35` was repainted by a 90ms debounce hung off the strip's `scroll` event:
+
+```js
+strip0.addEventListener('scroll', function(){
+  clearTimeout(label._t);
+  label._t = setTimeout(label, 90);
+});
+```
+
+A debounce is the one thing that can't work here. Scroll events fire every
+frame, so through a continuous swipe each new event cleared the pending timer
+before it could run — the number sat still and jumped once, at the end, when
+the strip finally settled.
+
+`paint()` now runs on every animation frame instead, so it counts up under the
+finger. Measured over a 12-step sweep with no settle:
+
+| | counter sampled each step |
+|---|---|
+| before | `1,1,1,4,4,4,7,7,9,9,9,12` |
+| after | `1,2,3,4,5,6,7,8,9,10,11,12` |
+
+Two things paid for that frame budget:
+
+- **The button centres are cached.** Reading `offsetLeft` off 35 buttons every
+  frame would force a synchronous reflow each time, because the frame before it
+  wrote to the counter's `textContent`. The cache is keyed on strip node,
+  button count and strip width, so `pg-landing` swapping the strip out
+  invalidates it on identity alone. A frame is now 35 subtractions and no
+  layout read.
+- **The names fetch moved off the hot path.** `label()` is the same pass with
+  `loadNames()` awaited in front of it, and still runs on a trailing debounce so
+  a late fetch is never stranded.
+
+## The listener didn't survive a gallery rebuild
+
+It was bound to the strip *node*, and `pg-landing` throws that node away and
+builds a new one after its fetch — after which the counter only updated via the
+MutationObserver's 80ms pass. It now listens on the document in the capture
+phase (`scroll` doesn't bubble, but it does capture), which outlives any number
+of rebuilds. Covered by a test that replaces the strip and re-sweeps.
+
+## Bigger
+
+| | before | after |
+|---|---|---|
+| text | 11.5px | 15px |
+| arrows | 11.5px (inherited) | 23px |
+| padding | 6px 14px | 11px 20px |
+| height | ~27px | 41px |
+
+It still covers only the top 50px of a 358px photo, still `pointer-events:none`,
+and still fits a 390px phone at 194px wide.
+
+The counter is `font-variant-numeric: tabular-nums` with a `min-width` sized for
+the widest reading (`35/35`). Without that the pill is centred with
+`translateX(-50%)` and would visibly shimmy left and right as the digit count
+changed — which nobody would have noticed while it only repainted once per
+swipe, and everybody would notice now that it repaints every frame.
+
+## Tests
+
+Driven headless against a 35-photo stand-in for the strip: 18 checks covering
+the sizing, the mid-sweep counter, the character name, a gallery rebuild, and
+the touchmove/page-scroll case that used to kill the hint. The two counter
+checks were confirmed to FAIL against a build with only the debounce restored
+and everything else identical, so they test the fix rather than the harness.
+
 # The sticky buy bar now shows the bundles, and the variants
 
 The bottom buy bar (`#pg-sticky`, built by `pg-theme-css`) showed the selected

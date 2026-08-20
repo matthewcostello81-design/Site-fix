@@ -46,7 +46,7 @@
 
   So it is now absolutely positioned inside .pgx-thumbwrap, centred at the top of
   the first photo. It is unambiguously about the strip, because it is ON the
-  strip. It stays pointer-events:none and only overlaps the top ~32px of the
+  strip. It stays pointer-events:none and only overlaps the top ~50px of the
   orb, so nothing is blocked and the subject is not covered.
 
   IT STAYS. This has been whittled down twice and both passes were still
@@ -62,11 +62,18 @@
 
   So it is not removed at all any more. It is a standing label, like the
   character name at the bottom of the same photo: while the strip has more
-  photos than fit, it says so. It is pointer-events:none, sits on the top ~32px
+  photos than fit, it says so. It is pointer-events:none, sits on the top ~50px
   of the orb, and carries the shopper's position in the strip (3/35) so it also
-  answers "how many more" rather than only "there are more". The counter is
-  updated by label(), which already works out which photo is in view -- one
-  owner for that measurement, no second scroll listener.
+  answers "how many more" rather than only "there are more".
+
+  THE COUNTER KEEPS UP WITH THE FINGER. It was repainted by a 90ms debounce off
+  `scroll`, which is precisely wrong for this: each new scroll event cleared the
+  pending timer, so through a continuous swipe the number sat frozen and only
+  jumped once, at the end, when the strip settled. paint() runs on every
+  animation frame instead. It is kept cheap enough to afford that -- the button
+  centres are measured once and cached, so a frame costs 35 subtractions and no
+  layout read. label() is the same pass with the names fetch awaited in front of
+  it, and still runs on a trailing debounce so a late fetch is not stranded.
 
   pg-landing rebuilds the gallery after its fetch and throws the node away, so
   every pass re-checks that it is still in the document and re-inserts it.
@@ -149,21 +156,29 @@
 
   #pgx .pg-gt-swipe{
     display:none;
-    align-items:center;justify-content:center;gap:8px;
+    align-items:center;justify-content:center;gap:10px;
     margin:0 auto;
-    padding:6px 14px;
+    padding:11px 20px;
     width:max-content;max-width:100%;
     border-radius:999px;
-    background:rgba(139,68,190,.14);
-    border:1px solid rgba(190,140,235,.42);
-    color:#E4D3F7;
-    font-size:11.5px;font-weight:800;
+    background:rgba(139,68,190,.18);
+    border:1px solid rgba(190,140,235,.50);
+    color:#EEE1FB;
+    font-size:15px;font-weight:800;
     letter-spacing:.10em;text-transform:uppercase;
     white-space:nowrap;
     pointer-events:none;
   }
-  #pgx .pg-gt-swipe span{display:inline-block;animation:pgGtNudge 1.5s ease-in-out infinite}
-  #pgx .pg-gt-swipe b.pg-gt-n{font-weight:800;color:#FFFFFF;letter-spacing:.04em}
+  #pgx .pg-gt-swipe span{display:inline-block;font-size:23px;line-height:.7;color:#F6ECFF;animation:pgGtNudge 1.5s ease-in-out infinite}
+  /* the counter repaints on every scroll frame now, so it is fixed-width:
+     tabular figures plus a min-width sized for the widest reading ("35/35")
+     stop the centred pill shimmying as the digits change under the finger. */
+  #pgx .pg-gt-swipe b.pg-gt-n{
+    display:inline-block;
+    min-width:4.8ch;text-align:center;
+    font-weight:800;color:#FFFFFF;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;
+  }
   #pgx .pg-gt-swipe .pg-gt-l{animation-direction:reverse}
   @keyframes pgGtNudge{
     0%,100%{transform:translateX(0);opacity:.55}
@@ -219,43 +234,71 @@
     return '';
   }
 
-  function label(){
+  /* ---- which photo is in view ----
+     The counter used to be repainted by a 90ms debounce hung off `scroll`, and
+     a debounce is the one thing it must not be: during a continuous swipe every
+     new scroll event cleared the pending timer, so the number did not move AT
+     ALL until the finger lifted and the strip settled. It repaints on every
+     animation frame instead, so it counts up under the finger.
+
+     That per-frame budget is why the button centres are cached. Reading
+     offsetLeft off 35 buttons every frame would force a synchronous reflow each
+     time, because the frame before it wrote to the counter's textContent. The
+     cache is keyed on the three things that can move those centres -- a
+     different strip node, a different number of photos, a different strip width
+     -- so pg-landing swapping the strip out invalidates it on identity alone. */
+  var MIDS = null;
+
+  function midsOf(strip, btns){
+    if (MIDS && MIDS.strip === strip && MIDS.n === btns.length && MIDS.w === strip.clientWidth) return MIDS.v;
+    var v = [];
+    for (var i = 0; i < btns.length; i++) v.push(btns[i].offsetLeft + btns[i].offsetWidth / 2);
+    MIDS = {strip: strip, n: btns.length, w: strip.clientWidth, v: v};
+    return v;
+  }
+
+  /* synchronous and allocation-light -- safe to call once per frame */
+  function paint(){
     var wrap = document.querySelector('#pgx .pgx-thumbwrap');
     if (!wrap) return;
     var strip = wrap.querySelector('.pgx-thumbs');
     if (!strip) return;
-    loadNames().then(function(){
-      var btns = strip.querySelectorAll('button');
-      if (!btns.length) return;
-      /* which photo is in view: the one whose centre is nearest the strip's */
-      var mid = strip.scrollLeft + strip.clientWidth / 2;
-      var best = null, bestD = Infinity;
-      for (var i = 0; i < btns.length; i++){
-        var c = btns[i].offsetLeft + btns[i].offsetWidth / 2;
-        var d = Math.abs(c - mid);
-        if (d < bestD){ bestD = d; best = btns[i]; }
-      }
-      if (!best) return;
+    var btns = strip.querySelectorAll('button');
+    if (!btns.length) return;
 
-      /* the swipe pill's counter, from the same measurement */
-      var cnt = wrap.querySelector('.pg-gt-swipe .pg-gt-n');
-      if (cnt){
-        var pos = (Array.prototype.indexOf.call(btns, best) + 1) + '/' + btns.length;
-        if (cnt.textContent !== pos) cnt.textContent = pos;
-      }
+    /* the photo whose centre is nearest the strip's */
+    var mids = midsOf(strip, btns);
+    var mid = strip.scrollLeft + strip.clientWidth / 2;
+    var best = -1, bestD = Infinity;
+    for (var i = 0; i < mids.length; i++){
+      var d = Math.abs(mids[i] - mid);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    if (best < 0) return;
 
-      var text = nameFor(best.querySelector('img'));
-      var tag = wrap.querySelector('.pg-gt-name');
-      if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
-      if (!tag){
-        tag = document.createElement('div');
-        tag.className = 'pg-gt-name';
-        tag.setAttribute('aria-hidden', 'true');
-        wrap.appendChild(tag);
-      }
-      if (tag.textContent !== text) tag.textContent = text;
-    });
+    /* the swipe pill's counter */
+    var cnt = wrap.querySelector('.pg-gt-swipe .pg-gt-n');
+    if (cnt){
+      var pos = (best + 1) + '/' + btns.length;
+      if (cnt.textContent !== pos) cnt.textContent = pos;
+    }
+
+    /* the name needs the media fetch; until that lands label() drives it */
+    if (!NAMES) return;
+    var text = nameFor(btns[best].querySelector('img'));
+    var tag = wrap.querySelector('.pg-gt-name');
+    if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
+    if (!tag){
+      tag = document.createElement('div');
+      tag.className = 'pg-gt-name';
+      tag.setAttribute('aria-hidden', 'true');
+      wrap.appendChild(tag);
+    }
+    if (tag.textContent !== text) tag.textContent = text;
   }
+
+  /* the same pass, but waiting on the names fetch first */
+  function label(){ loadNames().then(paint); }
 
   function hint(){
     if (el && el.isConnected) return;          /* still on screen, nothing to do */
@@ -278,11 +321,20 @@
     if (!document.getElementById('pgx')) return;
     hint();
     label();
-    var strip0 = document.querySelector('#pgx .pgx-thumbs');
-    if (strip0) strip0.addEventListener('scroll', function(){
+    /* `scroll` does not bubble, but it DOES capture, so listening on the
+       document catches the strip's own scrolling and -- unlike a listener bound
+       to the strip node, which is what this used to be -- survives pg-landing
+       throwing the gallery away and rebuilding it. */
+    var raf = 0;
+    document.addEventListener('scroll', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('pgx-thumbs')) return;
+      if (!raf) raf = requestAnimationFrame(function(){ raf = 0; paint(); });
+      /* one trailing pass so the NAME still settles if the fetch landed late */
       clearTimeout(label._t);
-      label._t = setTimeout(label, 90);      /* settle after the snap */
-    }, {passive: true});
+      label._t = setTimeout(label, 120);
+    }, {capture: true, passive: true});
+
     var root = document.getElementById('pgx');
     if (root && window.MutationObserver){
       var queued = false;
@@ -290,9 +342,11 @@
       new MutationObserver(function(){
         if (queued) return;
         queued = true;
+        MIDS = null;
         setTimeout(function(){ queued = false; hint(); label(); }, 80);
       }).observe(root, {childList: true, subtree: true});
     }
+    window.addEventListener('resize', function(){ MIDS = null; label(); }, {passive: true});
     [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(hint, t); setTimeout(label, t); });
   }
 
