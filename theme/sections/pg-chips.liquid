@@ -49,12 +49,65 @@
   Lines are matched to cart items by handle and then by order within that handle
   -- the same approach pg-cart-variants uses -- so a product on two lines still
   lines up. The FREE GIFT pill is left alone: it is a label, not a percentage.
+
+  (D) ONE ROW PER PRODUCT, AND WHY THE QUANTITY USED TO SKIP.
+
+  Shopify's Buy 2 Get 1 does not discount a line, it SPLITS one: three orbs
+  become a line of 2 charged and a line of 1 free. The drawer rendered both as
+  ordinary rows, each with its own +/- stepper, and that is the whole bug.
+
+  Measured, three orbs in the cart, pressing MINUS on the row displaying 2:
+  the cart correctly went from 3 to 2 -- and that row still displayed 2, because
+  the unit Shopify took away was the free one on the OTHER row. The shopper
+  pressed minus and the number they were looking at did not move. Pressing PLUS
+  repeatedly walked the rows through 2 / 2+1 / 1+2+1 / 1+2+2: rows appearing,
+  disappearing and changing places under the finger, with the price on each one
+  changing every time the split was re-cut.
+
+  Nothing there is fixable by adjusting a stepper, because the premise is wrong:
+  two numbers were being shown for one product, and Shopify -- not the shopper --
+  decides how the total is divided between them.
+
+  So the rows for one variant are merged into one. The first row carries the
+  group: the real total quantity, the sum of the group's line prices, MSRP times
+  that total struck through, one honest percentage, and a note saying how many of
+  them are free. The rest are hidden. There is now one number per product, so it
+  cannot disagree with itself.
+
+  THE STEPPER IS INTERCEPTED ONLY ON MERGED ROWS. +/- sets the product's TOTAL
+  through a single /cart/update.js that puts the whole quantity on the first line
+  and zeroes the others; Shopify then re-cuts the split however it likes, which
+  is invisible because the display is rebuilt from the cart either way. A product
+  on a single line is not touched at all -- the theme's own stepper keeps working
+  exactly as before, so this can only affect the rows that were broken.
+
+  Everything shown is derived from cart.js on every pass, so if the drawer's own
+  markup is momentarily stale the figures still converge on the truth.
 {%- endcomment -%}
 <style>
   /* Backstop for any pill rendered without the inline styles. */
   #cart .pg-free-tag,#cart .pg-save-chip,
   body.template-cart .pg-free-tag,body.template-cart .pg-save-chip{
     display:inline-flex;align-items:center;justify-content:center;text-align:center
+  }
+
+  /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
+     bundle split creates are hidden rather than removed: the drawer rebuilds
+     itself constantly and re-adding removed nodes is the fight that made the
+     upsell rows swap places, while a class costs nothing and is re-applied on
+     every pass. */
+  #cart .l4ca > li.pg-merged-away,
+  body.template-cart .l4ca > li.pg-merged-away{display:none !important}
+
+  #cart .pg-free-note,
+  body.template-cart .pg-free-note{
+    display:inline-flex;align-items:center;
+    margin-top:4px;padding:4px 10px;border-radius:999px;
+    background:rgba(139,68,190,.14);
+    border:1px solid rgba(168,120,214,.4);
+    color:#6B3E93;
+    font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    white-space:nowrap;
   }
 </style>
 <script>
@@ -116,22 +169,87 @@
     return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
   }
 
+  /* pair every rendered row with the cart line it came from, in cart order */
+  function pair(cart){
+    var out = [], seen = {};
+    Array.prototype.forEach.call(lines(), function(li){
+      var handle = handleOf(li);
+      if (!handle) return;
+      var n = seen[handle] || 0;
+      seen[handle] = n + 1;
+      var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
+      var item = hits[n];
+      if (!item) return;
+      out.push({li: li, item: item});
+    });
+    return out;
+  }
+
+  function setText(el, t){ if (el && el.textContent.trim() !== t) el.textContent = t; }
+
   function repct(){
     if (!CAP) return;
     var els = lines();
     if (!els.length) return;
 
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
-      var seen = {};
-      Array.prototype.forEach.call(els, function(li){
-        var handle = handleOf(li);
-        if (!handle) return;
-        var n = seen[handle] || 0;
-        seen[handle] = n + 1;
+      var rows = pair(cart);
 
-        var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
-        var item = hits[n];
-        if (!item) return;
+      /* ---- merge every row of one variant into the first of them ---- */
+      var groups = {}, order = [];
+      rows.forEach(function(r){
+        var k = String(r.item.variant_id);
+        if (!groups[k]){ groups[k] = []; order.push(k); }
+        groups[k].push(r);
+      });
+
+      var primary = {};      /* li -> the group it now represents */
+      order.forEach(function(k){
+        var g = groups[k];
+        g.forEach(function(r, i){
+          if (i === 0) r.li.classList.remove('pg-merged-away');
+          else r.li.classList.add('pg-merged-away');
+        });
+        var head = g[0];
+        var total = 0, paid = 0, free = 0;
+        g.forEach(function(r){
+          total += r.item.quantity;
+          paid += (typeof r.item.line_price === 'number' ? r.item.line_price : 0);
+          if (r.item.line_price === 0) free += r.item.quantity;
+        });
+        head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
+        head.li.setAttribute('data-pg-total', String(total));
+        primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length};
+
+        /* the one number the shopper steps up and down */
+        var q = head.li.querySelector('input[type=number]');
+        if (q && q.value !== String(total)) q.value = String(total);
+
+        /* the price charged for all of them together */
+        setText(head.li.querySelector('.nc-lsave-now'), money(paid));
+
+        /* say plainly how many of them are free, rather than leaving a $0.00
+           row the shopper has to work out for themselves */
+        var note = head.li.querySelector('.pg-free-note');
+        if (free > 0 && total > free){
+          if (!note){
+            note = document.createElement('span');
+            note.className = 'pg-free-note';
+            var chipEl = head.li.querySelector('.pg-save-chip');
+            if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
+            else head.li.appendChild(note);
+          }
+          setText(note, free + ' FREE INCLUDED');
+        } else if (note && note.parentNode){
+          note.parentNode.removeChild(note);
+        }
+      });
+
+      rows.forEach(function(r){
+        if (r.li.classList.contains('pg-merged-away')) return;
+        var li = r.li;
+        var item = r.item;
+        var grp = primary[String(item.variant_id)];
 
         /* the free gift carries its own label, not a percentage */
         if (item.properties && item.properties._free_gift) return;
@@ -141,7 +259,8 @@
 
         var cap = CAP[item.variant_id];
         if (!cap) return;
-        var base = cap * item.quantity;
+        var qty = grp ? grp.total : item.quantity;
+        var base = cap * qty;
         /* line_price, NOT final_line_price. final_line_price counts only the
            LINE-level discounts, so once the extra 10% became an automatic ORDER
            discount it stopped being included: measured on a two-orb line,
@@ -150,14 +269,14 @@
            wrong one and printing SAVED 50% on a row whose own two figures,
            $140.00 struck and $62.99 charged, are 55% apart. The shopper could
            see the badge contradict the prices printed beside it. */
-        var paid = typeof item.line_price === 'number' ? item.line_price : item.final_line_price;
+        var paid = grp ? grp.paid
+                       : (typeof item.line_price === 'number' ? item.line_price : item.final_line_price);
         if (!base || typeof paid !== 'number') return;
 
         var pct = Math.round((base - paid) / base * 100);
         if (pct < 1) return;
 
-        var text = 'SAVED ' + pct + '%';
-        if (chip.textContent.trim() !== text) chip.textContent = text;
+        setText(chip, 'SAVED ' + pct + '%');
 
         /* and the struck figure beside it: MSRP for the whole line, so it means
            the same thing on a discounted row as on a full-price one */
@@ -174,8 +293,82 @@
     }).catch(function(){});
   }
 
+  /* ---- +/- on a merged row sets the product's TOTAL -- see (D) above ---- */
+  var stepping = false;
+  function rowOf(el){
+    return el.closest('#cart .l4ca > li, body.template-cart .l4ca > li');
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    var btn = e.target.closest('.pg-qbtn');
+    if (!btn) return;
+    var li = rowOf(btn);
+    if (!li) return;
+
+    var keys = (li.getAttribute('data-pg-keys') || '').split('|').filter(Boolean);
+    /* a product on ONE line is none of our business: the theme's own stepper
+       already handles it correctly, and intercepting it could only break it */
+    if (keys.length < 2) return;
+
+    var t = (btn.textContent || '').trim();
+    var delta = t === '+' ? 1 : (t === '-' || t === '−') ? -1 : 0;
+    if (!delta) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (stepping) return;
+    stepping = true;
+
+    var total = parseInt(li.getAttribute('data-pg-total'), 10) || 0;
+    var target = Math.max(0, total + delta);
+
+    /* the whole quantity onto the first line, nothing on the rest, in ONE call.
+       Shopify re-cuts the free/paid split afterwards however it wants; that is
+       invisible because the row is rebuilt from the cart either way. */
+    var updates = {};
+    keys.forEach(function(k, i){ updates[k] = i === 0 ? target : 0; });
+
+    fetch('/cart/update.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({updates: updates})
+    }).then(function(){
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).catch(function(){}).then(function(){
+      stepping = false;
+      repct();
+      [200, 700, 1600].forEach(function(ms){ setTimeout(repct, ms); });
+    });
+  }, true);
+
+  /* WHY THIS IS NOT A 700ms POLL ANY MORE. repct() fetches /cart.js, so polling
+     it every 700ms -- alongside pg-cart-total doing the same -- meant several
+     requests a second for a cart that changes a handful of times a visit.
+     Shopify throttles that endpoint: under test the responses started coming
+     back unparseable, and because repct() bails when the fetch fails the row
+     simply froze on its last good figures. A cart display that stops updating
+     because it asked too often is worse than one that asks less.
+
+     It now runs when the drawer actually changes, which is the only time the
+     numbers can move, with a slow interval left as a backstop. stamp() touches
+     no network -- it only re-applies inline styles to new pills -- so it stays
+     frequent. */
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; repct(); }, 80);
+  }
+  if (window.MutationObserver){
+    var drawer = document.getElementById('cart');
+    if (drawer) new MutationObserver(soon).observe(drawer, {childList: true, subtree: true});
+  }
+
   setInterval(stamp, 300);
-  setInterval(repct, 700);
+  setInterval(repct, 2500);
   stamp();
   repct();
 })();
