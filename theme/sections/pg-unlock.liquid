@@ -79,31 +79,31 @@
 {%- endcomment -%}
 <style>
   #cart .pg-unlock{
-    display:flex;align-items:center;gap:14px;
+    display:flex;align-items:center;gap:12px;
     flex-wrap:wrap;          /* the chooser panel is flex:1 1 100% -- without wrap
                                 at EVERY width it cannot drop to its own line, so
                                 on the ~485px desktop drawer it sat beside the
                                 copy and crushed the title to one word per line */
-    margin:10px 0 4px;padding:13px 14px;
+    margin:10px 0 4px;padding:11px 13px;
     border:1px solid rgba(122,47,162,.3);border-radius:14px;
     background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
     box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
     font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
   }
-  #cart .pg-unlock img{width:66px;height:66px;border-radius:12px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock img{width:54px;height:54px;border-radius:11px;object-fit:cover;flex:none;background:#efe4f8}
   #cart .pg-unlock-t{flex:1;min-width:0}
-  #cart .pg-unlock-t b{display:block;font-size:16px;line-height:1.28;color:#3B1553}
-  #cart .pg-unlock-t small{display:block;font-size:13px;line-height:1.35;color:#6E5C80;margin-top:3px}
+  #cart .pg-unlock-t b{display:block;font-size:14.5px;line-height:1.27;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:12px;line-height:1.33;color:#6E5C80;margin-top:2px}
   #cart .pg-unlock-tag{
-    display:inline-block;margin-top:5px;padding:4px 11px;border-radius:999px;
-    font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    display:inline-block;margin-top:4px;padding:3px 10px;border-radius:999px;
+    font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
   }
   #cart .pg-unlock-add{
     flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
     background-image:none !important;color:#7A2FA2 !important;
-    border-radius:999px !important;padding:11px 20px !important;
-    font-family:inherit;font-weight:800;font-size:14.5px;cursor:pointer;
+    border-radius:999px !important;padding:10px 18px !important;
+    font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;
     animation:none !important;transition:background .15s ease,color .15s ease;
   }
   #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
@@ -113,12 +113,42 @@
      desktop -- image, copy, button -- the button simply drops to its own full
      width line instead of shrinking the copy to nothing. */
   @media(max-width:600px){
-    #cart .pg-unlock{flex-wrap:wrap;gap:12px}
-    #cart .pg-unlock img{width:60px;height:60px}
+    #cart .pg-unlock{flex-wrap:wrap;gap:11px}
+    #cart .pg-unlock img{width:48px;height:48px}
     #cart .pg-unlock-t{flex:1 1 60%;min-width:0}
-    #cart .pg-unlock-t b{font-size:15.5px}
-    #cart .pg-unlock-t small{font-size:12.5px}
-    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:13px 18px !important;font-size:15px}
+    #cart .pg-unlock-t b{font-size:14px}
+    #cart .pg-unlock-t small{font-size:11.5px}
+    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:12px 18px !important;font-size:14px}
+  }
+
+  /* ---------------- COMPACT INSIDE THE PINNED PANE ----------------
+     pg-cart-mobile moves #pg-unlock-slot INTO .sticky-in-panel under 760px, so
+     on a phone this row is not scroll content any more -- it is pinned, and
+     every pixel it takes is a pixel the shopper cannot use to look at the cart.
+     Measured before this rule existed: the row was 155px tall and the pane 312px,
+     which is 47% of an iPhone SE. The full-width ADD button was most of it --
+     the max-width:600px rule below drops it onto its own line, costing a whole
+     row of height for a button that fits perfectly well beside the copy.
+
+     So the pinned copy is compacted: the button comes back onto the line, the
+     thumbnail loses a third of its size, and the FREE pill goes -- the headline
+     already says FREE, and a third line of text is expensive here in a way it
+     is not in the scrolling list.
+
+     Scoped to .sticky-in-panel, so the desktop drawer (where the row stays in
+     the list and space is not scarce) keeps the readable size above. The
+     specificity beats the max-width:600px rule whatever the source order. */
+  #cart .sticky-in-panel .pg-unlock{
+    gap:10px;padding:8px 10px;margin:0 0 6px;border-radius:11px;
+    box-shadow:0 6px 16px -14px rgba(74,28,102,.45);
+  }
+  #cart .sticky-in-panel .pg-unlock img{width:42px;height:42px;border-radius:9px}
+  #cart .sticky-in-panel .pg-unlock-t b{font-size:13px;line-height:1.25}
+  #cart .sticky-in-panel .pg-unlock-t small{font-size:11px;line-height:1.3;margin-top:1px}
+  #cart .sticky-in-panel .pg-unlock-tag{display:none}
+  #cart .sticky-in-panel .pg-unlock-add{
+    flex:0 0 auto;order:0;
+    padding:8px 14px !important;font-size:12.5px;
   }
 
   /* ---------------- the design chooser ----------------

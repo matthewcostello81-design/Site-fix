@@ -1,3 +1,48 @@
+# The pinned upsell was eating the cart
+
+Two changes landed on the same row and compounded: it was made ~20% bigger, and
+it was moved *inside* the pinned subtotal pane to stop it being painted over.
+Bigger is fine in a scrolling list. Pinned, every pixel it takes is a pixel the
+shopper can't use to look at their cart.
+
+**And the occlusion test never caught it**, because that harness loaded
+`pg-cart-mobile`'s CSS but not `pg-unlock`'s — so the row it measured was
+unstyled. The pane came back 204px and looked fine. With the real stylesheet
+loaded it is:
+
+| | row | pane | share of an iPhone SE |
+|---|---|---|---|
+| before | **155px** | 312px | **46.8%** |
+| after | **60px** | 209px | **31.4%** |
+| after, two offers pinned | 60px | 275px | 41.3% |
+
+Most of the 155px was one rule: the `max-width:600px` block drops the ADD button
+onto its own full-width line, spending a whole row of height on a button that
+fits perfectly well beside the copy.
+
+## What changed
+
+A compact variant scoped to `.sticky-in-panel`, so it only applies where the row
+is pinned. The desktop drawer keeps the readable size — there the row is still
+scroll content and space isn't scarce.
+
+- the ADD button comes back onto the line (`flex:0 0 auto; order:0`)
+- thumbnail 60px → 42px
+- title 15.5px → 13px, subtitle 12.5px → 11px
+- the FREE pill is hidden — the headline already says FREE, and a third line of
+  text costs more here than it does in the list
+
+The base size also comes back down from the earlier bump, to sit between where
+it started and where it went: thumbnail 66 → 54px, title 16 → 14.5px, subtitle
+13 → 12px.
+
+## The harness now loads the real CSS
+
+`run-occlude.mjs` pulls `pg-unlock`'s stylesheet in alongside
+`pg-cart-mobile`'s, reports row height, pane height and pane-as-share-of-screen,
+and runs a two-offers-pinned worst case (orb + console) on both an iPhone 14 and
+an SE. The measurement that was missing is now the one being asserted.
+
 # The 6-pack reads 35%, and it needed a different kind of discount
 
 `Buy 4 Get 2` and `Buy 2 Get 1` are the same deal — 2 free of 6 is 1 free of 3 —
