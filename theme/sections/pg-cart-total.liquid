@@ -117,6 +117,32 @@
      the cart write and the drawer's own re-render catch up. See the note in the
      script. Un-set again if the write fails. */
   #cart .l4ca > li.pg-orphan{display:none !important}
+
+  /* THE HOLE ABOVE THE PANE, AND WHOSE FAULT IT IS: MINE. Pinning
+     .sticky-in-panel with margin-top:auto is what keeps CHECKOUT on the bottom
+     edge on iOS, and it works -- but on a SHORT cart it also pushes the pane
+     away from the content and leaves the drawer's ground showing between them.
+     Measured on a 1250px-tall window with two orbs: 129px of bare ground between
+     the last item and the pane. It is invisible at 900px, which is why it took a
+     screenshot from a real window to see it.
+
+     The list absorbs it instead. .l4ca computed flex-grow:0, so nothing in the
+     column claimed the slack; giving it the growth makes the cart card extend to
+     meet the pane -- re-measured, it now covers 106 of those 129px, leaving the
+     23px that is ordinary spacing. The items stay where they are, because a flex
+     container growing does not move its children, so this closes the gap without
+     unpinning CHECKOUT. */
+  #cart .l4ca{flex-grow:1}
+
+  /* AN EMPTY CART HAS NOTHING TO CHARGE FOR. When the last product goes the
+     theme leaves its pinned pane exactly as it was -- measured after emptying a
+     cart that had protection on: cart item_count 0, no rows, the switch
+     correctly OFF, and the pane still printing "Shipping Protection $2.99 /
+     Total $2.70". The numbers are the theme's own render and it has no reason
+     to redraw them, so the shopper is shown a total for an order that no longer
+     exists. The pane is hidden while the cart is empty and comes straight back
+     with the first item. */
+  #cart .sticky-in-panel.pg-pane-empty{display:none !important}
 </style>
 <script>
 (function(){
@@ -304,6 +330,23 @@
         if (tot) tot.innerHTML = '';
         last = '';
 
+        /* PREFER THE THEME'S OWN SWITCH. Writing the cart directly worked --
+           item_count really did go to 0 -- and left the pinned pane still
+           printing "Shipping Protection $2.99 / Total $2.70", because the theme
+           had no idea anything had changed and pgDrawerRefresh() does not
+           repaint that pane. Turning its own toggle off is the path the theme
+           already handles correctly (measured: one /cart/update.js, the switch
+           lands OFF, the pane repaints, nothing flapping), so use that and let
+           it do its own bookkeeping. The direct write stays as the fallback for
+           the case where the control is not on screen. */
+        var sw = document.querySelector('#cart .pg-sp input[type=checkbox]');
+        if (sw && sw.checked){
+          try { sw.click(); } catch(e3){}
+          dropping = false;
+          [300, 900, 1800].forEach(function(ms){ setTimeout(render, ms); });
+          return;
+        }
+
         var upd = {};
         items.forEach(function(it){ upd[it.key] = 0; });
         fetch('/cart/update.js', {
@@ -333,7 +376,11 @@
         return;
       }
 
+      /* the pane belongs to a cart with something in it -- see the note above */
+      if (items.length) pane.classList.remove('pg-pane-empty');
+
       if (!items.length){
+        pane.classList.add('pg-pane-empty');
         var old = pane.querySelector('.pg-tot');
         if (old) old.parentNode.removeChild(old);
         last = '';
