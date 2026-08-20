@@ -48,21 +48,37 @@
   ------------------------------------------------------------------ VOLUME
 
   THE EXTRA VOLUME TIERS, ORB ONLY. Two more tiles are appended below the Buy 2
-  Get 1 Free tile:
+  Get 1 Free tile, and every tier on the ladder now quotes EXACTLY what the cart
+  charges:
 
-      Buy 4, Get 2 FREE ..... 6 orbs ..... $134.20
-      Buy 5, Get 3 FREE ..... 8 orbs ..... $169.95
+      tile                orbs   paid   cart charges   struck    save
+      Single Item            1      1         $33.55    $70.00    52%
+      Buy 2, Get 1 FREE      3      2         $67.10   $210.00    68%
+      Buy 4, Get 2 FREE      6      4        $134.20   $420.00    68%
+      Buy 5, Get 3 FREE      8      5        $167.75   $560.00    70%
 
-  Single and Buy 2 Get 1 Free are NOT touched -- not their copy, not their
-  prices, not their badge. The new tiles are additions and nothing else.
+  Single and Buy 2 Get 1 Free are still not touched by this file: their figures
+  are pgLadder's own arithmetic on the variant price, so they moved on their own
+  when the orb went from $34.99 to $33.55.
 
-  WHY THE PRICES ARE LITERAL. Every other figure on the ladder is derived from
-  the variant price, but these two are chosen price points, not arithmetic on
-  $34.99 (6 x 34.99 = $209.94, and 4 paid units is $139.96 -- neither is
-  $134.20). They are carried in EXTRA below in cents, which is the one place to
-  edit them. The struck-through figure IS derived, the same way tier 1 derives
-  its own: compare-at x the number of orbs in the pack, so the two tiles are
-  measured against MSRP exactly like the tile above them.
+  WHY THE ORB PRICE MOVED. A Buy-X-Get-Y discount can only take whole orbs off,
+  so a tile can only ever quote (paid units x unit price). At $34.99 the wanted
+  $134.20 works out to 3.84 paid orbs and $169.95 to 4.86 -- neither is a whole
+  number, so no discount could have made the cart agree with either tile. At
+  $33.55 the 6-pack lands on $134.20 exactly (4 x 33.55). The 8-pack is 5 x
+  33.55 = $167.75, which is why this tile reads $167.75 rather than the $169.95
+  first asked for: one unit price cannot satisfy both, and $167.75 is the one
+  the cart can actually honour.
+
+  WHY THE PRICES ARE STILL LITERAL HERE. They could be derived now, but the
+  point of EXTRA is that a tier is a chosen offer, not a formula: change the
+  free-unit ratio and the price follows from the deal, not from the code. They
+  are in cents, and they are the one place to edit them. The struck-through
+  figure IS derived, the same way tier 1 derives its own: compare-at x the
+  number of orbs in the pack.
+
+  IF THE ORB PRICE MOVES AGAIN, both figures here have to move with it, or the
+  tiles go back to disagreeing with the cart: 4 x unit and 5 x unit.
 
   THE BADGE IS THE SAVING, NOT A SUPERLATIVE. Tier 1 carries "Best Deal!" and
   keeping it there was the instruction, so the new tiles cannot claim to be the
@@ -97,14 +113,11 @@
   the best automatic discount for the cart, so the repeating Buy 2 Get 1 Free
   still wins wherever it is worth more (at 12 orbs it frees four, not two).
 
-  The shopper is therefore charged LESS than the tile shows, exactly the way
-  tier 1 already behaves: 6 orbs bill $139.96 and 8 orbs $174.95, and the
-  standing "Extra 10% off entire order" combines on top of that.
-
-  The one thing to watch: those figures are ABOVE the tiles' $134.20 and
-  $169.95 before the 10% is applied. While that promotion runs the shopper
-  pays under the tile; if it ever ends, the 6-orb tile under-quotes by $5.76
-  and the 8-orb tile by $5.00, and EXTRA needs revisiting.
+  With the orb at $33.55 the tiles and the cart now agree to the cent: 6 orbs
+  bill $134.20 and 8 orbs $167.75, which is what the tiles say. The standing
+  "Extra 10% off entire order" combines on top, so the shopper pays $120.78 and
+  $150.97 -- under the tile, never over it, which is the safe direction and the
+  same way the two tiles above already behave.
 {%- endcomment -%}
 <style>
   #pgx .pgx-deal-note{
@@ -138,15 +151,16 @@
   var PACK = B2G1[HANDLE] || null;
 
   /* The extra volume tiers, orb only. `pay` is the price shown, in cents, and
-     is a chosen price point rather than arithmetic on the variant price -- see
-     the note at the top of the file. `units` is how many orbs the tile adds to
-     the cart, and how many pickers it therefore draws. The struck-through
-     figure is NOT here: it is compare-at x units, derived at render time so it
-     matches the tile above. */
+     is what the cart actually charges: 4 and 5 paid orbs at the $33.55 unit
+     price. If that unit price ever moves, BOTH have to move with it or the
+     tiles stop agreeing with the cart -- see the note at the top of the file.
+     `units` is how many orbs the tile adds, and how many pickers it draws. The
+     struck-through figure is NOT here: it is compare-at x units, derived at
+     render time so it matches the tile above. */
   var EXTRA_ON = HANDLE.indexOf('pokemon-crystal') !== -1;
   var EXTRA = [
     {tier: '4', units: 6, free: 2, pay: 13420, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
-    {tier: '5', units: 8, free: 3, pay: 16995, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases'}
+    {tier: '5', units: 8, free: 3, pay: 16775, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases'}
   ];
 
   var NOTE = PACK

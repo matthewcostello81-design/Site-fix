@@ -1,3 +1,56 @@
+# Orb repriced to $33.55 so every tile matches the cart to the cent
+
+## The problem
+
+A Buy-X-Get-Y discount can only take **whole orbs** off, so a tile can only ever
+quote `paid units x unit price`. At $34.99 the wanted prices were not whole
+multiples:
+
+- $134.20 ÷ 34.99 = **3.84** paid orbs
+- $169.95 ÷ 34.99 = **4.86** paid orbs
+
+No discount could have made the cart agree with either tile. The gap was $5.76
+and $5.00 — hidden while the standing "Extra 10% off entire order" ran, and an
+over-promise the moment it ended.
+
+## The fix
+
+All 36 orb variants repriced **$34.99 → $33.55** (LIVE store change, on the
+owner's instruction). Compare-at stays $70.00.
+
+| tile | orbs | paid | cart charges | struck | save |
+|---|---|---|---|---|---|
+| Single Item | 1 | 1 | $33.55 | $70.00 | 52% |
+| Buy 2, Get 1 FREE | 3 | 2 | $67.10 | $210.00 | 68% |
+| Buy 4, Get 2 FREE | 6 | 4 | **$134.20** | $420.00 | 68% |
+| Buy 5, Get 3 FREE | 8 | 5 | **$167.75** | $560.00 | 70% |
+
+The 6-pack lands on $134.20 exactly. The 8-pack is 5 × 33.55 = **$167.75**, so
+that tile now reads $167.75 rather than the $169.95 originally asked for — one
+unit price cannot satisfy both, and $167.75 is the one the cart can honour.
+
+Single and Buy 2 Get 1 Free moved on their own: their figures are pgLadder's
+arithmetic on the variant price, not literals in `pg-tile-copy`.
+
+With the standing 10%-off-order combining on top, shoppers pay $30.19 / $60.39 /
+$120.78 / $150.97 — **under the tile, never over it**.
+
+## Guard against it drifting again
+
+The tile suite now asserts, per tier, that the quoted price equals
+`paid units × $33.55` to the cent — so if the orb price moves without `EXTRA`
+moving with it, the tests fail rather than the storefront quietly over-promising.
+41 checks, all green.
+
+`EXTRA` in `sections/pg-tile-copy.liquid` is the one place to edit these, and the
+file's header says what to recompute if the unit price changes.
+
+## Applied to
+Product `9185353367780` (all 36 variants, live) and draft theme `163067101412`
+(`sections/pg-tile-copy.liquid`, verified byte-for-byte by MD5).
+
+---
+
 # Cut-off CHECKOUT, white cookie copy, bigger trust icons, reviews 2-3 across
 
 All in draft theme `163067101412` on `www.thepocketera.com`. The live theme is
