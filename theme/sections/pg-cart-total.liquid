@@ -50,6 +50,15 @@
   #cart .sticky-in-panel .l4tt:has(li.pg-tt) li:not(.pg-tt){display:none !important}
 
   #cart .pg-tot{
+    /* POP-IN. This box used to be created only once /cart.js came back, about
+       two seconds after the drawer opened, and inserting a 38px block above the
+       totals shoved CHECKOUT and everything under it down the screen. Measured
+       over six seconds after an open: eight separate layout jumps, the pane
+       moving 632 -> 553 -> 565 -> 563 -> 519px. The box is now created empty and
+       immediately, and min-height holds exactly the space one row will need, so
+       filling it in later changes no geometry at all. */
+    min-height:38px;
+    box-sizing:border-box;
     margin:2px 0 6px;padding:10px 12px;border-radius:12px;
     background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
     border:1px solid rgba(122,47,162,.2);
@@ -175,9 +184,18 @@
        product feed never loads */
     lightenBottom();
     sizeTotal();
-    if (!VMAP) return;
     var pane = document.querySelector('#cart .sticky-in-panel');
     if (!pane) return;
+
+    /* claim the space NOW, empty, so nothing below it moves when the numbers
+       land. See the min-height note in the stylesheet above. */
+    var box = pane.querySelector('.pg-tot');
+    if (!box){
+      box = document.createElement('div');
+      box.className = 'pg-tot';
+      pane.insertBefore(box, pane.querySelector('.l4tt') || pane.firstChild);
+    }
+    if (!VMAP) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
       var items = c.items || [];
       if (!items.length){
@@ -215,17 +233,31 @@
         ? row('You saved (' + pct + '%)', money(saved), 'pg-tot-sum pg-tot-saved')
         : row('Total', money(total), 'pg-tot-sum');
 
-      var box = pane.querySelector('.pg-tot');
-      if (!box){
-        box = document.createElement('div');
-        box.className = 'pg-tot';
-        pane.insertBefore(box, pane.querySelector('.l4tt') || pane.firstChild);
-      }
-      box.innerHTML = html;
+      var b2 = pane.querySelector('.pg-tot');
+      if (b2 && b2.innerHTML !== html) b2.innerHTML = html;
     }).catch(function(){});
   }
 
-  setInterval(render, 800);
+  /* WHY NOT A METRONOME. This ran render() every 800ms, which meant the numbers
+     could arrive up to 800ms late after an add, and every tick re-stamped inline
+     styles on the totals rows whether or not anything had changed. It now runs
+     when the cart actually changes -- the drawer is rebuilt wholesale on every
+     add, remove and quantity change, so its mutations are the signal -- with a
+     slow interval kept only as a backstop for changes made in another tab. */
+  var queued = false;
+  function soon(){
+    if (queued) return;
+    queued = true;
+    setTimeout(function(){ queued = false; render(); }, 60);
+  }
+  if (window.MutationObserver){
+    var drawer = document.getElementById('cart');
+    if (drawer) new MutationObserver(soon).observe(drawer, {childList: true, subtree: true});
+  }
+  document.addEventListener('click', function(e){
+    if (e.target.closest && e.target.closest('[href="/cart"], .pgx-cart, #pg-cartfab, .pg-unlock-go, .pg-unlock-add')) soon();
+  }, true);
+  setInterval(render, 2500);
   render();
 })();
 </script>

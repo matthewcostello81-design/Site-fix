@@ -3,16 +3,13 @@
   first has something in the cart, shown at the bottom of the cart drawer and
   applied to their order automatically.
 
-  THE OFFER IS REAL, AND SO IS THE CLOCK. The discount is a genuine Shopify code
-  (RUSH10, 10% off all items, combines with product discounts so it stacks on top
-  of the Buy 2 Get 1 bundle rather than replacing it). Two deliberate choices
-  keep the countdown honest rather than theatrical:
-
-    - The deadline is stored in localStorage, so it SURVIVES reloads and
-      navigation. A timer that restarts at 10:00 on every page view would be
-      telling the shopper something untrue.
-    - When it reaches zero the offer really stops: the block disappears and
-      checkout stops routing through the discount.
+  THE OFFER IS REAL, AND SO IS THE CLOCK. The discount is a genuine Shopify
+  AUTOMATIC order discount (10% off all items, combining with product discounts
+  so it stacks on top of the Buy 2 Get 1 bundle rather than replacing it). Being
+  automatic is the point: Shopify applies it to the CART, so the total the
+  shopper reads already includes it. The deadline is stored in localStorage, so
+  it SURVIVES reloads and navigation -- a timer that restarted at 10:00 on every
+  page view would be telling the shopper something untrue.
 
   WHEN IT STARTS AND RESTARTS. The window opens the first time the cart is seen
   non-empty, and opens again on any genuine ADD -- whenever the item count goes
@@ -40,14 +37,18 @@
   that fight is how rows start swapping places. Inside the pane there is no
   contention at all.
 
-  HOW THE DISCOUNT IS APPLIED. Clicking CHECKOUT while the window is open goes
-  to /discount/RUSH10?redirect=/checkout -- Shopify's own endpoint, which records
-  the code against the session and forwards to checkout, so the saving is already
-  on the order summary when the page opens. Nothing is typed and nothing is
-  stored in the cart, so an expired window simply stops redirecting and the next
-  click is an ordinary checkout. The interception is wrapped in try/catch and is
-  skipped entirely unless the window is open: if anything at all goes wrong here,
-  the click falls through to the theme's normal checkout.
+  HOW THE DISCOUNT IS APPLIED -- AND HOW IT USED TO BE. It was a discount CODE
+  (RUSH10), and a cart cannot hold a code, so clicking CHECKOUT was intercepted
+  and routed through /discount/RUSH10?redirect=/checkout to record it on the way
+  past. It worked at checkout and was invisible before it: measured with four
+  orbs, cart.total_price equalled items_subtotal_price exactly -- $104.97 and
+  $104.97 -- while the banner directly above read APPLIED. The shopper was being
+  promised a saving the numbers in front of them did not contain, and only found
+  it a page later.
+
+  It is now an automatic discount, so Shopify does the applying. Nothing is
+  intercepted, the cart total arrives already reduced, and checkout charges what
+  the cart said. RUSH10 is deactivated so it cannot be stacked a second time.
 
   THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED --
   the shopper does not have to type a code or hunt for a field, the 10% is on
@@ -122,7 +123,7 @@
 (function(){
   if (window.pgRush) return;
 
-  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000, CODE = 'RUSH10';
+  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000;
 
   function read(){
     try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch(e){ return 0; }
@@ -143,7 +144,7 @@
     return m + ':' + (r < 10 ? '0' : '') + r;
   }
 
-  window.pgRush = {left: left, active: active, fmt: fmt, code: CODE};
+  window.pgRush = {left: left, active: active, fmt: fmt};
 
   /* Start on the first non-empty cart; restart on a real ADD (count goes up);
      clear when the cart empties. The previous count is persisted so that moving
@@ -196,18 +197,19 @@
     if (c && c.textContent !== t) c.textContent = t;
   }
 
-  /* CHECKOUT -> apply the code first, then go to checkout */
-  document.addEventListener('click', function(e){
-    try {
-      if (!e.target.closest) return;
-      var btn = e.target.closest('button[name="checkout"], input[name="checkout"], [data-pg-checkout]');
-      if (!btn) return;
-      if (!active()) return;                 /* window closed: ordinary checkout */
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      window.location.href = '/discount/' + CODE + '?redirect=%2Fcheckout';
-    } catch(err){ /* never block checkout */ }
-  }, true);
+  /* CHECKOUT IS NO LONGER INTERCEPTED. The 10% used to be a discount CODE, which
+     a cart cannot hold -- so this hijacked the checkout button and sent the
+     shopper through /discount/RUSH10?redirect=/checkout to record it on the way.
+     That worked at checkout and was invisible in the cart: measured with four
+     orbs, cart.total_price equalled items_subtotal_price exactly ($104.97 for
+     both) while the banner directly above it read APPLIED. The shopper was told
+     they had a discount that the numbers in front of them did not include.
+
+     The 10% is now an AUTOMATIC order discount instead, so Shopify applies it to
+     the cart itself. total_price arrives already reduced, the drawer's own rows
+     show it, the banner is true when it says APPLIED, and checkout charges the
+     same figure the cart showed. Nothing needs to be intercepted, and the code
+     RUSH10 is deactivated so it cannot be applied a second time on top. */
 
   function boot(){
     poll();
