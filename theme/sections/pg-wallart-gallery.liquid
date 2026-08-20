@@ -1,63 +1,52 @@
 {%- comment -%}
-  PG Wall Art gallery fix.
+  PG Wall Art gallery.
 
-  The room shot that used to stand on top of the gallery was dropped at the
-  owner's request, so the lenticular flip video moves up into that slot and the
-  photos stay as thumbnails underneath.
+  The same two changes pg-gallery-tweaks makes on the crystal orbs page,
+  applied to the wall art page:
 
-  Written as an override rather than an edit to sections/pg-landing.liquid
-  because that section is shared by the homepage and five other product
-  templates, all of which keep their photo-first hero. This file is rendered
-  only from templates/product.pg-wallart.json, so removing it from that
-  template's order puts the top photo back in one edit.
+  1. The room shot that used to stand on top of the gallery was dropped at the
+     owner's request. Hiding .pgx-hero is what lifts the lenticular flip video
+     into that slot, because the video is the next child in pg-landing's DOM.
+  2. Below it, pg-landing lays the photo strip out two-up on desktop. That
+     sizing was for thumbnails sitting UNDER a big hero; with the hero gone the
+     strip IS the gallery, so a pair of small tiles is too little to be the only
+     picture of the product. Desktop now shows one photo per view, paged by the
+     arrows pg-landing already draws at that breakpoint.
+
+  Under 900px the strip is already one photo per view: pg-gallery-mobile does
+  that site-wide from footer-group. This file only has to handle desktop.
+
+  The hero is HIDDEN, not deleted, and no product media was touched. That photo
+  is still the product's featured image, so it goes on carrying the collection
+  card, the bundle tile and the cart line. The strip's buttons still set the
+  hidden hero's src; they simply set it on something nobody sees.
+
+  Rendered only from templates/product.pg-wallart.json, so removing it from
+  that template's order puts the original gallery back in one edit.
 {%- endcomment -%}
 <style>
-  /* Top photo out. The video is the next child of the gallery, so hiding the
-     hero is what lifts it into the vacated slot; the gap that used to separate
-     the two goes with it. */
-  #pgx .pgx-gallery > .pgx-hero{display:none !important}
-  #pgx .pgx-gallery > .pgx-vid{margin-top:0 !important}
+  /* the room shot -- see the note above */
+  #pgx .pgx-hero{display:none !important}
+  /* the video leads the column now, so it does not need the gap that used to
+     separate it from the hero */
+  #pgx .pgx-vid{margin-top:0 !important}
 
-  /* Clicking a thumbnail still opens an enlarged view. It just appears on
-     demand now instead of standing at the top of the page from the start. */
-  #pgx .pgx-gallery > .pgx-hero.pgx-hero-open{display:block !important;margin-top:14px !important}
-
-  /* Desktop only: order the enlarged view below the video. Mobile keeps the
-     plain block flow, because .pgx-vid carries a flex-basis down there that
-     would be interpreted as a height if this made the gallery a flex column. */
-  @media (min-width: 901px){
-    #pgx .pgx-gallery{display:flex;flex-direction:column}
-    #pgx .pgx-gallery > .pgx-vid{order:1}
-    #pgx .pgx-gallery > .pgx-hero{order:2}
-    #pgx .pgx-gallery > .pgx-thumbwrap{order:3}
+  /* the strip is the gallery now, not a row of thumbnails under one */
+  @media (min-width:901px){
+    #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
   }
 </style>
 <script>
 (function(){
-  var g = document.querySelector('#pgx .pgx-gallery');
-  if (!g || g.dataset.pgWallartFix) return;
-  g.dataset.pgWallartFix = '1';
-
-  var heroWrap = g.querySelector('.pgx-hero');
-  var heroImg = document.getElementById('pgx-hero-img');
-
-  /* The hidden hero would otherwise still pull down a full-size image nobody
-     sees. Drop its source until a thumbnail actually asks for one; pg-landing
-     holds its own reference to the element, so its click handler still works. */
-  if (heroImg) heroImg.removeAttribute('src');
-
-  g.querySelectorAll('[data-pgx-thumb]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      if (heroWrap) heroWrap.classList.add('pgx-hero-open');
-    });
-  });
+  /* The hero is display:none for good, so stop it pulling down a full-size copy
+     of a photo nobody sees. pg-landing holds its own reference to the element
+     and may set a src back on it when a photo is clicked; that costs nothing
+     while it is hidden. */
+  var hero = document.getElementById('pgx-hero-img');
+  if (hero) hero.removeAttribute('src');
 })();
 </script>
 
 {% schema %}
-{
-  "name": "PG Wall Art gallery",
-  "settings": [],
-  "presets": [{"name": "PG Wall Art gallery"}]
-}
+{"name": "PG Wall Art gallery", "settings": [], "presets": [{"name": "PG Wall Art gallery"}]}
 {% endschema %}
