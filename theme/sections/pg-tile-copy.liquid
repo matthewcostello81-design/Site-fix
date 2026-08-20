@@ -49,26 +49,30 @@
 
   THE EXTRA VOLUME TIERS, ORB ONLY. Two more tiles are appended below the Buy 2
   Get 1 Free tile, and every tier on the ladder now quotes EXACTLY what the cart
-  charges:
+  charges at the orb's $34.99 unit price:
 
       tile                orbs   paid   cart charges   struck    save
-      Single Item            1      1         $33.55    $70.00    52%
-      Buy 2, Get 1 FREE      3      2         $67.10   $210.00    68%
-      Buy 4, Get 2 FREE      6      4        $134.20   $420.00    68%
-      Buy 5, Get 3 FREE      8      5        $167.75   $560.00    70%
+      Single Item            1      1         $34.99    $70.00    50%
+      Buy 2, Get 1 FREE      3      2         $69.98   $210.00    67%
+      Buy 4, Get 2 FREE      6      4        $139.96   $420.00    67%
+      Buy 5, Get 3 FREE      8      5        $174.95   $560.00    69%
 
-  Single and Buy 2 Get 1 Free are still not touched by this file: their figures
-  are pgLadder's own arithmetic on the variant price, so they moved on their own
-  when the orb went from $34.99 to $33.55.
+  Single and Buy 2 Get 1 Free are still not touched for price by this file:
+  those figures are pgLadder's own arithmetic on the variant price, so they
+  follow the orb automatically. Only the BADGE on tier 1 is rewritten here.
 
-  WHY THE ORB PRICE MOVED. A Buy-X-Get-Y discount can only take whole orbs off,
-  so a tile can only ever quote (paid units x unit price). At $34.99 the wanted
-  $134.20 works out to 3.84 paid orbs and $169.95 to 4.86 -- neither is a whole
-  number, so no discount could have made the cart agree with either tile. At
-  $33.55 the 6-pack lands on $134.20 exactly (4 x 33.55). The 8-pack is 5 x
-  33.55 = $167.75, which is why this tile reads $167.75 rather than the $169.95
-  first asked for: one unit price cannot satisfy both, and $167.75 is the one
-  the cart can actually honour.
+  WHY NOT $134.20 AND $169.95. Those were the two figures first asked for, and
+  neither is reachable. A Buy-X-Get-Y discount can only take WHOLE orbs off, so
+  a tile can only ever quote (paid units x unit price). At $34.99, $134.20 works
+  out to 3.84 paid orbs and $169.95 to 4.86 -- no discount can produce either,
+  so a tile printing them would be a promise the cart could not honour. The
+  nearest whole-orb figures are 4 x 34.99 = $139.96 and 5 x 34.99 = $174.95,
+  which is what the tiles read.
+
+  (A $33.55 orb was tried, because 4 x 33.55 lands on $134.20 exactly. It was
+  reverted: one unit price cannot satisfy both wanted figures -- 5 x 33.55 is
+  $167.75, not $169.95 -- so it bought one of the two at the cost of dropping
+  the orb's price on every other surface of the shop.)
 
   WHY THE PRICES ARE STILL LITERAL HERE. They could be derived now, but the
   point of EXTRA is that a tier is a chosen offer, not a formula: change the
@@ -80,11 +84,18 @@
   IF THE ORB PRICE MOVES AGAIN, both figures here have to move with it, or the
   tiles go back to disagreeing with the cart: 4 x unit and 5 x unit.
 
-  THE BADGE IS THE SAVING, NOT A SUPERLATIVE. Tier 1 carries "Best Deal!" and
-  keeping it there was the instruction, so the new tiles cannot claim to be the
-  best of anything without contradicting it. They carry the percentage they
-  actually save against the struck price shown beside it -- 68% and 70% against
-  tier 1's implied 67% -- which rises with the pack and argues for itself.
+  EVERY TILE STATES ITS SAVING, AND BEST DEAL SITS ON THE BIGGEST PACK. Tier 1
+  used to carry "Best Deal!" and no number; it now carries "SAVE 67%" like the
+  rest, and the 8-pack carries "BEST DEAL - SAVE 69%" -- the badge is the only
+  place a tile can claim to be the best, and dropping the number to make room
+  would have left the one rung a shopper is meant to land on as the only one
+  not saying what it saves.
+
+  A KNOWN FLAT SPOT: Buy 4 Get 2 and Buy 2 Get 1 are the SAME discount rate --
+  both pay 2 of every 3 -- so both badges honestly read 67%. The 6-pack buys
+  more orbs, not a better rate. Only the 8-pack (5 paid of 8) actually improves
+  on the ladder. Changing that is a pricing decision, not a code one: give the
+  6-pack a different free-unit ratio and the badge follows on its own.
 
   TIER NUMBERS 4 AND 5, NOT 2 AND 3. ladder() above deletes any tile whose
   data-pg-tier is '2' or '3' -- those are pgLadder's dead Trio and Quad offers.
@@ -113,21 +124,26 @@
   the best automatic discount for the cart, so the repeating Buy 2 Get 1 Free
   still wins wherever it is worth more (at 12 orbs it frees four, not two).
 
-  With the orb at $33.55 the tiles and the cart now agree to the cent: 6 orbs
-  bill $134.20 and 8 orbs $167.75, which is what the tiles say. The standing
-  "Extra 10% off entire order" combines on top, so the shopper pays $120.78 and
-  $150.97 -- under the tile, never over it, which is the safe direction and the
-  same way the two tiles above already behave.
+  The tiles and the cart agree to the cent: 6 orbs bill $139.96 and 8 orbs
+  $174.95, which is what the tiles say. The standing "Extra 10% off entire
+  order" combines on top, so the shopper pays $125.96 and $157.46 -- under the
+  tile, never over it, which is the safe direction and the same way the two
+  tiles above already behave.
 {%- endcomment -%}
 <style>
+  /* The note was 12.5px #A99BC0 -- a muted lavender at body weight, on the one
+     line that tells a shopper what the tile they just picked actually does. It
+     is white and one step heavier now; the highlighted phrase keeps the accent
+     but goes brighter with it. */
   #pgx .pgx-deal-note{
-    margin:2px 0 12px !important;
-    font-size:12.5px;
-    line-height:1.45;
-    color:#A99BC0;
+    margin:4px 0 13px !important;
+    font-size:13.5px;
+    line-height:1.5;
+    font-weight:600;
+    color:#FFFFFF;
     text-align:center;
   }
-  #pgx .pgx-deal-note b{color:#C79BEA;font-weight:700}
+  #pgx .pgx-deal-note b{color:#E4C4FF;font-weight:800}
 </style>
 <script>
 (function(){
@@ -151,7 +167,7 @@
   var PACK = B2G1[HANDLE] || null;
 
   /* The extra volume tiers, orb only. `pay` is the price shown, in cents, and
-     is what the cart actually charges: 4 and 5 paid orbs at the $33.55 unit
+     is what the cart actually charges: 4 and 5 paid orbs at the $34.99 unit
      price. If that unit price ever moves, BOTH have to move with it or the
      tiles stop agreeing with the cart -- see the note at the top of the file.
      `units` is how many orbs the tile adds, and how many pickers it draws. The
@@ -159,15 +175,39 @@
      render time so it matches the tile above. */
   var EXTRA_ON = HANDLE.indexOf('pokemon-crystal') !== -1;
   var EXTRA = [
-    {tier: '4', units: 6, free: 2, pay: 13420, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
-    {tier: '5', units: 8, free: 3, pay: 16775, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases'}
+    {tier: '4', units: 6, free: 2, pay: 13996, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
+    {tier: '5', units: 8, free: 3, pay: 17495, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases', best: true}
   ];
 
-  var NOTE = PACK
-    ? 'Buy 2, get your <b>3rd free</b> &mdash; the free one comes off automatically at checkout.'
-    : 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+  /* THE NOTE FOLLOWS THE TILE. It used to be one fixed sentence -- "Buy 2, get
+     your 3rd free" -- printed under Add to Cart whichever rung was selected, so
+     picking the 8-pack left a line describing a different offer sitting under
+     the button. It is derived from the selected tile now, and rebuilt whenever
+     selection changes (see ownSelection). Tier 0 has no offer of its own, so it
+     points at the first one instead of saying nothing. */
+  function noteFor(tier){
+    if (!PACK) return 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+    var n = PACK.noun.toLowerCase();
+    if (tier === '1'){
+      return 'Buy 2, get your <b>3rd ' + n + ' free</b> &mdash; the free one comes off automatically at checkout.';
+    }
+    for (var i = 0; i < EXTRA.length; i++){
+      if (EXTRA[i].tier === tier){
+        var E = EXTRA[i];
+        return 'Buy ' + (E.units - E.free) + ', get <b>' + E.free + ' ' + n + 's free</b>'
+             + ' &mdash; the free ones come off automatically at checkout.';
+      }
+    }
+    return 'Add 1 more and your <b>3rd ' + n + ' is free</b> &mdash; it comes off automatically at checkout.';
+  }
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* What a tile saves against the same number of orbs at MSRP. One helper so
+     every rung is measured the same way and none of them can drift. */
+  function pctOff(pay, full){
+    return full > pay ? Math.round((full - pay) / full * 100) : 0;
+  }
 
   function swapIn(root){
     if (!root || root.nodeType !== 1) return;
@@ -255,7 +295,10 @@
     put(tile.querySelector('.pgx-lad-t b'), 'Buy 2, Get 1 FREE');
     put(tile.querySelector('.pgx-lad-chip'), PACK.chip);
     put(tile.querySelector('.pgx-lad-save'), '3rd ' + PACK.noun + ' = FREE!');
-    put(tile.querySelector('.pgx-lad-badge'), 'Best Deal!');
+    /* BEST DEAL BELONGS TO THE BIGGEST PACK, so this tile states what it saves
+       instead, like every other rung. Same arithmetic the new tiles use: what
+       is paid against what the same number of orbs cost at MSRP. */
+    put(tile.querySelector('.pgx-lad-badge'), 'SAVE ' + pctOff(unit * 2, cap * 3) + '%');
     put(tile.querySelector('.pgx-lad-px b'), money(unit * 2));
     put(tile.querySelector('.pgx-lad-px s'), money(cap * 3));
 
@@ -327,7 +370,12 @@
 
   function extraTile(E, cap, opts){
     var full = cap * E.units;
-    var pct = full > E.pay ? Math.round((full - E.pay) / full * 100) : 0;
+    var pct = pctOff(E.pay, full);
+    /* The biggest pack carries BEST DEAL and its percentage together: the badge
+       is the only place a tile can claim to be the best, and dropping the
+       number to make room would have left the one rung a shopper is meant to
+       land on as the only one not saying what it saves. */
+    var badge = E.best ? 'BEST DEAL &middot; SAVE ' + pct + '%' : 'SAVE ' + pct + '%';
 
     var tile = document.createElement('div');
     tile.className = 'pgx-tile pgx-lad';
@@ -338,7 +386,7 @@
     tile.setAttribute('data-pg-extra', '1');
     tile.dataset.pgMul = '1';
 
-    tile.innerHTML = (pct > 0 ? '<span class="pgx-lad-badge">SAVE ' + pct + '%</span>' : '')
+    tile.innerHTML = (pct > 0 ? '<span class="pgx-lad-badge">' + badge + '</span>' : '')
       + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
       + '<div class="pgx-lad-t"><b>' + E.title + '</b>'
       + '<span class="pgx-lad-chip">' + E.chip + '</span>'
@@ -406,19 +454,30 @@
         t.classList.toggle('pgx-sel', on);
         t.setAttribute('aria-checked', on ? 'true' : 'false');
       });
+      note();          /* the sentence under the button belongs to the new tile */
     });
   }
 
   function note(){
     var root = document.getElementById('pgx');
-    if (!root || root.querySelector('.pgx-deal-note')) return;
+    if (!root) return;
     if (!root.querySelector('.pgx-tile, [class*="pgx-lad"]')) return;
     var atc = root.querySelector('.pgx-atc');
     if (!atc || !atc.parentNode) return;
-    var p = document.createElement('p');
-    p.className = 'pgx-deal-note';
-    p.innerHTML = NOTE;
-    atc.parentNode.insertBefore(p, atc);
+    var p = root.querySelector('.pgx-deal-note');
+    if (!p){
+      p = document.createElement('p');
+      p.className = 'pgx-deal-note';
+      atc.parentNode.insertBefore(p, atc);
+    }
+    var sel = root.querySelector('.pgx-lad.pgx-sel') || root.querySelector('.pgx-tile.pgx-sel');
+    var html = noteFor(sel ? (sel.getAttribute('data-pg-tier') || '') : '');
+    /* Compare against what we last WROTE, not against innerHTML read back:
+       the parser turns `&mdash;` into a literal em dash, so re-reading never
+       equals the source string, every pass would rewrite the node, and the
+       MutationObserver below would call pass() again -- forever. The record
+       lives on a JS property so keeping it is not itself a DOM mutation. */
+    if (p.pgNote !== html){ p.pgNote = html; p.innerHTML = html; }
   }
 
   function pass(){

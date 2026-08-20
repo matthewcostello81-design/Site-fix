@@ -1,0 +1,305 @@
+{%- comment -%}
+  PG Gallery Tweaks (orbs product page): the video first, then the swipeable
+  strip of orb photos. Nothing else.
+
+  WHAT PG-LANDING BUILDS. The gallery column renders three things in this order:
+
+      .pgx-hero        one big still, driven by the strip below it
+      .pgx-vid         the product clip
+      .pgx-thumbwrap   the strip of every character image (media[1...])
+
+  THE HERO IS GONE, by request. It was the five-orbs-together group shot
+  (media[0], alt "Crystal PokeOrb - HERO"), which is the right picture on a
+  collection card -- it is selling the range -- and the wrong one to open a page
+  that is selling a single orb. Earlier passes tried to move the hero off it to
+  the first real character image; the ask now is simpler, so the hero is hidden
+  outright and the video leads the page. With .pgx-hero out, the DOM order that
+  is left IS the requested order: video, then the strip.
+
+  It is HIDDEN, not deleted, and the product's media is untouched. Deleting the
+  group shot would strip it from the product card too, which was explicitly to
+  be kept, and media deletion cannot be undone. Hiding is also why the strip
+  keeps working unchanged: its buttons still set .pgx-hero's src, they simply
+  set it on something nobody sees.
+
+  ONE PHOTO PER VIEW ON DESKTOP TOO. pg-gallery-mobile already makes the strip
+  one-orb-at-a-time under 900px. Above it, pg-landing lays the strip out two-up,
+  which was sized to sit UNDER a big hero as thumbnails. With the hero gone the
+  strip is the gallery, so a thumbnail-sized pair is too small to be the only
+  picture of the product: desktop gets the same one-per-view sizing, paged by
+  the arrows pg-landing already draws on that breakpoint.
+
+  THE SWIPE HINT. pg-gallery-mobile deliberately hides the carousel arrows on
+  phones, because they sat on top of the orbs. That fixed the covering but left
+  no sign the strip scrolls, so the photos read as a dead row.
+
+  IT SITS ON THE PHOTO, pinned to the top edge of the orb the strip is showing.
+  Placement has been the whole problem with this hint and it took two passes:
+
+    - UNDER the strip it measured y=925 on a 390x844 phone. The strip is ~358px
+      tall, so the note telling you to swipe was itself below the fold, beneath
+      the very photos it described. Nobody scrolls past a row to be told the row
+      scrolls.
+    - BETWEEN the video and the strip it was on screen, but it read as a caption
+      for the VIDEO -- it was a sibling sitting directly under the clip, and
+      nothing tied it to the photos below it.
+
+  So it is now absolutely positioned inside .pgx-thumbwrap, centred at the top of
+  the first photo. It is unambiguously about the strip, because it is ON the
+  strip. It stays pointer-events:none and only overlaps the top ~32px of the
+  orb, so nothing is blocked and the subject is not covered.
+
+  IT STAYS. This has been whittled down twice and both passes were still
+  removing it too eagerly:
+
+    - It was suppressed for good in localStorage on the first strip scroll, so
+      one stray swipe ever and the hint was dead in that browser.
+    - Then it was removed on the first `scroll` OR `touchmove` of THIS page
+      view. `touchmove` is the problem: a finger that starts on the gallery and
+      drags DOWN scrolls the page, not the strip, and that fires touchmove on
+      the strip -- so simply scrolling past the photos killed the hint, which is
+      exactly the "it goes away when you scroll" being reported.
+
+  So it is not removed at all any more. It is a standing label, like the
+  character name at the bottom of the same photo: while the strip has more
+  photos than fit, it says so. It is pointer-events:none, sits on the top ~32px
+  of the orb, and carries the shopper's position in the strip (3/35) so it also
+  answers "how many more" rather than only "there are more". The counter is
+  updated by label(), which already works out which photo is in view -- one
+  owner for that measurement, no second scroll listener.
+
+  pg-landing rebuilds the gallery after its fetch and throws the node away, so
+  every pass re-checks that it is still in the document and re-inserts it.
+
+  Mobile only; desktop keeps its arrows.
+
+  ================================================================
+  THE CHARACTER NAME, ON THE PHOTO AND PERMANENT.
+
+  The strip is 35 photos of 35 different characters and nothing on screen said
+  which one you were looking at -- the name only appeared once you opened the
+  size picker. The name now sits on the photo itself, in the same pill style as
+  the swipe hint but anchored to the BOTTOM so the two never collide, and unlike
+  the hint it never goes away: it is not a tip to be learned, it is a label.
+
+  WHERE THE NAMES COME FROM. Not from the strip markup -- pg-landing renders
+  every thumbnail with alt "Crystal Legends Orb view N", which carries no name.
+  The product's MEDIA does carry them, as "Crystal PokeOrb - 13 Arceus", so the
+  names are read once from /products/{handle}.js and the prefix trimmed off.
+
+  MATCHED ON FILENAME, NOT ON INDEX. The obvious mapping -- strip button i to
+  media[i+1] -- happens to work today but is one media upload away from labelling
+  every orb with its neighbour's name. The counts already disagree (37 media, 36
+  images, 35 buttons: media[0] is the group shot, and one media entry is the
+  video, which is not an image). So each button's own <img> src filename is
+  matched against the media list instead, which cannot drift: an unmatched photo
+  simply gets no label rather than a wrong one.
+
+  Registered in templates/product.pg-crystal.json rather than a section group:
+  the overlay group is at Shopify's hard limit of 25 sections, and this belongs
+  to one product page anyway.
+{%- endcomment -%}
+<style>
+  /* the group shot -- see the note above */
+  #pgx .pgx-hero{display:none !important}
+  /* the video now leads the column, so it does not need the gap that separated
+     it from the hero */
+  #pgx .pgx-vid{margin-top:0 !important}
+
+  /* the strip is the gallery now, not a row of thumbnails under one */
+  @media (min-width:901px){
+    #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
+  }
+
+  /* pinned to the top of the photo the strip is showing -- see the note above.
+     .pgx-thumbwrap is position:relative on both breakpoints (pg-landing sets it,
+     pg-gallery-mobile re-asserts it under 900px), so this anchors to the strip. */
+  #pgx .pgx-thumbwrap .pg-gt-swipe{
+    position:absolute;
+    top:8px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    margin:0;
+    background:rgba(11,7,16,.82);
+    border-color:rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+  }
+  /* the character name -- see the note above. Bottom-anchored so it can never
+     collide with the swipe hint at the top, and pointer-events:none so it is a
+     label rather than a control. */
+  #pgx .pgx-thumbwrap .pg-gt-name{
+    position:absolute;
+    bottom:10px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    max-width:calc(100% - 24px);
+    padding:6px 14px;
+    border-radius:999px;
+    background:rgba(11,7,16,.82);
+    border:1px solid rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+    color:#F1EDF7;
+    font-size:12.5px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;
+    pointer-events:none;
+  }
+  @media (max-width:430px){
+    #pgx .pgx-thumbwrap .pg-gt-name{font-size:11.5px;padding:5px 12px}
+  }
+
+  #pgx .pg-gt-swipe{
+    display:none;
+    align-items:center;justify-content:center;gap:8px;
+    margin:0 auto;
+    padding:6px 14px;
+    width:max-content;max-width:100%;
+    border-radius:999px;
+    background:rgba(139,68,190,.14);
+    border:1px solid rgba(190,140,235,.42);
+    color:#E4D3F7;
+    font-size:11.5px;font-weight:800;
+    letter-spacing:.10em;text-transform:uppercase;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  #pgx .pg-gt-swipe span{display:inline-block;animation:pgGtNudge 1.5s ease-in-out infinite}
+  #pgx .pg-gt-swipe b.pg-gt-n{font-weight:800;color:#FFFFFF;letter-spacing:.04em}
+  #pgx .pg-gt-swipe .pg-gt-l{animation-direction:reverse}
+  @keyframes pgGtNudge{
+    0%,100%{transform:translateX(0);opacity:.55}
+    50%    {transform:translateX(4px);opacity:1}
+  }
+  @media (max-width:900px){
+    #pgx .pg-gt-swipe.pg-gt-on{display:flex}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #pgx .pg-gt-swipe span{animation:none}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgGalTweaks) return; window.pgGalTweaks = 1;
+
+  var el = null;
+
+  /* ---- the character name on the photo ---- */
+  var NAMES = null;                       /* filename fragment -> character name */
+
+  function loadNames(){
+    if (NAMES) return Promise.resolve(NAMES);
+    var h = (location.pathname.match(/\/products\/([^\/?#]+)/) || [])[1];
+    if (!h) { NAMES = {}; return Promise.resolve(NAMES); }
+    return fetch('/products/' + h + '.js', {headers: {'Accept': 'application/json'}})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        NAMES = {};
+        (j && j.media || []).forEach(function(m){
+          var alt = m.alt || '';
+          var src = m.src || '';
+          /* "Crystal PokeOrb - 13 Arceus" -> "13 Arceus"; anything without a
+             separator is left whole rather than guessed at */
+          var name = alt.split(/\s[-–—]\s/).pop().trim();
+          if (!name || /hero/i.test(alt)) return;
+          var file = (src.split('/').pop() || '').split('?')[0];
+          if (file) NAMES[file] = name;
+        });
+        return NAMES;
+      })
+      .catch(function(){ NAMES = {}; return NAMES; });
+  }
+
+  function nameFor(img){
+    if (!NAMES || !img) return '';
+    var file = ((img.getAttribute('src') || '').split('/').pop() || '').split('?')[0];
+    if (NAMES[file]) return NAMES[file];
+    /* the strip requests a resized copy, so the stored name is looked up by the
+       filename STEM as well -- still a filename match, never an index guess */
+    var stem = file.replace(/\.(png|jpg|jpeg|webp|gif)$/i, '');
+    for (var k in NAMES){ if (k.indexOf(stem) === 0 || stem.indexOf(k.replace(/\.[^.]+$/, '')) === 0) return NAMES[k]; }
+    return '';
+  }
+
+  function label(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+    loadNames().then(function(){
+      var btns = strip.querySelectorAll('button');
+      if (!btns.length) return;
+      /* which photo is in view: the one whose centre is nearest the strip's */
+      var mid = strip.scrollLeft + strip.clientWidth / 2;
+      var best = null, bestD = Infinity;
+      for (var i = 0; i < btns.length; i++){
+        var c = btns[i].offsetLeft + btns[i].offsetWidth / 2;
+        var d = Math.abs(c - mid);
+        if (d < bestD){ bestD = d; best = btns[i]; }
+      }
+      if (!best) return;
+
+      /* the swipe pill's counter, from the same measurement */
+      var cnt = wrap.querySelector('.pg-gt-swipe .pg-gt-n');
+      if (cnt){
+        var pos = (Array.prototype.indexOf.call(btns, best) + 1) + '/' + btns.length;
+        if (cnt.textContent !== pos) cnt.textContent = pos;
+      }
+
+      var text = nameFor(best.querySelector('img'));
+      var tag = wrap.querySelector('.pg-gt-name');
+      if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
+      if (!tag){
+        tag = document.createElement('div');
+        tag.className = 'pg-gt-name';
+        tag.setAttribute('aria-hidden', 'true');
+        wrap.appendChild(tag);
+      }
+      if (tag.textContent !== text) tag.textContent = text;
+    });
+  }
+
+  function hint(){
+    if (el && el.isConnected) return;          /* still on screen, nothing to do */
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+
+    if (strip.scrollWidth <= strip.clientWidth + 4) return;   /* nothing to swipe to */
+
+    el = document.createElement('div');
+    el.className = 'pg-gt-swipe pg-gt-on';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<span class="pg-gt-l">&lsaquo;</span> Swipe &middot; <b class="pg-gt-n"></b> <span>&rsaquo;</span>';
+    /* ON the strip, not above it -- see the note above */
+    wrap.appendChild(el);
+  }
+
+  function boot(){
+    if (!document.getElementById('pgx')) return;
+    hint();
+    label();
+    var strip0 = document.querySelector('#pgx .pgx-thumbs');
+    if (strip0) strip0.addEventListener('scroll', function(){
+      clearTimeout(label._t);
+      label._t = setTimeout(label, 90);      /* settle after the snap */
+    }, {passive: true});
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var queued = false;
+      /* pg-landing rebuilds the gallery after its fetch */
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; hint(); label(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    [300, 900, 2000, 4000, 7000].forEach(function(t){ setTimeout(hint, t); setTimeout(label, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Gallery Tweaks", "settings": [], "presets": [{"name": "PG Gallery Tweaks"}]}
+{% endschema %}

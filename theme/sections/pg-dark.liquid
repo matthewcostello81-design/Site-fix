@@ -25,9 +25,14 @@ body.template-cart,body.template-cart #content,body.template-cart main{
 
 /* ---------- type ---------- */
 #content,#pgh,#pgx,#pgc,.pgm,.pgu-yml{color:#F1EDF7}
+/* WHITE THAT READS AS WHITE. Headings were #F5F1FA and body copy #C1B4D2 --
+   both lavender-tinted greys picked to sit softly on the dark canvas, which on
+   a phone in daylight is what makes the homepage look washed out. Headings are
+   pure #FFFFFF now and the secondary copy comes up two steps to #E6DFF2: still
+   clearly secondary against white headings, no longer grey. */
 #content h1,#content h2,#content h3,#content h4,#content h5,
-#pgx h1,#pgx h2,#pgx h3,#pgh h2,#pgh h3,#pgc h1,#pgc h2{color:#F5F1FA !important}
-#pgh p,#pgx p,#pgc p,#pgh li,#pgx li{color:#C1B4D2}
+#pgx h1,#pgx h2,#pgx h3,#pgh h2,#pgh h3,#pgc h1,#pgc h2{color:#FFFFFF !important}
+#pgh p,#pgx p,#pgc p,#pgh li,#pgx li{color:#E6DFF2}
 #content .page-title,#content h1.title,body.template-page #content h1{color:#F1EDF7 !important}
 
 /* ---------- header, nav, logo ---------- */
@@ -37,7 +42,8 @@ body.template-cart,body.template-cart #content,body.template-cart main{
 }
 .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{color:#E4D9F0 !important}
 .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#C79BEA !important}
-#pgh .pgh-trust{background:rgba(255,255,255,.04) !important;border-color:rgba(168,120,214,.18) !important;color:#C1B4D2 !important}
+#pgh .pgh-trust{background:rgba(255,255,255,.04) !important;border-color:rgba(168,120,214,.18) !important;color:#E6DFF2 !important}
+#pgh .pgh-trust b{color:#FFFFFF !important}
 /* the dark-mode logo asset is neon line art on a solid black square;
    screen blending drops the black box, no color filtering needed. */
 .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{
@@ -80,10 +86,25 @@ body.template-cart,body.template-cart #content,body.template-cart main{
   border-color:rgba(168,120,214,.24) !important;
   box-shadow:0 0 0 1px rgba(168,120,214,.10),0 18px 44px -30px rgba(0,0,0,.85) !important;
 }
-/* info row labels and values both need lifting off the black */
-#pgx .pgx-info,#pgx .pgx-info div,#pgx .pgx-info p,#pgx .pgx-info span,#pgx .pgx-info small{color:#D3C9E4 !important}
-#pgx .pgx-info b,#pgx .pgx-info strong{color:#F1EDF7 !important}
-#pgx .pgx-info-ic{background:rgba(139,68,190,.18) !important;box-shadow:0 0 14px rgba(139,68,190,.28) !important}
+/* THE SHIPS BY / EASY RETURNS / FREE SHIPPING ROW. The labels were #D3C9E4 at
+   the theme's 700, the values a serif in the same grey, and the icons a 1.6
+   stroke in --pgx-purple inside an 18%-opacity disc -- so on the dark canvas
+   the marks nearly vanished and the whole row read as a watermark rather than
+   as three promises.
+
+   Labels go white and one weight heavier, values come up to near-white, and
+   the icons get a brighter stroke, a heavier one, and a disc with an actual
+   edge to sit in. The layout and the icon drawings are untouched. */
+#pgx .pgx-info,#pgx .pgx-info div,#pgx .pgx-info p,#pgx .pgx-info span,#pgx .pgx-info small{color:#E6DFF2 !important}
+#pgx .pgx-info b,#pgx .pgx-info strong{color:#FFFFFF !important}
+#pgx .pgx-info-h{color:#FFFFFF !important;font-weight:800 !important}
+#pgx .pgx-info-t{color:#EFE9F7 !important}
+#pgx .pgx-info-t a{color:#E4C4FF !important}
+#pgx .pgx-info-ic{
+  background:rgba(139,68,190,.30) !important;
+  box-shadow:inset 0 0 0 1px rgba(199,155,234,.38),0 0 20px rgba(139,68,190,.45) !important;
+}
+#pgx .pgx-info-ic svg{stroke:#D9B4FF !important;stroke-width:2 !important;width:29px !important;height:29px !important}
 #pgx .pgx-guar{background:#16101F !important;color:#DFD6EC !important;border-color:rgba(168,120,214,.30) !important}
 #pgx .pgx-card,#pgx .pgx-quote{background:#16101F !important;border-color:rgba(255,255,255,.09) !important}
 #pgx .pgx-quote p,#pgx .pgx-quote span,#pgx .pgx-quote div{color:#D6CCE6 !important}
@@ -115,8 +136,8 @@ html body .pgx-opt.has-select select option{background:#16101F !important;color:
 
 /* ---------- home cards ---------- */
 #pgh .pgh-card{background:#16101F !important;border-color:rgba(255,255,255,.08) !important}
-#pgh .pgh-card-t{color:#F1EDF7 !important}
-#pgh .pgh-card-p{color:#C1B4D2 !important}
+#pgh .pgh-card-t{color:#FFFFFF !important}
+#pgh .pgh-card-p{color:#FFFFFF !important}
 #pgh .pgh-atc{background:#1C1428 !important;color:#EFE8F7 !important;border-color:rgba(255,255,255,.16) !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.7) !important}
 #pgh .pgh-atc:hover{background:#8B44BE !important;background-color:#8B44BE !important;border-color:#8B44BE !important;color:#fff !important}
 #pgh .pgh-split-l{background:#16101F !important;color:#F1EDF7 !important}

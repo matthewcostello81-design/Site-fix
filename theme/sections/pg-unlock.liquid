@@ -1,0 +1,861 @@
+{%- comment -%}
+  PG Unlock: the cart's Buy 2 Get 1 Free row -- plus two cart repairs that have
+  no better home.
+
+  WHY THREE THINGS ARE IN ONE FILE. They belong in their own sections and were
+  written that way twice. Neither survived, for two compounding reasons:
+
+    1. A section group holds a MAXIMUM OF 25 SECTIONS. footer-group is at the
+       cap. themeFilesUpsert validates on write, so a 26th is rejected outright
+       -- but a group sitting AT the limit renders only the first entries and
+       silently drops the tail. New sections were accepted, reported correctly
+       by the API, and never appeared on the page.
+
+    2. footer-group.json is rewritten by the theme EDITOR. Every save in the
+       customiser rebuilds that file from the editor's own state, which does
+       not know about sections added through the API -- so a newly registered
+       section is dropped again the next time the theme is opened.
+
+  pg-unlock is in overlay-group and has been registered for weeks, so it
+  renders and the editor leaves it alone. That is the whole reason this is
+  here. If footer-group ever gets a free slot, lift sections 2 and 3 back out.
+
+  ================================================================
+  1. THE OFFER ROW
+
+  The rung is the quantity that EARNS the discount and the free unit is the one
+  after it, so Buy 2 Get 1 Free is only real once the cart holds three. The
+  button adds however many units that takes, and the copy says it the way the
+  shopper experiences it -- they pay for one more and two arrive:
+
+      1 orb ..... Buy 1 more, get 1 FREE   (adds 2, charges 1)
+      2 orbs .... Add your FREE 3rd Orb    (adds 1, charges 0)
+      3 orbs .... offer taken, no row
+
+  CHOOSING THE DESIGNS. On a product with more than one design -- the orb, whose
+  character IS the product -- the button no longer adds more of the variant
+  already in the cart. It opens a chooser: one dropdown per unit the offer adds,
+  each defaulted to a design the shopper is not already holding, and the units
+  go in as separate line items so every one keeps its own picker in the cart.
+  Buying three orbs is meant to be three characters; adding three of the one
+  they picked, on a single merged line with a single picker, was the opposite of
+  the offer. Different variants of the same product all qualify for that
+  product's BXGY, so a mixed three still pays out the free one. Single-design
+  products (the wall art, and the console when it has one variant) skip the
+  chooser and add directly, exactly as before.
+
+  ================================================================
+  2. THE STRUCK PRICE IN THE STEPPER
+
+  The line is a grid: "nm nm" / "vr vr" / "sv sv" / "qt pr" -- stepper in `qt`,
+  price in `pr`. Separate cells, so nothing should collide.
+
+  What collides is the CONTENT of `pr`. nc-linesave draws the price as a flex
+  ROW with white-space:nowrap: .nc-lsave-was (struck), .nc-lsave-now (charged),
+  .nc-lsave-off (pill). nowrap means it cannot break, and a grid item's default
+  min-width:auto means it will not shrink below its content -- so once was +
+  now is wider than the column it overflows LEFT into `qt` and the struck
+  figure lands on the + button.
+
+  Stacked into a column, struck figure first. NO media query: the drawer is
+  ~380-420px wide on desktop too, which is where it was also reported.
+  min-width:0 matters as much as the direction.
+
+  ================================================================
+  3. THE DRAWER MARK
+
+  The disc was hidden in CSS in one file and replaced by JS in another. When
+  only the hide arrived the cart had NO mark at all -- worse than the disc. So
+  the hide happens in JS, on the line after the wordmark is inserted: if
+  anything fails, the disc simply stays. Stamped inline because pe-logo,
+  pg-drawer and nc-recs all write that element with !important and up to three
+  ids.
+
+  The mark is <a class="pg-wordmark"> so pg-wordmark kerns it -- that file
+  splits the T into its own span, which is what stops it reading POCKE T ERA.
+  Inheriting the class also inherits pg-mobile's HEADER sizing (clamp to 78px,
+  scaleY(2.6), negative letter-spacing, all !important), so each of those is
+  re-set below on a doubled id.
+{%- endcomment -%}
+<style>
+  #cart .pg-unlock{
+    display:flex;align-items:center;gap:12px;
+    flex-wrap:wrap;          /* the chooser panel is flex:1 1 100% -- without wrap
+                                at EVERY width it cannot drop to its own line, so
+                                on the ~485px desktop drawer it sat beside the
+                                copy and crushed the title to one word per line */
+    margin:10px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  #cart .pg-unlock img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock-t{flex:1;min-width:0}
+  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-tag{
+    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
+  }
+  #cart .pg-unlock-add{
+    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    background-image:none !important;color:#7A2FA2 !important;
+    border-radius:999px !important;padding:9px 18px !important;
+    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    animation:none !important;transition:background .15s ease,color .15s ease;
+  }
+  #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
+  #cart .pg-unlock-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
+  #cart .pg-unlock-add[disabled]{opacity:.6;cursor:default}
+  /* MOBILE PARITY: the row keeps the same three parts in the same order as
+     desktop -- image, copy, button -- the button simply drops to its own full
+     width line instead of shrinking the copy to nothing. */
+  @media(max-width:600px){
+    #cart .pg-unlock{flex-wrap:wrap;gap:10px}
+    #cart .pg-unlock img{width:46px;height:46px}
+    #cart .pg-unlock-t{flex:1 1 60%;min-width:0}
+    #cart .pg-unlock-t b{font-size:13px}
+    #cart .pg-unlock-t small{font-size:11.5px}
+    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:11px 18px !important;font-size:13.5px}
+  }
+
+  /* ---------------- the design chooser ----------------
+     The upsell used to add more of the variant already in the cart. On the orb
+     that is the wrong unit: the character IS the product, and Shopify merges
+     identical variants onto one line with one picker, so a shopper handed three
+     of what they picked could not change any of them. The button now opens this
+     panel -- one select per unit the offer adds -- and posts them as separate
+     lines so each keeps its own picker in the cart. */
+  #cart .pg-unlock-pick{
+    flex:1 1 100%;display:none;margin:2px 0 0;padding:10px 0 0;
+    border-top:1px solid rgba(122,47,162,.18);
+  }
+  #cart .pg-unlock.is-open .pg-unlock-pick{display:block}
+  /* once the panel is open the trigger button has done its job, and the panel's
+     own "Add ... to cart" is the CTA -- two buttons that both add is confusing,
+     and on the narrow drawer the trigger was overlapping the title. Hide it and
+     let the copy take the full first line. */
+  #cart .pg-unlock.is-open .pg-unlock-add{display:none !important}
+  #cart .pg-unlock.is-open .pg-unlock-tag{display:none}
+  #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}
+  #cart .pg-unlock-pick-r{display:flex;align-items:center;gap:8px;margin:0 0 7px}
+  #cart .pg-unlock-pick-r span{
+    flex:none;width:58px;
+    font-size:11px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#7A2FA2;
+  }
+  #cart .pg-unlock-pick select{
+    flex:1;min-width:0;-webkit-appearance:menulist;appearance:menulist;
+    padding:8px 10px;border:1.5px solid rgba(122,47,162,.35);border-radius:10px;
+    background:#fff;color:#3B1553;font-family:inherit;font-size:13px;font-weight:600;line-height:1.2;
+  }
+  #cart .pg-unlock-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
+  #cart .pg-unlock-go{
+    width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;padding:12px 16px !important;
+    background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
+    background-image:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
+    color:#fff !important;font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;animation:none !important;
+  }
+  #cart .pg-unlock-go::before,#cart .pg-unlock-go::after{display:none !important;content:none !important}
+  #cart .pg-unlock-go[disabled]{opacity:.6;cursor:default}
+  @media(max-width:600px){
+    #cart .pg-unlock-pick-r span{width:50px;font-size:10.5px}
+    #cart .pg-unlock-pick select{font-size:12.5px;padding:9px 9px}
+  }
+
+  /* ---------------- the slot: visual order pinned in CSS ----------------
+     The screen recording showed the two offer rows SWAPPING places. Every
+     defence inside render() still left one dependency: the rows' on-screen
+     order was their DOM order, and anything that reinserted them -- a stale
+     cached copy of an older script, a drawer rebuild racing a render -- could
+     flip it. So the rows now live in one flex container and each product's
+     row carries a fixed CSS `order`. DOM order no longer decides anything:
+     whatever writes the rows, in whatever sequence, the screen shows wall art,
+     then console, then orb. A swap is not suppressed; it is impossible. */
+  #cart #pg-unlock-slot{display:flex;flex-direction:column}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="anime"]{order:0}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="handheld"]{order:1}
+  #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="pokemon"]{order:2}
+
+  /* ---------------- 2. the struck price keeps to its own cell ---------------- */
+  html body #cart .l4ca > li section .nc-lsave,
+  html body #cart .l4ca > li section .price,
+  html body #cart .l4ca > li section .cols .price{
+    min-width:0 !important;
+    max-width:100% !important;
+    display:flex !important;
+    flex-direction:column !important;
+    flex-wrap:nowrap !important;
+    align-items:flex-end !important;
+    justify-content:flex-end !important;
+    gap:1px !important;
+    text-align:right !important;
+    overflow:visible !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-was,
+  html body #cart .l4ca > li .price .old-price,
+  html body #cart .l4ca > li .price s,
+  html body #cart .l4ca > li .price del{
+    order:-1 !important;
+    display:block !important;
+    margin:0 !important;
+    font-size:12px !important;
+    font-weight:600 !important;
+    line-height:1.15 !important;
+    white-space:nowrap !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-now{
+    order:0 !important;line-height:1.2 !important;white-space:nowrap !important;
+  }
+  html body #cart .l4ca > li .nc-lsave .nc-lsave-off{
+    order:1 !important;margin-top:2px !important;
+  }
+  html body #cart .l4ca > li section footer{min-width:0 !important;flex-wrap:wrap !important}
+
+  /* ---------------- 3. the drawer mark ---------------- */
+  #cart .pg-cart-mark{
+    display:block;background:#0B0710;border-radius:12px;
+    padding:13px 14px 10px;margin:0 0 8px;text-align:center;overflow:hidden;
+    box-shadow:0 8px 22px -18px rgba(0,0,0,.8);
+  }
+  html body #cart#cart a.pg-cart-word{
+    display:inline-block !important;
+    font-family:'Press Start 2P','Courier New',monospace !important;
+    font-weight:400 !important;
+    font-size:13px !important;
+    line-height:1 !important;
+    letter-spacing:0 !important;
+    white-space:nowrap !important;
+    max-width:100% !important;
+    margin:0 !important;padding:0 !important;
+    color:#F6DBFF !important;
+    text-decoration:none !important;
+    transform:scaleY(1.5) !important;
+    transform-origin:center !important;
+    text-shadow:0 0 5px rgba(246,219,255,.45),0 0 14px rgba(199,155,234,.32) !important;
+  }
+  @media(max-width:600px){
+    #cart .pg-cart-mark{padding:11px 10px 9px}
+    html body #cart#cart a.pg-cart-word{font-size:11px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgUnlock) return; window.pgUnlock = 1;
+
+  /* THE RUNG IS A PAID QUANTITY, and `free` is what it earns. The orb ladder
+     matches the three tiles on the product page -- Buy 2 Get 1, Buy 4 Get 2,
+     Buy 5 Get 3 -- so the cart offers the next one up from wherever the shopper
+     actually is, rather than only ever offering the 3rd orb. `nth` is only read
+     for the percentage rungs now; for the free ones the ordinals are worked out
+     from the units actually being added (see offers()), because the same rung
+     is reached from different quantities and the phrase differs each time. */
+  var LADDERS = {
+    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
+      name: 'Crystal Legends Orb',
+      rungs: {
+        2: {pct: 100, free: 1},
+        4: {pct: 100, free: 2},
+        5: {pct: 100, free: 3}
+      }
+    },
+    'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {
+      name: 'Heroic Holographic Wall Art',
+      rungs: {2: {pct: 100, nth: '3rd'}}
+    },
+    'handheld-game-console': {
+      name: 'PocketBoy R36',
+      rungs: {1: {pct: 25, nth: '2nd', free: 0}}
+    }
+  };
+
+  var busy = false;
+  var lastKey = '';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* a 100%-off rung frees whole units; a percentage rung discounts exactly one */
+  function freeOf(g){ return g.pct === 100 ? (g.free == null ? 1 : g.free) : 1; }
+
+  function ordinal(k){
+    var t = k % 10, h = k % 100;
+    if (t === 1 && h !== 11) return k + 'st';
+    if (t === 2 && h !== 12) return k + 'nd';
+    if (t === 3 && h !== 13) return k + 'rd';
+    return k + 'th';
+  }
+  /* "3rd", "5th & 6th", "6th, 7th & 8th" */
+  function nthPhrase(from, to){
+    var parts = [];
+    for (var i = from; i <= to; i++) parts.push(ordinal(i));
+    var last = parts.pop();
+    return (parts.length ? parts.join(', ') + ' & ' : '') + last;
+  }
+
+  /* ---------------- one line per variant ---------------- */
+  var merging = false;
+  var merges = 0;
+  var mergedVariants = {};
+  var MAX_MERGES = 4;
+
+  function consolidate(cart){
+    if (merging) return false;
+
+    /* CONVERGENCE GUARD -- read this before removing it.
+       A BXGY allocation legitimately wants a variant on two lines. Merge them
+       and Shopify splits them again on the next read, this fires on the next
+       tick, and the cart thrashes. So a variant is merged AT MOST ONCE per
+       page load, and MAX_MERGES caps attempts regardless.
+
+       The chooser posts DIFFERENT variants, so its lines never collide here --
+       this only ever merges accidental duplicates of one variant. */
+    if (merges >= MAX_MERGES) return false;
+
+    var byVariant = {};
+    (cart.items || []).forEach(function(it){
+      if (it.properties && it.properties._free_gift) return;
+      (byVariant[it.variant_id] = byVariant[it.variant_id] || []).push(it);
+    });
+
+    var dupes = null;
+    Object.keys(byVariant).forEach(function(v){
+      if (dupes) return;
+      if (byVariant[v].length < 2) return;
+      if (mergedVariants[v]) return;
+      dupes = byVariant[v];
+      mergedVariants[v] = 1;
+    });
+    if (!dupes) return false;
+    merges++;
+
+    var total = dupes.reduce(function(n, it){ return n + it.quantity; }, 0);
+    var keep = dupes[0];
+    var drop = dupes.slice(1);
+
+    merging = true;
+    var chain = change(keep.key, total);
+    drop.forEach(function(it){
+      chain = chain.then(function(){ return change(it.key, 0); });
+    });
+    chain.then(function(){
+      merging = false;
+      lastKey = '';
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).then(function(){
+      render();
+    }).catch(function(){
+      merging = false;
+    });
+    return true;
+  }
+
+  function change(key, qty){
+    return fetch('/cart/change.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({id: key, quantity: qty})
+    });
+  }
+
+  function offers(cart){
+    var byHandle = {};
+    (cart.items || []).forEach(function(it){
+      if (!LADDERS[it.handle]) return;
+      if (it.properties && it.properties._free_gift) return;
+      var h = byHandle[it.handle] || (byHandle[it.handle] = {qty: 0, item: it});
+      h.qty += it.quantity;
+    });
+    var out = [];
+    Object.keys(byHandle).forEach(function(handle){
+      var rec = byHandle[handle];
+      var rungs = LADDERS[handle].rungs;
+      var keys = Object.keys(rungs).map(Number).sort(function(a, b){ return a - b; });
+
+      /* HOW MANY OF THE UNITS ALREADY IN THE CART CAME FREE. The rung is a PAID
+         quantity, so reading the ladder off the raw count is what made the old
+         version stall: a shopper holding three orbs is paying for two, and
+         asking "which rung is >= 3" jumps them past the tier they are actually
+         standing on. The largest rung whose full pack (paid + free) already
+         fits inside what they hold is the tier they are on. */
+      var freeNow = 0;
+      keys.forEach(function(r){
+        var f = freeOf(rungs[r]);
+        if (f && r + f <= rec.qty && f > freeNow) freeNow = f;
+      });
+      var paidNow = rec.qty - freeNow;
+
+      /* the first rung they have not paid their way to, and have not completed */
+      var at = null, rung = null, freeUnits = 0;
+      for (var i = 0; i < keys.length; i++){
+        var r = keys[i], g = rungs[r], f = freeOf(g);
+        if (r < paidNow) continue;              /* paid past it */
+        if (r + f <= rec.qty) continue;         /* already taken it */
+        at = r; rung = g; freeUnits = f; break;
+      }
+      if (!rung) return;                        /* top of the ladder: nothing to offer */
+
+      var need = (at + freeUnits) - rec.qty;
+      if (need < 1) return;
+      var paidAdded = Math.max(0, at - paidNow);
+      var freeAdded = Math.max(0, need - paidAdded);
+
+      out.push({
+        handle: handle,
+        name: LADDERS[handle].name,
+        variant: rec.item.variant_id,
+        key: rec.item.key,
+        lineQty: rec.item.quantity,
+        totalQty: rec.qty,
+        image: rec.item.image,
+        price: rec.item.price,
+        rung: rung,
+        need: need,
+        paidAdded: paidAdded,
+        freeAdded: freeAdded,
+        /* the ordinals of the units that arrive free, counted across the whole
+           cart -- "3rd", "5th & 6th" -- so the sentence names the orbs the
+           shopper is about to get rather than a rung number */
+        freeNth: freeAdded > 0 ? nthPhrase(rec.qty + need - freeAdded + 1, rec.qty + need) : ''
+      });
+    });
+    return out;
+  }
+
+  /* ---------------- the product's designs ----------------
+     Fetched once per product and cached. Only AVAILABLE variants are offered:
+     a chooser that lets someone pick a sold-out orb turns a completed offer
+     into a failed add, which is the worst place to lose them. */
+  var VCACHE = {}, VBUSY = {};
+  function variantsFor(handle){
+    if (VCACHE[handle]) return Promise.resolve(VCACHE[handle]);
+    if (VBUSY[handle]) return VBUSY[handle];
+    VBUSY[handle] = fetch('/products/' + handle + '.js')
+      .then(function(r){ return r.json(); })
+      .then(function(pr){
+        var list = (pr.variants || []).filter(function(v){ return v.available !== false; })
+          .map(function(v){ return {id: v.id, title: v.title}; });
+        VCACHE[handle] = list;
+        VBUSY[handle] = null;
+        return list;
+      })
+      .catch(function(){ VBUSY[handle] = null; return []; });
+    return VBUSY[handle];
+  }
+
+  /* Which designs are already in the cart, so the chooser defaults to ones the
+     shopper does not have -- defaulting to duplicates would recreate the bug
+     this replaces, just with a dropdown in front of it. */
+  var LASTCART = {};
+  function heldVariants(handle){
+    var held = {};
+    (LASTCART.items || []).forEach(function(it){
+      if (it.handle === handle) held[it.variant_id] = true;
+    });
+    return held;
+  }
+
+  function buildChooser(el, o){
+    var panel = el.querySelector('.pg-unlock-pick');
+    if (!panel) return Promise.resolve(false);
+    if (panel.dataset.built) return Promise.resolve(true);
+    return variantsFor(o.handle).then(function(list){
+      /* one design (wall art, single-variant console): nothing to choose */
+      if (list.length < 2) return false;
+      var held = heldVariants(o.handle);
+      var fresh = list.filter(function(v){ return !held[v.id]; });
+      var pool = fresh.length >= o.need ? fresh : list;
+
+      var html = '';
+      for (var i = 0; i < o.need; i++){
+        var pick = pool[i % pool.length];
+        /* the LAST freeAdded picks are the free ones, so the labels line up with
+           the sentence above the panel however many that is */
+        var label = (o.rung.pct === 100 && i >= o.need - (o.freeAdded || 1)) ? 'Free' : 'Pick ' + (i + 1);
+        html += '<div class="pg-unlock-pick-r"><span>' + label + '</span><select data-i="' + i + '">';
+        for (var j = 0; j < list.length; j++){
+          html += '<option value="' + list[j].id + '"' +
+                  (list[j].id === pick.id ? ' selected' : '') + '>' +
+                  String(list[j].title).replace(/</g, '&lt;') + '</option>';
+        }
+        html += '</select></div>';
+      }
+      var nFree = o.freeAdded || 0;
+      html += '<button type="button" class="pg-unlock-go">Add ' + o.need +
+              (o.need === 1 ? ' orb' : '') + ' to cart' +
+              (o.rung.pct === 100 && nFree > 0
+                 ? ' - ' + nFree + (nFree === 1 ? ' is FREE' : ' are FREE')
+                 : '') + '</button>';
+      panel.innerHTML = html;
+      panel.dataset.built = '1';
+      return true;
+    });
+  }
+
+  function row(o){
+    var el = document.createElement('div');
+    el.className = 'pg-unlock';
+    el.setAttribute('data-pg-unlock', o.handle);
+    var free = o.rung.pct === 100;
+    var after = free ? 'free' : money(Math.round(o.price * (100 - o.rung.pct) / 100));
+    var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
+
+    var title, note;
+    if (free){
+      if (o.paidAdded === 0){
+        /* they have already paid their way to this rung: everything on offer
+           is free, however many units that is */
+        title = 'Add your FREE ' + o.freeNth + ' ' + o.name + (o.freeAdded === 1 ? '' : 's');
+        note = 'You already qualify - ' + (o.freeAdded === 1 ? 'this one costs' : 'these cost') + ' nothing';
+      } else {
+        /* They pay for N more and N+M arrive. That is the sentence -- not
+           "add 3 more", which reads as though the offer moved further away the
+           moment they bought one. */
+        title = 'Buy ' + o.paidAdded + ' more, get ' + o.freeAdded + ' FREE';
+        note = 'Adds ' + o.need + ' to your cart - you only pay for ' + o.paidAdded;
+      }
+    } else {
+      title = 'Add a ' + o.rung.nth + ' ' + o.name;
+      note = 'Get it for ' + after + ' instead of ' + money(o.price) + ', applied at checkout';
+    }
+
+    el.innerHTML =
+      '<img alt="" src="' + img + '">' +
+      '<div class="pg-unlock-t">' +
+        '<b>' + title + '</b>' +
+        '<small>' + note + '</small>' +
+        '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
+      '</div>' +
+      '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
+        '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty +
+        '" data-t="' + o.totalQty + '" data-n="' + o.need +
+        '" data-p="' + o.rung.pct +
+        '" data-h="' + o.handle + '">Add</button>' +
+      '<div class="pg-unlock-pick"></div>';
+    return el;
+  }
+
+  /* RECONCILE, AND ONLY WHEN THE CART ACTUALLY CHANGED.
+     Two mobile-flicker fixes live here.
+
+     1. STRICT NO-OP ON A STEADY CART. render() runs on a 900ms timer. Every
+        earlier version did DOM work on every tick -- querying, comparing,
+        sometimes replacing -- and on a cart holding both an orb and the console
+        that churn showed up as the two upsell rows spazzing. Now the cart is
+        signed by its variant ids and quantities; if that signature is unchanged
+        AND both rows are already present and current, render returns having
+        touched nothing at all.
+
+     2. SINGLE FLIGHT. The 900ms timer, afterAdd() and a 400ms follow-up can all
+        call render() around the same moment. Two /cart.js reads resolving out
+        of order used to let a stale one rewrite the rows the fresh one just
+        set. `rendering` lets one run at a time.
+
+     Beyond that it reconciles rather than rebuilds: offers are sorted to a
+     FIXED order so the rows never swap, an unchanged row is left exactly where
+     it is, a changed one is replaced, a vanished one removed, a missing one
+     re-inserted, and a row the shopper has opened to pick designs is never
+     yanked mid-pick. */
+  var lastCartSig = null;
+  var rendering = false;
+
+  function cartSig(cart){
+    return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(',');
+  }
+
+  /* Present = the right NUMBER of rows and every expected handle has one. When
+     the cart is unchanged the offers are unchanged, so a row that merely exists
+     is a row that is correct -- there is nothing to compare beyond presence, and
+     comparing data-sig was a failure mode that let the row rebuild forever. */
+  function rowsPresent(c, offs){
+    if (offs.length && !c.querySelector('#pg-unlock-slot')) return false;
+    if (c.querySelectorAll('.pg-unlock').length !== offs.length) return false;
+    for (var i = 0; i < offs.length; i++){
+      if (!c.querySelector('.pg-unlock[data-pg-unlock="' + offs[i].handle + '"]')) return false;
+    }
+    return true;
+  }
+
+  function render(){
+    if (rendering) return;
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return;
+    rendering = true;
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      LASTCART = cart;
+      var offs = offers(cart).sort(function(a, b){
+        return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
+      });
+      var sig = cartSig(cart);
+
+      /* nothing changed and the rows are already right -> do absolutely nothing */
+      if (sig === lastCartSig && rowsPresent(c, offs)){ rendering = false; return; }
+
+      if (consolidate(cart)){ rendering = false; return; }
+      lastCartSig = sig;
+
+      var want = {};
+      offs.forEach(function(o){ want[o.handle] = o; });
+
+      /* the slot: one container, CSS-ordered. Created once, recreated when a
+         drawer rebuild destroys it. */
+      var slot = c.querySelector('#pg-unlock-slot');
+      if (!slot){
+        slot = document.createElement('div');
+        slot.id = 'pg-unlock-slot';
+        list.parentNode.insertBefore(slot, list);
+      }
+
+      /* adopt strays and kill duplicates: any row outside the slot (an older
+         writer, a race) is pulled in, and each product keeps exactly one row */
+      var seen = {};
+      c.querySelectorAll('.pg-unlock').forEach(function(el){
+        var h = el.getAttribute('data-pg-unlock');
+        if (!want[h] || seen[h]){
+          if (el.parentNode) el.parentNode.removeChild(el);
+          return;
+        }
+        seen[h] = el;
+        if (el.parentNode !== slot) slot.appendChild(el);
+      });
+
+      offs.forEach(function(o){
+        var sg = o.handle + ':' + (o.freeNth || o.rung.nth) + ':' + o.need;
+        var existing = seen[o.handle];
+        if (existing){
+          if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
+          if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
+          var fresh = row(o);
+          fresh.setAttribute('data-sig', sg);
+          existing.parentNode.replaceChild(fresh, existing);
+        } else {
+          var el = row(o);
+          el.setAttribute('data-sig', sg);
+          slot.appendChild(el);
+        }
+      });
+      rendering = false;
+    }).catch(function(){ rendering = false; });
+  }
+
+  /* ---------------- 3. mark first, hide the disc only once it is there ---------------- */
+  function mark(){
+    var top = document.querySelector('#cart .nc-drawer-top');
+    if (!top) return;
+    if (!top.querySelector('.pg-cart-mark')){
+      var box = document.createElement('div');
+      box.className = 'pg-cart-mark';
+      var a = document.createElement('a');
+      a.className = 'pg-wordmark pg-cart-word';
+      a.setAttribute('href', '/');
+      a.textContent = 'POCKET ERA';
+      box.appendChild(a);
+      top.insertBefore(box, top.firstChild);
+    }
+    if (!top.querySelector('.pg-cart-mark')) return;
+    document.querySelectorAll('#cart img.nc-dlogo').forEach(function(img){
+      img.style.setProperty('display', 'none', 'important');
+    });
+  }
+
+  /* After ANY successful add, unfreeze and rebuild from the NEW cart at once.
+     The old chain did `pgDrawerRefresh().then(render)` -- but pgDrawerRefresh
+     fetches the whole homepage to rebuild the drawer, and when it is slow, or
+     coalesced by pg-cart-fast into a promise that never settles, the button
+     that triggered the add sat on "Adding..." forever even though the items
+     were already in the cart. So render() runs immediately off /cart.js (the
+     server's truth), which also DESTROYS the triggering button by rebuilding
+     the row; the drawer refresh then runs in the background where a hang can
+     no longer freeze the offer. */
+  function afterAdd(){
+    lastKey = '';
+    busy = false;
+    lastCartSig = null;   /* force the next render to act on the new cart */
+    render();
+    if (window.pgDrawerRefresh){
+      try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ render(); }, function(){}); }
+      catch(e){}
+    }
+    setTimeout(render, 400);
+  }
+
+  /* Add the chosen designs as separate line items. Different variants of the
+     same product all qualify for the product's Buy 2 Get 1 Free, so a mixed
+     three -- Charizard, Gengar, Mewtwo -- still pays out the free one. Each
+     goes in as its own line so it keeps its own picker in the cart. */
+  function chooserAdd(go){
+    var panel = go.closest('.pg-unlock-pick');
+    if (!panel) return;
+    var rowEl = go.closest('.pg-unlock');
+    var items = [];
+    panel.querySelectorAll('select').forEach(function(sel){
+      var id = parseInt(sel.value, 10);
+      if (id) items.push({id: id, quantity: 1});
+    });
+    if (!items.length) return;
+    busy = true;
+    go.disabled = true;
+    go.textContent = 'Adding...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: items})
+    }).then(function(r){
+      if (!r || !r.ok) throw 0;
+      if (rowEl) rowEl.classList.remove('is-open');
+      afterAdd();
+    }).catch(function(){
+      busy = false;
+      go.disabled = false;
+      go.textContent = 'Try again';
+    });
+  }
+
+  document.addEventListener('click', function(e){
+    /* the chooser's own confirm button */
+    var go = e.target.closest && e.target.closest('.pg-unlock-go');
+    if (go){
+      e.preventDefault(); e.stopPropagation();
+      if (!busy) chooserAdd(go);
+      return;
+    }
+
+    var btn = e.target.closest && e.target.closest('.pg-unlock-add');
+    if (!btn || busy) return;
+    e.preventDefault(); e.stopPropagation();
+
+    /* A product with more than one design opens the chooser instead of adding
+       blind. buildChooser resolves false for single-design products (wall art,
+       single-variant console) -- those fall straight through to the direct add
+       below, which is the behaviour they had before. */
+    var rowEl = btn.closest('.pg-unlock');
+    var oForPick = {
+      handle: btn.getAttribute('data-h') || '',
+      need: parseInt(btn.getAttribute('data-n'), 10) || 1,
+      rung: {pct: parseInt(btn.getAttribute('data-p'), 10) || 0}
+    };
+    if (rowEl && !rowEl.classList.contains('is-open')){
+      buildChooser(rowEl, oForPick).then(function(built){
+        if (built){ rowEl.classList.add('is-open'); btn.textContent = 'Choose designs below'; }
+        else directAdd(btn);
+      });
+      return;
+    }
+    directAdd(btn);
+  }, true);
+
+  function directAdd(btn){
+    if (busy) return;
+    busy = true;
+    btn.disabled = true;
+    btn.textContent = 'Adding...';
+
+    var key = btn.getAttribute('data-k');
+    var qty = parseInt(btn.getAttribute('data-q'), 10) || 0;
+    var vid = parseInt(btn.getAttribute('data-v'), 10);
+    var need = parseInt(btn.getAttribute('data-n'), 10) || 1;
+    var total = parseInt(btn.getAttribute('data-t'), 10) || qty;
+    var handle = btn.getAttribute('data-h') || '';
+
+    /* SPLIT LINES. The offer counts every unit of the product; the button
+       grows ONE line. When the two disagree the product is on more than one
+       line, so post a plain add instead -- exactly `need` units. */
+    var split = total !== qty;
+
+    function addNew(){
+      return fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items: [{id: vid, quantity: need}]})
+      });
+    }
+
+    var req = (key && !split)
+      ? fetch('/cart/change.js', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({id: key, quantity: qty + need})
+        }).then(function(r){
+          if (!r.ok) return addNew();
+          return r.json().then(function(cart){
+            var now = 0;
+            (cart.items || []).forEach(function(it){
+              if (it.handle === handle) now += it.quantity;
+            });
+            return now >= total + need ? r : addNew();
+          });
+        })
+      : addNew();
+
+    req.then(function(r){
+      if (!r || !r.ok) throw 0;
+      afterAdd();     /* unfreeze + rebuild now, refresh in the background */
+    }).catch(function(){
+      busy = false;
+      btn.disabled = false;
+      btn.textContent = 'Try again';
+    });
+  }
+
+  /* ---------------- event-driven, never polled ----------------
+     The 900ms render loop was the flicker: on mobile it did visible DOM work
+     on some ticks no matter how tight the guard, and every rebuild wiped a
+     half-filled chooser. There is no timer now. render() runs only when the
+     cart actually changes -- and on a steady cart it therefore never runs, so
+     there is nothing left to flicker and an open chooser survives.
+
+     Three triggers, all debounced into one render:
+       - a cart-mutating fetch resolves (add / change / update / clear)
+       - Shopify mutates the drawer (line added, quantity changed, drawer
+         rebuilt by pgDrawerRefresh)
+       - the drawer is opened
+     render() still short-circuits when the cart signature is unchanged, so the
+     one observer bounce our own insert causes settles immediately. */
+  var renderTimer = null;
+  function scheduleRender(){
+    if (renderTimer) return;
+    renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 120);
+  }
+
+  /* fire after any cart write, whoever issued it */
+  var _f = window.fetch;
+  if (typeof _f === 'function'){
+    window.fetch = function(input, init){
+      var url = (typeof input === 'string') ? input : (input && input.url) || '';
+      var pr = _f.apply(this, arguments);
+      if (pr && pr.then && /\/cart\/(add|change|update|clear)/.test(url)){
+        pr.then(function(){ scheduleRender(); }, function(){});
+      }
+      return pr;
+    };
+  }
+
+  /* watch the drawer: line changes AND full rebuilds. Observing #cart means a
+     pgDrawerRefresh that swaps the whole subtree still triggers a re-render --
+     and our own row insert triggers one bounce that render() no-ops on. */
+  function watch(){
+    var cart = document.getElementById('cart');
+    if (!cart){ setTimeout(watch, 400); return; }
+    try {
+      new MutationObserver(scheduleRender).observe(cart, {childList: true, subtree: true});
+    } catch(e){}
+    /* opening the drawer usually toggles a class/attribute on #cart or body */
+    try {
+      new MutationObserver(scheduleRender).observe(document.body, {attributes: true, attributeFilter: ['class']});
+    } catch(e){}
+    scheduleRender();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
+  else watch();
+
+  setInterval(mark, 500);   /* the wordmark is cheap and idempotent; leave it */
+  render();
+  mark();
+})();
+</script>
+{% schema %}
+{"name": "PG Unlock", "settings": []}
+{% endschema %}

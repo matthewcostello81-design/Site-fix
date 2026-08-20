@@ -1,3 +1,93 @@
+# Orb back to $34.99, ladder badges, and eight cart/PDP fixes
+
+Reverts the previous entry's repricing and lands the batch of cart and
+product-page corrections. All ten section files were deployed to the draft
+theme **PE orb volume tiers + cart pane (Claude)** and verified byte-for-byte
+against this repo by MD5.
+
+## Orb price reverted to $34.99
+
+The $33.55 experiment is undone — all 36 variants are back at **$34.99**,
+compare-at $70.00. It bought one wanted figure ($134.20) at the cost of
+dropping the orb's price on every surface of the shop, and could not buy the
+other ($169.95 needs 4.86 paid orbs at $34.99; 5 × $33.55 is $167.75, not
+$169.95). One unit price cannot satisfy both.
+
+The tiles quote the nearest reachable whole-orb figures instead:
+
+| tile | orbs | paid | cart charges | struck | save |
+|---|---|---|---|---|---|
+| Single Item | 1 | 1 | $34.99 | $70.00 | 50% |
+| Buy 2, Get 1 FREE | 3 | 2 | $69.98 | $210.00 | 67% |
+| Buy 4, Get 2 FREE | 6 | 4 | **$139.96** | $420.00 | 67% |
+| Buy 5, Get 3 FREE | 8 | 5 | **$174.95** | $560.00 | 69% |
+
+**A known flat spot:** Buy 4 Get 2 and Buy 2 Get 1 are the *same* discount rate
+— both pay 2 of every 3 — so both badges honestly read 67%. The 6-pack buys
+more orbs, not a better rate. Only the 8-pack improves on the ladder. That is a
+pricing decision, not a code one.
+
+## Product page
+
+- **BEST DEAL moved to the 8-pack**, and every tier now states its saving. Tier 1
+  gave up "Best Deal!" for "SAVE 67%"; the 8-pack carries "BEST DEAL · SAVE 69%"
+  — the badge is the only place a tile can claim to be best, and dropping the
+  number would have left the rung shoppers are steered to as the only one not
+  saying what it saves.
+- **The note under Add to Cart follows the selected tile.** It was one fixed
+  sentence about the 3rd orb whichever rung was picked; it is now derived from
+  the selection and repainted on every change.
+- **The swipe hint is permanent.** It was removed on the first `scroll` *or*
+  `touchmove` — and a finger that starts on the gallery and drags down scrolls
+  the *page*, firing touchmove on the strip, so scrolling past the photos killed
+  it. That is exactly the reported "it goes away when you scroll". It is now a
+  standing label carrying position in the strip (`3/35`).
+- **Brighter whites.** Headings go pure `#FFFFFF` (were `#F5F1FA`), secondary copy
+  to `#E6DFF2` (was `#C1B4D2`). The Ships By / Easy Returns / Free Shipping row
+  gets white labels one weight heavier, near-white values, and icons with a
+  brighter, heavier stroke in a disc with an actual edge.
+
+## Cart
+
+- **The SAVED% pill hugs its text.** Padding 15px → 9px, and the trailing
+  letter-spacing gap after the `%` is *removed* (`padding-right: calc(9px - .05em)`)
+  rather than balanced with a `text-indent`, which had kept the gap and added a
+  matching one at the front.
+- **The percentage counts every discount, including the 10%.** Order-level
+  discounts land in `line_price` and line-level ones in `final_line_price`, and
+  which is smaller depends on what is running — so reading either alone
+  under-reports. It now takes the lower of the two.
+- **The upsell offers the next tier up.** It only ever offered the 3rd orb. It
+  now walks the same 2/4/5 ladder as the product page, works out how many units
+  already came free, and names the ones about to arrive ("5th & 6th").
+- **Free-shipping banner in white** (was `#E4D9F0` on the drawer's darkest
+  surface), truck icon with it.
+- **The sticky top bar's trailing "…" is gone**, and it says what is in the cart:
+  `1 ITEM · EXTRA 10% OFF`. The ellipsis came from `text-overflow:ellipsis`
+  truncating "ENTIRE ORDER" on a 390px phone; the wording is shortened at the
+  source and overflow is now clipped, so there is nothing to truncate.
+
+## Two bugs the tests caught
+
+- **`pg-tile-copy` would have frozen the product page.** `note()` compared
+  `p.innerHTML` against a string containing `&mdash;`, but the parser turns that
+  into a literal em dash, so the read-back never matched, every pass rewrote the
+  node, and the `MutationObserver` re-fired `pass()` — an unbounded microtask
+  loop. The tile suite hung on its first `$$eval` because the page's main thread
+  was spinning. Both this and the same ineffective guard in `pg-cart-sticky`
+  (which repainted the bar every second) now compare against what was last
+  written, held on a JS property so keeping the record is not itself a mutation.
+
+## Verification
+
+- tile ladder suite — **46/46 pass** (prices, badges, per-tier note, pickers,
+  add-to-cart unit counts, no duplicate tiles, sold-out variants excluded)
+- cart pane suite — **all pass** (no blank slab, CHECKOUT reachable and never
+  clipped, at 5/8/12/30 items on phone and desktop)
+- cart upsell ladder unit tests — **all pass** (offers land on real tiers at every
+  quantity 1-9, paid/free arithmetic matches what Shopify charges)
+- every deployed file MD5-verified against this repo
+
 # Orb repriced to $33.55 so every tile matches the cart to the cent
 
 ## The problem
