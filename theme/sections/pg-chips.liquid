@@ -24,11 +24,16 @@
 
   So the pill is recomputed from what the line is genuinely charged:
 
-      saved% = 1 - final_line_price / (compare_at x quantity)
+      saved% = 1 - line_price / (compare_at x quantity)
 
-  final_line_price is cart.js's post-discount figure, so any BXGY rung, and any
-  combination of them now that the ladders stack, is reflected. compare_at comes
-  from /products.json, which cart.js does not carry.
+  line_price is cart.js's fully-discounted figure, so any BXGY rung, any
+  combination of them now that the ladders stack, AND the automatic 10% order
+  discount are all reflected. It has to be line_price rather than
+  final_line_price: final_line_price counts line-level discounts only, so when
+  the 10% became an order discount it silently dropped out and the pill started
+  printing SAVED 50% beside a row reading $140.00 struck and $62.99 charged --
+  figures that are 55% apart. compare_at comes from /products.json, which
+  cart.js does not carry.
 
   (C) THE STRUCK PRICE. Same root cause, other half of the line. pg-drawer
   strikes through the variant's LIST price, so an undiscounted orb showed
@@ -137,9 +142,15 @@
         var cap = CAP[item.variant_id];
         if (!cap) return;
         var base = cap * item.quantity;
-        /* final_line_price is what this line actually costs after every
-           line-level discount Shopify applied to it */
-        var paid = typeof item.final_line_price === 'number' ? item.final_line_price : item.line_price;
+        /* line_price, NOT final_line_price. final_line_price counts only the
+           LINE-level discounts, so once the extra 10% became an automatic ORDER
+           discount it stopped being included: measured on a two-orb line,
+           original_line_price 69.98, final_line_price 69.98, line_price 62.99 --
+           the order discount is in line_price alone. The chip was reading the
+           wrong one and printing SAVED 50% on a row whose own two figures,
+           $140.00 struck and $62.99 charged, are 55% apart. The shopper could
+           see the badge contradict the prices printed beside it. */
+        var paid = typeof item.line_price === 'number' ? item.line_price : item.final_line_price;
         if (!base || typeof paid !== 'number') return;
 
         var pct = Math.round((base - paid) / base * 100);
