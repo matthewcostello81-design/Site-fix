@@ -1,3 +1,39 @@
+# Wall art gallery: drop the top room shot, lead with the video
+
+## Change
+On the Holo Legends Wall Art product page the gallery led with a large room
+shot (the product's featured image) and sat the lenticular flip video
+underneath it. The owner wanted that top photo gone and the video moved up
+into its slot. The gallery now reads: video, then the photo thumbnails.
+
+## Files
+- `sections/pg-wallart-gallery.liquid` (new): hides `.pgx-hero`, zeroes the
+  video's top margin so it lands flush in the vacated slot, and strips the
+  hidden hero's `src` so the page stops downloading a 1400px image nobody
+  sees. Thumbnails still open an enlarged view; on desktop it is ordered to
+  appear below the video rather than above it.
+- `templates/product.pg-wallart.json`: renders the new section after
+  `pg_landing`.
+
+## Why an override and not an edit to pg-landing
+`sections/pg-landing.liquid` is shared by the homepage and five other product
+templates (pg-bag, pg-console, pg-crystal, pg-landing, pg-wallart), all of
+which keep their photo-first hero. Scoping the change to a section that only
+the wall art template renders keeps the shared file untouched, and reverting
+is a one-line edit to that template's `order`.
+
+## Mobile note
+The gallery is only made a flex column above 901px. Below that, `.pgx-vid`
+carries a `flex:0 0 88%` that a column flex parent would read as a height, so
+mobile keeps plain block flow and the enlarged view opens above the video.
+
+## Not changed
+The photo is still the product's featured image, so it continues to appear in
+the bundle tile, the review quote card, cart lines and collection listings. No
+product media was deleted.
+
+---
+
 # PixelGlow Site Build: one-page R36S landing (Sleek Mood style)
 
 ## Scope

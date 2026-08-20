@@ -1,0 +1,63 @@
+{%- comment -%}
+  PG Wall Art gallery fix.
+
+  The room shot that used to stand on top of the gallery was dropped at the
+  owner's request, so the lenticular flip video moves up into that slot and the
+  photos stay as thumbnails underneath.
+
+  Written as an override rather than an edit to sections/pg-landing.liquid
+  because that section is shared by the homepage and five other product
+  templates, all of which keep their photo-first hero. This file is rendered
+  only from templates/product.pg-wallart.json, so removing it from that
+  template's order puts the top photo back in one edit.
+{%- endcomment -%}
+<style>
+  /* Top photo out. The video is the next child of the gallery, so hiding the
+     hero is what lifts it into the vacated slot; the gap that used to separate
+     the two goes with it. */
+  #pgx .pgx-gallery > .pgx-hero{display:none !important}
+  #pgx .pgx-gallery > .pgx-vid{margin-top:0 !important}
+
+  /* Clicking a thumbnail still opens an enlarged view. It just appears on
+     demand now instead of standing at the top of the page from the start. */
+  #pgx .pgx-gallery > .pgx-hero.pgx-hero-open{display:block !important;margin-top:14px !important}
+
+  /* Desktop only: order the enlarged view below the video. Mobile keeps the
+     plain block flow, because .pgx-vid carries a flex-basis down there that
+     would be interpreted as a height if this made the gallery a flex column. */
+  @media (min-width: 901px){
+    #pgx .pgx-gallery{display:flex;flex-direction:column}
+    #pgx .pgx-gallery > .pgx-vid{order:1}
+    #pgx .pgx-gallery > .pgx-hero{order:2}
+    #pgx .pgx-gallery > .pgx-thumbwrap{order:3}
+  }
+</style>
+<script>
+(function(){
+  var g = document.querySelector('#pgx .pgx-gallery');
+  if (!g || g.dataset.pgWallartFix) return;
+  g.dataset.pgWallartFix = '1';
+
+  var heroWrap = g.querySelector('.pgx-hero');
+  var heroImg = document.getElementById('pgx-hero-img');
+
+  /* The hidden hero would otherwise still pull down a full-size image nobody
+     sees. Drop its source until a thumbnail actually asks for one; pg-landing
+     holds its own reference to the element, so its click handler still works. */
+  if (heroImg) heroImg.removeAttribute('src');
+
+  g.querySelectorAll('[data-pgx-thumb]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (heroWrap) heroWrap.classList.add('pgx-hero-open');
+    });
+  });
+})();
+</script>
+
+{% schema %}
+{
+  "name": "PG Wall Art gallery",
+  "settings": [],
+  "presets": [{"name": "PG Wall Art gallery"}]
+}
+{% endschema %}
