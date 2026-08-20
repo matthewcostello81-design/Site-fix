@@ -228,7 +228,14 @@
 </style>
 <script>
 (function(){
-  if (window.pgCartFlush) return; window.pgCartFlush = 1;
+  /* VERSIONED, not boolean. This used to be `if (window.pgCartFlush) return`,
+     which means an OLDER copy of this script still live in the theme takes the
+     flag first and silences this one for the whole session -- and placeUnlock()
+     is the single thing that makes the upsell row compact and puts it above
+     CHECKOUT, so losing it is not a degraded cart, it is the broken one. A
+     version number lets a newer copy supersede an older one instead. Raise it
+     whenever this file changes in a way an older copy would get wrong. */
+  if (window.pgCartFlush >= 2) return; window.pgCartFlush = 2;
 
   /* 5. on phones, drop the upsell down to just above the pinned pane, so it
      sits directly above Shipping Protection instead of in front of the cart.
@@ -246,6 +253,22 @@
      once the slot is already the pane's previous sibling there is nothing to
      do, so the move cannot feed itself. Falls back to a lone .pg-unlock if the
      slot is ever absent. */
+  /* The node the upsell slot goes in front of: whatever follows the countdown
+     banner when there is one, otherwise the top of the pane. Exported so
+     pg-unlock can create the slot in the right place to begin with rather than
+     having it appear somewhere else and be moved on the next observer tick. */
+  function paneSlotAnchor(pane){
+    var rush = pane.querySelector('#pg-rush');
+    return (rush && rush.parentNode === pane) ? rush.nextSibling : pane.firstChild;
+  }
+  function unlockSeated(pane, card){
+    if (card.parentNode !== pane) return false;
+    var rush = pane.querySelector('#pg-rush');
+    var prev = card.previousElementSibling;
+    return rush ? prev === rush : prev === null;
+  }
+  window.pgPaneAnchor = paneSlotAnchor;
+
   function placeUnlock(){
     var drawer = document.getElementById('cart');
     if (!drawer) return;
@@ -275,16 +298,53 @@
          to BE the pane's previous sibling, this one wanted the same slot, and
          both run in the same apply() -- so they re-inserted the slot on every
          tick and fed the body observer an endless mutation loop. */
-      if (card.parentNode === pane && pane.firstElementChild === card) return;
+      /* ---- THE PANE HAS TWO CLAIMANTS TO ITS FIRST CHILD ----
+         pg-cart-timer's countdown banner (#pg-rush) ends its render() with
+             if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
+         and this function used to end with the same demand for the upsell slot.
+         Both are driven by MutationObservers on #cart, so each one's insert woke
+         the other, which inserted straight back: measured at roughly eight to
+         nine swaps a SECOND, for as long as the ten-minute offer window was open
+         -- which is most of a shopper's session. Two blocks visibly trading
+         places above the totals, forever. That is the "glitching".
+
+         Nobody wins a fight like this; they have to agree. The countdown keeps
+         first place -- it is a thin urgency strip and it frames everything under
+         it, which is what pg-cart-timer's own header comment says it is for --
+         and the upsell sits immediately beneath it. Both conditions are then
+         satisfiable at once, so the first insert settles it and neither observer
+         has anything left to do.
+         It stays stable through the banner's whole life cycle: inserted before
+         the banner exists, the slot is first and correct; the banner then takes
+         first place and the slot is correct as its next sibling; when the window
+         expires and the banner is removed the slot becomes first again and is
+         correct once more. No tick of any of those transitions asks either party
+         to move a second time. */
+      if (unlockSeated(pane, card)) return;
       if (!card.pgHome) card.pgHome = {parent: card.parentNode, next: card.nextSibling};
-      pane.insertBefore(card, pane.firstChild);
+      pane.insertBefore(card, paneSlotAnchor(pane));
     } else if (card.pgHome && card.pgHome.parent && card.pgHome.parent.isConnected){
       var home = card.pgHome;
       if (card.parentNode !== home.parent || card.nextSibling !== home.next){
         home.parent.insertBefore(card, home.next && home.next.isConnected ? home.next : null);
       }
+    } else {
+      /* No recorded home. pg-unlock now creates the slot directly inside the
+         pane when it is building for a phone (so the rows never paint in the
+         wrong place first), which means on a narrow-to-wide resize there is no
+         pgHome to restore from and the slot would have stayed pinned on
+         desktop. The desktop home is not a mystery -- it is immediately above
+         the item list -- so seat it there. */
+      var dlist = drawer.querySelector('.l4ca:not(.in-panel)');
+      if (dlist && dlist.parentNode && card.nextElementSibling !== dlist){
+        dlist.parentNode.insertBefore(card, dlist);
+      }
     }
   }
+  /* pg-unlock calls this synchronously in the same task it writes the offer
+     rows, so they are positioned before anything is painted rather than being
+     moved on this file's next 60ms observer tick. */
+  window.pgPlaceUnlock = placeUnlock;
 
   /* 6. KEEP CHECKOUT REACHABLE. This used to be seatPane(), which pulled the
      pane DOWN by the gap it measured below itself, up to 44px, to close the
@@ -461,7 +521,24 @@
   function smoothOpen(){
     var drawer = document.getElementById('cart');
     if (!drawer || drawer.classList.contains('pg-settling')) return;
+    /* ONCE PER OPEN. Two faults, one flag.
+       (a) RE-ARM. The hold ends by removing .pg-settling -- which is itself a
+           class change on #cart, which wakes the class observer below, which
+           calls this function again. If .sticky-in-panel still is not there the
+           hold is re-applied immediately, and the drawer spends the rest of the
+           session invisible except for one visible frame every 1200ms. A
+           strobing empty drawer, which is about the worst thing this file could
+           do.
+       (b) BLACKOUT MID-REBUILD. The theme replaces #cart's contents wholesale on
+           every add and quantity change, and the pane does not exist for part of
+           that. Any class write on #cart landing in that window took the
+           `already built -- instant` guard below down the other path and blacked
+           out a drawer the shopper was already looking at.
+       The hold belongs to one opening, so record that it has been done and do
+       not re-run until the drawer actually closes (the observer clears it). */
+    if (drawer.pgSettled) return;
     if (drawer.querySelector('.sticky-in-panel')) return;   /* already built -- instant */
+    drawer.pgSettled = 1;
     drawer.classList.add('pg-settling');
     var start = Date.now(), lastTop = null, stable = 0;
     (function wait(){
@@ -492,7 +569,16 @@
     if (window.MutationObserver && drawerEl){
       new MutationObserver(function(){
         if (drawerEl.classList.contains('toggle')) smoothOpen();
-        else drawerEl.classList.remove('pg-settling');
+        /* GUARDED. This observer watches the class attribute, and removing a
+           class writes that same attribute -- an unconditional remove() woke the
+           observer with its own write on every pass. Only touch it when there is
+           something to remove. */
+        else if (drawerEl.classList.contains('pg-settling')){
+          drawerEl.classList.remove('pg-settling');
+          drawerEl.pgSettled = 0;
+        } else if (drawerEl.pgSettled){
+          drawerEl.pgSettled = 0;
+        }
       }).observe(drawerEl, {attributes:true, attributeFilter:['class']});
       if (drawerEl.classList.contains('toggle')) smoothOpen();
     }

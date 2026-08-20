@@ -94,31 +94,63 @@
   #cart .pg-unlock-t{flex:1;min-width:0}
   #cart .pg-unlock-t b{display:block;font-size:14.5px;line-height:1.27;color:#3B1553}
   #cart .pg-unlock-t small{display:block;font-size:12px;line-height:1.33;color:#6E5C80;margin-top:2px}
+  /* Same geometry the cart-line SAVED chip was narrowed to. This pill was built
+     with 10px of padding a side and .04em of tracking for 52px of glyphs -- 38%
+     more purple than text, the worst ratio of any pill in the cart, and sitting
+     directly above lines whose pills are tight. letter-spacing goes to `normal`
+     rather than a smaller number because tracking applies after the FINAL glyph
+     too, leaving a gap past "off" that no padding value can balance out. */
   #cart .pg-unlock-tag{
-    display:inline-block;margin-top:4px;padding:3px 10px;border-radius:999px;
-    font-size:11.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    display:inline-block;width:fit-content;margin-top:4px;
+    padding:3px 7px;border-radius:999px;
+    font-size:11.5px;font-weight:800;letter-spacing:normal;word-spacing:normal;
+    text-transform:uppercase;
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
   }
+  /* ONE SIZE, AND ITS HEIGHT DOES NOT COME FROM PADDING.
+     This button used to be three different sizes depending on where its row
+     happened to be in the DOM, and the biggest of them was the shop owner's
+     "so huge". The @media(max-width:600px) block below used to give it
+     `flex:1 1 100%`, throwing it onto its own full-width line at 14px -- a
+     322x42 slab on a 390px phone -- and the ONLY thing that ever prevented that
+     was pg-cart-mobile physically moving the row inside .sticky-in-panel, which
+     is a higher-specificity ancestor. So the compact size was never conditioned
+     on the viewport; it was conditioned on a JS DOM move having already
+     happened. Before that move -- on every drawer rebuild, and permanently if
+     the move ever fails -- the slab was what the shopper saw.
+     Now the button is `flex:0 0 auto` at every width, so it sits beside the
+     copy everywhere and no rule below needs to override it.
+     Height comes from min-height, not padding: padding-derived height put the
+     pinned button at 32px, under the 40px minimum for a tap target sitting
+     directly above CHECKOUT. Measured after this change: 55-59px x 40px in all
+     six contexts (in-pane, in-list, 375/390/700/900/1280). */
   #cart .pg-unlock-add{
-    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    flex:0 0 auto;order:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    min-height:40px;line-height:1;white-space:nowrap;
+    border:1.5px solid #7A2FA2 !important;background:#fff !important;
     background-image:none !important;color:#7A2FA2 !important;
-    border-radius:999px !important;padding:10px 18px !important;
-    font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;
+    border-radius:999px !important;padding:0 16px !important;
+    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
     animation:none !important;transition:background .15s ease,color .15s ease;
   }
   #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
   #cart .pg-unlock-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
   #cart .pg-unlock-add[disabled]{opacity:.6;cursor:default}
-  /* MOBILE PARITY: the row keeps the same three parts in the same order as
-     desktop -- image, copy, button -- the button simply drops to its own full
-     width line instead of shrinking the copy to nothing. */
+  /* MOBILE PARITY: the row keeps the same three parts in the same order at
+     every width -- image, copy, button, all on one line.
+     Two declarations are deliberately absent from this block now. The button no
+     longer becomes full-width here (see the note on the base rule): it was the
+     "huge" one. And .pg-unlock-t no longer carries `flex:1 1 60%` -- a 60%
+     flex-basis makes the copy's hypothetical size large enough to push the
+     button onto a second line even when the button is narrow, so it undid the
+     fix on its own. The base `flex:1` (= 1 1 0%) lets the copy take exactly
+     what is left. */
   @media(max-width:600px){
     #cart .pg-unlock{flex-wrap:wrap;gap:11px}
     #cart .pg-unlock img{width:48px;height:48px}
-    #cart .pg-unlock-t{flex:1 1 60%;min-width:0}
     #cart .pg-unlock-t b{font-size:14px}
     #cart .pg-unlock-t small{font-size:11.5px}
-    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:12px 18px !important;font-size:14px}
   }
 
   /* ---------------- COMPACT INSIDE THE PINNED PANE ----------------
@@ -146,10 +178,19 @@
   #cart .sticky-in-panel .pg-unlock-t b{font-size:13px;line-height:1.25}
   #cart .sticky-in-panel .pg-unlock-t small{font-size:11px;line-height:1.3;margin-top:1px}
   #cart .sticky-in-panel .pg-unlock-tag{display:none}
-  #cart .sticky-in-panel .pg-unlock-add{
-    flex:0 0 auto;order:0;
-    padding:8px 14px !important;font-size:12.5px;
-  }
+  /* the button is already compact and beside the copy everywhere (base rule);
+     inside the pinned pane it only gives up 2px of side padding. */
+  #cart .sticky-in-panel .pg-unlock-add{padding:0 14px !important}
+  /* THE CHOOSER, PINNED. Tapping ADD on a multi-design product hides the button
+     and opens this panel, whose own confirm button is full-width by design --
+     it IS the CTA at that point. Uncompacted it took the pinned row to 210px
+     and the pane to 359px, 42.5% of a 390x844 phone and about 54% of an SE,
+     which left almost no cart visible. Trimmed here to 171px / 320px, and the
+     confirm button's height moved off padding onto min-height so it GAINS a
+     5px taller tap target while the row shrinks. */
+  #cart .sticky-in-panel .pg-unlock-pick{padding-top:8px;margin-top:0}
+  #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
+  #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
 
   /* ---------------- the design chooser ----------------
      The upsell used to add more of the variant already in the cart. On the orb
@@ -182,7 +223,9 @@
   }
   #cart .pg-unlock-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
   #cart .pg-unlock-go{
-    width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;padding:12px 16px !important;
+    width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;
+    display:flex;align-items:center;justify-content:center;
+    min-height:44px;line-height:1;padding:10px 16px !important;
     background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
     background-image:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
     color:#fff !important;font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;animation:none !important;
@@ -564,7 +607,13 @@
     }
 
     el.innerHTML =
-      '<img alt="" src="' + img + '">' +
+      /* width/height are ATTRIBUTES, not CSS, and they are load-bearing. A
+         rebuild replaces this row wholesale, which means a brand-new <img>
+         element even when the URL is identical; without intrinsic dimensions
+         the browser lays it out at 0x0 until the (cached) bitmap is attached,
+         so the row reflowed and the thumbnail flashed its lilac placeholder for
+         at least a frame on every cart change. The values match the CSS box. */
+      '<img alt="" width="54" height="54" decoding="sync" src="' + img + '">' +
       '<div class="pg-unlock-t">' +
         '<b>' + title + '</b>' +
         '<small>' + note + '</small>' +
@@ -624,10 +673,22 @@
     if (rendering) return;
     var c = document.getElementById('cart');
     if (!c) return;
-    var list = c.querySelector('.l4ca:not(.in-panel)');
-    if (!list) return;
+    if (!c.querySelector('.l4ca:not(.in-panel)')) return;
     rendering = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      /* RE-READ THE DRAWER. `c` and `list` used to be captured before this
+         await and used after it. The theme replaces #cart's entire innerHTML on
+         every add and quantity change (pg-drawer's spRefreshDrawer), so a
+         rebuild landing inside this round trip left both references pointing at
+         detached nodes: the insert below then happened in a subtree nothing was
+         showing, and because lastCartSig had already been advanced the next
+         render short-circuited and never put the rows back. The offer simply
+         vanished until the cart changed again. Reading them here, after the
+         await, means we always write into the drawer that is actually on
+         screen. */
+      c = document.getElementById('cart');
+      var list = c && c.querySelector('.l4ca:not(.in-panel)');
+      if (!c || !list){ rendering = false; return; }
       LASTCART = cart;
       var offs = offers(cart).sort(function(a, b){
         return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
@@ -638,18 +699,53 @@
       if (sig === lastCartSig && rowsPresent(c, offs)){ rendering = false; return; }
 
       if (consolidate(cart)){ rendering = false; return; }
-      lastCartSig = sig;
+
+      /* lastCartSig is NOT advanced yet. It used to be set here, before the
+         loop below decides whether it can actually apply the new cart -- and
+         that loop skips any row the shopper has opened to pick designs, so a
+         change arriving mid-pick was recorded as applied without being applied.
+         Every later render then short-circuited on the signature and the open
+         row stayed frozen on stale copy and a stale unit count for the rest of
+         the session. The signature is now advanced at the end, and only for
+         what was really written: if a row was skipped it stays unset so the
+         next render (the one after the chooser closes) picks the change up. */
+      var deferred = false;
 
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
 
-      /* the slot: one container, CSS-ordered. Created once, recreated when a
-         drawer rebuild destroys it. */
+      /* THE SLOT IS BORN WHERE IT BELONGS. Created once, recreated when a
+         drawer rebuild destroys it -- and a rebuild destroys it on every add and
+         every quantity change.
+         It used to be re-created unconditionally above the item list, which is
+         its DESKTOP home. On a phone pg-cart-mobile then moved it down into the
+         pinned pane -- but only on its own 60ms observer tick, one whole frame
+         or more later. So every cart change played the same sequence: the offer
+         rows reappeared at the top of the drawer, at their un-pinned size, and
+         were then teleported to the bottom. Measured at ~81ms of visible wrong
+         position per rebuild in a zero-latency harness, longer on a real phone
+         where a /cart.js round trip precedes it. That teleport is the "glitching"
+         the shop owner reported.
+         Creating it in the pane directly, when a pane exists and we are at a
+         width where it belongs there, removes the intermediate position
+         entirely -- there is no first paint to correct. placeUnlock() still runs
+         and is still the authority; it now finds the slot already correct and
+         returns without touching anything. */
       var slot = c.querySelector('#pg-unlock-slot');
       if (!slot){
         slot = document.createElement('div');
         slot.id = 'pg-unlock-slot';
-        list.parentNode.insertBefore(slot, list);
+        var pane = c.querySelector('.sticky-in-panel');
+        if (pane && window.matchMedia('(max-width:760px)').matches){
+          /* pg-cart-mobile owns where in the pane this goes -- the countdown
+             banner also claims the first slot, and the two used to fight over it
+             several times a second. Use its anchor so the row is born in the
+             position it will keep. */
+          var anchor = window.pgPaneAnchor ? window.pgPaneAnchor(pane) : pane.firstChild;
+          pane.insertBefore(slot, anchor);
+        } else {
+          list.parentNode.insertBefore(slot, list);
+        }
       }
 
       /* adopt strays and kill duplicates: any row outside the slot (an older
@@ -670,7 +766,8 @@
         var existing = seen[o.handle];
         if (existing){
           if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
-          if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
+          /* mid-pick: don't yank -- and remember that this cart was not applied */
+          if (existing.classList.contains('is-open')){ deferred = true; return; }
           var fresh = row(o);
           fresh.setAttribute('data-sig', sg);
           existing.parentNode.replaceChild(fresh, existing);
@@ -680,6 +777,18 @@
           slot.appendChild(el);
         }
       });
+
+      if (!deferred) lastCartSig = sig;
+
+      /* PLACE IT IN THE SAME TASK. pg-cart-mobile owns where the slot lives, and
+         it normally reacts on a 60ms observer tick -- a tick the shopper can see.
+         Calling it synchronously here means the rows are written and positioned
+         before the browser gets a chance to paint either, so there is no frame
+         in which they are in the wrong place. It is idempotent and returns
+         immediately when the slot is already correct, so this costs nothing on
+         the common path. */
+      if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
+      mark();
       rendering = false;
     }).catch(function(){ rendering = false; });
   }
@@ -699,8 +808,14 @@
       top.insertBefore(box, top.firstChild);
     }
     if (!top.querySelector('.pg-cart-mark')) return;
+    /* GUARDED. This ran unconditionally on a 500ms interval, so it rewrote the
+       inline style attribute of every drawer logo twice a second for the life of
+       the page. Nothing in #cart observes attributes today, which is the only
+       reason it was harmless -- it was one attributeFilter away from being a
+       2 Hz engine driving every observer in the cart. Writing only on a real
+       change costs nothing and removes the trap. */
     document.querySelectorAll('#cart img.nc-dlogo').forEach(function(img){
-      img.style.setProperty('display', 'none', 'important');
+      if (img.style.display !== 'none') img.style.setProperty('display', 'none', 'important');
     });
   }
 
@@ -859,6 +974,7 @@
      one observer bounce our own insert causes settles immediately. */
   var renderTimer = null;
   function scheduleRender(){
+    mark();                    /* same task as the mutation that woke us */
     if (renderTimer) return;
     renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 120);
   }
@@ -895,7 +1011,15 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
 
-  setInterval(mark, 500);   /* the wordmark is cheap and idempotent; leave it */
+  /* THE WORDMARK LANDS WITH THE ROWS, NOT HALF A SECOND LATER.
+     mark() used to be driven only by this interval, so after a drawer rebuild
+     the header sat logo-less for up to 500ms and then popped in -- a second,
+     separate jump on top of the one the offer rows were making, and one more
+     observer cascade with it. It is now called synchronously from render() (the
+     same task that writes the rows) and from the observer, so the drawer
+     reassembles in one step. The interval stays only as a slow backstop for a
+     rebuild that somehow wakes neither. */
+  setInterval(mark, 2000);
   render();
   mark();
 })();

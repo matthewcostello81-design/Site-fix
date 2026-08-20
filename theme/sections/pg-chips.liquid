@@ -92,7 +92,7 @@
     /* same geometry as STYLE below, so a pill painted before the stamp lands is
        already the right width instead of resizing under the shopper */
     width:fit-content;max-width:100%;min-width:0;
-    padding:4px 7px 4px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
+    padding:6px 7px 6px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
   }
 
   /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
@@ -103,14 +103,34 @@
   #cart .l4ca > li.pg-merged-away,
   body.template-cart .l4ca > li.pg-merged-away{display:none !important}
 
+  /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.
+     This note is inserted as a sibling of the SAVED chip, and the drawer makes
+     that parent a GRID (`#cart .l4ca > li section{display:grid;...}`) which gives
+     the chip an explicit grid-area and justify-self:start. The note got neither,
+     so it was auto-placed into an implicit row with justify-self:auto -- i.e.
+     stretch -- and a stretched grid item with width:auto fills its column. Its
+     inline-flex was blockified by grid layout, so inline shrink-wrapping never
+     applied either. Measured: 168.8px on a 390px phone and 229.3px on the wider
+     desktop drawer, for 111.5px of letters -- it got LONGER as the drawer got
+     wider, which is the giveaway that it was tracking the column and not the
+     text. Beside a SAVED chip that hugs at 81.8px it read as a long empty purple
+     bar across the line.
+     width/justify-self give it back its own width; grid-column puts it on a full
+     row of its own rather than an odd implicit cell; and the tracking and padding
+     now match the chip -- letter-spacing applies after the final glyph too, which
+     is the same trailing gap the chip was fixed for. 168.8px -> 118.9px. */
   #cart .pg-free-note,
   body.template-cart .pg-free-note{
     display:inline-flex;align-items:center;
-    margin-top:4px;padding:4px 10px;border-radius:999px;
+    width:fit-content;max-width:100%;min-width:0;
+    justify-self:start;grid-column:1 / -1;
+    margin-top:4px;padding:4px 7px;border-radius:999px;
     background:rgba(139,68,190,.14);
     border:1px solid rgba(168,120,214,.4);
     color:#6B3E93;
-    font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    font-size:11.5px;font-weight:800;
+    letter-spacing:normal;word-spacing:normal;text-indent:0;
+    text-transform:uppercase;
     white-space:nowrap;
   }
 </style>
@@ -118,7 +138,15 @@
 (function(){
   if (window.pgChips) return; window.pgChips = 1;
 
-  var SEL = '.pg-free-tag, .pg-save-chip';
+  /* .nc-lsave-off is the drawer's OWN saved-percent pill, in the price column of
+     the same cart line -- pg-unlock has a rule for it, so it is a distinct node.
+     It was never in this selector, so it kept the drawer's 12px-a-side padding
+     and .05em tracking while the chip three columns away was narrowed to 7px and
+     normal: the same words, "SAVED 74%", rendering at two different lengths on
+     one line. Adding it is free and idempotent -- if it ever turns out to be the
+     same node as .pg-save-chip the extra selector matches the same element and
+     changes nothing. */
+  var SEL = '.pg-free-tag, .pg-save-chip, .nc-lsave-off';
   /* THE PILL HUGS ITS TEXT. It was `padding:7px 15px` with `letter-spacing:.05em`
      and a matching `text-indent`, which is 30px of purple either side of a ~80px
      word plus a tracked space trailing the % sign -- the badge read as a wide
@@ -148,8 +176,11 @@
     'text-align': 'center',
     'font-size': '12px',
     'line-height': '1',
-    'padding-top': '4px',
-    'padding-bottom': '4px',
+    /* 6px, not 4px. Height is font-size x line-height plus this padding and
+       nothing else, so this is the only lever on the badge's aspect that does
+       not touch its width: 20px tall -> 24px tall, for free. */
+    'padding-top': '6px',
+    'padding-bottom': '6px',
     'padding-left': '7px',
     'padding-right': '7px',
     'letter-spacing': 'normal',
@@ -174,18 +205,71 @@
      rendered value rather than a one-shot flag, and an observer runs it in the
      same task the pill is inserted in. setProperty with an unchanged value is
      free, so re-checking costs nothing. */
+  /* THE GUARD MUST COVER WHAT IT IS GUARDING. It used to test two of the
+     nineteen properties the loop writes -- paddingLeft and letterSpacing -- which
+     meant any other writer landing a single inline !important declaration on one
+     of the other seventeen left both guarded values untouched, so every later
+     stamp returned immediately and the pill kept the foreign value for the life
+     of the page. Six of the seventeen change the width. Measured with the real
+     stamp running: `width:100%` -> 276px permanent, `min-width:140px` -> 140px
+     permanent, `font-size:13px` -> 87.5px permanent, `padding-right:12px` ->
+     86.8px permanent, none of them ever corrected. The guard now covers every
+     width-bearing property, so the only thing it can skip is a pill that is
+     already right. */
+  function isStamped(el){
+    var st = el.style;
+    return st.paddingLeft === '7px' && st.paddingRight === '7px'
+        && st.letterSpacing === 'normal' && st.wordSpacing === 'normal'
+        && st.textIndent === '0px' && st.fontSize === '12px'
+        && st.width === 'fit-content' && st.minWidth === '0px'
+        && st.maxWidth === '100%' && st.columnGap === '0px';
+  }
+  var stamping = false;
   function stamp(){
-    document.querySelectorAll(SEL).forEach(function(el){
-      if (el.style.paddingLeft === '7px' && el.style.letterSpacing === 'normal') return;
-      for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
-    });
+    if (stamping) return;
+    stamping = true;
+    try {
+      document.querySelectorAll(SEL).forEach(function(el){
+        if (isStamped(el)) return;
+        for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
+      });
+    } finally { stamping = false; }
   }
 
   if (window.MutationObserver){
-    /* childList only: the stamp writes STYLE attributes, and observing those
-       would have it re-trigger itself. */
+    /* childList AND style attributes. It used to be childList only, on the
+       grounds that watching style would make the stamp re-trigger itself -- true,
+       but the cost of not watching was worse: pg-drawer restyles these pills
+       inline (padding:4px 12px, letter-spacing:.05em) after every drawer rebuild,
+       and that is an ATTRIBUTE change, invisible to a childList observer. So the
+       correction was left to the 300ms interval and the shopper watched the pill
+       sit wide and then snap narrower under their eyes on every cart change.
+       Self-triggering is handled properly instead: `stamping` blocks re-entry,
+       and the stamp is idempotent -- a second pass over an already-stamped pill
+       writes nothing, so the cascade is one extra callback that does no work. */
     new MutationObserver(function(){ stamp(); })
       .observe(document.body, {childList: true, subtree: true});
+
+    /* ATTRIBUTES, BUT ONLY WHERE PILLS LIVE. Watching style on the whole body
+       would fire for every unrelated inline write in the theme -- and there are
+       several a second, from four different sections' polling loops -- for a set
+       of about five pills that all live in one subtree. Scoped to the drawer and
+       the cart page's form, it fires for pg-drawer's pill restyle (the write
+       that actually matters) and almost nothing else. Attached lazily because
+       #cart may not exist yet, and re-checked until it does. */
+    var attrSeen = [];
+    (function watchAttrs(){
+      ['#cart', 'body.template-cart .form-cart'].forEach(function(sel){
+        var el = document.querySelector(sel);
+        if (!el || attrSeen.indexOf(el) > -1) return;
+        attrSeen.push(el);
+        try {
+          new MutationObserver(function(){ stamp(); })
+            .observe(el, {subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+        } catch(e){}
+      });
+      if (attrSeen.length < 2) setTimeout(watchAttrs, 500);
+    })();
   }
 
   /* ---------------- the honest percentage ---------------- */
@@ -336,7 +420,16 @@
         var pct = Math.round((base - paid) / base * 100);
         if (pct < 1) return;
 
-        setText(chip, 'SAVED ' + pct + '%');
+        /* "-55%", not "SAVED 55%". The pill's own geometry has been at zero
+           slack since the padding and tracking were fixed -- measured dead space
+           beyond glyphs+padding is 0.0px -- so its 4.1:1 stadium shape was the
+           STRING, not a layout fault, and no further CSS could round it. The
+           word is the only remaining lever: "SAVED 55%" is 81.8px of letters,
+           "-55%" is 42.0px, which with the taller box in STYLE above is a 1.75:1
+           badge instead of a 4.1:1 bar. pg-drawer's own pass() writes this same
+           element, so its string was changed to match -- two writers with
+           different text would fight at 300ms against 800ms and flicker. */
+        setText(chip, '-' + pct + '%');
 
         /* and the struck figure beside it: MSRP for the whole line, so it means
            the same thing on a discounted row as on a full-price one */

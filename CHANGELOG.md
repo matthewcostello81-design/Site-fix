@@ -1,3 +1,217 @@
+# The cart upsell was fighting the countdown banner nine times a second
+
+The add-on rows in the cart "glitching" turned out to be a genuine tug-of-war,
+not a rendering artefact. Two scripts each insisted on being the **first child**
+of the pinned totals pane:
+
+- `pg-cart-timer` ends its `render()` with
+  `if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild)` for the
+  countdown banner `#pg-rush`.
+- `pg-cart-mobile`'s `placeUnlock()` ended with the same demand for
+  `#pg-unlock-slot`.
+
+Both are driven by MutationObservers on `#cart`, so each one's insert woke the
+other, which inserted straight back — for as long as the ten-minute offer window
+was open, which is most of a shopper's session.
+
+Measured in a Playwright harness that boots the four scripts which write into
+that pane and records the pane's child order on **every animation frame** for six
+seconds:
+
+| | deployed | fixed |
+|---|---|---|
+| distinct pane child orders in 6s | **54** | **2** |
+| upsell row y-positions | **345 ↔ 392** — a 47px jump, ~9×/second | **392**, once |
+| `/cart.js` requests per second | 2.0 | 0.8 |
+
+Nobody wins a fight like that; they have to agree. The countdown keeps first
+place — it is a thin urgency strip framing everything under it, which is what its
+own header comment says it is for — and the upsell sits immediately beneath it.
+Both conditions are then satisfiable at once, so the first insert settles it.
+
+It stays stable through the banner's whole life cycle: inserted before the banner
+exists the slot is first and correct; the banner then takes first place and the
+slot is correct as its next sibling; when the window expires and the banner is
+removed the slot is first again and correct once more. No transition asks either
+party to move twice.
+
+`test/run-churn.mjs` is the regression test, and it has a `legacy` mode that
+loads the pre-fix scripts so it can prove it is capable of seeing the churn it
+claims is gone.
+
+## The other glitches
+
+- **The row was born in the wrong place.** `render()` re-created the slot above
+  the item list — its *desktop* home — on every drawer rebuild, and a rebuild
+  happens on every add and every quantity change. On a phone `placeUnlock()` then
+  moved it down to the pinned pane on its own 60ms observer tick. ~81ms of
+  visible wrong position per rebuild in a zero-latency harness, longer on a real
+  phone. The slot is now created where it belongs, and `pg-unlock` calls
+  `window.pgPlaceUnlock()` synchronously in the same task it writes the rows, so
+  there is no frame in which they are misplaced.
+- **The drawer could black itself out permanently.** `smoothOpen()` ends its hold
+  by removing `.pg-settling` — itself a class change on `#cart`, which wakes the
+  class observer, which calls `smoothOpen()` again. With no totals pane present
+  the hold was re-applied immediately, and the drawer spent the rest of the
+  session invisible bar one frame every 1200ms. The same path also blacked out an
+  already-visible drawer mid-rebuild, when the pane briefly does not exist. The
+  hold now belongs to one opening and is cleared when the drawer closes.
+- **The thumbnail flashed on every rebuild.** A replaced row means a brand-new
+  `<img>` even when the URL is identical; without intrinsic dimensions the
+  browser laid it out at 0×0 until the cached bitmap attached. `width`/`height`
+  attributes added.
+- **An open design-chooser froze forever.** `lastCartSig` was advanced before the
+  loop that decides whether the new cart can actually be applied — and that loop
+  skips a row the shopper has opened. A change arriving mid-pick was recorded as
+  applied without being applied, and every later render short-circuited on the
+  signature. The signature is now advanced only for what was really written.
+- **The rows could vanish until the next cart change.** `render()` captured
+  `#cart` and the item list *before* its `/cart.js` await and used them after. A
+  drawer rebuild landing inside that round trip left both detached, so the insert
+  happened in a subtree nothing was showing. Both are re-read after the await.
+- **Two unguarded writes were driving everyone's observers.** The sticky bar's
+  badge rewrote its `textContent` every second whether or not the count had
+  changed — a childList record on `document.body` at 1Hz, which three modules
+  watch. `mark()` (in both `pg-unlock` and `pg-cart-badge`) rewrote the drawer
+  logo's inline style twice a second, forever. Both are now value-guarded.
+- **The wordmark popped in half a second late.** `mark()` was driven only by its
+  interval, so after a rebuild the header sat logo-less for up to 500ms. It is
+  now called in the same task that writes the rows.
+
+# The ADD button was three different sizes, and the biggest was the reported one
+
+Three rules competed, and the cascade resolved *correctly* — that was the
+problem. `#cart .sticky-in-panel .pg-unlock-add` is (1,2,0) and beats the
+`@media(max-width:600px)` copy at (1,1,0), so the compact size was never
+conditioned on the viewport. It was conditioned on `.sticky-in-panel` being an
+**ancestor** — which only happens because `placeUnlock()` physically moves the row
+there. The CSS was written as if "phone" implied "pinned".
+
+Every phone state where that DOM move had not happened yet — every drawer
+rebuild, and permanently if the move ever failed — got `flex:1 1 100%`, throwing
+the button onto its own full-width line: a **322 × 42px** slab on a 390px phone,
+in a row 2.3× taller than the pinned one.
+
+Measured with all 29 cart stylesheets loaded in their real load order:
+
+| context | before | after |
+|---|---|---|
+| 390 phone, pinned | 54.3 × **32** | 55.3 × **40** |
+| 390 phone, not yet moved | **322 × 42** | 59.3 × 40 |
+| 375 iPhone SE, not moved | **307 × 42** | 59.3 × 40 |
+| 1280 desktop | 64.3 × 37 | 59.3 × 40 |
+| 700 tablet | 54.3 × 32 | 55.3 × 40 |
+
+Height now comes from `min-height`, not padding — the pinned button was a 32px
+tap target sitting directly above CHECKOUT. Pinned row 138.1px → 100.4px
+un-pinned, pane 209px → 185px (24.8% → 21.9% of a 390×844 phone).
+
+The chooser's confirm button got the same treatment: it took the pinned row to
+210px and the pane to 359px — 42.5% of the phone — and is now 171px / 320px while
+*gaining* 5px of tap target.
+
+`pgCartFlush` also became a version number rather than a boolean, so an older
+copy of `pg-cart-mobile` still live in the theme can no longer claim the flag and
+silence the current one for the whole session.
+
+# The pills
+
+`.pg-save-chip` had **zero** dead space left — its 4.1:1 stadium shape was the
+*string*, not a layout fault, so no further CSS could round it. The two pills
+that were objectively too long were different ones:
+
+| pill | before | after |
+|---|---|---|
+| `.pg-free-note` "3 FREE INCLUDED" | 168.8px @390 / **229.3px @1280** | 118.9px at both |
+| `.nc-lsave-off` "SAVED 74%" | 97.2px | 81.8px |
+| `.pg-unlock-tag` "25% off" | 72.4px | 63.2px |
+| `.pg-save-chip` | 81.8 × 20 (4.09:1) | **42 × 24 (1.75:1)** |
+
+`.pg-free-note` was the giveaway: it got *longer* as the drawer got wider. It is
+inserted as a sibling of the SAVED chip, and the drawer makes that parent a grid
+which gives the chip an explicit `grid-area` and `justify-self:start`. The note
+got neither, so it was auto-placed into an implicit row at `justify-self:auto` —
+stretch — and a stretched grid item with `width:auto` fills its column. Its
+`inline-flex` was blockified by grid layout, so inline shrink-wrapping never
+applied either.
+
+The SAVED chip's only remaining lever was the word, so it now reads **-74%**
+instead of SAVED 74%, in a box 4px taller. `pg-drawer` writes the same element on
+its own 800ms clock, so its string was changed to match — two writers with
+different text would have flickered between them.
+
+Three supporting fixes:
+
+- **`pg-drawer` and `pg-chips` were writing different geometry to the same
+  pills.** Both stamp inline `!important`; `pg-drawer` said `padding:4px 12px`
+  and `letter-spacing:.05em`, `pg-chips` said 7px and normal. The pill went wide
+  after every cart change and snapped narrow again on the next 300ms tick.
+  `pg-drawer` now writes the same values, so there is no race to win.
+- **`pg-chips`' guard tested 2 of the 19 properties it writes.** Any other writer
+  landing one inline declaration on the other seventeen left both guarded values
+  untouched, so every later stamp returned immediately and the pill kept the
+  foreign value for the life of the page. Six of the seventeen change the width:
+  measured `width:100%` → 276px permanent, `min-width:140px` → 140px permanent,
+  never corrected. The guard now covers every width-bearing property.
+- **`pg-chips` could not see the write it most needed to see.** Its observer was
+  childList-only, and `pg-drawer`'s restyle is an *attribute* change. A scoped
+  attribute observer on `#cart` and `.form-cart` now catches it in the same task
+  rather than up to 300ms later.
+
+# Two clips that shipped in the last change, and the suite that missed them
+
+`test/run-fab.mjs` tested widths `[320,360,390,430]` — one pixel below the
+breakpoint at which the long copy comes back. Every case it ran rendered the
+*short* string, so it reported ALL CHECKS PASSED while:
+
+- **≥900px, empty cart:** the bar is capped to 380px while the font returns to
+  14.5px, so "ADD TO CART FOR EXTRA 10% OFF" wanted 265.6px in 238.7px and
+  silently lost the word **OFF**. It read "ADD TO CART FOR EXTRA 10%" — on the
+  default desktop first-visit state.
+- **431px:** the phone block stops applying and the copy, both font sizes, both
+  gaps, the bar padding and the bag icon all grow in one step. Slack: **0.1px**.
+
+`.pg-cs-long` is now opt-in — hidden by default, shown only across 460–899px
+where the smallest measured margin is +29px. Nudging the 430px breakpoint instead
+would have dragged the phone font/padding/icon sizes up with it, which is a
+different concern.
+
+The suite now spans `[320,360,390,430,431,460,600,768,899,900,1024,1280]` × five
+message variants (including the no-clock layout, which was never tested and is
+what shoppers see once the peek window expires). Run against the deployed CSS it
+produces 7 failures naming exactly those two clips; against the fix, none.
+
+# The sticky bar is centred
+
+`.pg-cs-sub` carried `margin-left:auto`, which right-packed the offer against the
+bag icon — an auto margin absorbs *all* free space before `justify-content` is
+even consulted, so every spare pixel landed in one lump between the timer and the
+offer. Measured gap left-of-text vs right-of-text: 94/9px at 390px, 344/11px at
+768px. Shortening the phone copy in the previous change widened that void by
+another 69px.
+
+The clock and the offer are one sentence, so they are centred together with
+`justify-content: safe center` on `.pg-cs-msg`. `safe` matters: a plain `center`
+on a `nowrap`/`overflow:hidden` flex row splits an overflow across both edges and
+the start-side half is unreachable — measured, the clock renders at x = −111px,
+entirely off the bar, while the offer's tail is cut at the same time.
+
+A bare `center` is kept as a fallback for engines too old to parse `safe`
+(iOS Safari before 16), which is only safe because of an invariant now recorded
+in the file: the row's sole rigid child is the 42–50px clock in a box that is
+never narrower than 183px, so it cannot overflow. Without the fallback those
+devices would drop the declaration entirely and keep showing the off-centre bar.
+
+Centring costs no width — `justify-content` only distributes space left over
+after flex sizing — so the 320px slack is byte-identical either way: +18.3px
+before and after.
+
+**Not changed:** at ≥900px the bar itself is pinned to the right (`left:auto;
+width:380px`), 438px right of centre at 1280px. That is deliberate and documented
+("a full-width bar across a desktop page reads as a site banner, so cap it and
+keep it in the corner the cart already occupies"), and unlike the words it has
+never been centred — nothing about it changed recently. Say the word and it is a
+one-line change.
 # The sticky bar's offer was being cut off on phones
 
 "ADD TO CART FOR EXTRA 10% OFF" wants **225px**. Beside a countdown and a 44px

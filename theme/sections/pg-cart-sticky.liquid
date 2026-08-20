@@ -66,14 +66,25 @@
   get). When it runs out the clock simply goes away and the bar keeps offering
   the deal, rather than resetting to 10:00 and pretending the urgency renewed.
 
-  THE WORDING SHORTENS ON A PHONE, AND IT IS MEASURED. "ADD TO CART FOR EXTRA
-  10% OFF" wants 225px. Beside a clock and a 44px bag the message box is 175px
-  on a 320px phone and 215px on a 360px one, so it was cut off on both; at 390px
-  it fitted in exactly 225px -- zero slack -- which real Poppins, wider than a
-  fallback face, turns into a clip as well. Under 431px the words TO CART are
-  hidden, leaving "ADD FOR EXTRA 10% OFF" at about 165px, which clears even a
-  320px screen with 18px to spare. The full sentence returns above that width.
-  The item wording ("1 ITEM . EXTRA 10% OFF") always fitted and is untouched.
+  THE WORDING IS MEASURED, AND THE LONG FORM IS OPT-IN. "ADD TO CART FOR EXTRA
+  10% OFF" wants 265px beside a clock and a bag; "ADD FOR EXTRA 10% OFF" wants
+  165px. The message box is 183px on a 320px phone and 239px inside the capped
+  380px desktop bar, so the long sentence fits in neither. Hiding it below 431px
+  was not enough: at 431px the phone block stops applying and the copy, the two
+  font sizes, both gaps, the bar padding and the bag icon all grow in one step,
+  leaving 0.1px of slack -- a clip in real Poppins -- and above 900px the bar is
+  capped to 380px while the font returns to 14.5px, which silently ate the word
+  OFF on every desktop with an empty cart. So the long form is now shown only
+  across 460-899px, where the smallest measured margin is +29px, and hidden
+  everywhere else. The item wording ("1 ITEM . EXTRA 10% OFF") always fitted and
+  is untouched.
+
+  AND IT IS CENTRED. The clock and the offer are one sentence and are centred
+  together in the space the bag icon leaves, with `justify-content:safe center`.
+  They used to be pushed to opposite ends by an auto margin on the offer, which
+  put 94px of dead black between them on a 390px phone and 344px on a tablet.
+  Centring costs no width -- justify-content only distributes space left over
+  after flex sizing -- so the 320px slack above is unchanged by it.
 
   Hidden while the drawer is open. Gated on #pgx so it appears on product pages
   only, as asked.
@@ -129,6 +140,32 @@
   #pg-cartfab .pg-cs-msg{
     flex:1 1 auto;min-width:0;
     display:flex;align-items:center;gap:7px;
+    /* CENTRED AS ONE GROUP, WITH A FALLBACK, AND THE FALLBACK IS ONLY SAFE
+       BECAUSE OF AN INVARIANT -- read this before changing the children.
+
+       This row is white-space:nowrap with overflow:hidden. A plain `center` on
+       a flex row that OVERFLOWS splits the spill across both edges, and the
+       start-side half is unreachable -- overflow:hidden eats it with no scroll
+       origin. Measured in that state: the clock renders at x=-111px, entirely
+       off the bar, while the tail of the offer is cut at the same time. Both
+       ends lost. `safe center` exists precisely for that: it reverts to start
+       the moment the content would overflow.
+
+       THE INVARIANT: this row cannot overflow. Its only rigid child is the
+       clock (flex:0 0 auto, 42-50px); the offer is flex:0 1 auto with
+       min-width:0 and shrinks instead. The narrowest box the row ever gets is
+       183px at 320px wide, so the rigid content is never more than a third of
+       it. That is why the bare `center` fallback below is safe here even though
+       it would not be in general -- it is only ever consulted by engines too
+       old to parse `safe` (iOS Safari before 16), and on those engines the
+       overflow state it mishandles does not arise. Without the fallback those
+       devices would drop the declaration entirely, get `normal` (= flex-start),
+       and still show the off-centre bar this change exists to fix.
+
+       If you ever add a child here that cannot shrink -- a second pill, an
+       icon, a flex:0 0 auto on the offer -- delete the bare `center` line. */
+    justify-content:center;
+    justify-content:safe center;
     font-size:14.5px;font-weight:800;line-height:1.15;
     text-transform:uppercase;letter-spacing:.03em;
     white-space:nowrap;overflow:hidden;text-overflow:clip;
@@ -142,15 +179,18 @@
     flex:0 0 auto;
   }
   /* .pg-cs-msg is flex:1 1 auto, so it takes the whole width the clock and the
-     bag leave over -- and its children are left-packed, which parked every
-     spare pixel in one lump between the offer text and the bag icon. The offer
-     is pushed to the far end instead: with a clock the bar reads timer-left /
-     offer-right with the gap between two things that want separating, and
-     without one the offer still sits against the bag rather than stranded at
-     the left. Nothing is centred, so a long message and a short one both look
-     deliberate. */
+     bag leave over. This used to carry `margin-left:auto`, which right-packed
+     the offer against the bag icon: an auto margin absorbs ALL free space before
+     justify-content is even consulted, so every spare pixel landed in one lump
+     between the timer and the offer. Measured gap left-of-text vs right-of-text:
+     94/9px at 390px, 344/11px at 768px -- it read as a layout failure rather than
+     a design, and shortening the phone copy in the previous change widened the
+     void by another 69px. The clock and the offer are one sentence, so they are
+     centred together by .pg-cs-msg above and the auto margin is gone. Centring
+     costs no width: justify-content only distributes space left over AFTER flex
+     sizing, so the measured slack at 320px is byte-identical either way. */
   #pg-cartfab .pg-cs-sub{
-    margin-left:auto;min-width:0;
+    min-width:0;
     color:#EFE6FA;font-weight:800;overflow:hidden;
     /* clip, NOT ellipsis. The parent was already switched to clip so a tight
        fit could not put dots back on the end of the offer; leaving ellipsis on
@@ -159,6 +199,27 @@
     text-overflow:clip;
   }
   #pg-cartfab .pg-cs-sub b{color:#D9B4FF;font-weight:900}
+
+  /* " TO CART" IS OPT-IN, NOT OPT-OUT. It used to be hidden only inside
+     @media(max-width:430px), i.e. shown everywhere else -- and everywhere else
+     included two bands where it does not fit:
+       431-459px  the phone block stops applying, so the copy jumps back to the
+                  long form AND the fonts/paddings/icon all grow in the same
+                  step. Measured slack at 431px: +0.1px. Real Poppins is wider
+                  than the fallback this was measured in, so that is a clip.
+       >=900px    the bar is capped to 380px (see the note further down) while
+                  the font is back to 14.5px, so the sentence wants 265.6px in
+                  238.7px and silently loses the word OFF -- on a desktop with an
+                  empty cart, which is the default first-visit state. It read
+                  "ADD TO CART FOR EXTRA 10%".
+     So it is hidden by default and shown only across 460-899px, where the
+     smallest measured margin is +29px. Nudging the 430px breakpoint instead
+     would drag the phone font/padding/icon sizes up with it, which is a
+     different concern and a different look. */
+  #pg-cartfab .pg-cs-long{display:none}
+  @media (min-width:460px) and (max-width:899px){
+    #pg-cartfab .pg-cs-long{display:inline}
+  }
 
   /* the icon keeps its old corner position at the right-hand end */
   #pg-cartfab .pg-cs-ic{
@@ -193,7 +254,6 @@
        instead of 29, about 165px -- which clears 320px with 18px to spare. The
        item wording ("1 ITEM . EXTRA 10% OFF") already fitted everywhere and is
        untouched. */
-    #pg-cartfab .pg-cs-long{display:none}
     /* and 4px of the bar's own inset back on each side, which is 8px of message */
     #pg-cartfab{left:8px;right:8px}
     #pg-cartfab{padding:0 8px 0 14px;gap:9px}
@@ -292,9 +352,19 @@
        parses to a literal character, so the read-back never matched the
        source and paint() rewrote the bar on every one-second tick. */
     if (msg.pgHtml !== html){ msg.pgHtml = html; msg.innerHTML = html; }
+    /* GUARDED LIKE THE MESSAGE ABOVE. paint() runs on a one-second interval, and
+       writing textContent replaces the text node even when the string has not
+       changed -- a childList record on every tick, forever. Three modules watch
+       document.body for childList mutations (pg-cart-mobile's apply(), pg-chips'
+       stamp(), pg-unlock's scheduleRender()), so an unguarded write here was a
+       1 Hz metronome driving a cart-wide re-layout pass and a /cart.js read for
+       as long as the page stayed open. */
     if (badge){
-      if (count > 0){ badge.textContent = count > 99 ? '99+' : String(count); badge.hidden = false; }
-      else badge.hidden = true;
+      if (count > 0){
+        var bt = count > 99 ? '99+' : String(count);
+        if (badge.textContent !== bt) badge.textContent = bt;
+        if (badge.hidden) badge.hidden = false;
+      } else if (!badge.hidden) badge.hidden = true;
     }
   }
 
