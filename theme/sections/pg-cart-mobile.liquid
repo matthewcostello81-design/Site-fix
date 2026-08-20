@@ -39,8 +39,13 @@
 
   5. The upsell card moves down on mobile only, to just above the pane.
 
-  6. The pane is seated on the bottom edge -- MEASURED, not derived from the
-     drawer's padding. See the long note by the code before touching it.
+  6. CHECKOUT can never end up out of reach. The pane is seated on the drawer's
+     clip edge (`bottom:0`, rule 2a) rather than hanging past it, and the JS
+     keeps a measured guarantee: if the button ever lands below the drawer's
+     visible floor and the drawer cannot scroll that far, the pane is raised by
+     exactly the overshoot. The old downward shift is GONE -- it is what cut the
+     button off once (2b) stopped making the drawer scrollable. Read both notes
+     before touching either.
 
   NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
   turned the drawer blank on iOS Safari. Removing the sticky element drops a
@@ -66,7 +71,22 @@
    A skirt hung off the pane's bottom edge: no layout effect, and the drawer's
    own overflow clips it. `top:100%` is what makes it independent of the pane's
    height, which changes with the cart. */
-#cart .sticky-in-panel{position:sticky}
+/* 2a. THE PANE STOPS HANGING PAST THE DRAWER'S CLIP EDGE.
+
+   async-panels.css sticks it at `bottom:-10px`, and a stuck sticky box is not
+   held inside its containing block the way it reads like it should be: measured
+   against a scrollport ending at y=700, `-10px` put the pane's bottom at 704 and
+   the old seatPane shift put it at 720. Overflow clips at the padding box, so
+   that 4-20px of pane -- the bottom of the CHECKOUT button -- was outside the
+   drawer. It only ever worked because the 400px skirt below made the drawer
+   scrollable on every cart, so those pixels could be scrolled to; the moment the
+   skirt stopped inflating scrollHeight (2b) they became unreachable, and
+   CHECKOUT was cut off.
+
+   `bottom:0` seats it on that edge instead. Re-measured on the same scrollport:
+   pane bottom 694 against 700 at a 6px drawer padding, 666 at 34px -- inside it
+   either way, and the skirt still paints whatever is under it. */
+#cart .sticky-in-panel{position:sticky;bottom:0 !important}
 #cart .sticky-in-panel::after{
   content:'';
   position:absolute;
@@ -245,49 +265,76 @@
     }
   }
 
-  /* 6. SEAT THE PANE ON THE BOTTOM EDGE.
-     The drawer carries an inline padding-bottom from the theme's own script,
-     and the pane sticks at bottom:-10px, so it settles short of the bottom of
-     the screen. Closing that hands the space back to the cart above it.
+  /* 6. KEEP CHECKOUT REACHABLE. This used to be seatPane(), which pulled the
+     pane DOWN by the gap it measured below itself, up to 44px, to close the
+     strip the drawer's inline padding-bottom left under it. That shift is gone
+     -- it is what cut the CHECKOUT button off.
 
-     The shift is MEASURED, never derived from that padding. An earlier version
-     pulled the pane down by the padding value and broke the Instagram in-app
-     browser: its bottom toolbar makes that padding far larger, and the Total
-     and CHECKOUT button went off the bottom of the screen with it. Here the
-     shift is the gap actually visible below the pane, measured against the
-     visual viewport -- which excludes the browser's own toolbars -- so where
-     nothing is visibly showing there is no shift, and it is capped regardless.
+     WHY IT CUT OFF, MEASURED. A stuck sticky pane is NOT confined to its
+     containing block the way the spec reading suggests: with the drawer's
+     scrollport ending at y=700, `bottom:-10px` put the pane's bottom at 704 and
+     seatPane's `bottom:-54px` put it at 720 -- 20px of pane, CHECKOUT included,
+     below the drawer's own clip. That was survivable only because the old
+     400px skirt made the drawer scrollable on EVERY cart, so those pixels could
+     always be scrolled into view. Removing the skirt removed the scroll, and
+     the same 20px became unreachable. With `bottom:0` (see the CSS) the pane's
+     bottom lands at 694 against a 700 scrollport, inside it at every cart
+     length that was measured.
 
-     Then it checks its work: if the checkout button is not fully on screen
-     afterwards the shift is dropped. Nothing here can hide checkout.
+     So the downward shift is not restored, and what stays is the half that was
+     always the point: a guarantee. If the button ends up below the drawer's
+     visible floor -- from the theme's own offset, an in-app browser's toolbar,
+     anything -- and the drawer cannot be scrolled far enough to reach it, the
+     pane is raised by exactly the overshoot. Where nothing is wrong it writes
+     nothing, so there is one writer and no tick-to-tick fight.
+
+     The floor is the DRAWER's scrollport, not the viewport. Measuring against
+     the viewport was the original mistake: overflow clips at the drawer's
+     padding box, so that edge is what decides whether CHECKOUT is on screen.
+     It is still capped by the visual viewport, which excludes a mobile
+     browser's toolbars, so chrome that covers the drawer still counts.
 
      (The cold-cart checkout repair that used to live here now has its own
      file, snippets/pg-cart-morph-fix.liquid.) */
-  var MAX_SHIFT = 44;
+  function floorOf(drawer){
+    var box = drawer.getBoundingClientRect();
+    var pad = parseFloat(getComputedStyle(drawer).paddingBottom) || 0;
+    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    return Math.min(box.bottom - pad, vh);
+  }
+
   function seatPane(){
     var drawer = document.getElementById('cart');
     if (!drawer) return;
     var pane = drawer.querySelector('.sticky-in-panel');
-    if (!pane) return;
+    var btn = drawer.querySelector('button[name="checkout"]');
+    if (!pane || !btn) return;
 
-    /* always re-measure from the theme's own resting position */
+    /* the resting position the stylesheet gives it, read once */
     if (pane.pgBase == null){
       var b = parseFloat(getComputedStyle(pane).bottom);
       pane.pgBase = isNaN(b) ? 0 : b;
     }
-    pane.style.removeProperty('bottom');
 
-    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    var gap = vh - pane.getBoundingClientRect().bottom;
-    if (!(gap > 1)) return;                       /* nothing visible below it */
-    if (gap > MAX_SHIFT) gap = MAX_SHIFT;
+    var lifted = pane.pgLift || 0;
+    var floor = floorOf(drawer);
+    var over = btn.getBoundingClientRect().bottom - floor;
 
-    pane.style.setProperty('bottom', (pane.pgBase - gap) + 'px', 'important');
+    /* what is still scrollable below the current position */
+    var reach = drawer.scrollHeight - drawer.clientHeight - drawer.scrollTop;
 
-    var btn = drawer.querySelector('button[name="checkout"]');
-    if (btn){
-      var r = btn.getBoundingClientRect();
-      if (r.bottom > vh + 1 || r.top < 0) pane.style.removeProperty('bottom');
+    if (over > 1 && reach < over - 1){
+      pane.pgLift = lifted + Math.ceil(over);
+      pane.style.setProperty('bottom', (pane.pgBase + pane.pgLift) + 'px', 'important');
+      return;
+    }
+
+    /* nothing wrong: give back any lift that is no longer needed, one step at a
+       time so a cart that grows and shrinks does not snap */
+    if (lifted > 0 && over < -1){
+      pane.pgLift = Math.max(0, lifted - Math.min(lifted, Math.floor(-over)));
+      if (pane.pgLift === 0) pane.style.removeProperty('bottom');
+      else pane.style.setProperty('bottom', (pane.pgBase + pane.pgLift) + 'px', 'important');
     }
   }
 

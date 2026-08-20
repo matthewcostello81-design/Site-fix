@@ -1,3 +1,95 @@
+# Cut-off CHECKOUT, white cookie copy, bigger trust icons, reviews 2-3 across
+
+All in draft theme `163067101412` on `www.thepocketera.com`. The live theme is
+untouched — publishing is blocked through the API and has to be done by hand in
+Shopify admin.
+
+## 1. CHECKOUT was being cut off — a regression from the last pass
+
+Removing the 400px skirt (previous entry) also removed the thing that was
+accidentally holding this up.
+
+**What was wrong.** `async-panels.css` sticks the pane at `bottom:-10px`, and a
+STUCK sticky box is not confined to its containing block the way the spec reads:
+measured against a drawer scrollport ending at y=700, `-10px` put the pane's
+bottom at **704**, and `seatPane()`'s downward shift (`bottom:-54px`) put it at
+**720**. Overflow clips at the padding box, so up to 20px of pane — the bottom of
+the CHECKOUT button — sat outside the drawer. That only ever worked because the
+400px skirt made the drawer scrollable on *every* cart, so those pixels could be
+scrolled to. No skirt, no scroll, no CHECKOUT.
+
+**The fix.** Two parts, both in `sections/pg-cart-mobile.liquid`:
+
+- `#cart .sticky-in-panel{bottom:0}` seats the pane on the clip edge.
+- `seatPane()` loses its downward shift entirely and keeps only a guarantee: if
+  the button lands below the drawer's visible floor and the drawer cannot scroll
+  that far, the pane is raised by exactly the overshoot. The floor is measured
+  from the DRAWER's scrollport (capped by the visual viewport), not from the
+  viewport — measuring the viewport was the original mistake, since overflow
+  clips at the drawer's padding box.
+
+Measured mid-scroll, four viewport/cart combinations, px past the clip edge:
+
+| | old shift | theme default | shipped |
+|---|---|---|---|
+| pane | +54 | +10 | **0** |
+| CHECKOUT button | +48 | — | **-6** (inside) |
+
+Plus the full 18-case cart suite still green: no blank slab, no scrollable void,
+pane never past the clip edge, CHECKOUT reachable in every case.
+
+## 2. Cookie consent copy in white — `sections/pg-dark.liquid`
+
+The notice is Shopify's own `#shopify-pc__banner` (the theme's `cookie-banner`
+section is disabled in overlay-group), already styled from pg-dark. Its copy was
+`#E4DCF0` on the dialog and `#C9BFD6` on the paragraph — a muted lavender that
+reads as greyed-out on `#120B1A`. Every text node in the banner is `#FFFFFF` now.
+
+The policy link keeps purple only as its underline: a link the same white as the
+sentence around it is invisible as a link, and tinting the word would have put
+the one non-white word in the middle of the copy.
+
+## 3. Trust icons bigger and more detailed — `sections/pg-home.liquid`
+
+44px 1.5-weight outlines in a 46px-padded band left each cell mostly empty. Now
+78px desktop / 92px mobile (where they are one per row), stroke-width 2, drawn
+on a 48-unit grid so real detail survives:
+
+- **van** — cargo body with panel lines, cab with a glazed window, wheels with
+  hubs, speed lines behind it (was a rectangle and two circles)
+- **shield** — inner face so it reads as a crest, heavier tick, two sparks
+- **padlock** — keyhole and shank, a highlight along the shackle, body rivets
+  (was an empty rounded rectangle)
+
+One thing worth knowing: the filled accents use `currentColor`, and pg-dark sets
+`.pgh-trust{color:#C1B4D2}` — so they came out grey against a purple stroke until
+`color:var(--p)` was added to the icon rule.
+
+## 4. Reviews 2-3 to a row — `sections/pg-reviews-text.liquid`
+
+pg-landing had `.pgx-cards{columns:1}` under 900px, so every review ran the full
+page width and the section was one tall column. Now four across on a wide screen
+(unchanged), **three on a tablet, two on a phone**, with the type stepping down on
+the phone so a ~165px card is not a column of two-word fragments.
+
+Measured: 1280px → 4 per row (296px cards), 768px → 3 (231px), 390px → 2 (166px).
+
+The rule lives in `pg-reviews-text` rather than `pg-landing` deliberately: that
+file is already the reviews' override layer, already global, and 3.8KB against
+pg-landing's 40KB. Id-scoped selectors mean specificity, not load order, decides.
+
+## Applied to
+Shopify draft theme `163067101412`, via Admin API `themeFilesUpsert`; all five
+files verified byte-for-byte against local by MD5 after upload.
+
+Files changed:
+- sections/pg-cart-mobile.liquid
+- sections/pg-dark.liquid
+- sections/pg-home.liquid
+- sections/pg-reviews-text.liquid
+
+---
+
 # Orb volume tiers + the blank slab under the cart's subtotal pane
 
 Shop `www.thepocketera.com` (Pocket Era). Both changes are in a NEW DRAFT theme

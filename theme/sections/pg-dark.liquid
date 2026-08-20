@@ -1,0 +1,386 @@
+{%- comment -%}
+  PG Dark: sitewide black and purple skin. Loads from footer-group AFTER pg-theme-css
+  so it wins ties. Restrained by design: near black surfaces, one purple accent used
+  only for CTA, active state, price and links. Remove pg_dark from footer-group order
+  to revert everything in a single edit.
+{%- endcomment -%}
+<style>
+:root{
+  --pgd-bg:#0B0710; --pgd-bg2:#140C1E;
+  --pgd-surf:#16101F; --pgd-surf2:#1C1428; --pgd-sink:#0F0A16;
+  --pgd-line:rgba(255,255,255,.09); --pgd-lineP:rgba(168,120,214,.24);
+  --pgd-text:#F1EDF7; --pgd-mute:#A296B4;
+  --pgd-p:#8B44BE; --pgd-plt:#C79BEA; --pgd-pdk:#4A1C66;
+}
+
+/* ---------- canvas ---------- */
+html,body,#content,main,
+body.template-cart,body.template-cart #content,body.template-cart main{
+  background:linear-gradient(180deg,#0B0710 0%,#140C1E 52%,#0B0710 100%) !important;
+  background-attachment:fixed !important;
+  color:#F1EDF7 !important;
+}
+#root{background:transparent !important;background-color:transparent !important}
+#pgh,#pgx,#pgc,.pgm{background:transparent !important}
+
+/* ---------- type ---------- */
+#content,#pgh,#pgx,#pgc,.pgm,.pgu-yml{color:#F1EDF7}
+#content h1,#content h2,#content h3,#content h4,#content h5,
+#pgx h1,#pgx h2,#pgx h3,#pgh h2,#pgh h3,#pgc h1,#pgc h2{color:#F5F1FA !important}
+#pgh p,#pgx p,#pgc p,#pgh li,#pgx li{color:#C1B4D2}
+#content .page-title,#content h1.title,body.template-page #content h1{color:#F1EDF7 !important}
+
+/* ---------- header, nav, logo ---------- */
+#pgx .pgx-head,.pgc-head,.pgf-head,.pgf-nav{
+  background:rgba(11,7,16,.90) !important;
+  border-bottom:1px solid rgba(168,120,214,.16) !important;
+}
+.pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{color:#E4D9F0 !important}
+.pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#C79BEA !important}
+#pgh .pgh-trust{background:rgba(255,255,255,.04) !important;border-color:rgba(168,120,214,.18) !important;color:#C1B4D2 !important}
+/* the dark-mode logo asset is neon line art on a solid black square;
+   screen blending drops the black box, no color filtering needed. */
+.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{
+  mix-blend-mode:screen !important;
+  filter:none !important;
+}
+.pgh-cart-n{background:#C79BEA !important;color:#1A0B28 !important;border-color:#8B44BE !important}
+/* header layout: search pinned to the left edge, nav links centered under
+   the logo. Absolute positioning takes the search out of the flow so the
+   nav flexbox centers on the page regardless of where the widget lands. */
+@media(min-width:901px){
+  html body .pgh-head,html body .pgx-head,html body .pgc-head{position:relative !important}
+  html body .pgh-head .pg-search,html body .pgx-head .pg-search,html body .pgc-head .pg-search{
+    position:absolute !important;left:28px !important;top:auto !important;bottom:10px !important;
+    transform:none !important;z-index:6 !important;margin:0 !important;
+  }
+  html body .pgh-nav,html body .pgx-nav,html body .pgc-nav{
+    display:flex !important;justify-content:center !important;width:100% !important;
+  }
+}
+/* person and bag glyphs: light strokes so they read on the black header */
+.pgh-ic svg,.pgx-ic svg,.pgc-ic svg{stroke:#EFE8F7 !important}
+.pgh-ic a:hover svg,.pgx-ic a:hover svg,.pgc-ic a:hover svg{stroke:#C79BEA !important}
+
+/* ---------- announcement ---------- */
+.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{
+  background:linear-gradient(90deg,#26103A 0%,#4A1C66 50%,#26103A 100%) !important;
+  color:#EADCF7 !important;
+  border-bottom:1px solid rgba(168,120,214,.18) !important;
+}
+
+/* ---------- PDP surfaces ---------- */
+#pgx .pgx-tile{background:#16101F !important;border-color:rgba(255,255,255,.10) !important;color:#F1EDF7 !important}
+#pgx .pgx-tile.pgx-sel{
+  background:#1C1428 !important;border-color:#8B44BE !important;
+  box-shadow:0 0 0 3px rgba(139,68,190,.18),0 12px 30px -20px rgba(139,68,190,.55) !important;
+}
+#pgx .pgx-info{
+  background:linear-gradient(180deg,#16101F,#110B19) !important;
+  border-color:rgba(168,120,214,.24) !important;
+  box-shadow:0 0 0 1px rgba(168,120,214,.10),0 18px 44px -30px rgba(0,0,0,.85) !important;
+}
+/* info row labels and values both need lifting off the black */
+#pgx .pgx-info,#pgx .pgx-info div,#pgx .pgx-info p,#pgx .pgx-info span,#pgx .pgx-info small{color:#D3C9E4 !important}
+#pgx .pgx-info b,#pgx .pgx-info strong{color:#F1EDF7 !important}
+#pgx .pgx-info-ic{background:rgba(139,68,190,.18) !important;box-shadow:0 0 14px rgba(139,68,190,.28) !important}
+#pgx .pgx-guar{background:#16101F !important;color:#DFD6EC !important;border-color:rgba(168,120,214,.30) !important}
+#pgx .pgx-card,#pgx .pgx-quote{background:#16101F !important;border-color:rgba(255,255,255,.09) !important}
+#pgx .pgx-quote p,#pgx .pgx-quote span,#pgx .pgx-quote div{color:#D6CCE6 !important}
+#pgx .pgx-quote strong,#pgx .pgx-quote b{color:#F1EDF7 !important}
+#pgx .pgx-thumbs button{border-color:rgba(255,255,255,.12) !important;background:#16101F !important}
+#pgh .pgh-acc details,#pgx .pgx-acc details{
+  background:rgba(255,255,255,.035) !important;
+  border-color:rgba(168,120,214,.24) !important;
+  color:#E4DCF0 !important;
+}
+#pgh .pgh-acc summary,#pgx .pgx-acc summary{color:#F1EDF7 !important}
+
+/* storage select on dark.
+   NOTE: background-image is deliberately NOT set here. nc-pgx-style already paints
+   the chevron; overriding only the image here produced a tiled artifact. */
+html body .pgx-tile-opts .pgx-opt select,
+html body .pgx-opt.has-select select,
+html body .pgx-tile .pgx-opt select{
+  background-color:#0F0A16 !important;
+  background-repeat:no-repeat !important;
+  background-position:right 10px center !important;
+  background-size:11px 7px !important;
+  color:#EFE8F7 !important;
+  border-color:#8B44BE !important;
+  box-shadow:0 0 0 3px rgba(139,68,190,.16),0 2px 9px rgba(0,0,0,.55) !important;
+}
+html body .pgx-tile-opts .pgx-opt select option,
+html body .pgx-opt.has-select select option{background:#16101F !important;color:#EFE8F7 !important}
+
+/* ---------- home cards ---------- */
+#pgh .pgh-card{background:#16101F !important;border-color:rgba(255,255,255,.08) !important}
+#pgh .pgh-card-t{color:#F1EDF7 !important}
+#pgh .pgh-card-p{color:#C1B4D2 !important}
+#pgh .pgh-atc{background:#1C1428 !important;color:#EFE8F7 !important;border-color:rgba(255,255,255,.16) !important;box-shadow:0 6px 16px -8px rgba(0,0,0,.7) !important}
+#pgh .pgh-atc:hover{background:#8B44BE !important;background-color:#8B44BE !important;border-color:#8B44BE !important;color:#fff !important}
+#pgh .pgh-split-l{background:#16101F !important;color:#F1EDF7 !important}
+/* three best-seller cards on one row on desktop (the 50% card width lives in
+   pg-theme-css without !important; stamped here so it wins regardless of
+   load order). Tablet/mobile keep their 2-up / stacked layouts. */
+@media(min-width:901px){
+  html body #pgh .pgh-grid .pgh-card{width:calc((100% - 44px)/3) !important;max-width:calc((100% - 44px)/3) !important}
+}
+
+/* ---------- search ---------- */
+.pg-search{background:rgba(255,255,255,.05) !important;border-color:rgba(168,120,214,.26) !important}
+.pg-search:focus-within{background:rgba(255,255,255,.09) !important;border-color:#8B44BE !important;box-shadow:0 0 0 3px rgba(139,68,190,.16) !important}
+.pg-search input{color:#EFE8F7 !important}
+.pg-search input::placeholder{color:#9384A8 !important}
+.pg-search svg{stroke:#9384A8 !important}
+.pg-search-dd{background:#16101F !important;border-color:rgba(168,120,214,.22) !important;box-shadow:0 24px 54px -24px rgba(0,0,0,.9) !important}
+.pg-search-dd a{color:#EFE8F7 !important}
+.pg-search-dd a:hover{background:rgba(139,68,190,.16) !important}
+.pg-search-dd b{color:#C79BEA !important}
+.pg-search-none{color:#9384A8 !important}
+
+/* ---------- you may also like ---------- */
+.pgu-yml h3{color:#F1EDF7 !important}
+.pgu-yml-eye{color:#C79BEA !important}
+.pgu-yml-grid a{background:#16101F !important;box-shadow:0 14px 34px -24px rgba(0,0,0,.95) !important}
+.pgu-yml-grid .t{color:#EFE8F7 !important}
+.pgu-yml-grid .p{color:#C79BEA !important}
+.pgu-yml-grid .p s{color:#8A7C9C !important}
+.pgu-card{background:#16101F !important;box-shadow:0 16px 38px -28px rgba(0,0,0,.9) !important}
+
+/* ---------- sticky buy bar ---------- */
+#pg-sticky{background:rgba(11,7,16,.96) !important;border-top-color:rgba(168,120,214,.22) !important}
+.pgst-t{color:#F1EDF7 !important}
+.pgst-p{color:#C79BEA !important}
+.pgst-p s{color:#8A7C9C !important}
+
+/* ---------- cart: North Cove layout, light panels floating on the dark canvas ---------- */
+.pgm-top{background:rgba(11,7,16,.94) !important;border-bottom:1px solid rgba(168,120,214,.25) !important;box-shadow:0 12px 26px -18px rgba(0,0,0,.85) !important}
+.pgm-top-t b{color:#F1EDF7 !important}
+.pgm-top-t small{color:#A99BC0 !important}
+.pgm-stars{color:#C9BFD6 !important}
+.pgm-stars i{color:#F5A623 !important}
+.pgm-bt-h{color:#EFE8F7 !important}
+.pgm-bt-h svg{stroke:#C79BEA !important}
+.pgm-card,.pgm-sp,.pgm-rec{background:#fff !important;border-color:rgba(122,47,162,.28) !important;box-shadow:0 18px 40px -26px rgba(0,0,0,.9) !important}
+.pgm-sum{background:#FBF7FE !important;border-color:rgba(122,47,162,.3) !important;box-shadow:0 18px 44px -26px rgba(0,0,0,.9) !important}
+.pgm-empty b,.pgm-empty div{color:#EFE8F7 !important}
+
+/* ---------- footer ---------- */
+#shopify-section-footer#shopify-section-footer,
+.shopify-section[id$='__footer'].shopify-section[id$='__footer']{
+  background:#0E0914 !important;background-color:#0E0914 !important;
+  border-top:1px solid rgba(168,120,214,.20) !important;
+}
+#shopify-section-footer#shopify-section-footer a{color:#C6B6DA !important}
+#shopify-section-footer#shopify-section-footer a:hover{color:#EFE4FB !important}
+#shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#C6B6DA !important}
+#shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#EFE4FB !important}
+#shopify-section-footer#shopify-section-footer input[type='email'],
+#shopify-section-footer#shopify-section-footer input[type='text']{
+  background:#16101F !important;background-color:#16101F !important;
+  color:#EFE8F7 !important;border-color:rgba(168,120,214,.28) !important;
+}
+#shopify-section-footer#shopify-section-footer button,
+#shopify-section-footer#shopify-section-footer [class*='button']{
+  background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
+  background-color:#8B44BE !important;border-color:transparent !important;color:#fff !important;
+}
+
+/* ---------- footer band cleanup: no light module cards, readable text ----------
+   The base theme's light color scheme paints the newsletter/support blocks as
+   white cards and leaves the Help/Policies links in their dark inline colors.
+   Force every block transparent on the dark band and lift all text/links. */
+html body #shopify-section-footer#shopify-section-footer,
+html body #shopify-section-footer#shopify-section-footer > div,
+html body #shopify-section-footer#shopify-section-footer > nav,
+html body #shopify-section-footer#shopify-section-footer .strong,
+html body #shopify-section-footer#shopify-section-footer .m6cn,
+html body #shopify-section-footer#shopify-section-footer fieldset,
+html body #shopify-section-footer#shopify-section-footer [class*='palette-'],
+html body #shopify-section-footer#shopify-section-footer .module-color-palette{
+  background:transparent !important;background-color:transparent !important;
+  background-image:none !important;box-shadow:none !important;
+}
+html body #shopify-section-footer#shopify-section-footer h1,
+html body #shopify-section-footer#shopify-section-footer h2,
+html body #shopify-section-footer#shopify-section-footer h3,
+html body #shopify-section-footer#shopify-section-footer h4,
+html body #shopify-section-footer#shopify-section-footer h5,
+html body #shopify-section-footer#shopify-section-footer p,
+html body #shopify-section-footer#shopify-section-footer li,
+html body #shopify-section-footer#shopify-section-footer span,
+html body #shopify-section-footer#shopify-section-footer label,
+html body #shopify-section-footer#shopify-section-footer legend,
+html body #shopify-section-footer#shopify-section-footer strong,
+html body #shopify-section-footer#shopify-section-footer div{color:#F1EDF7 !important}
+html body #shopify-section-footer#shopify-section-footer a{color:#C9BFD6 !important}
+html body #shopify-section-footer#shopify-section-footer a:hover{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-h{color:#fff !important;opacity:1 !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#C9BFD6 !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-word{color:#fff !important}
+html body #shopify-section-footer#shopify-section-footer .nc-foot-tag{color:#A296B4 !important}
+html body #shopify-section-footer#shopify-section-footer input[type='email'],
+html body #shopify-section-footer#shopify-section-footer input[type='text'],
+html body #shopify-section-footer#shopify-section-footer input:not([type='hidden']):not([type='checkbox']):not([type='radio']):not([type='submit']){
+  background:#16101F !important;background-color:#16101F !important;
+  color:#EFE8F7 !important;border:1px solid rgba(168,120,214,.28) !important;border-radius:10px !important;
+}
+html body #shopify-section-footer#shopify-section-footer input::placeholder{color:#9384A8 !important}
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer button,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer [type='submit'],
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer .mobile-only{
+  background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;background-color:#8B44BE !important;
+  background-size:100% 100% !important;animation:none !important;
+  color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;
+  box-shadow:0 10px 24px -10px rgba(139,68,190,.6) !important;
+}
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer button:hover,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer [type='submit']:hover{
+  background:linear-gradient(120deg,#7A2FA2,#4A1C66) !important;filter:none !important;
+}
+/* headings + newsletter legend: pure white; defeat gradient text-fill,
+   reveal-fade opacity and any animation the base theme applies */
+html body #shopify-section-footer#shopify-section-footer h1,
+html body #shopify-section-footer#shopify-section-footer h2,
+html body #shopify-section-footer#shopify-section-footer h3,
+html body #shopify-section-footer#shopify-section-footer h4,
+html body #shopify-section-footer#shopify-section-footer h5,
+html body #shopify-section-footer#shopify-section-footer legend,
+html body #shopify-section-footer#shopify-section-footer #newsletter-footer legend{
+  color:#fff !important;
+  -webkit-text-fill-color:#fff !important;
+  opacity:1 !important;filter:none !important;
+  background:none !important;background-image:none !important;
+  animation:none !important;
+}
+
+/* ---------- footer bottom bar: dark, payment icons centered ----------
+   The base theme leaves the copyright + payment strip (div.base-font) on its
+   light scheme and floats the l4pm icon list to the right. Selectors are
+   written twice (sibling-of-#shopify-section-footer and descendant of the
+   .shopify-section-footer wrapper) with boosted specificity so they beat both
+   the base theme scheme rules and the nc-footer/pg-footer overlay layers,
+   whichever happens to load last. */
+html body #shopify-section-footer ~ .base-font.base-font,
+html body .shopify-section-footer .base-font.base-font{
+  background:#0E0914 !important;background-color:#0E0914 !important;
+  border-top:1px solid rgba(168,120,214,.20) !important;
+  display:flex !important;flex-direction:column !important;align-items:center !important;
+  gap:12px !important;text-align:center !important;
+  padding:22px 16px 26px !important;
+}
+html body #shopify-section-footer ~ .base-font.base-font > *,
+html body .shopify-section-footer .base-font.base-font > *{
+  float:none !important;margin-left:auto;margin-right:auto;max-width:1280px;
+}
+html body #shopify-section-footer ~ .base-font.base-font p,
+html body #shopify-section-footer ~ .base-font.base-font span,
+html body .shopify-section-footer .base-font.base-font p,
+html body .shopify-section-footer .base-font.base-font span{
+  color:#A296B4 !important;
+}
+html body #shopify-section-footer ~ .base-font.base-font a,
+html body .shopify-section-footer .base-font.base-font a{color:#C6B6DA !important}
+html body #shopify-section-footer ~ .base-font.base-font a:hover,
+html body .shopify-section-footer .base-font.base-font a:hover{color:#C79BEA !important}
+/* payment icons: one centered row; soft lavender chips instead of stark white
+   so the brand marks stay legible but the strip sits inside the dark skin */
+html body #shopify-section-footer ~ .base-font.base-font .l4pm,
+html body .shopify-section-footer .base-font.base-font .l4pm{
+  display:flex !important;flex-wrap:wrap !important;justify-content:center !important;
+  align-items:center !important;gap:8px !important;
+  width:100% !important;margin:2px auto 0 !important;padding:0 !important;
+  float:none !important;list-style:none !important;
+}
+html body #shopify-section-footer ~ .base-font.base-font .l4pm li,
+html body .shopify-section-footer .base-font.base-font .l4pm li{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  background:#EDE2F8 !important;background-color:#EDE2F8 !important;
+  border:1px solid rgba(168,120,214,.35) !important;border-radius:8px !important;
+  padding:4px 7px !important;margin:0 !important;
+  box-shadow:0 6px 14px -8px rgba(0,0,0,.6) !important;
+}
+html body #shopify-section-footer ~ .base-font.base-font .l4pm li svg,
+html body .shopify-section-footer .base-font.base-font .l4pm li svg{display:block}
+
+/* ---------- "Have any questions?" contact card: dark surface, purple CTA ----------
+   nc-contactcard ships the North Cove cream card + orange button; reskin it to
+   the PocketEra dark theme. The ncCcGlow keyframes it defines are reused for
+   the animated gradient sweep on the button. */
+html body .nc-contactcard .nc-cc-in{
+  background:linear-gradient(150deg,#1C1428 0%,#16101F 60%,#140C1E 100%) !important;
+  border:1px solid rgba(168,120,214,.30) !important;
+  box-shadow:0 0 0 1px rgba(168,120,214,.08),0 0 36px -10px rgba(139,68,190,.35),0 24px 54px -32px rgba(0,0,0,.9) !important;
+}
+html body .nc-contactcard .nc-cc-txt h2{color:#F5F1FA !important}
+html body .nc-contactcard .nc-cc-txt p{color:#C1B4D2 !important}
+html body .nc-contactcard .nc-cc-txt p b{color:#E9D5F7 !important}
+html body .nc-contactcard .nc-cc-btn{
+  background:linear-gradient(120deg,#B478E0,#9B4BC4,#7A2FA2,#9B4BC4,#5E2380) !important;
+  background-size:220% 220% !important;
+  animation:ncCcGlow 6s ease infinite !important;
+  border-radius:999px !important;
+  color:#fff !important;
+  box-shadow:0 14px 30px -12px rgba(139,68,190,.65) !important;
+}
+html body .nc-contactcard .nc-cc-btn:hover{filter:brightness(1.08)}
+
+/* ---------- side stars: keep, but stop them twinkling ---------- */
+.pgf-stars i{animation:none !important;opacity:.13 !important;filter:none !important;background:#8B6BB0 !important}
+
+/* ---------- cookie banner ----------
+   The consent notice is Shopify's own (#shopify-pc__banner) -- the theme's
+   cookie-banner section is disabled in overlay-group -- so it is styled from
+   here rather than there.
+
+   THE COPY IS WHITE. It was #E4DCF0 on the dialog and #C9BFD6 on the paragraph,
+   a muted lavender that reads as greyed-out against #120B1A; on a consent
+   notice that is the wrong signal, and it was asked for in white. Every text
+   node in the banner is now #FFFFFF, headings and body alike.
+
+   The policy link keeps its purple only as an underline, not as its colour: a
+   link the same white as the sentence around it is invisible as a link, and
+   tinting the word would have put the one non-white word in the middle of the
+   copy. Underlined white keeps both. */
+#shopify-pc__banner,#shopify-pc__banner .shopify-pc__banner__dialog{
+  background:#120B1A !important;background-image:none !important;
+  color:#FFFFFF !important;border-top-color:rgba(168,120,214,.25) !important;
+}
+#shopify-pc__banner,
+#shopify-pc__banner p,#shopify-pc__banner span,#shopify-pc__banner div,
+#shopify-pc__banner h1,#shopify-pc__banner h2,#shopify-pc__banner h3,
+#shopify-pc__banner .shopify-pc__banner__body,
+#shopify-pc__banner .shopify-pc__banner__body *{color:#FFFFFF !important}
+#shopify-pc__banner a{
+  color:#FFFFFF !important;
+  text-decoration:underline !important;
+  text-decoration-color:#C79BEA !important;
+  text-underline-offset:2px !important;
+}
+#shopify-pc__banner button[id*='decline'],#shopify-pc__banner .shopify-pc__banner__btn-decline,
+#shopify-pc__banner button[id*='manage-prefs']{
+  background:transparent !important;color:#FFFFFF !important;border-color:rgba(168,120,214,.55) !important;
+}
+
+/* ---------- contact form ---------- */
+#content form[action*='contact']{background:#16101F !important;border-color:rgba(168,120,214,.26) !important;box-shadow:0 18px 44px -30px rgba(0,0,0,.9) !important}
+#content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+#content form[action*='contact'] textarea{
+  background:#0F0A16 !important;border-color:rgba(168,120,214,.24) !important;color:#EFE8F7 !important;
+}
+#content form[action*='contact'] label{color:#C6B6DA !important}
+
+/* ---------- misc ---------- */
+::selection{background:#8B44BE;color:#fff}
+hr{border-color:rgba(255,255,255,.10) !important}
+
+@media(max-width:760px){
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#26103A,#4A1C66) !important}
+}
+</style>
+
+{% schema %}
+{"name": "PG Dark", "settings": []}
+{% endschema %}
