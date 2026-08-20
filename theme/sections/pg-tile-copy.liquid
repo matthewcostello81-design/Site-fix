@@ -85,18 +85,26 @@
   tiles are ordinary .pgx-lad tiles with one .pg-drop per orb and
   data-pg-mul="1", so pgLadder's existing path posts 6 or 8 units unaided.
 
-  THE CHECKOUT SIDE IS NOT THEME WORK. pgLadder's own note says it: a tile
-  promises a price that only a matching automatic discount can honour. The
-  discounts for these two tiers do not exist yet -- the store currently runs
-  "PokeOrb - Buy 2 Get 1 Free" (repeating) and "Extra 10% off entire order" --
-  so 6 orbs bill at $139.96 before the 10% and 8 orbs at $209.94 before it.
-  Creating discounts is a live-store change, not a draft-theme one, so it is
-  deliberately left to the owner:
+  THE CHECKOUT SIDE. pgLadder's own note says it: a tile promises a price that
+  only a matching automatic discount can honour. Both discounts now exist on
+  the store, created alongside these tiles:
 
       PokeOrb - Buy 4 Get 2 Free ... buy 4 of the orb, get 2 at 100% off
       PokeOrb - Buy 5 Get 3 Free ... buy 5 of the orb, get 3 at 100% off
 
-  Both must exist before this draft is published.
+  One use per order each, combining with product, order and shipping discounts
+  -- the same settings "PokeOrb - Buy 2 Get 1 Free" carries. Shopify applies
+  the best automatic discount for the cart, so the repeating Buy 2 Get 1 Free
+  still wins wherever it is worth more (at 12 orbs it frees four, not two).
+
+  The shopper is therefore charged LESS than the tile shows, exactly the way
+  tier 1 already behaves: 6 orbs bill $139.96 and 8 orbs $174.95, and the
+  standing "Extra 10% off entire order" combines on top of that.
+
+  The one thing to watch: those figures are ABOVE the tiles' $134.20 and
+  $169.95 before the 10% is applied. While that promotion runs the shopper
+  pays under the tile; if it ever ends, the 6-orb tile under-quotes by $5.76
+  and the 8-orb tile by $5.00, and EXTRA needs revisiting.
 {%- endcomment -%}
 <style>
   #pgx .pgx-deal-note{

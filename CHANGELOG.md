@@ -38,13 +38,26 @@ The shown prices are literal (in `EXTRA`, in cents): they are chosen price
 points, not arithmetic on $34.99. The struck-through figure is derived the same
 way tier 1 derives its own — compare-at × orbs in the pack.
 
-**Still needed before this draft goes live:** the matching automatic discounts.
-The store runs "PokeOrb - Buy 2 Get 1 Free" (repeating) and "Extra 10% off
-entire order", so 6 orbs currently bill $139.96 and 8 orbs $209.94 before the
-10%. Create `PokeOrb - Buy 4 Get 2 Free` (buy 4, get 2 at 100% off) and
-`PokeOrb - Buy 5 Get 3 Free` (buy 5, get 3 at 100% off) or the tiles promise a
-price checkout will not honour. Discounts are a live-store change, so they were
-deliberately left out of a draft-theme task.
+### The checkout side
+
+Both matching automatic discounts were created on the store (LIVE, on the
+owner's say-so — discounts are not theme-scoped):
+
+- `PokeOrb - Buy 4 Get 2 Free` — buy 4 of the orb, get 2 at 100% off
+- `PokeOrb - Buy 5 Get 3 Free` — buy 5 of the orb, get 3 at 100% off
+
+One use per order each, combining with product / order / shipping discounts —
+the same settings `PokeOrb - Buy 2 Get 1 Free` already carries. Shopify applies
+whichever automatic discount is worth most, so the repeating Buy 2 Get 1 Free
+still wins where it beats them (12 orbs: four free, not two).
+
+So the shopper pays under the tile, the same way tier 1 already behaves: 6 orbs
+bill $139.96 and 8 orbs $174.95, with the standing "Extra 10% off entire order"
+combining on top (verified: `combinesWith.productDiscounts` is true on both
+sides). **Worth watching** — those pre-10% figures sit *above* the tiles'
+$134.20 and $169.95. While the 10% promotion runs the tiles under-quote in the
+shopper's favour; if it ends, the 6-orb tile under-quotes by $5.76 and the
+8-orb tile by $5.00, and `EXTRA` in `pg-tile-copy.liquid` needs revisiting.
 
 Verified in headless Chromium against a harness reproducing pgLadder's tiles,
 `pgDrop` and its add-to-cart: 37 checks — order, copy, prices, badges, picker
