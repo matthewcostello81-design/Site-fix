@@ -1,3 +1,50 @@
+# The bundle savings now read on the competitor's scale
+
+The badges said SAVE 67% where the competitor's identical bundle said 33%. The
+deal was never different — the **denominator** was.
+
+| | strikes against | Buy 2 Get 1 reads |
+|---|---|---|
+| competitor | 3 × $34.99 = $104.97 | 33% |
+| us, before | 3 × $70.00 compare-at = $210.00 | **67%** |
+
+Compare-at is a $70 MSRP nobody is ever charged, so the badge was measuring the
+bundle against a price that appears nowhere else on the site. The bundles are
+measured against **units × the single price** now — what those orbs cost bought
+one at a time, which is the real alternative a shopper is weighing.
+
+| tile | orbs | price | struck | badge |
+|---|---|---|---|---|
+| Single Item | 1 | $34.99 | $70.00 | *(no badge)* |
+| Buy 2, Get 1 FREE | 3 | $69.98 | $104.97 | SAVE 33% |
+| Buy 4, Get 2 FREE | 6 | $139.96 | $209.94 | SAVE 33% |
+| Buy 5, Get 3 FREE | 8 | $174.95 | $279.92 | BEST DEAL · SAVE 38% |
+
+Struck figures and badges now match the competitor's exactly on three of the
+four rows. Because every orb is the same price, the saving reduces to
+`free / total` — 1/3, 2/6, 3/8 — so the badge is simply the fraction of the
+pack that arrives free. The test asserts that identity rather than the literal
+strings, so the two can't drift.
+
+Tier 0 keeps pgLadder's own `$34.99 / $70.00`: it carries no badge, so there is
+no percentage on it to contradict.
+
+## The remaining 33 / 33 is real, and no code can close it
+
+Buy 4 Get 2 *is* Buy 2 Get 1 — 2 free of 6 is 1 free of 3. With whole free orbs
+the saving can only ever be `free/total`, and nothing 6-orb-sized lands between
+the 3-pack's 33.3% and the 8-pack's 37.5%; the nearest are 5/14 (35.7%) and
+4/11 (36.4%), both far bigger packs.
+
+The competitor's 35% is not a better ratio either. Their 6-pack takes $72.74
+off, which is **2.08 orbs** — two free orbs plus $2.76 of hand-tuning, bought
+purely to make the badge move.
+
+So the three ways out are all pricing decisions: give the 6-pack a third free
+orb, shave ~$2.76 off it with an amount-off discount the way they do, or drop
+the tier — the repeating Buy 2 Get 1 already frees two orbs at six, so it
+delivers that pack unaided.
+
 # Nine cart and product-page fixes
 
 ## The cart upsell was never clipped — it was painted over

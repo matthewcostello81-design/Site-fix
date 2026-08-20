@@ -23,7 +23,7 @@
     - deletes the Trio and Quad tiles (tiers 2 and 3). Neither offer exists any
       more: the only discount on these products is Buy 2 Get 1 Free.
     - rewrites the Duo tile into that offer -- title, badge, chip, the free-unit
-      line, and the price: two units paid against three at MSRP.
+      line, and the price: two units paid against three at the single price.
     - makes it add THREE units.
 
   HOW THE THIRD UNIT IS ADDED. pgLadder's own add-to-cart counts the .pg-drop
@@ -52,10 +52,10 @@
   charges at the orb's $34.99 unit price:
 
       tile                orbs   paid   cart charges   struck    save
-      Single Item            1      1         $34.99    $70.00    50%
-      Buy 2, Get 1 FREE      3      2         $69.98   $210.00    67%
-      Buy 4, Get 2 FREE      6      4        $139.96   $420.00    67%
-      Buy 5, Get 3 FREE      8      5        $174.95   $560.00    69%
+      Single Item            1      1         $34.99    $70.00     --
+      Buy 2, Get 1 FREE      3      2         $69.98   $104.97    33%
+      Buy 4, Get 2 FREE      6      4        $139.96   $209.94    33%
+      Buy 5, Get 3 FREE      8      5        $174.95   $279.92    38%
 
   Single and Buy 2 Get 1 Free are still not touched for price by this file:
   those figures are pgLadder's own arithmetic on the variant price, so they
@@ -78,24 +78,52 @@
   point of EXTRA is that a tier is a chosen offer, not a formula: change the
   free-unit ratio and the price follows from the deal, not from the code. They
   are in cents, and they are the one place to edit them. The struck-through
-  figure IS derived, the same way tier 1 derives its own: compare-at x the
-  number of orbs in the pack.
+  figure IS derived, the same way tier 1 derives its own: the single price x
+  the number of orbs in the pack.
 
   IF THE ORB PRICE MOVES AGAIN, both figures here have to move with it, or the
   tiles go back to disagreeing with the cart: 4 x unit and 5 x unit.
 
+  WHAT THE SAVING IS MEASURED AGAINST, AND WHY IT CHANGED. Every bundle used to
+  strike through compare-at x units -- 3 orbs against $210.00 -- so Buy 2 Get 1
+  read SAVE 67%. That is arithmetically true and it is the wrong number to show:
+  compare-at is a $70 MSRP nobody is ever charged, so the badge measured the
+  bundle against a price that does not exist on the site, and the figure landed
+  nowhere near what a shopper sees quoted anywhere else. The competitor strikes
+  the same bundles against 3 x their single price and reads 33%.
+
+  So the bundles are measured against units x the SINGLE price now: what the
+  same orbs cost bought one at a time, which is the real alternative a shopper
+  is choosing between. Buy 2 Get 1 strikes $104.97 and reads 33%; the 8-pack
+  strikes $279.92 and reads 38%. Because every orb is the same price, the saving
+  reduces to free/total -- 1/3, 2/6, 3/8 -- so the badge is now simply the
+  fraction of the pack that arrives free, which is what the tile is offering.
+
+  Tier 0 is left exactly as pgLadder draws it ($34.99 against the $70 compare-at)
+  because it carries no badge: there is no percentage on it to contradict.
+
   EVERY TILE STATES ITS SAVING, AND BEST DEAL SITS ON THE BIGGEST PACK. Tier 1
-  used to carry "Best Deal!" and no number; it now carries "SAVE 67%" like the
-  rest, and the 8-pack carries "BEST DEAL - SAVE 69%" -- the badge is the only
+  used to carry "Best Deal!" and no number; it now carries "SAVE 33%" like the
+  rest, and the 8-pack carries "BEST DEAL - SAVE 38%" -- the badge is the only
   place a tile can claim to be the best, and dropping the number to make room
   would have left the one rung a shopper is meant to land on as the only one
   not saying what it saves.
 
-  A KNOWN FLAT SPOT: Buy 4 Get 2 and Buy 2 Get 1 are the SAME discount rate --
-  both pay 2 of every 3 -- so both badges honestly read 67%. The 6-pack buys
-  more orbs, not a better rate. Only the 8-pack (5 paid of 8) actually improves
-  on the ladder. Changing that is a pricing decision, not a code one: give the
-  6-pack a different free-unit ratio and the badge follows on its own.
+  A KNOWN FLAT SPOT, AND WHY NO CODE CHANGE CAN CLOSE IT: Buy 4 Get 2 and Buy 2
+  Get 1 are the SAME deal -- 2 free of 6 is 1 free of 3 -- so both badges read
+  33%. The 6-pack buys more orbs, not a better rate.
+
+  With WHOLE free orbs the saving can only ever be free/total, and no small
+  6-orb bundle lands between the 3-pack's 33.3% and the 8-pack's 37.5%: the
+  nearest are 5/14 (35.7%) and 4/11 (36.4%), both far bigger packs. The
+  competitor's 35% is not a better ratio either -- their 6-pack takes $72.74
+  off, which is 2.08 orbs, i.e. two free orbs plus $2.76 of hand-tuning bought
+  purely to make the badge move.
+
+  So the options are all pricing decisions, not code ones: give the 6-pack a
+  third free orb, shave a couple of dollars off it with an amount-off discount
+  the way the competitor does, or drop the tier -- the repeating Buy 2 Get 1
+  already frees two orbs at six, so it delivers that pack unaided.
 
   TIER NUMBERS 4 AND 5, NOT 2 AND 3. ladder() above deletes any tile whose
   data-pg-tier is '2' or '3' -- those are pgLadder's dead Trio and Quad offers.
@@ -240,8 +268,8 @@
      price. If that unit price ever moves, BOTH have to move with it or the
      tiles stop agreeing with the cart -- see the note at the top of the file.
      `units` is how many orbs the tile adds, and how many pickers it draws. The
-     struck-through figure is NOT here: it is compare-at x units, derived at
-     render time so it matches the tile above. */
+     struck-through figure is NOT here: it is the single price x units, derived
+     at render time so it matches the tile above. */
   var EXTRA_ON = HANDLE.indexOf('pokemon-crystal') !== -1;
   var EXTRA = [
     {tier: '4', units: 6, free: 2, pay: 13996, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
@@ -272,7 +300,8 @@
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
-  /* What a tile saves against the same number of orbs at MSRP. One helper so
+  /* What a tile saves against the same number of orbs bought one at a time --
+     NOT against compare-at; see the note at the top of the file. One helper so
      every rung is measured the same way and none of them can drift. */
   function pctOff(pay, full){
     return full > pay ? Math.round((full - pay) / full * 100) : 0;
@@ -359,17 +388,16 @@
     var vs = vdata();
     if (!vs || !vs.length) return;
     var unit = vs[0].price;
-    var cap  = vs[0].cap > unit ? vs[0].cap : unit;
 
     put(tile.querySelector('.pgx-lad-t b'), 'Buy 2, Get 1 FREE');
     put(tile.querySelector('.pgx-lad-chip'), PACK.chip);
     put(tile.querySelector('.pgx-lad-save'), '3rd ' + PACK.noun + ' = FREE!');
     /* BEST DEAL BELONGS TO THE BIGGEST PACK, so this tile states what it saves
        instead, like every other rung. Same arithmetic the new tiles use: what
-       is paid against what the same number of orbs cost at MSRP. */
-    put(tile.querySelector('.pgx-lad-badge'), 'SAVE ' + pctOff(unit * 2, cap * 3) + '%');
+       is paid against what the same number of orbs cost one at a time. */
+    put(tile.querySelector('.pgx-lad-badge'), 'SAVE ' + pctOff(unit * 2, unit * 3) + '%');
     put(tile.querySelector('.pgx-lad-px b'), money(unit * 2));
-    put(tile.querySelector('.pgx-lad-px s'), money(cap * 3));
+    put(tile.querySelector('.pgx-lad-px s'), money(unit * 3));
 
     /* 3. three units, through pgLadder's own add-to-cart */
     var picks = tile.querySelector('.pgx-lad-picks');
@@ -437,8 +465,8 @@
     return (parts.length ? parts.join(', ') + ' & ' : '') + last + ' ' + noun + ' = FREE!';
   }
 
-  function extraTile(E, cap, opts){
-    var full = cap * E.units;
+  function extraTile(E, unit, opts){
+    var full = unit * E.units;
     var pct = pctOff(E.pay, full);
     /* The biggest pack carries BEST DEAL and its percentage together: the badge
        is the only place a tile can claim to be the best, and dropping the
@@ -494,7 +522,6 @@
     var vs = vdata();
     if (!vs || !vs.length) return;
     var unit = vs[0].price;
-    var cap  = vs[0].cap > unit ? vs[0].cap : unit;
     var opts = loadOpts();
     if (!opts || !opts.length) return;                  /* still loading: next pass */
 
@@ -503,7 +530,7 @@
       var all = document.querySelectorAll('#pgx .pgx-lad');
       var after = all[all.length - 1];
       if (!after || !after.parentNode) return;
-      after.parentNode.insertBefore(extraTile(E, cap, opts), after.nextSibling);
+      after.parentNode.insertBefore(extraTile(E, unit, opts), after.nextSibling);
     });
   }
 
