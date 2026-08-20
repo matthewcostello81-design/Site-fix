@@ -111,6 +111,12 @@
     background-color:#FFFFFF !important;
     background-image:none !important;
   }
+
+  /* a row for a protection line that no longer protects anything -- hidden the
+     instant we decide to drop it, so the shopper is not left looking at it while
+     the cart write and the drawer's own re-render catch up. See the note in the
+     script. Un-set again if the write fails. */
+  #cart .l4ca > li.pg-orphan{display:none !important}
 </style>
 <script>
 (function(){
@@ -118,6 +124,7 @@
 
   var VMAP = null;   /* variant id -> [price, compare_at] in cents */
   var last = '';
+  var dropping = false, dropped = false;   /* see the shipping-protection note */
 
   fetch('/products.json?limit=50').then(function(r){ return r.json(); }).then(function(j){
     VMAP = {};
@@ -261,6 +268,71 @@
     if (!VMAP) return;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
       var items = c.items || [];
+
+      /* SHIPPING PROTECTION MUST NOT OUTLIVE THE ORDER IT PROTECTS.
+         Measured: with the toggle on, removing the last orb left the cart
+         holding the protection line alone -- the drawer showed one row and
+         "Total $2.70". The shopper had emptied their cart and was still being
+         asked for insurance on nothing, and because the cart was not technically
+         empty the drawer never reached its empty state either. That is the
+         "cart won't settle after you clear it" report.
+
+         Insurance on no order is not a thing a shopper can want, so when the
+         last real product goes, this goes with it. The guard matters: this fires
+         a cart write from inside a render that a cart write will re-trigger, so
+         it is latched until the request settles and re-armed only once a real
+         product is present again. Without that it is an infinite loop. */
+      var real = items.filter(function(it){ return (it.handle || '').indexOf('shipping-protection') < 0; });
+      if (real.length) dropped = false;
+      if (items.length && !real.length && !dropping && !dropped){
+        dropping = true;
+        dropped = true;               /* one attempt per emptying, not per pass */
+
+        /* Hide it NOW rather than waiting for the round trip. Measured with the
+           write alone: the cart really did empty (item_count 0, two requests,
+           nothing looping) and the drawer still displayed the protection row and
+           "Total $2.70" afterwards, because re-rendering is the theme's job and
+           it had no reason to think anything had changed. Correct data behind a
+           stale screen is indistinguishable from a bug, so the row goes at the
+           moment of the decision and comes back only if the write fails. */
+        var hidden = [];
+        Array.prototype.forEach.call(document.querySelectorAll('#cart .l4ca > li'), function(li){
+          li.classList.add('pg-orphan');
+          hidden.push(li);
+        });
+        var tot = pane.querySelector('.pg-tot');
+        if (tot) tot.innerHTML = '';
+        last = '';
+
+        var upd = {};
+        items.forEach(function(it){ upd[it.key] = 0; });
+        fetch('/cart/update.js', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({updates: upd})
+        }).then(function(r){
+          if (!r || !r.ok) throw 0;
+          /* ask the drawer to rebuild, twice: once now and once after the
+             request has certainly settled, since the first can land early */
+          function refresh(){
+            if (!window.pgDrawerRefresh) return;
+            try { return Promise.resolve(window.pgDrawerRefresh()); } catch(e2){}
+          }
+          refresh();
+          setTimeout(refresh, 500);
+        }).catch(function(){
+          /* the cart still holds it -- put the row back rather than leaving the
+             shopper with something invisible that they are still being charged */
+          hidden.forEach(function(li){ li.classList.remove('pg-orphan'); });
+          dropped = false;
+        }).then(function(){
+          dropping = false;
+          [250, 900].forEach(function(ms){ setTimeout(render, ms); });
+        });
+        return;
+      }
+
       if (!items.length){
         var old = pane.querySelector('.pg-tot');
         if (old) old.parentNode.removeChild(old);
