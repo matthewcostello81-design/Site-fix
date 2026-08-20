@@ -1,30 +1,20 @@
-# Wall art gallery: one photo per view on desktop
+# Wall art: new gallery video
 
 ## Change
-With the top room shot gone, the photo strip under the video was still laid
-out two-up on desktop, which pg-landing sized for thumbnails sitting beneath a
-big hero. The strip is the gallery now, so two small tiles were too little.
-Desktop shows one photo per view, paged by the arrows pg-landing already draws
-at that breakpoint, matching the crystal orbs page.
+`gallery_video_url` in `templates/product.pg-wallart.json` now points at the
+video uploaded to Files on 20 Aug (`hf_20260820_024658_...mp4`, 1440x1570,
+4.3s), replacing `heroic-wall-art-loop.mp4`. Same HD-1080p rendition tier as
+before.
 
-## How
-`sections/pg-wallart-gallery.liquid` now mirrors `sections/pg-gallery-tweaks.liquid`,
-which does exactly this on `product.pg-crystal.json`:
+## Looping
+No change needed. `sections/pg-landing.liquid` renders the tag as
+`<video ... autoplay muted loop playsinline preload="metadata">`, so `loop` is
+already on it and applies to whatever URL the setting holds.
 
-    @media (min-width:901px){
-      #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
-    }
-
-Under 900px the strip was already one photo per view — `pg-gallery-mobile`
-does that site-wide from `footer-group` — so only desktop needed handling.
-
-## Dropped from the first pass
-The click-to-enlarge hero and the desktop flex ordering that positioned it are
-gone. Both existed to give back a large view of a photo the thumbnails showed
-small; at full width the strip is that large view, so the hero stays hidden.
-Removing the flex column also removes the mobile hazard it carried, since
-`.pgx-vid` has a `flex:0 0 88%` under 900px that a column flex parent would
-have read as a height.
+## Note
+The old clip was 1440x1920 (3:4); the new one is 1440x1570 (~11:12), so the
+video block is shorter on desktop, where it renders at its natural aspect.
+Under 900px it is unaffected, being forced to 1:1 with object-fit:cover.
 
 ---
 
