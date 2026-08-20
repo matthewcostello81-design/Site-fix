@@ -1,3 +1,64 @@
+# The 6-pack reads 35%, and it needed a different kind of discount
+
+`Buy 4 Get 2` and `Buy 2 Get 1` are the same deal — 2 free of 6 is 1 free of 3 —
+so both badges honestly read 33%. Closing that needed a price change, not a code
+change, because a buy-X-get-Y can only ever remove **whole** orbs.
+
+The 6-pack now takes **$72.74 off** — 2.08 orbs — landing on **$137.20**, which
+reads 35%. That is exactly the competitor's price, and taking their figure apart
+is where it came from: their $72.74 is two free orbs plus **$2.76**, spent
+purely to move the badge off 33.
+
+| tile | orbs | price | struck | badge |
+|---|---|---|---|---|
+| Single Item | 1 | $34.99 | $70.00 | — |
+| Buy 2, Get 1 FREE | 3 | $69.98 | $104.97 | SAVE 33% |
+| Buy 4, Get 2 FREE | 6 | **$137.20** | $209.94 | **SAVE 35%** |
+| Buy 5, Get 3 FREE | 8 | $174.95 | $279.92 | BEST DEAL · SAVE 38% |
+
+The 35% band is narrow — $135.42 to $137.51 — so $137.20 is the defensible
+point in it.
+
+## The discount swap
+
+- **Created** `PokeOrb - 6 Pack $137.20` — amount-off, $72.74, minimum quantity
+  6, once per order, scoped to the orb.
+- **Deactivated** `PokeOrb - Buy 4 Get 2 Free`. It was redundant even before
+  this: the repeating Buy 2 Get 1 already frees two orbs at six, so it produced
+  the identical $139.96. Deactivated, not deleted — one switch to reverse.
+
+It was created **scheduled** rather than active so the config could be read back
+before it went live. That check mattered: `appliesOnEachItem` must be `false`,
+because `true` applies $72.74 to *each* unit, every unit clamps to $0.00, and
+**all six orbs go free**. Verified `false` on the created node before activating.
+
+`combinesWith.productDiscounts` is `false` on it. Only one product discount
+applies per cart line on a non-Plus store — same-line stacking needs Plus plus
+`productDiscountsWithTagsOnSameCartLine`, a field that isn't even present in this
+store's schema — so the three orb discounts compete rather than add. Setting it
+false makes that contest explicit instead of relying on it.
+
+## The whole curve, verified
+
+| orbs | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| bills | 34.99 | 69.98 | 69.98 | 104.97 | 139.96 | **137.20** | 172.19 | **174.95** | 209.94 | 244.93 | 279.92 | 279.92 |
+
+All three bundle tiles land exactly. Two things fell out of it:
+
+**Six orbs cost less than five** — $137.20 against $139.96. Half of that was
+already true (the repeating Buy 2 Get 1 made the sixth orb free, so 5 and 6 both
+billed $139.96); the amount-off deepens it by $2.76. Nobody should buy exactly
+five, and the cart upsell already walks them to six.
+
+**The 6-pack discount wins by $2.76 and only at 6, 7 and 8.** From nine up the
+repeating Buy 2 Get 1 frees three orbs ($104.97) and takes over again — correct,
+that's the shopper getting the better deal. But Shopify's "best for the customer"
+tie-break is *observed* behaviour, not documented behaviour, and the margin here
+is thin. If the orb's price ever moves, re-check that $72.74 still beats
+`floor(6/3) × unit`, or the 6-pack silently reverts to $139.96 while the tile
+still promises $137.20.
+
 # The bundle savings now read on the competitor's scale
 
 The badges said SAVE 67% where the competitor's identical bundle said 33%. The
