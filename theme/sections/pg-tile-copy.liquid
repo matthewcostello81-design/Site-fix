@@ -129,6 +129,18 @@
   order" combines on top, so the shopper pays $125.96 and $157.46 -- under the
   tile, never over it, which is the safe direction and the same way the two
   tiles above already behave.
+
+  ------------------------------------------------------------------ BUY BAR
+
+  AND THE LADDER IS REPEATED IN THE STICKY BAR. pg-theme-css's #pg-sticky shows
+  the selected tile's price and an ADD TO CART, with no way to change what is
+  selected -- and it only appears once the real ladder has scrolled off, so on a
+  nine-screen phone page the one control still visible silently sells whatever
+  was picked by default. buybar() below adds a dropdown of every visible tile,
+  and a second one mirroring the selected tile's own option select where it has
+  one (the console's Storage). It lives here because these are the same tiles
+  this file already owns. See the note above buybar() for how it drives the
+  page's own controls rather than duplicating the add path.
 {%- endcomment -%}
 <style>
   /* The note was 12.5px #A99BC0 -- a muted lavender at body weight, on the one
@@ -144,6 +156,48 @@
     text-align:center;
   }
   #pgx .pgx-deal-note b{color:#E4C4FF;font-weight:800}
+
+  /* ---- the sticky buy bar's pack picker ----
+     #pg-sticky is DARK under the pg-dark skin (rgba(11,7,16,.96)), not the
+     white pg-theme-css paints, and pg_tile_copy loads after pg_dark in
+     footer-group -- so the controls are styled for the dark bar. */
+  #pg-sticky .pgs-pick{
+    display:flex;align-items:center;gap:10px;
+    /* WRAPS RATHER THAN CRUSHES. Side by side on a 390px phone the two fields
+       squeezed the storage select to ~45px -- "128GB - 10,000 games" rendered
+       as "12...", and storage is the thing being chosen. The flex-basis values
+       below are wider than half a phone, so a second field drops to its own
+       line there and both stay readable; on the orb, where there is no second
+       field, the pack still takes the whole row exactly as before. */
+    flex-wrap:wrap;
+    max-width:1100px;margin:0 auto 9px;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  #pg-sticky .pgs-pick .pgs-f{display:flex;align-items:center;gap:7px;min-width:0}
+  #pg-sticky .pgs-pick .pgs-f-pack{flex:2 1 240px}
+  #pg-sticky .pgs-pick .pgs-f-opt{flex:1 1 170px}
+  #pg-sticky .pgs-pick .pgs-f > span{
+    flex:none;
+    font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:#C79BEA;
+  }
+  #pg-sticky .pgs-pick select{
+    flex:1 1 auto;min-width:0;width:100%;
+    -webkit-appearance:menulist;appearance:menulist;
+    padding:8px 10px;
+    border:1.5px solid rgba(190,140,235,.55);border-radius:10px;
+    background:#16101F;color:#EFE8F7;
+    font-family:inherit;font-size:13px;font-weight:700;line-height:1.2;
+  }
+  #pg-sticky .pgs-pick select option{background:#16101F;color:#EFE8F7}
+  #pg-sticky .pgs-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
+  @media(max-width:700px){
+    #pg-sticky .pgs-pick{gap:8px;margin-bottom:8px}
+    /* the bundle option text names itself ("Buy 5, Get 3 FREE - $174.95");
+       the option field's label does not, so only the pack label goes */
+    #pg-sticky .pgs-pick .pgs-f-pack > span{display:none}
+    #pg-sticky .pgs-pick select{font-size:12.5px;padding:9px 8px}
+  }
 </style>
 <script>
 (function(){
@@ -455,6 +509,7 @@
         t.setAttribute('aria-checked', on ? 'true' : 'false');
       });
       note();          /* the sentence under the button belongs to the new tile */
+      buybar();        /* and so does the bar's pack dropdown */
     });
   }
 
@@ -480,6 +535,154 @@
     if (p.pgNote !== html){ p.pgNote = html; p.innerHTML = html; }
   }
 
+  /* ---------------- the sticky buy bar's pack picker ----------------
+
+     pg-theme-css builds #pg-sticky as title / price / ADD TO CART. It MIRRORS
+     the selected tile's price but offers no way to change that selection, and
+     the product page is nine screens tall on a phone: by the time the bar
+     appears the ladder is far above it, so the one control still on screen
+     silently sells whichever tile was picked -- in practice the single, because
+     that is what pgLadder selects by default. The bundles were invisible at
+     exactly the point the decision gets made.
+
+     So the bar gets one row above it: a <select> naming every visible tile with
+     its price and its saving, and -- for products whose tile carries native
+     option selects (the console's Storage) -- a second mirroring that one.
+
+     IT DRIVES THE PAGE'S OWN CONTROLS, IT DOES NOT REPLACE THEM. Choosing a
+     pack CLICKS the tile, so pgLadder's per-tile handler and ownSelection()
+     above both run and add-to-cart posts that pack unaided; the option select
+     writes to the page's select and fires a bubbling change, which is what
+     pgLadder's own duo handler listens for. Nothing about the add path is
+     duplicated here, so it cannot drift from it. */
+
+  function esc(t){ return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;'); }
+
+  /* pgLadder hides the server-rendered tiles with an inline display:none when
+     it builds its own, so ask the layout which tiles are real rather than
+     trying to reproduce that rule here. */
+  function visibleTiles(){
+    var out = [];
+    document.querySelectorAll('#pgx .pgx-tile').forEach(function(t){
+      if (t.getClientRects().length) out.push(t);
+    });
+    return out;
+  }
+
+  function tileLabel(t){
+    var name = t.querySelector('.pgx-lad-t b') || t.querySelector('.pgx-tile-name') ||
+               t.querySelector('.pgx-tile-row b') || t.querySelector('b');
+    var px = t.querySelector('.pgx-lad-px b') || t.querySelector('.pgx-tile-price');
+    var badge = t.querySelector('.pgx-lad-badge');
+    var out = name ? name.textContent.replace(/\s+/g, ' ').trim() : 'Option';
+    var amt = px ? (px.textContent.match(/\$[0-9][0-9.,]*/) || [])[0] : '';
+    if (amt) out += ' - ' + amt;
+    /* the saving rides along: it is the whole reason to pick a bigger pack,
+       and the badge is where every tier already states it */
+    if (badge){
+      var b = badge.textContent.replace(/\s+/g, ' ').trim();
+      if (b) out += ' (' + b + ')';
+    }
+    return out;
+  }
+
+  /* The console carries Storage on a select of its own, built by pgLadder's
+     single-tile path and living outside the tile; anything else uses the first
+     select inside the tile that is actually selected. The orb's pickers are
+     .pg-drop widgets, not selects, so they are never matched here -- eight
+     design dropdowns do not belong in a bottom bar anyway. */
+  function optSource(){
+    var st = document.querySelector('#pgx select.pgx-storage');
+    if (st && st.getClientRects().length) return st;
+    var sel = document.querySelector('#pgx .pgx-tile.pgx-sel');
+    if (!sel) return null;
+    var s = sel.querySelector('select');
+    return (s && s.getClientRects().length) ? s : null;
+  }
+
+  var bbRow = null, bbPack = null, bbOpt = null, bbSig = '';
+
+  function buybar(){
+    var bar = document.getElementById('pg-sticky');
+    if (!bar) return;                        /* not a product page yet */
+    var inRow = bar.querySelector('.pgst-in');
+    if (!inRow || !inRow.parentNode) return;
+
+    if (!bbRow || !bbRow.isConnected){
+      bbRow = document.createElement('div');
+      bbRow.className = 'pgs-pick';
+      bbRow.innerHTML =
+        '<label class="pgs-f pgs-f-pack"><span>Bundle</span>' +
+        '<select class="pgs-pack" aria-label="Choose your bundle"></select></label>' +
+        '<label class="pgs-f pgs-f-opt"><span class="pgs-opt-lb">Option</span>' +
+        '<select class="pgs-opt" aria-label="Choose an option"></select></label>';
+      bbPack = bbRow.querySelector('.pgs-pack');
+      bbOpt = bbRow.querySelector('.pgs-opt');
+      bbSig = '';
+
+      bbPack.addEventListener('change', function(){
+        var t = visibleTiles()[parseInt(bbPack.value, 10)];
+        if (t) t.click();                    /* the page's own selection path */
+        buybar();
+      });
+      bbOpt.addEventListener('change', function(){
+        var src = optSource();
+        if (!src || src.value === bbOpt.value) return;
+        src.value = bbOpt.value;
+        try { src.dispatchEvent(new Event('change', {bubbles: true})); }
+        catch(e){
+          var ev = document.createEvent('HTMLEvents');
+          ev.initEvent('change', true, false);
+          src.dispatchEvent(ev);
+        }
+      });
+      inRow.parentNode.insertBefore(bbRow, inRow);
+    }
+
+    /* ---- the packs ---- */
+    var tiles = visibleTiles();
+    var packF = bbRow.querySelector('.pgs-f-pack');
+    if (tiles.length > 1){
+      packF.style.display = '';
+      var sig = tiles.map(tileLabel).join('|');
+      if (sig !== bbSig){
+        bbSig = sig;
+        bbPack.innerHTML = tiles.map(function(t, i){
+          return '<option value="' + i + '">' + esc(tileLabel(t)) + '</option>';
+        }).join('');
+      }
+      var at = 0;
+      for (var i = 0; i < tiles.length; i++){
+        if (tiles[i].classList.contains('pgx-sel')){ at = i; break; }
+      }
+      if (bbPack.value !== String(at)) bbPack.value = String(at);
+    } else {
+      packF.style.display = 'none';          /* one tile: nothing to choose */
+      bbSig = '';
+    }
+
+    /* ---- the selected pack's own options ---- */
+    var src = optSource();
+    var optF = bbRow.querySelector('.pgs-f-opt');
+    if (!src){
+      optF.style.display = 'none';
+      bbOpt.pgSig = '';
+      return;
+    }
+    optF.style.display = '';
+    var osig = Array.prototype.map.call(src.options, function(o){
+      return o.value + ':' + o.textContent;
+    }).join('|');
+    if (bbOpt.pgSig !== osig){
+      bbOpt.pgSig = osig;
+      bbOpt.innerHTML = src.innerHTML;
+    }
+    if (bbOpt.value !== src.value) bbOpt.value = src.value;
+    var lb = bbRow.querySelector('.pgs-opt-lb');
+    var lbt = src.getAttribute('aria-label') || 'Option';
+    if (lb.textContent !== lbt) lb.textContent = lbt;
+  }
+
   function pass(){
     document.querySelectorAll(TILES).forEach(function(tile){
       if (tile.dataset.pgCopy) return;
@@ -488,6 +691,7 @@
     ladder();
     extras();
     note();
+    buybar();
   }
 
   function boot(){

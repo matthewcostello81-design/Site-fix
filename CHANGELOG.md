@@ -1,3 +1,71 @@
+# The sticky buy bar now shows the bundles, and the variants
+
+The bottom buy bar (`#pg-sticky`, built by `pg-theme-css`) showed the selected
+tile's price and an ADD TO CART, with **no way to change what was selected** —
+and it only appears once the real ladder has scrolled off. The orb page is nine
+screens tall on a phone, so by the time the bar shows up the bundles are far
+above it, and the one control still on screen silently sells whichever tile was
+picked by default: the single.
+
+## What was added
+
+One row above the price/button row:
+
+- **Bundle** — a dropdown naming every *visible* tile with its price and its
+  saving: `Buy 5, Get 3 FREE - $174.95 (BEST DEAL · SAVE 69%)`.
+- **Storage / options** — a second dropdown mirroring the selected tile's own
+  option `<select>` where it has one. That is the console's Storage picker; the
+  orb's design pickers are `.pg-drop` widgets, not selects, so they are never
+  matched — eight design dropdowns do not belong in a bottom bar.
+
+## It drives the page's controls, it does not replace them
+
+Choosing a bundle **clicks the tile**, so pgLadder's per-tile handler and
+`ownSelection()` both run and add-to-cart posts that pack unaided. The option
+dropdown writes to the page's select and fires a *bubbling* `change`, which is
+what pgLadder's own duo handler listens for. No part of the add path is
+duplicated here, so it cannot drift from it.
+
+Visible tiles are found by asking the layout (`getClientRects()`), not by
+re-deriving pgLadder's rule — it hides the server-rendered tiles with an inline
+`display:none` when it builds its own.
+
+## Where it lives, and why not a new section
+
+It went into `pg-tile-copy`, which already owns these tiles. The alternatives
+were worse:
+
+- A **new section** needs a slot in `footer-group`, which has exactly one left.
+  Taking it puts the group at the 25-section cap — the documented condition
+  where a group renders only its first entries and silently drops the tail — and
+  API-added sections are dropped again whenever the theme editor saves.
+- `pg-mobile` is registered and already touches `#pg-sticky`, but it is a 26KB
+  grab-bag and the picker is about the bundle tiles, not mobile polish.
+
+## Layout
+
+Side by side on a 390px phone the two fields squeezed the storage select to
+~45px — `128GB — 10,000 games` rendered as `12...`, and storage is the thing
+being chosen. The row wraps instead: flex-basis values wider than half a phone
+drop the second field to its own line there, while the orb (one field) still
+takes the whole row. Measured: 109px bar on the orb at 390px, 153px on the
+console at 390px, 107px at 1280px, no horizontal overflow at any width.
+
+## Verification
+
+- tile ladder suite — **61/61**, including 15 new checks: the row is built and
+  sits above the price row, one option per *visible* tile, labels carry
+  title/price/saving, choosing a pack selects that tile and moves the bar price
+  and the deal note, tapping a tile moves the dropdown back, adding from the bar
+  posts the chosen pack (6 units), and the row survives the bar's own 300ms
+  repaint.
+- new console suite (`run-buybar.mjs`) — **22/22**: both fields on a non-ladder
+  product, label read from the page control, options and value mirrored, the
+  page control follows the bar *and its own change handler runs with a bubbling
+  event*, fallback to the tile's own select when Storage is absent, both duo
+  selects move together, pack field hides when only one tile is left, and the
+  picker is never duplicated.
+
 # Orb back to $34.99, ladder badges, and eight cart/PDP fixes
 
 Reverts the previous entry's repricing and lands the batch of cart and
