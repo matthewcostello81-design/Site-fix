@@ -1,3 +1,63 @@
+# The fixes are on a theme you can actually open
+
+The last three rounds of work all landed in a draft that was not the published
+theme, so none of it reached the shop owner's phone. Rather than ask them to
+copy files by hand, the live theme was duplicated and the three differing files
+applied to the copy.
+
+    themeDuplicate(id: 163087941860)  ->  163098394852
+                                          "FRAME UPSELL + cart fixes (Claude)"
+                                          UNPUBLISHED
+
+Duplication is asynchronous and this theme is large (nc-cro alone is 260KB); it
+reported `processing: true` for about nine minutes before its files were
+readable. Writing during that window returns an empty file list, not an error, so
+the copy must be polled to `processing: false` before any upsert.
+
+Verified afterwards by querying both themes side by side. Ten cart sections
+compared; seven byte-identical to live, three carrying the new work:
+
+| file | live | new theme |
+|---|---|---|
+| `pg-unlock.liquid` | `b82f92dc` | **`03a0ed43`** |
+| `pg-chips.liquid` | `01a254fc` | **`fad3651c`** |
+| `pg-drawer.liquid` | `2f72d039` | **`debbcb3f`** |
+| `pg-cart-mobile.liquid` | `398552be` | `398552be` |
+| `pg-cart-fast.liquid` | `a2e3dfa1` | `a2e3dfa1` |
+| `pg-cart-sticky.liquid` | `c37bf4ea` | `c37bf4ea` |
+| `pg-cart-timer.liquid` | `1831cc86` | `1831cc86` |
+| `pg-cart-total.liquid` | `690e0054` | `690e0054` |
+| `nc-cartfix.liquid` | `de66ec4b` | `de66ec4b` |
+| `overlay-group.json` | `cc69e98c` | `cc69e98c` |
+
+`themeFilesCopy` cannot do this: its `ThemeFilesCopyFileInput` takes only
+`srcFilename` and `dstFilename`, with no source theme, so it copies within one
+theme. Cross-theme means `themeFilesUpsert` and transcription, which is why each
+upload is checksum-verified rather than trusted.
+
+## What the flicker hunt turned up beyond pgShift
+
+Four lenses ran against the exact live bytes. `pgShift` was confirmed as the one
+that matters and rated **obvious**: 60 main-thread repaints per second across a
+57x531px band, on a cart nobody is touching. That is fixed.
+
+The rest, none of them fixed here:
+
+- **Ten `filter: brightness` animations** on the sparkles flanking the drawer
+  wordmark, 3.4s each, running the whole time the drawer is open, promoting
+  eleven compositing layers. `filter` forces paint. These are deliberate
+  branding and they do already respect `prefers-reduced-motion`, so they are
+  left alone pending a decision - but a shopper saying "flickering" could
+  reasonably mean twinkling stars.
+- **28.7 no-op attribute writes per second** into a steady cart, every one
+  carrying a value identical to the one already there, three of them re-rastering
+  a compositing layer. Mostly `lightenBottom` in `pg-cart-total`.
+- **Three animations that run forever and paint nothing**: `.nc-dship`'s pgShift
+  (a later background shorthand pins its position), `.pg-bar-fill`'s (the whole
+  bar is `display:none` via pg-no-promo), and `#pg-cartfab`'s 72px-blur glow,
+  which animates the entire time the drawer is open and the bar is invisible
+  behind it.
+
 # Five things were repainting every frame, on a cart nobody was touching
 
 The flickering is real and it is not a race, a re-render or a layout fight — all
