@@ -192,27 +192,62 @@
   #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
   #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
 
-  /* AN OPEN CHOOSER ON A SHORT SCREEN.
-     The panel now opens on arrival rather than waiting for a tap, which is the
-     point -- the offer IS the choosing, and hiding it behind a tap hid it. But
-     it is also the tallest thing the pinned pane ever holds, and the pane is
-     bottom-anchored: every pixel it takes is a pixel of cart the shopper cannot
-     see. Measured with the panel open: 324px, which is 38% of a 390x844 phone,
-     49% of an iPhone SE and 51% of a 360x640 -- over half the screen on the
-     smallest common phone, for a pane that is supposed to sit under the cart.
+  /* AN OPEN CHOOSER IS COMPACT EVERYWHERE, NOT JUST ON A SHORT SCREEN.
+     The panel opens on arrival rather than waiting for a tap, which is the point
+     -- the offer IS the choosing, and hiding it behind a tap hid it. But it is
+     also the tallest thing the pinned pane ever holds, and the pane is
+     bottom-anchored, so every pixel it takes is a pixel of cart the shopper
+     cannot see. On a real iPhone it filled better than a third of the screen and
+     pushed the one cart line the shopper had into a clipped strip at the top.
 
-     Trimmed here on height, not width, because height is what is scarce. The
-     subtitle goes first: with the panel open it is the one line that says
-     nothing the shopper cannot already see -- each slot is labelled with its
-     own price or FREE, and the confirm button repeats the count and the free
-     units. 324px -> 293px, which brings 360x640 back under half. */
+     This was first written behind @media (max-height:700px), on the theory that
+     only small phones were short of room. That was wrong: a 390x844 phone is not
+     short of room in the abstract and the panel was still too big on it. Height
+     in the pinned pane is scarce at EVERY screen size, because the pane competes
+     with the cart rather than with the page. So the compaction is unconditional
+     inside .sticky-in-panel, and the short-screen block below tightens it
+     further where the squeeze is real.
+
+     What goes, in order of how little it costs:
+       - the subtitle, which with the panel open is the one line saying nothing
+         the shopper cannot already see: each slot is labelled with its own price
+         or FREE, and the confirm button repeats the count and the free units
+       - the select boxes' padding, which was sized for a standalone form
+       - the confirm button's height, which came from padding rather than a
+         min-height and so had no floor to sit on
+     What stays: every tap target at or above 34px, the thumbnail, and the
+     headline naming the bundle. */
+  #cart .sticky-in-panel .pg-unlock.is-open{padding:7px 10px;gap:6px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t small{display:none}
+  /* THE HEADLINE SITS BESIDE THE THUMBNAIL, NOT UNDER IT.
+     `.pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}` gives the copy a full row
+     of its own, which is right on the desktop drawer where the panel has room to
+     breathe. In the pinned pane it cost an entire line for nothing: the
+     thumbnail sat alone on one row with 250px of empty space beside it, and the
+     headline went underneath. Putting them back on one line is 25px of cart
+     handed back at every screen size, for no loss of information. */
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t{flex:1 1 auto;min-width:0}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t b{
+    font-size:12.5px;line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #cart .sticky-in-panel .pg-unlock.is-open img{width:28px;height:28px;border-radius:7px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:5px;margin-top:0}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 3px;gap:6px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r span{width:42px;font-size:9.5px;letter-spacing:.02em}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{
+    padding:5px 8px;font-size:12px;line-height:1.15;border-radius:8px;min-height:32px;
+  }
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{
+    min-height:38px;padding:6px 14px !important;font-size:12.5px;margin-top:2px;
+  }
+  /* and tighter again where the screen really is short */
   @media (max-height:700px){
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t small{display:none}
-    #cart .sticky-in-panel .pg-unlock.is-open img{width:36px;height:36px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:6px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 4px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{padding:7px 8px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:40px;padding:8px 14px !important}
+    #cart .sticky-in-panel .pg-unlock.is-open{padding:6px 9px}
+    #cart .sticky-in-panel .pg-unlock.is-open img{width:26px;height:26px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 3px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{min-height:32px;padding:5px 8px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:36px}
   }
 
   /* ---------------- the design chooser ----------------

@@ -1,3 +1,58 @@
+# The add-on was still eating a third of the screen
+
+A photo of the real cart settled it: the upsell card ran from just under the one
+visible cart line all the way down to Shipping Protection, and the line item
+above it was clipped mid-row. Measured at 390x844 it was **324px, 38% of the
+phone**.
+
+The compaction written last round was gated behind `@media (max-height:700px)`,
+on the theory that only small phones were short of room. That was wrong, and the
+photo is the proof: a 390x844 iPhone is not short of room in the abstract, and
+the panel was still too big on it. Height in the pinned pane is scarce at *every*
+screen size, because the pane competes with the cart, not with the page. The
+compaction is now unconditional inside `.sticky-in-panel`, with the short-screen
+block tightening it further where the squeeze is real.
+
+The largest single saving was structural rather than cosmetic.
+`.pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}` gives the copy a full row of its
+own — right on the desktop drawer, where the panel has room to breathe. In the
+pinned pane it cost an entire line for nothing: the thumbnail sat alone on one
+row with 250px of empty space beside it and the headline went underneath.
+
+| | before | after |
+|---|---|---|
+| offer row | 247px | **164px** |
+| pinned pane, 390x844 | 324px (38.3%) | **241px (28.6%)** |
+| pinned pane, 375x667 | 286px (42.9%) | 235px (35.2%) |
+| pinned pane, 360x640 | 286px (44.7%) | 235px (36.7%) |
+
+In the isolated screenshot harness, which renders the row alone, it goes 229px ->
+129px — a 44% cut. `test/shot-upsell.mjs` produces the before/after images.
+
+What went: the subtitle (with the panel open it is the one line saying nothing
+the shopper cannot already see — each slot carries its own price or FREE and the
+confirm button repeats the count), the thumbnail's own row, the select boxes'
+form-sized padding, and the confirm button's padding-derived height. What stayed:
+every tap target at or above 32px, the thumbnail, and the headline naming the
+bundle.
+
+## A note on where this is running
+
+The screenshot was taken on the **live** theme, "NEW COPY. ADDING FRAME UPSELL
+FOR WALL ART" — not the draft this repo tracks. The live theme carries most of
+this work, copied across as it shipped, but is one revision behind on two files:
+
+| file | live | draft |
+|---|---|---|
+| `pg-unlock.liquid` | `b82f92dc` | `1b524ce2` |
+| `pg-chips.liquid` | `01a254fc` | `fad3651c` |
+
+That gap is exactly why the photo shows `$20.59` on the line — the blended
+average of six orbs at $123.48 — with no per-orb note, and `PICK 1` rather than
+`$34.99` on the first slot. Both were fixed in the draft last round. The
+connector refuses writes to the live theme, so those two files have to be copied
+across (or the draft published) before any of it is visible to a shopper.
+
 # The cart line now states the deal per orb, and the slots open on arrival
 
 ## Six orbs read as $20.58 each
