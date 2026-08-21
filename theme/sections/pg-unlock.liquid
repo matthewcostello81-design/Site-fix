@@ -741,6 +741,12 @@
              banner also claims the first slot, and the two used to fight over it
              several times a second. Use its anchor so the row is born in the
              position it will keep. */
+          /* Record the home placeUnlock would have recorded had it done the
+             move itself. Without it there is nothing for its restore branch to
+             put back when the viewport widens past 760px -- rotate to landscape,
+             or a desktop resize -- and the row stays pinned in the pane at a
+             width where it belongs above the list. */
+          slot.pgHome = {parent: list.parentNode, next: list};
           var anchor = window.pgPaneAnchor ? window.pgPaneAnchor(pane) : pane.firstChild;
           pane.insertBefore(slot, anchor);
         } else {
@@ -1017,9 +1023,14 @@
      separate jump on top of the one the offer rows were making, and one more
      observer cascade with it. It is now called synchronously from render() (the
      same task that writes the rows) and from the observer, so the drawer
-     reassembles in one step. The interval stays only as a slow backstop for a
-     rebuild that somehow wakes neither. */
-  setInterval(mark, 2000);
+     reassembles in one step. The interval stays as the backstop for a rebuild
+     that somehow wakes neither -- and it stays at 500ms rather than being slowed
+     down, because the write it makes is value-guarded now and therefore free.
+     It is load-bearing: pg-cart-badge carries a byte-identical mark(), but that
+     section is rendered by nothing (it appears in no section group and in no
+     template), so this really is the only thing that re-hides the theme's old
+     logo disc after a drawer rebuild. */
+  setInterval(mark, 500);
   render();
   mark();
 })();

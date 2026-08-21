@@ -1,3 +1,75 @@
+# Three corrections from the adversarial pass
+
+An independent verification round over the same code found three things wrong
+with the fixes above, all in the direction of "the fix does not cover the case
+it was written for". Numbers are from the verifier's own harnesses.
+
+## The settle flag was in the wrong function
+
+The re-arm fix keyed on "this hold has already run", tested inside
+`smoothOpen()` *after* its `.sticky-in-panel` bail. A drawer that opens with its
+pane already built returns at that bail without ever running the hold — so the
+flag is never set, and the second half of the bug (a class write landing while
+the pane momentarily does not exist, blacking out an already-visible drawer)
+came straight back.
+
+The gate belongs on `toggle` being *added*, in the observer, where both
+re-entries during one opening are caught. Also set on the initial call, or a page
+that boots with the drawer already open still pays one extra 1.2s cycle.
+
+The tempting alternative — gate the hold on the cart having rows — is a
+regression, and was measured as one: a shopper arriving from an ad opens an
+*empty* drawer and the item, the upsell and the CHECKOUT pane all land a beat
+later. That is exactly the reshuffle the hold exists to cover, and at the moment
+the drawer opens there are no rows to test for. Gated that way the hold never
+arms in precisely that case.
+
+## The slot needed to record its desktop home
+
+Creating it inside the pane means `placeUnlock()` never performs the move, so it
+never records `pgHome` — and its restore branch has nothing to put back when the
+viewport widens past 760px. Measured: rotate to landscape and the row stays
+pinned in the pane at a width where it belongs above the list. `pg-unlock` now
+records the home `placeUnlock` would have recorded, and `placeUnlock` keeps a
+fallback that seats the slot above the list when no home was recorded at all.
+`test/run-churn.mjs` now drives 390 → 1100 → 390 and asserts the placement at
+each step.
+
+## `mark()`'s backstop should not have been slowed
+
+Slowing the interval to 2000ms made the worst case four times worse for the
+case the synchronous call cannot cover — it sits behind a 120ms debounce, a
+`/cart.js` round trip and a single-flight guard, so on a real network it can miss
+entirely. The write is value-guarded now and therefore free, so the backstop goes
+back to 500ms. It is load-bearing: `pg-cart-badge` carries a byte-identical
+`mark()` but is rendered by nothing — it appears in no section group and no
+template — so `pg-unlock` really is the only thing that re-hides the theme's old
+logo disc after a rebuild.
+
+# The drawer could show a cart that predated the shopper's own add
+
+Not a flicker — worse. `pg-cart-fast` coalesces `pgDrawerRefresh`, and a caller
+that joins an already-issued rebuild gets a snapshot of the cart as it stood when
+that request went out. `done()` cleared `running` with nothing queued, so no
+corrective rebuild ever followed.
+
+Reproduced against the real theme scripts: a shopper who adds from the product
+page and then taps the drawer upsell makes **three cart writes but only two GETs
+go out**, and seven seconds later the drawer still shows the pre-add cart. The
+add looks as though it did not happen.
+
+The floor and the single-flight both stay; the wrapper just learns to notice.
+Cart writes stamp `lastWrite`; the rebuild stamps `snapAt` when its GET is
+issued; if the snapshot predates a write, exactly one redo is queued. A join
+during the 700ms wait costs nothing extra — the request has not gone out, so its
+snapshot will already contain that write. It cannot loop, because the redo's own
+snapshot postdates the write that triggered it. `resolve()` still fires on the
+first landing, so `pg-unlock`'s ADD button cannot hang behind the redo.
+
+This covers only the callers that go through `window.pgDrawerRefresh`;
+`nc-cartfix`'s own `ncReopen()` and `pg-drawer`'s two internal calls rebuild
+outside the wrapper entirely.
+
 # The cart upsell was fighting the countdown banner nine times a second
 
 The add-on rows in the cart "glitching" turned out to be a genuine tug-of-war,

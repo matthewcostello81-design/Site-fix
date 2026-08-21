@@ -1,0 +1,215 @@
+{%- comment -%}
+  PG Cart Fast: stop the drawer re-downloading the storefront, and simplify it
+  on a phone.
+
+  ---------------------------------------------------------------- 1. SPEED
+
+  A. SIX POLLERS, SIX REQUESTS. pg-unlock (900ms), pg-chips (700ms),
+     pg-cart-total, pg-cart-variants, the gift sync and the item counter each
+     fetch /cart.js on their own timer -- roughly eight requests a second for
+     one JSON file. GET /cart.js is memoised for half a second: callers share
+     one round trip, an in-flight request is joined rather than duplicated, and
+     any write to /cart/add|change|update|clear drops the cache before it is
+     sent, so nothing can read a cart that is about to change.
+
+  B. THE FULL-PAGE REFRESH. pgDrawerRefresh rebuilds the drawer by fetching `/`
+     and lifting #cart out of the parsed document -- around 580KB of homepage
+     for a panel of line items -- after every add, quantity change and merge.
+     Calls now coalesce: one at a time, and a second within 700ms joins it.
+
+  Both wrappers are transparent: remove this section and the theme behaves
+  exactly as it did before.
+
+  ---------------------------------------------------------------- 2. MOBILE
+
+  The recommendation rail goes and the total is sized to be found without
+  reading. The checkout button is NOT pinned: position:sticky with bottom:0
+  only holds an element to the viewport while its container is taller than the
+  screen, so on a short cart it sat in the flow and left the container's
+  remaining height blank beneath it -- the white band under CHECKOUT.
+
+  The drawer mark lives in pg-cart-badge, not here.
+{%- endcomment -%}
+<style>
+  @media (max-width: 600px){
+    /* the recommendation rail is the main thing pushing checkout off screen */
+    #cart .nc-recs{display:none !important}
+
+    /* one number the shopper can find without reading */
+    #cart .l4tt li.pg-tt,
+    #cart .sticky-in-panel .l4tt li.pg-tt{
+      font-size:20px !important;
+      font-weight:800 !important;
+      line-height:1.25 !important;
+    }
+
+    /* full width, and no dead band under it */
+    #cart .sticky-in-panel{
+      padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important;
+      margin-bottom:0 !important;
+    }
+    #cart .sticky-in-panel > *:last-child{margin-bottom:0 !important}
+    #cart .sticky-in-panel button[name='checkout'],
+    #cart .sticky-in-panel .button-1,
+    #cart .sticky-in-panel [href*='checkout']{
+      display:block !important;
+      width:100% !important;
+      padding:16px !important;
+      font-size:16px !important;
+      font-weight:800 !important;
+    }
+
+    /* tighter line items, so more of the cart fits above the fold */
+    #cart .l4ca:not(.in-panel) > li{padding-top:10px !important;padding-bottom:10px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartFast) return; window.pgCartFast = 1;
+
+  /* ---------------- share one /cart.js ---------------- */
+
+  var TTL = 500;                /* under the fastest poller's 700ms tick */
+  var cached = null, cachedAt = 0, inflight = null;
+  var lastWrite = 0;            /* when the cart was last MUTATED -- see the
+                                   staleness note on the coalescer below */
+  var orig = window.fetch;
+  if (typeof orig !== 'function') return;
+
+  function urlOf(input){
+    if (typeof input === 'string') return input;
+    if (input && typeof input.url === 'string') return input.url;
+    return '';
+  }
+  function methodOf(input, init){
+    var m = (init && init.method) || (input && input.method) || 'GET';
+    return String(m).toUpperCase();
+  }
+
+  window.fetch = function(input, init){
+    var url = urlOf(input);
+    var method = methodOf(input, init);
+
+    /* a write invalidates the cache before it is even sent, so nothing can
+       read a cart that is about to change */
+    if (/\/cart\/(add|change|update|clear)(\.js)?/.test(url)){
+      cached = null;
+      lastWrite = Date.now();
+      return orig.apply(this, arguments);
+    }
+
+    if (method === 'GET' && /\/cart\.js(\?|$)/.test(url)){
+      if (cached && (Date.now() - cachedAt) < TTL){
+        /* clone every time: a Response body can only be read once, and the
+           stored copy is never read itself */
+        return Promise.resolve(cached.clone());
+      }
+      if (inflight) return inflight.then(function(r){ return r.clone(); });
+
+      inflight = orig.apply(this, arguments).then(function(r){
+        if (r && r.ok){ cached = r.clone(); cachedAt = Date.now(); }
+        inflight = null;
+        return r;
+      }, function(e){
+        inflight = null;
+        throw e;
+      });
+      return inflight.then(function(r){ return r.clone(); });
+    }
+
+    return orig.apply(this, arguments);
+  };
+
+  /* ---------------- one drawer rebuild at a time ---------------- */
+
+  function coalesce(){
+    var real = window.pgDrawerRefresh;
+    if (typeof real !== 'function' || real.pgFast) return;
+
+    /* JOINING IS ONLY SAFE WHILE THE SNAPSHOT IS STILL FRESH.
+       spRefreshDrawer rebuilds the drawer from a GET of the homepage, so what it
+       renders is the cart as it stood WHEN THAT REQUEST WAS ISSUED. Joining an
+       already-issued request therefore hands the second caller a snapshot taken
+       before its own write, and because done() cleared `running` with nothing
+       queued, no corrective rebuild ever followed. Reproduced against the real
+       theme scripts: a shopper who adds from the product page and then taps the
+       drawer upsell makes three cart writes but only two GETs go out, and seven
+       seconds later the drawer still shows the pre-add cart. That is not a
+       flicker -- the shopper's add looks as though it did not happen.
+
+       The 700ms floor and the single-flight both stay; the wrapper just learns
+       to notice. A join during `wait` costs nothing extra, because the request
+       has not gone out yet and its snapshot will already contain that write. A
+       join after it went out queues exactly one redo. It cannot loop: the redo's
+       own snapshot postdates the write that triggered it. And resolve() still
+       fires on the first landing, so a caller waiting on this -- pg-unlock's ADD
+       button -- can never hang behind the redo.
+
+       Marking at send time rather than landing time is deliberately
+       conservative: a write sent before the GET but landing after it is exactly
+       the race being closed.
+
+       This covers only the callers that go through window.pgDrawerRefresh.
+       nc-cartfix's own ncReopen() and pg-drawer's two internal calls rebuild
+       outside the wrapper entirely and are unaffected either way. */
+    var running = null, lastDone = 0, snapAt = 0;
+
+    var wrapped = function(){
+      if (running) return running;                 /* join the one in flight */
+      var wait = Math.max(0, 700 - (Date.now() - lastDone));
+      running = new Promise(function(resolve){
+        setTimeout(function(){
+          snapAt = Date.now();                     /* the moment GET / is issued */
+          var done = function(){
+            lastDone = Date.now();
+            running = null;
+            resolve();
+            if (lastWrite > snapAt) wrapped();     /* snapshot predates a write */
+          };
+          try { Promise.resolve(real()).then(done, done); }
+          catch (e){ done(); }
+        }, wait);
+      });
+      return running;
+    };
+    wrapped.pgFast = 1;
+    window.pgDrawerRefresh = wrapped;
+  }
+
+  coalesce();
+  setInterval(coalesce, 800);
+})();
+</script>
+{%- comment -%}
+  Must come first: it pre-sets pg-no-cart-page's own guard flag so that section
+  bails before binding its click interceptor. footer-group renders this section
+  4th and pg-no-cart-page 23rd, so document order does the rest.
+{%- endcomment -%}
+{% render 'pg-cart-open' %}
+{% render 'pg-cart-smooth' %}
+{%- comment -%}
+  Must come immediately after pg-cart-smooth: it wraps the morphing refresh that
+  file installs, so that a drawer rendered empty (every shopper arriving from an
+  ad) still gets its CHECKOUT button when the first item is added. See the
+  snippet for the full account.
+{%- endcomment -%}
+{% render 'pg-cart-morph-fix' %}
+{%- comment -%}
+  The snippets below are unrelated to the cart. They live here because they need
+  to render on every page and every section group is either at its 25-section cap
+  or is an auto-generated JSON the theme editor rewrites; this file is already
+  registered, already global, and is the one whose contents are mirrored in the
+  repo. Move them to their own sections the moment a slot frees up.
+
+  pg-track-head must stay immediately after pg-track: it overrides that file's
+  header geometry and colour, and wins those ties on source order.
+{%- endcomment -%}
+{% render 'pg-track' %}
+{% render 'pg-track-head' %}
+{% render 'pg-cards' %}
+{% render 'pg-unlock-fix' %}
+{% render 'pg-pagewide' %}
+{% render 'pg-money' %}
+{% schema %}
+{"name": "PG Cart Fast", "settings": []}
+{% endschema %}

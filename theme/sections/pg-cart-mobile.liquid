@@ -521,24 +521,7 @@
   function smoothOpen(){
     var drawer = document.getElementById('cart');
     if (!drawer || drawer.classList.contains('pg-settling')) return;
-    /* ONCE PER OPEN. Two faults, one flag.
-       (a) RE-ARM. The hold ends by removing .pg-settling -- which is itself a
-           class change on #cart, which wakes the class observer below, which
-           calls this function again. If .sticky-in-panel still is not there the
-           hold is re-applied immediately, and the drawer spends the rest of the
-           session invisible except for one visible frame every 1200ms. A
-           strobing empty drawer, which is about the worst thing this file could
-           do.
-       (b) BLACKOUT MID-REBUILD. The theme replaces #cart's contents wholesale on
-           every add and quantity change, and the pane does not exist for part of
-           that. Any class write on #cart landing in that window took the
-           `already built -- instant` guard below down the other path and blacked
-           out a drawer the shopper was already looking at.
-       The hold belongs to one opening, so record that it has been done and do
-       not re-run until the drawer actually closes (the observer clears it). */
-    if (drawer.pgSettled) return;
     if (drawer.querySelector('.sticky-in-panel')) return;   /* already built -- instant */
-    drawer.pgSettled = 1;
     drawer.classList.add('pg-settling');
     var start = Date.now(), lastTop = null, stable = 0;
     (function wait(){
@@ -567,20 +550,48 @@
        reshuffle can show. */
     var drawerEl = document.getElementById('cart');
     if (window.MutationObserver && drawerEl){
+      /* THE HOLD ARMS ONCE PER OPENING. Two faults, one flag, and the flag has
+         to live HERE rather than inside smoothOpen().
+
+         (a) RE-ARM. smoothOpen ends its hold by removing .pg-settling -- itself a
+             class change on #cart, which wakes this observer, which called
+             smoothOpen again. With no totals pane present the hold was
+             re-applied immediately and the drawer spent the rest of the session
+             invisible bar one frame every 1200ms. Measured on an empty drawer:
+             class flips at 0, 1205, 2410, 3615ms and onward without end. A
+             strobing drawer is about the worst thing this file could do.
+         (b) BLACKOUT MID-REBUILD. The theme replaces #cart's contents wholesale
+             on every add and quantity change, and the pane does not exist for
+             part of that. Any class write landing in that window got past the
+             `already built -- instant` bail and blacked out a drawer the shopper
+             was already looking at.
+
+         Gating on `toggle` having just been added fixes both, because both are
+         re-entries during a single opening. It must NOT be done by an early
+         return inside smoothOpen keyed on "the hold already ran": a drawer that
+         opens with its pane already built returns at the pane bail without ever
+         running the hold, so no such flag would be set, and fault (b) would come
+         straight back the next time the pane blinked out.
+
+         Nor may the hold be gated on the cart having rows -- the tempting fix,
+         and a regression. A shopper arriving from an ad opens an EMPTY drawer
+         and the item, the upsell and the CHECKOUT pane all land a beat later;
+         that is precisely the reshuffle this hold exists to cover, and at the
+         moment the drawer opens there are no rows to test for. Measured: gated
+         that way, the hold never arms in exactly that case. */
       new MutationObserver(function(){
-        if (drawerEl.classList.contains('toggle')) smoothOpen();
-        /* GUARDED. This observer watches the class attribute, and removing a
-           class writes that same attribute -- an unconditional remove() woke the
-           observer with its own write on every pass. Only touch it when there is
-           something to remove. */
-        else if (drawerEl.classList.contains('pg-settling')){
-          drawerEl.classList.remove('pg-settling');
-          drawerEl.pgSettled = 0;
-        } else if (drawerEl.pgSettled){
-          drawerEl.pgSettled = 0;
+        if (drawerEl.classList.contains('toggle')){
+          if (!drawerEl.pgOpened){ drawerEl.pgOpened = 1; smoothOpen(); }
+        } else {
+          drawerEl.pgOpened = 0;
+          /* classList.remove of an absent class still writes the attribute this
+             observer watches, so only touch it when there is something to go. */
+          if (drawerEl.classList.contains('pg-settling')) drawerEl.classList.remove('pg-settling');
         }
       }).observe(drawerEl, {attributes:true, attributeFilter:['class']});
-      if (drawerEl.classList.contains('toggle')) smoothOpen();
+      /* the flag on this path too, or a page that boots with the drawer already
+         open still pays one extra 1.2s re-arm cycle */
+      if (drawerEl.classList.contains('toggle')){ drawerEl.pgOpened = 1; smoothOpen(); }
     }
     /* the theme replaces the drawer contents wholesale on every add, remove and
        quantity change, and an add-to-cart round trip outruns fixed timers, so
