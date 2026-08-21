@@ -1,3 +1,26 @@
+# Cart: frame upsell was clipped by the pinned pane
+
+## Cause
+`.sticky-in-panel` -- the pane holding the EXTRA 10% OFF bar, totals and
+checkout button -- is `z-index:5` and paints over the scrolling item region
+rather than being laid out after it. The upsell card is the last element in
+that region, so its bottom edge sat underneath the pane.
+
+The card's `margin-bottom:4px` was meant to be its clearance and could never
+provide it: a last child's bottom margin is not included in a scroll
+container's scrollable overflow, so the browser reports no further scroll and
+the space simply does not exist. Padding is included; margin is not.
+
+## Fix
+The card is now wrapped in `.pg-fup-wrap`, which carries `padding-bottom:18px`.
+The card keeps its own top margin and gains a little internal bottom padding
+(`11px 13px 13px`), and the price pill got `line-height:1.5` so the glyphs are
+not tight against the pill edge.
+
+`render()`'s presence check and removal now target `.pg-fup-wrap` rather than
+`.pg-fup` -- targeting the inner card would have removed it and left the empty
+wrapper behind on every cart change, stacking one 18px gap per change.
+
 # Cart: frame upsell was invisible because the frame was unpublished
 
 ## Cause
