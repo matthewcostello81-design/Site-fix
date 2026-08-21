@@ -1,3 +1,46 @@
+# Cart: wall-art frame upsell
+
+## Change
+A frame upsell row now renders in the cart between the line items and the
+EXTRA 10% OFF bar: 52px thumb, "Add a Black Wood Frame", the 30x40cm size line,
+a price pill, and an outlined ADD button. Styling is borrowed wholesale from
+pg-unlock's rail so the two read as one system.
+
+## Only on wall-art carts
+It renders only when the wall-art handle is in the cart, and removes itself
+once the frame is in there too, so it never asks twice. The frame is 30x40cm
+and so is the print; on an orb or console cart it would be an accessory for
+something the shopper is not buying.
+
+## Price is fetched, not typed
+`/products/{frame-handle}.js` supplies the live variant id, price and image. If
+the frame is ever repriced the row follows instead of advertising a stale
+$14.99, and if the fetch fails the row does not render rather than showing a
+made-up figure. The ADD button always adds the variant the row priced.
+
+## Why it lives in nc-linesave.liquid
+It shipped first as its own `sections/pg-frame-upsell.liquid` and never
+appeared. A section needs a section group to run; footer-group is at Shopify's
+25-section cap, and a group at the cap accepts a new section over the API,
+reports it back correctly, and then silently drops the tail at render time.
+pg-unlock carries the same warning in its header for the same reason.
+`nc-linesave.liquid` already renders via overlay-group (position 11), so the
+row is folded in there under its own `.pg-fup` namespace. The standalone file
+is emptied to a note; theme file deletion is blocked by the API, so it needs
+removing from admin if it should be gone entirely.
+
+## Not classed .pg-unlock
+pg-unlock's `render()` sweeps `#cart .pg-unlock` and removes every row whose
+`data-pg-unlock` handle is not one of its own offers. A frame row is a stray by
+that test, so only the styling is borrowed, not the class.
+
+## Scope
+Applied to theme 163087941860 ("NEW COPY. ADDING FRAME UPSELL FOR WALL ART",
+unpublished). `sections/footer-group.json` was restored to its original
+24-section content after the failed registration.
+
+---
+
 # Wall art: new gallery video
 
 ## Change

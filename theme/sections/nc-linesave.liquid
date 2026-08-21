@@ -1,0 +1,231 @@
+{% comment %} Per-line bundle savings badge at the top of each cart line item (cart page + drawer). Truthful values from /cart.js: struck original line price, discounted line total, and amount saved. Only shows when the line actually has a discount, so displayed savings always match the charged price. Loaded globally via overlay-group.
+
+It also hides pg-drawer's .pg-save-chip, which stated the SAME discount a second time on the same line -- "-55%" under the variant picker beside this row's "Save 55%". Two pills, one number, and the shopper has to check they agree. This row is the one that keeps it, because it prints the struck price and the charged price the percentage is actually the arithmetic between; the chip printed the figure alone. Hidden rather than deleted: pg-chips positions its "n FREE INCLUDED" note by inserting relative to the chip, so the node has to stay in the DOM. pg-chips and pg-drawer both still write text into it -- harmless, and left alone so neither file needs touching.
+
+NOT display:none. pg-chips' stamp() writes its whole STYLE map onto every pill as INLINE !important on a 300ms interval and on every drawer mutation, and that map contains display:inline-flex. Inline !important outranks any stylesheet rule, !important or not, so a display rule here is overwritten within a tick and the pill comes straight back -- which is exactly what happened on the first attempt. The properties below are the ones stamp() never writes: position, visibility, opacity and pointer-events. position:absolute takes it out of the line's grid flow so it occupies no space, and the rest make sure it neither paints nor catches a click. Anything added to pg-chips' STYLE map later must stay clear of those four. {% endcomment %}
+<script>
+!function(){
+  var css="#cart .nc-lsave,body.template-cart .nc-lsave{display:flex;flex-wrap:nowrap;align-items:baseline;gap:6px;margin:0 0 7px;font-size:13px;line-height:1.3;font-weight:600;white-space:nowrap}"
+    +"#cart .nc-lsave .nc-lsave-was,body.template-cart .nc-lsave .nc-lsave-was{color:#9aa7ac;text-decoration:line-through;font-weight:600}"
+    +"#cart .nc-lsave .nc-lsave-now,body.template-cart .nc-lsave .nc-lsave-now{color:#0F2A33;font-weight:800;font-size:15px}"
+    +"#cart .nc-lsave .nc-lsave-off,body.template-cart .nc-lsave .nc-lsave-off{color:#fff;background:linear-gradient(120deg,#C85C22,#E8935A);font-weight:800;font-size:11px;padding:2px 8px;border-radius:20px;letter-spacing:.02em}"
+    +"#cart .pg-save-chip,body.template-cart .pg-save-chip{position:absolute !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}";
+  var st=document.createElement('style');st.textContent=css;(document.head||document.documentElement).appendChild(st);
+  function money(c){try{return (window.Shopify&&Shopify.formatMoney)?Shopify.formatMoney(c):'$'+(c/100).toFixed(2)}catch(e){return '$'+(c/100).toFixed(2)}}
+  var busy=false;
+  function apply(cart){
+    var uls=document.querySelectorAll('.l4ca:not(.in-panel)');
+    uls.forEach(function(ul){
+      var lis=ul.querySelectorAll(':scope > li');
+      for(var i=0;i<lis.length;i++){
+        var li=lis[i],it=cart.items[i];
+        if(!it)continue;
+        var host=li.querySelector('section')||li;
+        var existing=host.querySelector(':scope > .nc-lsave');
+        var saved=it.total_discount||0;
+        var orig=it.original_line_price||0;
+        if(saved>0&&orig>0){
+          var now=orig-saved;var key=orig+'_'+saved;
+          if(existing&&existing.getAttribute('data-k')===key)continue;
+          var pct=Math.round(saved/orig*100);
+          var html='<span class="nc-lsave-was">'+money(orig)+'</span><span class="nc-lsave-now">'+money(now)+'</span><span class="nc-lsave-off">Save '+pct+'%</span>';
+          if(existing){existing.innerHTML=html;existing.setAttribute('data-k',key);}
+          else{var d=document.createElement('div');d.className='nc-lsave';d.setAttribute('data-k',key);d.innerHTML=html;host.insertBefore(d,host.firstChild);}
+        }else if(existing&&existing.getAttribute('data-k')){existing.parentNode.removeChild(existing);}
+      }
+    });
+  }
+  function run(){
+    if(busy)return;
+    if(!document.querySelector('.l4ca:not(.in-panel)'))return;
+    busy=true;
+    fetch('/cart.js').then(function(r){return r.json()}).then(function(cart){
+      if(cart&&cart.items){try{apply(cart);}catch(e){}}
+      busy=false;
+    }).catch(function(){busy=false;});
+  }
+  var c=document.getElementById('cart');
+  if(c){try{new MutationObserver(function(){setTimeout(run,140)}).observe(c,{childList:true,subtree:true});}catch(e){}}
+  if(window.openPanel){var o=window.openPanel;window.openPanel=function(){var r=o.apply(this,arguments);setTimeout(run,280);setTimeout(run,850);return r};}
+  if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
+  setTimeout(run,1200);setTimeout(run,2600);
+}();
+</script>
+{% comment %} Second concern, folded in rather than given its own section file: the wall-art
+frame upsell row that sits below the cart lines. It is NOT here for tidiness. A section group
+holds a maximum of 25 sections; footer-group is at that cap, and a group at the cap accepts a new
+section over the API, reports it back correctly, and then silently drops the tail at render time --
+which is exactly what happened when this shipped as sections/pg-frame-upsell.liquid: uploaded
+clean, registered clean, never appeared on the page. pg-unlock carries the same warning in its own
+header for the same reason. This file already renders (overlay-group, position 11), so the row
+rides along with it. The two concerns share nothing but the file; scroll past the schema-free
+boundary below and the upsell is self-contained under its own .pg-fup namespace. {% endcomment %}
+<style>
+  /* borrowed wholesale from pg-unlock's row so the two rails match */
+  #cart .pg-fup{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    margin:12px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  #cart .pg-fup img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-fup-t{flex:1;min-width:0}
+  #cart .pg-fup-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
+  #cart .pg-fup-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-fup-tag{
+    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
+    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
+  }
+  #cart .pg-fup-add{
+    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    background-image:none !important;color:#7A2FA2 !important;
+    border-radius:999px !important;padding:9px 18px !important;
+    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    animation:none !important;transition:background .15s ease,color .15s ease;
+  }
+  #cart .pg-fup-add::before,#cart .pg-fup-add::after{display:none !important;content:none !important}
+  #cart .pg-fup-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
+  #cart .pg-fup-add[disabled]{opacity:.6;cursor:default}
+  /* same mobile behaviour as the rail: the button drops to its own full-width
+     line rather than squeezing the copy to nothing */
+  @media(max-width:600px){
+    #cart .pg-fup{gap:10px}
+    #cart .pg-fup img{width:46px;height:46px}
+    #cart .pg-fup-t{flex:1 1 60%;min-width:0}
+    #cart .pg-fup-add{flex:1 1 100%;order:4;padding:11px 18px !important;font-size:13.5px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgFrameUpsell) return; window.pgFrameUpsell = 1;
+
+  var ART = 'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame';
+  var FRAME = '30x40cm-frame-black-and-white-wood-grain-photo-frame-can-be-hung-on-the-wall-with-certificate-poster-canvas-painting-decoration';
+
+  var frame = null, frameBusy = false, busy = false;
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* the live variant, price and image -- never a typed-in number */
+  function loadFrame(){
+    if (frame || frameBusy) return frame;
+    frameBusy = true;
+    fetch('/products/' + FRAME + '.js').then(function(r){ return r.json(); }).then(function(p){
+      var v = (p.variants || []).filter(function(x){ return x.available !== false; })[0];
+      if (v){
+        frame = {
+          id: v.id,
+          price: v.price,
+          img: (v.featured_image && v.featured_image.src) || (p.images && p.images[0]) || ''
+        };
+      }
+      frameBusy = false;
+    }).catch(function(){ frameBusy = false; });
+    return frame;
+  }
+
+  function row(f){
+    var el = document.createElement('div');
+    el.className = 'pg-fup';
+    var img = f.img ? String(f.img).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
+    el.innerHTML =
+      '<img alt="" src="' + img + '">' +
+      '<div class="pg-fup-t">' +
+        '<b>Add a Black Wood Frame</b>' +
+        '<small>30 x 40cm solid wood - the exact size of your print</small>' +
+        '<span class="pg-fup-tag">' + money(f.price) + '</span>' +
+      '</div>' +
+      '<button type="button" class="pg-fup-add">ADD</button>';
+    return el;
+  }
+
+  function render(){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return;
+
+    var f = loadFrame();
+    if (!f) return;                       /* price not known yet: show nothing */
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var items = cart.items || [];
+      var hasArt = items.some(function(it){ return it.handle === ART; });
+      var hasFrame = items.some(function(it){ return it.handle === FRAME; });
+
+      var existing = c.querySelector('.pg-fup');
+
+      /* not a wall art cart, or the frame is already in it -- nothing to offer */
+      if (!hasArt || hasFrame){
+        if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+        return;
+      }
+      if (existing) return;               /* already offered, leave it alone */
+
+      list.parentNode.insertBefore(row(f), list.nextSibling);
+    }).catch(function(){});
+  }
+
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    var btn = e.target.closest('.pg-fup-add');
+    if (!btn || busy) return;
+    e.preventDefault();
+    e.stopPropagation();
+
+    var f = frame;
+    if (!f) return;
+    busy = true;
+    btn.disabled = true;
+    btn.textContent = 'ADDING...';
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: f.id, quantity: 1}]})
+    }).then(function(r){
+      if (!r || !r.ok) throw 0;
+      busy = false;
+      /* the row removes itself on the next render, because the frame is now in
+         the cart -- no need to touch it here */
+      if (window.pgDrawerRefresh){
+        try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ render(); }, function(){}); }
+        catch(err){}
+      }
+      render();
+      setTimeout(render, 400);
+    }).catch(function(){
+      busy = false;
+      btn.disabled = false;
+      btn.textContent = 'TRY AGAIN';
+    });
+  }, true);
+
+  /* the drawer rebuilds its innerHTML on every cart change, so this re-inserts
+     on mutation rather than running once; render() no-ops when the row is
+     already present, so the observer bounce our own insert causes settles. */
+  var queued = false;
+  function soon(){
+    if (queued) return;
+    queued = true;
+    setTimeout(function(){ queued = false; render(); }, 120);
+  }
+  function watch(){
+    var c = document.getElementById('cart');
+    if (!c){ setTimeout(watch, 400); return; }
+    try { new MutationObserver(soon).observe(c, {childList: true, subtree: true}); } catch(e){}
+    try { new MutationObserver(soon).observe(document.body, {attributes: true, attributeFilter: ['class']}); } catch(e){}
+    soon();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
+  else watch();
+  setInterval(render, 2500);
+})();
+</script>
+{% schema %}
+{"name":"NC Line Save","settings":[],"presets":[{"name":"NC Line Save"}]}
+{% endschema %}
