@@ -366,6 +366,42 @@
       });
 
       function isFree(r){ return r.item.line_price === 0; }
+
+      /* WHICH DEAL THIS LINE IS ON. The orb ladder is not one offer, it is
+         several, and they do not all behave alike -- measured on the live cart:
+             4 orbs  PokeOrb - Buy 2 Get 1 Free   free line, 1 @ $0.00
+             6 orbs  PokeOrb - 6 Pack $137.20     ONE line, 6 @ $20.58, none free
+             9 orbs  PokeOrb - Buy 5 Get 3 Free   free line, 3 @ $0.00
+         So the plaque cannot say "BUY 2 GET 1" -- it has to name the rung the
+         shopper actually landed on. The title comes off the line's own discount,
+         skipping the standing order-wide 10%, which is on every line and is not
+         a rung. The "PokeOrb - " prefix is dropped: the row already says which
+         product it is. */
+      function dealTitleOf(item){
+        var ds = item.discounts || [], i, t, amt;
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          amt = ds[i].amount != null ? ds[i].amount : (ds[i].total_allocated_amount || 0);
+          if (t && !/entire order/i.test(t) && amt > 0) return t;
+        }
+        /* the PAID half of a Buy-N-Get-M carries the same title at 0 allocated,
+           which is what names the rung when the free half is the other line */
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          if (t && !/entire order/i.test(t)) return t;
+        }
+        return '';
+      }
+      function dealLabel(t){
+        return String(t || '').replace(/^[^-]*-\s*/, '').trim().toUpperCase();
+      }
+      function groupDeal(g){
+        for (var i = 0; i < g.length; i++){
+          var t = dealTitleOf(g[i].item);
+          if (t) return t;
+        }
+        return '';
+      }
       function setWas(li, cents){
         li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
           if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
@@ -426,7 +462,18 @@
 
           setText(head.li.querySelector('.nc-lsave-now'), money(paidSum));
           if (cap0) setWas(head.li, cap0 * paidQty);
-          noteOff(head.li);      /* the free row speaks for itself now */
+
+          /* If the rung produced free units they are on their own row and that
+             row carries the label. If it did NOT -- the 6 Pack is a fixed bundle
+             PRICE, so Shopify just charges less per unit and there is nothing to
+             put on a free line -- then the row would otherwise show six orbs at
+             $20.58 with no explanation of why. Name the deal here instead. */
+          if (freeQty > 0){
+            noteOff(head.li);
+          } else {
+            var hlabel = dealLabel(groupDeal(g));
+            if (hlabel) noteOn(head.li, hlabel); else noteOff(head.li);
+          }
 
           primary[k] = {row: head, total: paidQty, paid: paidSum};
         }
@@ -449,7 +496,8 @@
 
           var fchip = li.querySelector('.pg-save-chip');
           if (fchip) setText(fchip, 'FREE');
-          noteOn(li, fq > 1 ? (fq + ' FREE - BUY 2 GET 1') : 'FREE - BUY 2 GET 1');
+          var flabel = dealLabel(dealTitleOf(r.item) || groupDeal(g));
+          noteOn(li, flabel || (fq > 1 ? (fq + ' FREE') : 'FREE'));
         });
       });
 
