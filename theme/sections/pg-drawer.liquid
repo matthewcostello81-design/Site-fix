@@ -7,9 +7,36 @@
   paid item.
 {%- endcomment -%}
 <style>
+  /* NOTHING IN THE CART ANIMATES FOR EVER.
+     pgShift moved background-position across a 240%-wide gradient on a five
+     second loop, and it was applied to the SAVED pill on every cart line, the
+     FREE GIFT tag, the free-shipping bar and the progress fill -- five or six
+     elements at once on a normal cart, all animating at the same time, on a cart
+     nobody is touching. background-position is not a composited property: every
+     frame of that repaints the element, so the drawer was doing continuous paint
+     work for a decorative shimmer. On a phone it reads as the whole panel
+     flickering, which is exactly what the shop owner reported.
+
+     The gradients stay, the motion goes: background-size drops from 240% to
+     100% so the full gradient shows at rest instead of a slice of it. The rule
+     below is a backstop in case a copy of one of these declarations survives
+     somewhere in the ten stylesheets that build this drawer.
+
+     The checkout button was already covered -- this file has always set
+     animation:none on it, overriding nc-cartfix's ncGrad.
+
+     The backstop names the four selectors rather than blanketing `#cart *`: a
+     blanket animation-name:none would also kill any spinner or progress
+     indicator the drawer legitimately wants while something is loading, and
+     that is a worse cart than a shimmering one. */
+  #cart .pg-save-chip,#cart .pg-free-tag,#cart .nc-dship,#cart .pg-bar-fill,
+  body.template-cart .pg-save-chip,body.template-cart .pg-free-tag{
+    animation:none !important;background-size:100% 100% !important;
+  }
+
   /* Drawer top: logo + free-shipping pill */
   #cart#cart#cart img.nc-dlogo{height:110px !important;max-width:300px !important;margin:-6px auto 2px !important;object-fit:contain !important}
-  #cart#cart#cart .nc-dship{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShift 5s ease-in-out infinite !important;box-shadow:0 10px 22px -12px rgba(122,47,162,.6) !important}
+  #cart#cart#cart .nc-dship{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:100% 100% !important;animation:none !important;box-shadow:0 10px 22px -12px rgba(122,47,162,.6) !important}
   #cart#cart#cart .nc-dtrust span{color:#7A2FA2 !important}
   #cart#cart#cart .nc-dtrust svg{stroke:#7A2FA2 !important}
 
@@ -71,7 +98,7 @@
   /* Free gift line: FREE tag replaces $0.00, stepper locked */
   #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
   body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:hidden !important}
-  .pg-free-tag{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;width:max-content;margin:4px 0 2px}
+  .pg-free-tag{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:100% 100%;animation:none;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;width:max-content;margin:4px 0 2px}
   /* North Cove cart-line layout: title top, save chip under it, was/now bottom-right */
   #cart .l4ca > li section{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;grid-template-areas:"nm nm" "vr vr" "sv sv" "qt pr" !important;align-items:end !important;gap:2px 10px !important;overflow:hidden !important}
   #cart .l4ca > li section > p{grid-area:vr;margin:0 !important;font-size:12.5px;color:#8a8a8a;justify-self:start}
@@ -176,12 +203,12 @@
   .pg-bar-t{font-size:14.5px;font-weight:600;color:#3a2a4a;text-align:center;margin:0 0 12px;line-height:1.5}
   .pg-bar-t b{color:#7A2FA2}
   .pg-bar-track{position:relative;height:14px;border-radius:999px;background:#efe4f8;margin:6px 22px 4px}
-  .pg-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;transition:width .5s ease}
+  .pg-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:100% 100%;animation:none;transition:width .5s ease}
   .pg-bar-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;border:2px solid #cbb3e0;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:#7d6a90;box-shadow:0 4px 12px -4px rgba(74,28,102,.35)}
   .pg-bar-dot.on{border-color:#7A2FA2;background:#7A2FA2;color:#fff}
   .pg-bar-lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.04em;color:#7d6a90;margin-top:10px;text-transform:uppercase}
   .pg-bar-lbl .on{color:#7A2FA2}
-  .pg-save-chip{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;margin:4px 0 2px;width:max-content}
+  .pg-save-chip{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:100% 100%;animation:none;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;margin:4px 0 2px;width:max-content}
   s.pg-lwas{color:#8a8a8a !important;font-weight:400;font-size:13px;margin-right:6px}
   #cart .l4ca > li .old-price{display:none !important}
 

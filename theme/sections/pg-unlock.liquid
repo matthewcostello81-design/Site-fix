@@ -232,12 +232,34 @@
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
   #cart .sticky-in-panel .pg-unlock.is-open img{width:28px;height:28px;border-radius:7px}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:5px;margin-top:0}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 3px;gap:6px}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r span{width:42px;font-size:9.5px;letter-spacing:.02em}
+  /* THE SLOTS SIT SIDE BY SIDE, LABEL ABOVE.
+     One slot per full-width row is the roomy layout, and it is what the desktop
+     drawer keeps. In the pinned pane it is the single biggest thing left: two
+     slots stacked cost 70px of a 164px card for two dropdowns that are each
+     about 120px of actual content.
+     Laying them out as a grid with the price or FREE above each one costs 11px
+     of label but saves a whole 35px row: two slots go from 70px to 45px. Three
+     slots wrap to two columns and cost 90px instead of 105px.
+     auto-fit with a 140px floor is what makes that safe -- if the pane is ever
+     narrow enough that 140px would truncate the character names, the grid falls
+     back to one column on its own and nothing is cut off. No markup changed;
+     this is the same .pg-unlock-pick-r the desktop drawer renders. */
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{
+    padding-top:5px;margin-top:0;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:5px 6px;align-items:end;
+  }
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{
+    display:flex;flex-direction:column;align-items:stretch;gap:1px;margin:0;
+  }
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r span{
+    width:auto;font-size:9px;letter-spacing:.03em;line-height:1.2;
+  }
   #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{
     padding:5px 8px;font-size:12px;line-height:1.15;border-radius:8px;min-height:32px;
   }
+  /* the confirm button spans whatever number of columns the grid settled on */
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{grid-column:1 / -1}
   #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{
     min-height:38px;padding:6px 14px !important;font-size:12.5px;margin-top:2px;
   }

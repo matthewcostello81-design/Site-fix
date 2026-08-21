@@ -1,3 +1,86 @@
+# Five things were repainting every frame, on a cart nobody was touching
+
+The flickering is real and it is not a race, a re-render or a layout fight — all
+of those were already fixed and the live combination passes the stillness test.
+It is `pgShift`, a decorative gradient loop in `pg-drawer.liquid`:
+
+    animation: pgShift 5s ease-in-out infinite
+
+applied to `.pg-save-chip`, `.pg-free-tag`, `.nc-dship` and `.pg-bar-fill`. It
+animates `background-position` across a `background-size:240% 240%` gradient.
+
+`background-position` is **not a composited property**. Every frame of that
+animation repaints the element on the main thread. Enumerated with
+`document.getAnimations()` on a settled drawer holding two discounted lines and a
+free gift:
+
+| | live | fixed |
+|---|---|---|
+| animations running inside `#cart` at rest | **5** | **0** |
+
+Five elements repainting continuously, forever, for a shimmer — with the drawer's
+twenty polling loops already competing for the same main thread. On a phone that
+is exactly "glitching like flickering", and it never stops, which matches the
+report of a steady cart that will not sit still.
+
+The gradients stay; the motion goes. `background-size` drops 240% → 100% so the
+full gradient shows at rest rather than a slice of it. A backstop rule names the
+four selectors — deliberately **not** a blanket `#cart *{animation-name:none}`,
+which would also kill any spinner the drawer legitimately wants while something
+is loading. That would be a worse cart than a shimmering one.
+
+`test/run-anim.mjs` is the regression: it boots the real `pg-drawer` and
+`nc-cartfix` stylesheets, enumerates every running animation whose target is
+inside `#cart`, and fails if there is one.
+
+# And the add-on is 41% shorter
+
+Said twice that it was still too big, so this goes past trimming into layout.
+
+The slots were one per full-width row. That is the roomy layout and the desktop
+drawer keeps it — but in the pinned pane it was the single biggest thing left:
+two slots stacked cost 70px of a 164px card, for two dropdowns each carrying
+about 120px of actual content.
+
+They are now a grid with the price or FREE **above** each one. The label costs
+11px; the row it saves is 35px:
+
+    $34.99              FREE
+    [ 19 Sylveon  ▾ ]   [ 18 Gyarados ▾ ]
+    [   Add 2 to cart - 1 is FREE      ]
+
+`repeat(auto-fit, minmax(140px, 1fr))` is what makes it safe: if the pane is ever
+narrow enough that 140px would truncate a character name, the grid falls back to
+one column by itself. Three slots wrap to two columns and cost 90px instead of
+105px. No markup changed — this is the same `.pg-unlock-pick-r` the desktop
+renders.
+
+| | at the start of this round | now |
+|---|---|---|
+| offer row | 247px | **145px** |
+| pinned pane, 390x844 | 324px (38.3%) | **222px (26.3%)** |
+| 375x667 | 286px (42.9%) | 219px (32.8%) |
+| 360x640 | 286px (44.7%) | 219px (34.2%) |
+
+# Where this is running, again
+
+The photo was the **live** theme. It differs from this draft in exactly two
+files, confirmed by querying both themes:
+
+| file | live | draft |
+|---|---|---|
+| `pg-unlock.liquid` | `b82f92dc` | `03a0ed43` |
+| `pg-chips.liquid` | `01a254fc` | `fad3651c` |
+
+Every other cart section is byte-identical across the two. So the live cart has
+none of the compaction, none of the per-orb pricing, and — until `pg-drawer` goes
+across too — all five of the gradient animations.
+
+Reconstructing the live bytes from git (`git show 6c0151b:...`, `git show
+f0d4e7b:...`) reproduced both live checksums exactly, which is how the flicker
+was hunted against what the shop is actually running rather than against the
+draft.
+
 # The add-on was still eating a third of the screen
 
 A photo of the real cart settled it: the upsell card ran from just under the one
