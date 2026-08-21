@@ -108,3 +108,24 @@ Matches ONLY the cart page path (with optional locale prefix), never
 every cart override posts to. Opens the drawer by dispatching a click on the
 header cart icon rather than calling `window.pgOpenCart`, which appears once in
 the whole theme and may not exist.
+
+## sections/footer-group.json — `pg-frame-add`
+
+Registered last, after `pg_no_cart_page` / `pg_linefix`.
+
+| key | type | what it does |
+|---|---|---|
+| `pg_frame_add` | pg-frame-add | the 30x40 frame as a paid add-on, PDP + cart |
+
+The wall-art print is sold unframed; the frame (`49688364613860`, $14.99) is an
+add-on rather than a separate card in "You may also like", the same shape as the
+spare case on the console page.
+
+Its button is `.pgx-frame-add`, NOT `.pgx-case-add` — pg-mobile and pg-case-add
+both listen for that class in the capture phase and post the CASE variant, so a
+shared class would put a case in the cart when the shopper asked for a frame.
+The cart row is `.pg-frameoffer` and deliberately not `.pg-unlock`, which
+pg-cart-mobile relocates by class on phones.
+
+Overlay-group is full at its 25-section cap, so this had to live in
+footer-group, which had one slot left.

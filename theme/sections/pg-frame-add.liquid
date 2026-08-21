@@ -1,0 +1,243 @@
+{%- comment -%}
+  PG Frame Add: the 30x40 black wood frame offered as a paid ADD-ON, the way
+  the spare case is on the console page -- on the wall-art product page and in
+  the cart -- and NOT as a card in "You may also like".
+
+  Three parts, all of them DOM-only:
+
+  (1) PRODUCT PAGE. A tile above ADD TO CART on the Holo Legends Wall Art page,
+      built from the same `.pgx-case` markup pg-mobile uses for the case so it
+      inherits that tile's styling and pg-case-mobile's two-row phone layout for
+      free. The button is `.pgx-frame-add`, deliberately NOT `.pgx-case-add`:
+      pg-mobile and pg-case-add both listen for that class in the CAPTURE phase
+      and post the CASE variant, so a shared class would add a case to the cart
+      when the shopper asked for a frame. The button's own styling is restated
+      here for the same reason.
+
+  (2) CART. The same offer as one compact light row under the cart lines, shown
+      only while the print is in the cart and the frame is not. It is not given
+      the `.pg-unlock` class: pg-cart-mobile relocates offer rows by that class
+      on phones, and a second element answering that selector is what made the
+      upsell rows swap places. This row is placed once, after the line list, and
+      left alone.
+
+  (3) "YOU MAY ALSO LIKE". The frame card is hidden there, exactly as pg-mobile
+      hides the case card -- an add-on and a standalone product card for the
+      same thing read as two different offers at two different prices.
+
+  Nothing here polls /cart.js. Whether the print and the frame are in the cart
+  is read off the rendered rows, so the offer costs no requests on a cart that
+  four other sections are already fetching.
+{%- endcomment -%}
+<style>
+  /* The PDP tile borrows .pgx-case wholesale; only the button needs restating,
+     because the class that carries pg-mobile's button styling is the same class
+     that carries its add-a-CASE handler. */
+  #pgx .pgx-frame-add{
+    flex:none;border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    background-color:#8B44BE !important;color:#fff !important;
+    font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;
+    text-transform:uppercase;border-radius:999px !important;padding:11px 26px;
+    cursor:pointer;box-shadow:0 10px 22px -10px rgba(139,68,190,.7) !important;
+    transition:filter .15s ease
+  }
+  #pgx .pgx-frame-add:hover{filter:brightness(1.1)}
+  html body #pgx .pgx-frame-add::before,html body #pgx .pgx-frame-add::after{
+    display:none !important;content:none !important;background:none !important
+  }
+  #pgx .pgx-frame-add[disabled]{opacity:.6;cursor:default}
+  /* pg-case-mobile drops the price and button onto a second row below 600px.
+     Those rules are keyed to .pgx-case-p / .pgx-case-add, and this tile's
+     button answers neither, so the same two-row layout is restated for it --
+     otherwise the tile is the one place on the page that still overflows. */
+  @media (max-width:600px){
+    #pgx .pgx-frame .pgx-frame-add{
+      order:4 !important;flex:1 1 auto !important;
+      padding:13px 20px !important;font-size:13.5px !important
+    }
+  }
+
+  /* ---- the cart row ---- */
+  /* The drawer is light where the product page is dark, so this is its own
+     palette rather than a reuse of the tile above. */
+  #cart .pg-frameoffer,body.template-cart .pg-frameoffer{
+    display:flex;align-items:center;gap:11px;
+    margin:10px 0 4px;padding:11px 12px;
+    border:1px solid rgba(122,47,162,.26);border-radius:13px;
+    background:linear-gradient(120deg,#F7F1FC,#EDDFF9 55%,#F4E9FD);
+    box-sizing:border-box
+  }
+  #cart .pg-frameoffer img,body.template-cart .pg-frameoffer img{
+    width:44px;height:44px;flex:none;border-radius:9px;object-fit:cover;
+    background:#EADCF8
+  }
+  #cart .pg-frameoffer-t,body.template-cart .pg-frameoffer-t{flex:1;min-width:0}
+  #cart .pg-frameoffer-t b,body.template-cart .pg-frameoffer-t b{
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800
+  }
+  #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{
+    display:block;font-size:11.5px;line-height:1.35;color:#7B6A8E;margin-top:2px
+  }
+  #cart .pg-frameoffer-p,body.template-cart .pg-frameoffer-p{
+    flex:none;font-weight:800;font-size:14px;color:#7A2FA2
+  }
+  #cart .pg-frameoffer-add,body.template-cart .pg-frameoffer-add{
+    flex:none;border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;font-family:inherit;font-weight:800;font-size:11.5px;
+    letter-spacing:.06em;text-transform:uppercase;border-radius:999px !important;
+    padding:10px 16px;cursor:pointer;
+    box-shadow:0 10px 22px -12px rgba(139,68,190,.7) !important
+  }
+  html body #cart .pg-frameoffer-add::before,html body #cart .pg-frameoffer-add::after{
+    display:none !important;content:none !important;background:none !important
+  }
+  /* On a phone the price and the button will not both fit beside the copy at
+     44px of thumbnail, so the price moves under the title rather than being
+     squeezed against the button. */
+  @media (max-width:480px){
+    #cart .pg-frameoffer,body.template-cart .pg-frameoffer{gap:9px;padding:10px}
+    #cart .pg-frameoffer-p,body.template-cart .pg-frameoffer-p{display:none}
+    #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{color:#6B3E93;font-weight:700}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgFrameAdd) return; window.pgFrameAdd = 1;
+
+  var FRAME_VARIANT = 49688364613860;          /* Black frame - 30x40, $14.99 */
+  var FRAME_MARK    = '30x40cm-frame';         /* enough of the handle to match */
+  var PRINT_MARK    = 'lenticular-poster';     /* likewise, for the wall art */
+  var FRAME_IMG     = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/blackframe.png?v=1787284280';
+  var PRICE         = '$14.99';
+
+  function thumb(){ return FRAME_IMG.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); }
+
+  /* ---------------- (1) the product-page tile ---------------- */
+  function onPrintPage(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    return !!m && m[1].indexOf(PRINT_MARK) > -1;
+  }
+  function tile(){
+    if (!onPrintPage()) return;
+    var atc = document.querySelector('#pgx .pgx-atc');
+    if (!atc || document.querySelector('#pgx .pgx-frame')) return;
+    var el = document.createElement('div');
+    el.className = 'pgx-case pgx-frame';
+    el.innerHTML =
+        '<img alt="Black wood frame" src="' + thumb() + '">'
+      + '<div class="pgx-case-t"><b>Add the matching black wood frame</b>'
+      + '<small>30x40cm black wood grain frame, sized for this print. Adds ' + PRICE + '.</small></div>'
+      + '<span class="pgx-case-p">' + PRICE + '</span>'
+      + '<button type="button" class="pgx-frame-add">ADD</button>';
+    atc.parentNode.insertBefore(el, atc);
+  }
+
+  /* ---------------- (2) the cart row ---------------- */
+  function cartLines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+  function cartHas(mark){
+    var ls = cartLines();
+    for (var i = 0; i < ls.length; i++){
+      if (ls[i].querySelector('a[href*="' + mark + '"]')) return true;
+    }
+    return false;
+  }
+  function offer(){
+    var list = document.querySelector('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)');
+    var row  = document.querySelector('#cart .pg-frameoffer, body.template-cart .pg-frameoffer');
+
+    /* The offer earns its space only while it is actionable: the print is in
+       the cart and the frame is not. Once the frame is added it is an ordinary
+       cart line and repeating the pitch beside it would read as a second one. */
+    var wanted = !!list && cartHas(PRINT_MARK) && !cartHas(FRAME_MARK);
+    if (!wanted){
+      if (row && row.parentNode) row.parentNode.removeChild(row);
+      return;
+    }
+    if (row){
+      /* keep it directly under the lines even if the drawer rebuilt around it */
+      if (row.previousElementSibling !== list) list.parentNode.insertBefore(row, list.nextSibling);
+      return;
+    }
+    row = document.createElement('div');
+    row.className = 'pg-frameoffer';
+    row.innerHTML =
+        '<img alt="Black wood frame" src="' + thumb() + '">'
+      + '<div class="pg-frameoffer-t"><b>Add the matching frame</b>'
+      + '<small>30x40cm black wood grain &middot; ' + PRICE + '</small></div>'
+      + '<span class="pg-frameoffer-p">' + PRICE + '</span>'
+      + '<button type="button" class="pg-frameoffer-add">Add</button>';
+    list.parentNode.insertBefore(row, list.nextSibling);
+  }
+
+  /* ---------------- adding it ---------------- */
+  /* Capture phase, delegated: both elements above are re-created by the sweep
+     below whenever the drawer or the buy box rebuilds, so a listener bound to
+     the button itself would not survive; and the drawer's own handlers call
+     stopPropagation on clicks inside it. */
+  var busy = false;
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('.pgx-frame-add, .pg-frameoffer-add');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (busy) return;
+    busy = true;
+    var was = btn.textContent;
+    btn.textContent = 'ADDING...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: [{id: FRAME_VARIANT, quantity: 1}]})
+    }).then(function(r){
+      if (!r.ok) throw 0;
+      btn.innerHTML = 'ADDED ✓';
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).then(function(){
+      if (btn.closest('.pgx-frame') && window.pgOpenCart) window.pgOpenCart();
+      setTimeout(function(){ busy = false; offer(); }, 400);
+      setTimeout(function(){ btn.textContent = was; }, 2200);
+    }).catch(function(){
+      /* reverting silently to ADD reads as a dead button -- say it failed */
+      btn.textContent = 'TRY AGAIN';
+      setTimeout(function(){ btn.textContent = was; }, 2000);
+      busy = false;
+    });
+  }, true);
+
+  /* ---------------- (3) out of "You may also like" ---------------- */
+  function ymlTrim(){
+    document.querySelectorAll('.pgu-yml a, .pgu-yml-grid a').forEach(function(a){
+      if ((a.getAttribute('href') || '').indexOf(FRAME_MARK) > -1){
+        var card = a.closest('.pgu-yml-card') || a;
+        card.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  function pass(){ tile(); offer(); ymlTrim(); }
+
+  /* Event-driven, with a slow backstop -- the drawer rebuilds on every cart
+     change and the buy box on every variant change, and neither fires an event
+     this section can subscribe to. None of the three touches the network. */
+  if (window.MutationObserver){
+    var t = null;
+    new MutationObserver(function(){
+      if (t) return;
+      t = setTimeout(function(){ t = null; pass(); }, 120);
+    }).observe(document.body, {childList: true, subtree: true});
+  }
+  setInterval(pass, 1500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  else pass();
+})();
+</script>
+{% schema %}
+{"name": "PG Frame Add", "settings": []}
+{% endschema %}
