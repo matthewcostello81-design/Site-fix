@@ -73,12 +73,11 @@
   quantity struck through, and one honest percentage. Extra paid rows are hidden.
 
   THE FREE ROW STAYS ON SCREEN, on its own line, by request -- and hiding it was
-  a mistake worth naming. Merging it away removed the evidence for what the
-  offer had done: the shopper pressed + and, when the new unit became the free
-  one, nothing they could see moved. With the free row visible, that press has an
+  a mistake worth naming. Merging it away removed the evidence for what the offer
+  had done: the shopper pressed + and, when the new unit became the free one,
+  nothing they could see moved. With the free row visible that press has an
   answer -- the free line is what changed. It renders MSRP struck, nothing
-  charged, and the word FREE rather than SAVED 100%, which reads like a discount
-  when the truth is simpler.
+  charged, and the word FREE rather than a percentage.
 
   Its stepper is removed. How many units are free is Shopify's decision, not the
   shopper's, so a control there would argue with the offer. The paid row keeps
@@ -98,7 +97,11 @@
   /* Backstop for any pill rendered without the inline styles. */
   #cart .pg-free-tag,#cart .pg-save-chip,
   body.template-cart .pg-free-tag,body.template-cart .pg-save-chip{
-    display:inline-flex;align-items:center;justify-content:center;text-align:center
+    display:inline-flex;align-items:center;justify-content:center;text-align:center;
+    /* same geometry as STYLE below, so a pill painted before the stamp lands is
+       already the right width instead of resizing under the shopper */
+    width:fit-content;max-width:100%;min-width:0;
+    padding:6px 7px 6px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
   }
 
   /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
@@ -109,23 +112,42 @@
   #cart .l4ca > li.pg-merged-away,
   body.template-cart .l4ca > li.pg-merged-away{display:none !important}
 
-  /* THE FREE ORB GETS ITS OWN LINE, by request -- and it is not editable.
-     Its quantity is decided by Shopify's Buy 2 Get 1, not by the shopper, so a
-     stepper on it would be a control that argues with the offer. The paid row
-     keeps the only stepper and moves the product's total. */
+  /* THE FREE ORB GETS ITS OWN LINE, by request -- and it is not editable. Its
+     quantity is decided by Shopify's Buy 2 Get 1, not by the shopper, so a
+     stepper on it would be a control that argues with the offer. */
   #cart .l4ca > li.pg-free-line .pg-qbtn,
   #cart .l4ca > li.pg-free-line input[type=number],
   body.template-cart .l4ca > li.pg-free-line .pg-qbtn,
   body.template-cart .l4ca > li.pg-free-line input[type=number]{display:none !important}
 
+  /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.
+     This note is inserted as a sibling of the SAVED chip, and the drawer makes
+     that parent a GRID (`#cart .l4ca > li section{display:grid;...}`) which gives
+     the chip an explicit grid-area and justify-self:start. The note got neither,
+     so it was auto-placed into an implicit row with justify-self:auto -- i.e.
+     stretch -- and a stretched grid item with width:auto fills its column. Its
+     inline-flex was blockified by grid layout, so inline shrink-wrapping never
+     applied either. Measured: 168.8px on a 390px phone and 229.3px on the wider
+     desktop drawer, for 111.5px of letters -- it got LONGER as the drawer got
+     wider, which is the giveaway that it was tracking the column and not the
+     text. Beside a SAVED chip that hugs at 81.8px it read as a long empty purple
+     bar across the line.
+     width/justify-self give it back its own width; grid-column puts it on a full
+     row of its own rather than an odd implicit cell; and the tracking and padding
+     now match the chip -- letter-spacing applies after the final glyph too, which
+     is the same trailing gap the chip was fixed for. 168.8px -> 118.9px. */
   #cart .pg-free-note,
   body.template-cart .pg-free-note{
     display:inline-flex;align-items:center;
-    margin-top:4px;padding:4px 10px;border-radius:999px;
+    width:fit-content;max-width:100%;min-width:0;
+    justify-self:start;grid-column:1 / -1;
+    margin-top:4px;padding:4px 7px;border-radius:999px;
     background:rgba(139,68,190,.14);
     border:1px solid rgba(168,120,214,.4);
     color:#6B3E93;
-    font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    font-size:11.5px;font-weight:800;
+    letter-spacing:normal;word-spacing:normal;text-indent:0;
+    text-transform:uppercase;
     white-space:nowrap;
   }
 </style>
@@ -133,31 +155,138 @@
 (function(){
   if (window.pgChips) return; window.pgChips = 1;
 
-  var SEL = '.pg-free-tag, .pg-save-chip';
+  /* .nc-lsave-off is the drawer's OWN saved-percent pill, in the price column of
+     the same cart line -- pg-unlock has a rule for it, so it is a distinct node.
+     It was never in this selector, so it kept the drawer's 12px-a-side padding
+     and .05em tracking while the chip three columns away was narrowed to 7px and
+     normal: the same words, "SAVED 74%", rendering at two different lengths on
+     one line. Adding it is free and idempotent -- if it ever turns out to be the
+     same node as .pg-save-chip the extra selector matches the same element and
+     changes nothing. */
+  var SEL = '.pg-free-tag, .pg-save-chip, .nc-lsave-off';
+  /* THE PILL HUGS ITS TEXT. It was `padding:7px 15px` with `letter-spacing:.05em`
+     and a matching `text-indent`, which is 30px of purple either side of a ~80px
+     word plus a tracked space trailing the % sign -- the badge read as a wide
+     slab with the number floating in the middle of it.
+
+     Measured in Chromium against the drawer's own grid: the pill hugs its glyphs
+     exactly -- 0px of slack on either side -- so nothing is stretching it and
+     there is no layout bug to find. It was simply BUILT wide: 18px of padding
+     and .05em of tracking around a 13px word, 96.7px of purple for 79.3px of
+     letters. The width therefore comes off the things that actually hold it.
+     Padding to a symmetric 7px, size back to the 12px the theme drew it at, and
+     tracking off altogether -- 81.8px for 67.8px of letters.
+
+     letter-spacing goes to `normal` rather than a smaller number because it
+     applies AFTER the final glyph as well, so any non-zero value leaves a gap
+     trailing the % sign. Earlier passes tried to balance that (indent by the
+     same amount, then trim padding-right by it) and both kept the gap while
+     adding arithmetic; removing the tracking removes the problem, and
+     text-indent goes with it. word-spacing and column-gap are pinned for the
+     same reason: neither was ever reset, so an inherited value on either could
+     widen the pill at the space in "SAVED 55%" without appearing in any rule
+     here. */
   var STYLE = {
     'display': 'inline-flex',
     'align-items': 'center',
     'justify-content': 'center',
     'text-align': 'center',
-    'font-size': '13px',
+    'font-size': '12px',
     'line-height': '1',
-    'padding': '7px 15px',
-    'letter-spacing': '.05em',
-    /* letter-spacing also trails the last glyph; indent by the same amount so
-       the text reads centred rather than pushed left */
-    'text-indent': '.05em',
+    /* 6px, not 4px. Height is font-size x line-height plus this padding and
+       nothing else, so this is the only lever on the badge's aspect that does
+       not touch its width: 20px tall -> 24px tall, for free. */
+    'padding-top': '6px',
+    'padding-bottom': '6px',
+    'padding-left': '7px',
+    'padding-right': '7px',
+    'letter-spacing': 'normal',
+    'word-spacing': 'normal',
+    'column-gap': '0',
+    'text-indent': '0',
     'border-radius': '999px',
     'width': 'fit-content',
+    'max-width': '100%',
     'min-width': '0',
     'flex': 'none'
   };
 
+  /* THE STAMP RE-ASSERTS, AND IT DOES NOT WAIT. Two faults, one fix.
+     pg-drawer builds every pill with its OWN inline !important geometry
+     (font-size:12px, line-height:1.5, padding:4px 12px), and inline !important
+     can only be beaten by inline !important -- this stamp. It used to mark each
+     element with dataset.pgChip and skip it forever after, so any pill the
+     drawer rebuilt in place kept the wide slab; and it only ran on a 300ms
+     interval, so even a fresh pill wore that slab for up to a third of a second
+     and visibly snapped narrower under the shopper. The guard is now the
+     rendered value rather than a one-shot flag, and an observer runs it in the
+     same task the pill is inserted in. setProperty with an unchanged value is
+     free, so re-checking costs nothing. */
+  /* THE GUARD MUST COVER WHAT IT IS GUARDING. It used to test two of the
+     nineteen properties the loop writes -- paddingLeft and letterSpacing -- which
+     meant any other writer landing a single inline !important declaration on one
+     of the other seventeen left both guarded values untouched, so every later
+     stamp returned immediately and the pill kept the foreign value for the life
+     of the page. Six of the seventeen change the width. Measured with the real
+     stamp running: `width:100%` -> 276px permanent, `min-width:140px` -> 140px
+     permanent, `font-size:13px` -> 87.5px permanent, `padding-right:12px` ->
+     86.8px permanent, none of them ever corrected. The guard now covers every
+     width-bearing property, so the only thing it can skip is a pill that is
+     already right. */
+  function isStamped(el){
+    var st = el.style;
+    return st.paddingLeft === '7px' && st.paddingRight === '7px'
+        && st.letterSpacing === 'normal' && st.wordSpacing === 'normal'
+        && st.textIndent === '0px' && st.fontSize === '12px'
+        && st.width === 'fit-content' && st.minWidth === '0px'
+        && st.maxWidth === '100%' && st.columnGap === '0px';
+  }
+  var stamping = false;
   function stamp(){
-    document.querySelectorAll(SEL).forEach(function(el){
-      if (el.dataset.pgChip) return;
-      el.dataset.pgChip = '1';
-      for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
-    });
+    if (stamping) return;
+    stamping = true;
+    try {
+      document.querySelectorAll(SEL).forEach(function(el){
+        if (isStamped(el)) return;
+        for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
+      });
+    } finally { stamping = false; }
+  }
+
+  if (window.MutationObserver){
+    /* childList AND style attributes. It used to be childList only, on the
+       grounds that watching style would make the stamp re-trigger itself -- true,
+       but the cost of not watching was worse: pg-drawer restyles these pills
+       inline (padding:4px 12px, letter-spacing:.05em) after every drawer rebuild,
+       and that is an ATTRIBUTE change, invisible to a childList observer. So the
+       correction was left to the 300ms interval and the shopper watched the pill
+       sit wide and then snap narrower under their eyes on every cart change.
+       Self-triggering is handled properly instead: `stamping` blocks re-entry,
+       and the stamp is idempotent -- a second pass over an already-stamped pill
+       writes nothing, so the cascade is one extra callback that does no work. */
+    new MutationObserver(function(){ stamp(); })
+      .observe(document.body, {childList: true, subtree: true});
+
+    /* ATTRIBUTES, BUT ONLY WHERE PILLS LIVE. Watching style on the whole body
+       would fire for every unrelated inline write in the theme -- and there are
+       several a second, from four different sections' polling loops -- for a set
+       of about five pills that all live in one subtree. Scoped to the drawer and
+       the cart page's form, it fires for pg-drawer's pill restyle (the write
+       that actually matters) and almost nothing else. Attached lazily because
+       #cart may not exist yet, and re-checked until it does. */
+    var attrSeen = [];
+    (function watchAttrs(){
+      ['#cart', 'body.template-cart .form-cart'].forEach(function(sel){
+        var el = document.querySelector(sel);
+        if (!el || attrSeen.indexOf(el) > -1) return;
+        attrSeen.push(el);
+        try {
+          new MutationObserver(function(){ stamp(); })
+            .observe(el, {subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+        } catch(e){}
+      });
+      if (attrSeen.length < 2) setTimeout(watchAttrs, 500);
+    })();
   }
 
   /* ---------------- the honest percentage ---------------- */
@@ -183,6 +312,20 @@
   }
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* WHAT THE LINE ACTUALLY COST, whichever field the discount lands in.
+     Shopify puts LINE-level discounts in final_line_price and ORDER-level ones
+     (the standing Extra 10% off entire order) in line_price -- and which of the
+     two is the smaller depends on which kind of discount is running, so reading
+     either one alone under-reports the saving the moment the other applies.
+     The lower of the two is the amount actually charged for the line. */
+  function paidOf(it){
+    var a = typeof it.line_price === 'number' ? it.line_price : null;
+    var b = typeof it.final_line_price === 'number' ? it.final_line_price : null;
+    if (a === null) return b;
+    if (b === null) return a;
+    return Math.min(a, b);
+  }
 
   function lines(){
     return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
@@ -254,16 +397,15 @@
         var paids = g.filter(function(r){ return !isFree(r); });
 
         var paidQty = 0, paidSum = 0, freeQty = 0;
-        paids.forEach(function(r){ paidQty += r.item.quantity; paidSum += r.item.line_price; });
+        paids.forEach(function(r){ paidQty += r.item.quantity; paidSum += (paidOf(r.item) || 0); });
         frees.forEach(function(r){ freeQty += r.item.quantity; });
 
-        var cap = CAP[g[0].item.variant_id] || 0;
+        var cap0 = CAP[g[0].item.variant_id] || 0;
 
         /* DUPLICATE PAID ROWS still merge -- that part was never the complaint.
-           Shopify can split the units a shopper is paying for across two lines
-           for its own accounting, and two rows of the same orb at two prices is
-           the thing that made the quantity look wrong. The FREE row is different:
-           it is a distinct thing the shopper is getting, so it stays on screen. */
+           Two rows of the same orb at two prices is what made the quantity look
+           wrong. The FREE row is different: it is a distinct thing the shopper is
+           getting, so it stays on screen. */
         paids.forEach(function(r, i){
           r.li.classList.remove('pg-free-line');
           if (i === 0) r.li.classList.remove('pg-merged-away');
@@ -283,15 +425,14 @@
           if (q && q.value !== String(paidQty)) q.value = String(paidQty);
 
           setText(head.li.querySelector('.nc-lsave-now'), money(paidSum));
-          if (cap) setWas(head.li, cap * paidQty);
+          if (cap0) setWas(head.li, cap0 * paidQty);
           noteOff(head.li);      /* the free row speaks for itself now */
 
-          primary[k] = {row: head, qty: paidQty, paid: paidSum};
+          primary[k] = {row: head, total: paidQty, paid: paidSum};
         }
 
         /* every free line renders itself: MSRP struck, nothing charged, and a
-           label rather than a percentage, because "SAVED 100%" reads like a
-           discount when the honest word is FREE. */
+           label rather than a percentage. */
         frees.forEach(function(r){
           var li = r.li;
           li.classList.remove('pg-merged-away');
@@ -304,10 +445,10 @@
           if (fi && fi.value !== String(fq)) fi.value = String(fq);
 
           setText(li.querySelector('.nc-lsave-now'), money(0));
-          if (cap) setWas(li, cap * fq);
+          if (cap0) setWas(li, cap0 * fq);
 
-          var chip = li.querySelector('.pg-save-chip');
-          if (chip) setText(chip, 'FREE');
+          var fchip = li.querySelector('.pg-save-chip');
+          if (fchip) setText(fchip, 'FREE');
           noteOn(li, fq > 1 ? (fq + ' FREE - BUY 2 GET 1') : 'FREE - BUY 2 GET 1');
         });
       });
@@ -327,7 +468,7 @@
 
         var cap = CAP[item.variant_id];
         if (!cap) return;
-        var qty = grp ? grp.qty : item.quantity;
+        var qty = grp ? grp.total : item.quantity;
         var base = cap * qty;
         /* line_price, NOT final_line_price. final_line_price counts only the
            LINE-level discounts, so once the extra 10% became an automatic ORDER
@@ -337,14 +478,22 @@
            wrong one and printing SAVED 50% on a row whose own two figures,
            $140.00 struck and $62.99 charged, are 55% apart. The shopper could
            see the badge contradict the prices printed beside it. */
-        var paid = grp ? grp.paid
-                       : (typeof item.line_price === 'number' ? item.line_price : item.final_line_price);
+        var paid = grp ? grp.paid : paidOf(item);
         if (!base || typeof paid !== 'number') return;
 
         var pct = Math.round((base - paid) / base * 100);
         if (pct < 1) return;
 
-        setText(chip, 'SAVED ' + pct + '%');
+        /* "-55%", not "SAVED 55%". The pill's own geometry has been at zero
+           slack since the padding and tracking were fixed -- measured dead space
+           beyond glyphs+padding is 0.0px -- so its 4.1:1 stadium shape was the
+           STRING, not a layout fault, and no further CSS could round it. The
+           word is the only remaining lever: "SAVED 55%" is 81.8px of letters,
+           "-55%" is 42.0px, which with the taller box in STYLE above is a 1.75:1
+           badge instead of a 4.1:1 bar. pg-drawer's own pass() writes this same
+           element, so its string was changed to match -- two writers with
+           different text would fight at 300ms against 800ms and flicker. */
+        setText(chip, '-' + pct + '%');
 
         /* and the struck figure beside it: MSRP for the whole line, so it means
            the same thing on a discounted row as on a full-price one */

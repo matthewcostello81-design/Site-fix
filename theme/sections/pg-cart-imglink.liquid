@@ -73,19 +73,19 @@
 <style>
   /* --- 3. see note above --- */
   /* .m6pn is a SIBLING of #cart, not a descendant -- measured: a `#cart .m6pn`
-     rule matched nothing. Listed bare, and #cart kept for the drawer itself.
-
-     GATED ON THE DRAWER BEING OPEN. These two declarations turn the drawer into
+     rule matched nothing. Listed bare, and #cart kept for the drawer itself. */
+  /* GATED ON THE DRAWER BEING OPEN. These two declarations turn the drawer into
      a scroll container that swallows overscroll, which is right while it is on
      screen and wrong the rest of the time: #cart and .m6pn are position:fixed at
      the full size of the viewport on EVERY page, so unscoped this left a
      full-screen scrollable overlay sitting over the site permanently. Measured
      on a closed drawer: fixed, 0..844, overflow-y auto -- invisible and
-     pointer-events:none, but still a scroller as far as the engine is
-     concerned, which is the sort of thing iOS gets strange about at the end of a
-     page. html.m6pn-open is the theme's own open-state class (confirmed: absent
-     when closed, present when open), so the containment now exists only for the
-     moments it is needed. */
+     pointer-events:none, but still a scroller as far as the engine is concerned,
+     which is the sort of thing iOS gets strange about at the end of a page.
+     html.m6pn-open is the theme's own open-state class (confirmed: absent when
+     closed, present when open). Reported as the page sticking at the bottom on
+     mobile; not reproducible in headless Chromium, so this is the most likely
+     cause removed rather than a confirmed fix. */
   html.m6pn-open #cart,
   html.m6pn-open .m6pn,
   html.m6pn-open #cart .l4ca{
@@ -112,10 +112,13 @@
     padding:11px 10px 9px !important;
     border-radius:12px !important;
     background:#0B0710 !important;
-    color:#E4D9F0 !important;
+    /* was #E4D9F0 -- a lavender at 11.5px/800 on #0B0710, which is the darkest
+       surface in the drawer. It is the first thing in the cart and it was the
+       hardest to read; white, and the truck with it. */
+    color:#FFFFFF !important;
   }
   #cart .nc-dship svg,
-  .nc-drawer-top .nc-dship svg{stroke:#C79BEA !important}
+  .nc-drawer-top .nc-dship svg{stroke:#FFFFFF !important;stroke-width:2.2 !important}
 
   /* --- 5. the stars ---
      Not a row of identical glyphs. The reference is a little scatter of
