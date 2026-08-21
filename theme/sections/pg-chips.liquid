@@ -68,11 +68,21 @@
   two numbers were being shown for one product, and Shopify -- not the shopper --
   decides how the total is divided between them.
 
-  So the rows for one variant are merged into one. The first row carries the
-  group: the real total quantity, the sum of the group's line prices, MSRP times
-  that total struck through, one honest percentage, and a note saying how many of
-  them are free. The rest are hidden. There is now one number per product, so it
-  cannot disagree with itself.
+  So the PAID rows for one variant are merged into one. The first carries the
+  group: the paid quantity, the sum of the paid line prices, MSRP times that
+  quantity struck through, and one honest percentage. Extra paid rows are hidden.
+
+  THE FREE ROW STAYS ON SCREEN, on its own line, by request -- and hiding it was
+  a mistake worth naming. Merging it away removed the evidence for what the
+  offer had done: the shopper pressed + and, when the new unit became the free
+  one, nothing they could see moved. With the free row visible, that press has an
+  answer -- the free line is what changed. It renders MSRP struck, nothing
+  charged, and the word FREE rather than SAVED 100%, which reads like a discount
+  when the truth is simpler.
+
+  Its stepper is removed. How many units are free is Shopify's decision, not the
+  shopper's, so a control there would argue with the offer. The paid row keeps
+  the only stepper and moves the product's whole total.
 
   THE STEPPER IS INTERCEPTED ONLY ON MERGED ROWS. +/- sets the product's TOTAL
   through a single /cart/update.js that puts the whole quantity on the first line
@@ -98,6 +108,15 @@
      every pass. */
   #cart .l4ca > li.pg-merged-away,
   body.template-cart .l4ca > li.pg-merged-away{display:none !important}
+
+  /* THE FREE ORB GETS ITS OWN LINE, by request -- and it is not editable.
+     Its quantity is decided by Shopify's Buy 2 Get 1, not by the shopper, so a
+     stepper on it would be a control that argues with the offer. The paid row
+     keeps the only stepper and moves the product's total. */
+  #cart .l4ca > li.pg-free-line .pg-qbtn,
+  #cart .l4ca > li.pg-free-line input[type=number],
+  body.template-cart .l4ca > li.pg-free-line .pg-qbtn,
+  body.template-cart .l4ca > li.pg-free-line input[type=number]{display:none !important}
 
   #cart .pg-free-note,
   body.template-cart .pg-free-note{
@@ -203,50 +222,99 @@
         groups[k].push(r);
       });
 
-      var primary = {};      /* li -> the group it now represents */
+      function isFree(r){ return r.item.line_price === 0; }
+      function setWas(li, cents){
+        li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
+          if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
+          var t = (el.textContent || '').trim();
+          if (!/^\$[\d.,]+$/.test(t)) return;
+          setText(el, money(cents));
+        });
+      }
+      function noteOn(li, text){
+        var note = li.querySelector('.pg-free-note');
+        if (!note){
+          note = document.createElement('span');
+          note.className = 'pg-free-note';
+          var chipEl = li.querySelector('.pg-save-chip');
+          if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
+          else li.appendChild(note);
+        }
+        setText(note, text);
+      }
+      function noteOff(li){
+        var n = li.querySelector('.pg-free-note');
+        if (n && n.parentNode) n.parentNode.removeChild(n);
+      }
+
+      var primary = {};      /* li -> the paid group it now represents */
       order.forEach(function(k){
         var g = groups[k];
-        g.forEach(function(r, i){
+        var frees = g.filter(isFree);
+        var paids = g.filter(function(r){ return !isFree(r); });
+
+        var paidQty = 0, paidSum = 0, freeQty = 0;
+        paids.forEach(function(r){ paidQty += r.item.quantity; paidSum += r.item.line_price; });
+        frees.forEach(function(r){ freeQty += r.item.quantity; });
+
+        var cap = CAP[g[0].item.variant_id] || 0;
+
+        /* DUPLICATE PAID ROWS still merge -- that part was never the complaint.
+           Shopify can split the units a shopper is paying for across two lines
+           for its own accounting, and two rows of the same orb at two prices is
+           the thing that made the quantity look wrong. The FREE row is different:
+           it is a distinct thing the shopper is getting, so it stays on screen. */
+        paids.forEach(function(r, i){
+          r.li.classList.remove('pg-free-line');
           if (i === 0) r.li.classList.remove('pg-merged-away');
           else r.li.classList.add('pg-merged-away');
         });
-        var head = g[0];
-        var total = 0, paid = 0, free = 0;
-        g.forEach(function(r){
-          total += r.item.quantity;
-          paid += (typeof r.item.line_price === 'number' ? r.item.line_price : 0);
-          if (r.item.line_price === 0) free += r.item.quantity;
-        });
-        head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
-        head.li.setAttribute('data-pg-total', String(total));
-        primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length};
 
-        /* the one number the shopper steps up and down */
-        var q = head.li.querySelector('input[type=number]');
-        if (q && q.value !== String(total)) q.value = String(total);
+        var head = paids[0];
+        if (head){
+          /* the stepper still moves the product's WHOLE total, free units
+             included -- otherwise + would fight the offer over which units are
+             free. Every press changes something the shopper can see: either this
+             number or the free row below it. */
+          head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
+          head.li.setAttribute('data-pg-total', String(paidQty + freeQty));
 
-        /* the price charged for all of them together */
-        setText(head.li.querySelector('.nc-lsave-now'), money(paid));
+          var q = head.li.querySelector('input[type=number]');
+          if (q && q.value !== String(paidQty)) q.value = String(paidQty);
 
-        /* say plainly how many of them are free, rather than leaving a $0.00
-           row the shopper has to work out for themselves */
-        var note = head.li.querySelector('.pg-free-note');
-        if (free > 0 && total > free){
-          if (!note){
-            note = document.createElement('span');
-            note.className = 'pg-free-note';
-            var chipEl = head.li.querySelector('.pg-save-chip');
-            if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
-            else head.li.appendChild(note);
-          }
-          setText(note, free + ' FREE INCLUDED');
-        } else if (note && note.parentNode){
-          note.parentNode.removeChild(note);
+          setText(head.li.querySelector('.nc-lsave-now'), money(paidSum));
+          if (cap) setWas(head.li, cap * paidQty);
+          noteOff(head.li);      /* the free row speaks for itself now */
+
+          primary[k] = {row: head, qty: paidQty, paid: paidSum};
         }
+
+        /* every free line renders itself: MSRP struck, nothing charged, and a
+           label rather than a percentage, because "SAVED 100%" reads like a
+           discount when the honest word is FREE. */
+        frees.forEach(function(r){
+          var li = r.li;
+          li.classList.remove('pg-merged-away');
+          li.classList.add('pg-free-line');
+          li.removeAttribute('data-pg-keys');
+          li.removeAttribute('data-pg-total');
+
+          var fq = r.item.quantity;
+          var fi = li.querySelector('input[type=number]');
+          if (fi && fi.value !== String(fq)) fi.value = String(fq);
+
+          setText(li.querySelector('.nc-lsave-now'), money(0));
+          if (cap) setWas(li, cap * fq);
+
+          var chip = li.querySelector('.pg-save-chip');
+          if (chip) setText(chip, 'FREE');
+          noteOn(li, fq > 1 ? (fq + ' FREE - BUY 2 GET 1') : 'FREE - BUY 2 GET 1');
+        });
       });
 
       rows.forEach(function(r){
         if (r.li.classList.contains('pg-merged-away')) return;
+        if (r.li.classList.contains('pg-free-line')) return;   /* rendered above */
         var li = r.li;
         var item = r.item;
         var grp = primary[String(item.variant_id)];
@@ -259,7 +327,7 @@
 
         var cap = CAP[item.variant_id];
         if (!cap) return;
-        var qty = grp ? grp.total : item.quantity;
+        var qty = grp ? grp.qty : item.quantity;
         var base = cap * qty;
         /* line_price, NOT final_line_price. final_line_price counts only the
            LINE-level discounts, so once the extra 10% became an automatic ORDER
