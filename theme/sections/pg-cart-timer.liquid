@@ -90,6 +90,38 @@
   #cart .nc-recs,
   #cart .nc-recs-panel{display:none !important}
 
+  /* ================================================================
+     THE MOBILE CART SAID THE SAME THING TWICE, AND NAMED THE SHOP INSIDE THE
+     SHOP. Measured in the open drawer at 393px:
+
+       .pg-cart-top span    "Your Cart"   y=56          the real heading, with the count
+       #cart .l4ca::before  "Your Cart"                 a SECOND one -- a pseudo-element
+       #cart .pg-cart-mark  POCKET ERA    y=92, 43px    the wordmark block
+
+     Three rows of chrome above the first product: a heading the drawer had
+     already printed, and the name of the shop the shopper is standing in. Both
+     go on phones. The heading carrying the item count stays -- it is the only
+     one that says something the shopper does not already know -- and so does the
+     free-shipping bar, which is a reason to buy rather than decoration.
+
+     The duplicate is a pseudo-element, so it cannot be removed from the DOM;
+     content is the only handle on it, set to none rather than "" so the box is
+     not laid out at all.
+
+     This lives HERE, in the timer, for the same reason the recommendation hide
+     does: overlay-group is at Shopify's 25-section limit. It was written into
+     pg-cart-mobile-price first, which looked like the natural home -- that file
+     is four lines long and claims footer-group.json still references it. It does
+     not: measured on the rendered page, the section is absent from the DOM and
+     its CSS never shipped. The comment was stale. Verified this file renders by
+     finding its own section id in the page.
+
+     Mobile only; the desktop drawer is wider and nothing is crowded there. */
+  @media (max-width:760px){
+    #cart .pg-cart-mark{display:none !important}
+    #cart .l4ca::before{content:none !important;display:none !important}
+  }
+
   #pg-rush{
     display:flex;align-items:center;justify-content:center;gap:8px;
     margin:0 0 6px;padding:7px 10px;
