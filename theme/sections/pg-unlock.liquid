@@ -108,22 +108,18 @@
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
   }
   /* ONE SIZE, AND ITS HEIGHT DOES NOT COME FROM PADDING.
-     This button used to be three different sizes depending on where its row
-     happened to be in the DOM, and the biggest of them was the shop owner's
-     "so huge". The @media(max-width:600px) block below used to give it
-     `flex:1 1 100%`, throwing it onto its own full-width line at 14px -- a
-     322x42 slab on a 390px phone -- and the ONLY thing that ever prevented that
-     was pg-cart-mobile physically moving the row inside .sticky-in-panel, which
-     is a higher-specificity ancestor. So the compact size was never conditioned
-     on the viewport; it was conditioned on a JS DOM move having already
-     happened. Before that move -- on every drawer rebuild, and permanently if
-     the move ever fails -- the slab was what the shopper saw.
-     Now the button is `flex:0 0 auto` at every width, so it sits beside the
-     copy everywhere and no rule below needs to override it.
-     Height comes from min-height, not padding: padding-derived height put the
-     pinned button at 32px, under the 40px minimum for a tap target sitting
-     directly above CHECKOUT. Measured after this change: 55-59px x 40px in all
-     six contexts (in-pane, in-list, 375/390/700/900/1280). */
+     This button used to be three sizes depending on where its row sat in the
+     DOM, and the biggest was the shop owner's "so huge": the max-width:600px
+     block below gave it flex:1 1 100%, throwing it onto its own full-width line
+     as a 322x42 slab, and the ONLY thing that ever prevented that was
+     pg-cart-mobile physically moving the row inside .sticky-in-panel, a
+     higher-specificity ancestor. So the compact size was never conditioned on
+     the viewport -- it was conditioned on a JS DOM move having already happened,
+     and before it (every drawer rebuild, and permanently if the move ever
+     failed) the slab was what the shopper saw.
+     Now flex:0 0 auto at every width, beside the copy everywhere. Height comes
+     from min-height, not padding: padding-derived height left the pinned button
+     at 32px, under the minimum for a tap target sitting above CHECKOUT. */
   #cart .pg-unlock-add{
     flex:0 0 auto;order:0;
     display:inline-flex;align-items:center;justify-content:center;
@@ -154,22 +150,15 @@
   }
 
   /* ---------------- COMPACT INSIDE THE PINNED PANE ----------------
-     pg-cart-mobile moves #pg-unlock-slot INTO .sticky-in-panel under 760px, so
-     on a phone this row is not scroll content any more -- it is pinned, and
-     every pixel it takes is a pixel the shopper cannot use to look at the cart.
-     Measured before this rule existed: the row was 155px tall and the pane 312px,
-     which is 47% of an iPhone SE. The full-width ADD button was most of it --
-     the max-width:600px rule below drops it onto its own line, costing a whole
-     row of height for a button that fits perfectly well beside the copy.
-
-     So the pinned copy is compacted: the button comes back onto the line, the
-     thumbnail loses a third of its size, and the FREE pill goes -- the headline
-     already says FREE, and a third line of text is expensive here in a way it
-     is not in the scrolling list.
-
-     Scoped to .sticky-in-panel, so the desktop drawer (where the row stays in
-     the list and space is not scarce) keeps the readable size above. The
-     specificity beats the max-width:600px rule whatever the source order. */
+     Under 760px pg-cart-mobile moves this row into the bottom-pinned totals
+     pane, where it is no longer scroll content: every pixel it takes is a pixel
+     of cart the shopper cannot see. Measured before these rules, the row was
+     155px and the pane 312px -- 47% of an iPhone SE, most of it the full-width
+     ADD button that the max-width:600px block used to force onto its own line.
+     So the button comes back beside the copy, the thumbnail loses a third of its
+     size, and the FREE pill goes (the headline already says FREE).
+     These cover the CLOSED row. The open chooser is sized by its own block lower
+     down, which is scoped to .is-open rather than to the pane. */
   #cart .sticky-in-panel .pg-unlock{
     gap:10px;padding:8px 10px;margin:0 0 6px;border-radius:11px;
     box-shadow:0 6px 16px -14px rgba(74,28,102,.45);
@@ -181,95 +170,19 @@
   /* the button is already compact and beside the copy everywhere (base rule);
      inside the pinned pane it only gives up 2px of side padding. */
   #cart .sticky-in-panel .pg-unlock-add{padding:0 14px !important}
-  /* THE CHOOSER, PINNED. Tapping ADD on a multi-design product hides the button
-     and opens this panel, whose own confirm button is full-width by design --
-     it IS the CTA at that point. Uncompacted it took the pinned row to 210px
-     and the pane to 359px, 42.5% of a 390x844 phone and about 54% of an SE,
-     which left almost no cart visible. Trimmed here to 171px / 320px, and the
-     confirm button's height moved off padding onto min-height so it GAINS a
-     5px taller tap target while the row shrinks. */
+  /* fallbacks for a panel that is somehow not .is-open; the sized-and-ordered
+     rules for the open one are further down */
   #cart .sticky-in-panel .pg-unlock-pick{padding-top:8px;margin-top:0}
   #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
   #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
 
-  /* AN OPEN CHOOSER IS COMPACT EVERYWHERE, NOT JUST ON A SHORT SCREEN.
-     The panel opens on arrival rather than waiting for a tap, which is the point
-     -- the offer IS the choosing, and hiding it behind a tap hid it. But it is
-     also the tallest thing the pinned pane ever holds, and the pane is
-     bottom-anchored, so every pixel it takes is a pixel of cart the shopper
-     cannot see. On a real iPhone it filled better than a third of the screen and
-     pushed the one cart line the shopper had into a clipped strip at the top.
-
-     This was first written behind @media (max-height:700px), on the theory that
-     only small phones were short of room. That was wrong: a 390x844 phone is not
-     short of room in the abstract and the panel was still too big on it. Height
-     in the pinned pane is scarce at EVERY screen size, because the pane competes
-     with the cart rather than with the page. So the compaction is unconditional
-     inside .sticky-in-panel, and the short-screen block below tightens it
-     further where the squeeze is real.
-
-     What goes, in order of how little it costs:
-       - the subtitle, which with the panel open is the one line saying nothing
-         the shopper cannot already see: each slot is labelled with its own price
-         or FREE, and the confirm button repeats the count and the free units
-       - the select boxes' padding, which was sized for a standalone form
-       - the confirm button's height, which came from padding rather than a
-         min-height and so had no floor to sit on
-     What stays: every tap target at or above 34px, the thumbnail, and the
-     headline naming the bundle. */
-  #cart .sticky-in-panel .pg-unlock.is-open{padding:7px 10px;gap:6px}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t small{display:none}
-  /* THE HEADLINE SITS BESIDE THE THUMBNAIL, NOT UNDER IT.
-     `.pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}` gives the copy a full row
-     of its own, which is right on the desktop drawer where the panel has room to
-     breathe. In the pinned pane it cost an entire line for nothing: the
-     thumbnail sat alone on one row with 250px of empty space beside it, and the
-     headline went underneath. Putting them back on one line is 25px of cart
-     handed back at every screen size, for no loss of information. */
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t{flex:1 1 auto;min-width:0}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t b{
-    font-size:12.5px;line-height:1.2;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
-  #cart .sticky-in-panel .pg-unlock.is-open img{width:28px;height:28px;border-radius:7px}
-  /* THE SLOTS SIT SIDE BY SIDE, LABEL ABOVE.
-     One slot per full-width row is the roomy layout, and it is what the desktop
-     drawer keeps. In the pinned pane it is the single biggest thing left: two
-     slots stacked cost 70px of a 164px card for two dropdowns that are each
-     about 120px of actual content.
-     Laying them out as a grid with the price or FREE above each one costs 11px
-     of label but saves a whole 35px row: two slots go from 70px to 45px. Three
-     slots wrap to two columns and cost 90px instead of 105px.
-     auto-fit with a 140px floor is what makes that safe -- if the pane is ever
-     narrow enough that 140px would truncate the character names, the grid falls
-     back to one column on its own and nothing is cut off. No markup changed;
-     this is the same .pg-unlock-pick-r the desktop drawer renders. */
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{
-    padding-top:5px;margin-top:0;
-    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
-    gap:5px 6px;align-items:end;
-  }
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{
-    display:flex;flex-direction:column;align-items:stretch;gap:1px;margin:0;
-  }
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r span{
-    width:auto;font-size:9px;letter-spacing:.03em;line-height:1.2;
-  }
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{
-    padding:5px 8px;font-size:12px;line-height:1.15;border-radius:8px;min-height:32px;
-  }
-  /* the confirm button spans whatever number of columns the grid settled on */
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{grid-column:1 / -1}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{
-    min-height:38px;padding:6px 14px !important;font-size:12.5px;margin-top:2px;
-  }
   /* and tighter again where the screen really is short */
   @media (max-height:700px){
     #cart .sticky-in-panel .pg-unlock.is-open{padding:6px 9px}
     #cart .sticky-in-panel .pg-unlock.is-open img{width:26px;height:26px}
     #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 3px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{min-height:32px;padding:5px 8px}
-    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:36px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{min-height:28px;padding:3px 8px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:32px}
   }
 
   /* ---------------- the design chooser ----------------
@@ -290,7 +203,86 @@
      let the copy take the full first line. */
   #cart .pg-unlock.is-open .pg-unlock-add{display:none !important}
   #cart .pg-unlock.is-open .pg-unlock-tag{display:none}
+  /* the copy takes the full first line on the DESKTOP-width drawer; the compact
+     block immediately below puts it back beside the thumbnail everywhere the
+     panel is actually open. Both are (1,3,0), so the one that wins is the one
+     that comes later -- which is why that block has to sit after this one and
+     not before it. Getting that backwards silently reverted the whole
+     compaction once. */
   #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}
+
+  /* AN OPEN CHOOSER: SMALL, AND IN AN ORDER OF IMPORTANCE.
+     The panel opens on arrival rather than waiting for a tap -- the offer IS the
+     choosing, and hiding it behind a tap hid it. Two things have to be true of
+     it, and only the first was.
+
+     SMALL. The pane is bottom-anchored, so its height comes straight out of the
+     cart. This was first gated behind @media (max-height:700px), on the theory
+     that only small phones were short of room; wrong, because the pane competes
+     with the cart rather than with the page, so height is scarce at every size.
+
+     IN ORDER. Shrinking everything to fit left the headline, the dropdown text
+     and the confirm button at 12.5/12/12.5px -- three things the same size, so
+     nothing led and the controls read as loudly as the offer. The button is
+     worse than its font size suggests: the drawer uppercases it, and caps on a
+     filled full-width pill carry far more weight than sentence case. Measured off
+     the shop owner's screenshot, all three stood about 40px tall in a 497px card.
+     So the headline goes UP to 14px and the controls DOWN to 11.5px: the deal is
+     the message, the dropdowns and the button are plumbing.
+
+     SCOPED TO .is-open, NOT .sticky-in-panel. These used to apply only inside the
+     pinned pane, leaving the desktop drawer -- and the phone in any state before
+     the row was moved -- on the old chunky layout. The panel should look the same
+     wherever it opens; the pane tier below just squeezes it further. */
+  #cart .pg-unlock.is-open{padding:8px 11px;gap:7px}
+  #cart .pg-unlock.is-open .pg-unlock-t small{display:none}
+  /* THE HEADLINE SITS BESIDE THE THUMBNAIL, NOT UNDER IT.
+     `.pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}` gave the copy a full row of
+     its own, which cost an entire line for nothing: the thumbnail sat alone with
+     250px of empty space beside it and the headline went underneath. */
+  #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 auto;min-width:0}
+  #cart .pg-unlock.is-open .pg-unlock-t b{
+    font-size:14px;line-height:1.2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #cart .pg-unlock.is-open img{width:30px;height:30px;border-radius:7px}
+  /* THE SLOTS SIT SIDE BY SIDE, LABEL ABOVE.
+     One slot per full-width row is roomy and was the old layout, but two stacked
+     slots cost 70px of a 164px card for dropdowns carrying about 120px of
+     content each. The label above costs 11px and saves a 35px row.
+     auto-fit with a 140px floor is what makes it safe: if the pane is ever narrow
+     enough that 140px would truncate a character name, the grid falls back to one
+     column on its own. No markup changed -- this is the same .pg-unlock-pick-r
+     that was always rendered. */
+  #cart .pg-unlock.is-open .pg-unlock-pick{
+    padding-top:6px;margin-top:0;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+    gap:5px 6px;align-items:end;
+  }
+  #cart .pg-unlock.is-open .pg-unlock-pick-r{
+    display:flex;flex-direction:column;align-items:stretch;gap:1px;margin:0;
+  }
+  #cart .pg-unlock.is-open .pg-unlock-pick-r span{
+    width:auto;font-size:9px;letter-spacing:.03em;line-height:1.2;
+  }
+  #cart .pg-unlock.is-open .pg-unlock-pick select{
+    padding:4px 8px;font-size:11.5px;line-height:1.15;border-radius:8px;min-height:30px;
+    font-weight:600;
+  }
+  /* the confirm button spans whatever number of columns the grid settled on */
+  #cart .pg-unlock.is-open .pg-unlock-go{
+    grid-column:1 / -1;
+    min-height:34px;padding:5px 14px !important;font-size:11.5px;
+    letter-spacing:.02em;margin-top:2px;
+  }
+
+  /* the pinned pane squeezes the same panel a little further */
+  #cart .sticky-in-panel .pg-unlock.is-open{padding:7px 10px;gap:6px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t b{font-size:13px}
+  #cart .sticky-in-panel .pg-unlock.is-open img{width:28px;height:28px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:5px}
+
+
   #cart .pg-unlock-pick-r{display:flex;align-items:center;gap:8px;margin:0 0 7px}
   #cart .pg-unlock-pick-r span{
     flex:none;width:58px;
@@ -803,26 +795,16 @@
   }
 
   /* RECONCILE, AND ONLY WHEN THE CART ACTUALLY CHANGED.
-     Two mobile-flicker fixes live here.
-
-     1. STRICT NO-OP ON A STEADY CART. render() runs on a 900ms timer. Every
-        earlier version did DOM work on every tick -- querying, comparing,
-        sometimes replacing -- and on a cart holding both an orb and the console
-        that churn showed up as the two upsell rows spazzing. Now the cart is
-        signed by its variant ids and quantities; if that signature is unchanged
-        AND both rows are already present and current, render returns having
-        touched nothing at all.
-
-     2. SINGLE FLIGHT. The 900ms timer, afterAdd() and a 400ms follow-up can all
-        call render() around the same moment. Two /cart.js reads resolving out
-        of order used to let a stale one rewrite the rows the fresh one just
-        set. `rendering` lets one run at a time.
-
-     Beyond that it reconciles rather than rebuilds: offers are sorted to a
-     FIXED order so the rows never swap, an unchanged row is left exactly where
-     it is, a changed one is replaced, a vanished one removed, a missing one
-     re-inserted, and a row the shopper has opened to pick designs is never
-     yanked mid-pick. */
+     Two guards. lastCartSig: if the cart signature is unchanged AND both rows
+     are already present and current, render() returns having touched nothing.
+     `rendering`: the 900ms timer, afterAdd() and its follow-up could all call
+     render() at once, and two /cart.js reads resolving out of order let a stale
+     one rewrite what the fresh one had just set -- so one runs at a time, and a
+     call that arrives mid-flight is remembered rather than dropped.
+     Beyond that it reconciles rather than rebuilds: offers sort to a FIXED order
+     so the rows cannot swap, an unchanged row is left exactly where it is, a
+     changed one is replaced, a vanished one removed, a missing one re-inserted,
+     and a row the shopper has opened to pick designs is never yanked mid-pick. */
   var lastCartSig = null;
   var rendering = false;
   /* COALESCE, DO NOT DISCARD. The single-flight guard used to `return` on a
@@ -903,23 +885,16 @@
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
 
-      /* THE SLOT IS BORN WHERE IT BELONGS. Created once, recreated when a
-         drawer rebuild destroys it -- and a rebuild destroys it on every add and
-         every quantity change.
-         It used to be re-created unconditionally above the item list, which is
-         its DESKTOP home. On a phone pg-cart-mobile then moved it down into the
-         pinned pane -- but only on its own 60ms observer tick, one whole frame
-         or more later. So every cart change played the same sequence: the offer
-         rows reappeared at the top of the drawer, at their un-pinned size, and
-         were then teleported to the bottom. Measured at ~81ms of visible wrong
-         position per rebuild in a zero-latency harness, longer on a real phone
-         where a /cart.js round trip precedes it. That teleport is the "glitching"
-         the shop owner reported.
-         Creating it in the pane directly, when a pane exists and we are at a
-         width where it belongs there, removes the intermediate position
-         entirely -- there is no first paint to correct. placeUnlock() still runs
-         and is still the authority; it now finds the slot already correct and
-         returns without touching anything. */
+          /* THE SLOT IS BORN WHERE IT BELONGS. A drawer rebuild destroys it on
+         every add and every quantity change. It used to be re-created above the
+         item list -- its DESKTOP home -- and pg-cart-mobile then moved it down
+         into the pinned pane on its own 60ms observer tick, so every cart change
+         replayed the same sequence: the rows reappeared at the top of the drawer
+         at their un-pinned size, then teleported to the bottom. Measured at
+         ~81ms of visible wrong position per rebuild in a zero-latency harness.
+         That teleport was the "glitching". Creating it in the pane directly
+         removes the intermediate position: there is no first paint to correct.
+         placeUnlock() is still the authority and now finds it already right. */
       var slot = c.querySelector('#pg-unlock-slot');
       if (!slot){
         slot = document.createElement('div');
@@ -1166,19 +1141,14 @@
   }
 
   /* ---------------- event-driven, never polled ----------------
-     The 900ms render loop was the flicker: on mobile it did visible DOM work
-     on some ticks no matter how tight the guard, and every rebuild wiped a
-     half-filled chooser. There is no timer now. render() runs only when the
-     cart actually changes -- and on a steady cart it therefore never runs, so
-     there is nothing left to flicker and an open chooser survives.
-
-     Three triggers, all debounced into one render:
-       - a cart-mutating fetch resolves (add / change / update / clear)
-       - Shopify mutates the drawer (line added, quantity changed, drawer
-         rebuilt by pgDrawerRefresh)
-       - the drawer is opened
-     render() still short-circuits when the cart signature is unchanged, so the
-     one observer bounce our own insert causes settles immediately. */
+     The old 900ms render loop was itself the flicker: on mobile it did visible
+     DOM work on some ticks however tight the guard, and every rebuild wiped a
+     half-filled chooser. There is no timer now. render() runs only when the cart
+     actually changes -- on a steady cart it never runs at all -- from three
+     triggers, debounced into one: a cart-mutating fetch resolving, Shopify
+     mutating the drawer, or the drawer opening. render() still short-circuits on
+     an unchanged signature, so the one observer bounce our own insert causes
+     settles immediately. */
   var renderTimer = null;
   function scheduleRender(){
     mark();                    /* same task as the mutation that woke us */
@@ -1218,19 +1188,15 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
 
-  /* THE WORDMARK LANDS WITH THE ROWS, NOT HALF A SECOND LATER.
-     mark() used to be driven only by this interval, so after a drawer rebuild
-     the header sat logo-less for up to 500ms and then popped in -- a second,
-     separate jump on top of the one the offer rows were making, and one more
-     observer cascade with it. It is now called synchronously from render() (the
-     same task that writes the rows) and from the observer, so the drawer
-     reassembles in one step. The interval stays as the backstop for a rebuild
-     that somehow wakes neither -- and it stays at 500ms rather than being slowed
-     down, because the write it makes is value-guarded now and therefore free.
-     It is load-bearing: pg-cart-badge carries a byte-identical mark(), but that
-     section is rendered by nothing (it appears in no section group and in no
-     template), so this really is the only thing that re-hides the theme's old
-     logo disc after a drawer rebuild. */
+  /* THE WORDMARK LANDS WITH THE ROWS. mark() used to be driven only by this
+     interval, so after a drawer rebuild the header sat logo-less for up to
+     500ms and then popped in -- a second jump on top of the one the offer rows
+     were making. It is called synchronously from render() and from
+     scheduleRender() now, so the drawer reassembles in one step. The interval
+     stays at 500ms as the backstop: its write is value-guarded and therefore
+     free, and it is load-bearing -- pg-cart-badge carries a byte-identical
+     mark() but is rendered by nothing, so this is the only thing that re-hides
+     the theme's old logo disc. */
   setInterval(mark, 500);
   render();
   mark();

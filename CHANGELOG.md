@@ -1,3 +1,79 @@
+# Three things the same size is not a hierarchy
+
+The shop owner's crop made the real complaint precise: the dropdowns and the
+confirm button were not too big in the abstract, they were too big **relative to
+everything else**. Measured off that screenshot, the headline, the dropdown text
+and the button glyphs all stood about 40px tall in a 497px card. Nothing led, so
+the plumbing read as loudly as the offer.
+
+That came from shrinking to fit rather than shrinking in order: headline 12.5px,
+dropdowns 12px, button 12.5px. And the button is worse than its font size
+suggests, because the drawer uppercases it and caps on a filled full-width pill
+carry far more weight than sentence case.
+
+    headline   12.5px -> 14px      (13px in the pinned pane)
+    dropdowns  12px   -> 11.5px    min-height 30px
+    button     12.5px -> 11.5px    min-height 34px
+
+## The rules were only ever applying in one place
+
+Widening the scope from `.sticky-in-panel .pg-unlock.is-open` to
+`.pg-unlock.is-open` made the row *grow* — from 145px to 197px — which is the
+opposite of the intent, and worth recording because the cause is not obvious.
+
+The original `.is-open` block sits further down the file and carries
+`display:block` on the panel and `flex:1 1 100%` on the copy. Both are `(1,3,0)`.
+So were the new rules. **At equal specificity the later rule wins**, and the new
+block was earlier — so the grid silently reverted to a block and the headline
+went back under the thumbnail. Moving the block after the old one restored it,
+and the old declaration now carries a comment saying why order is load-bearing
+there.
+
+The scope widening matters on its own: those sixteen rules used to apply only
+inside the pinned pane, so the desktop drawer — and the phone in any state before
+the row had been moved into the pane — kept the old chunky layout with the same
+flat hierarchy.
+
+## The file outgrew a single API write
+
+`themeFilesUpsert` has no append or chunked mode: the whole body must travel in
+one call. At 61,932 bytes it exceeded the per-message output cap in every
+encoding the API accepts (TEXT, BASE64, URL). The agent stopped rather than send
+a truncated body, which is exactly how a file lands corrupt — the right call, and
+the theme was left untouched.
+
+`themeFilesCopy` cannot rescue it either: `themeFilesCopy(themeId, files)` with
+`ThemeFilesCopyFileInput { srcFilename, dstFilename }` has no source theme, so it
+copies **within** one theme only. There is no cross-theme copy in the Admin API.
+
+Rather than split the sizing into a second section — a second source of truth for
+one thing — the file was trimmed back under the limit by condensing comment
+blocks that had come to tell the same story twice after successive edits:
+
+| | bytes |
+|---|---|
+| failed to ship | 61,932 |
+| last version that shipped | 61,214 |
+| **now** | **58,752** |
+
+Nothing was stripped wholesale; the header's section-group explanation and every
+causal note survive. What went was repetition and measurements this changelog
+already archives. Known-good ceiling is somewhere between 61,214 and 61,932 — the
+deploy brief now states the budget explicitly and tells the uploader to abort
+rather than truncate.
+
+| | at the start of these rounds | now |
+|---|---|---|
+| offer row | 247px | **139px** |
+| pinned pane, 390x844 | 324px (38.3%) | **216px (25.6%)** |
+| 375x667 | 42.9% | 32.2% |
+| 360x640 | 44.7% | 33.6% |
+| 430x932 | — | 23.2% |
+
+Applied to both the working draft and "FRAME UPSELL + cart fixes (Claude)", the
+copy of the live theme staged for publishing; both verified at
+`2fb9cfab` / 58,752 bytes, and all three cart files now match across the two.
+
 # The fixes are on a theme you can actually open
 
 The last three rounds of work all landed in a draft that was not the published
