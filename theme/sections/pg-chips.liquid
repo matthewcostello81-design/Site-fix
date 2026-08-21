@@ -139,17 +139,13 @@
      is the same trailing gap the chip was fixed for. 168.8px -> 118.9px. */
   #cart .pg-free-note,
   body.template-cart .pg-free-note{
-    display:inline-flex;align-items:center;
+    /* flex, not inline-flex: the plaque lives INSIDE the title's h2 now (see
+       noteOn below), directly after the inline product link, and inline-flex
+       there let it ride the same line as the title's last word. Block-level
+       flex with fit-content width takes its own line and still hugs its text. */
+    display:flex;align-items:center;
     width:fit-content;max-width:100%;min-width:0;
-    /* grid-column-start, not just `1 / -1`. The row's grid declares no explicit
-       columns (grid-template-columns computes to `none`), and in that grid `-1`
-       resolves back to line 1, so `1 / -1` collapsed and the plaque was
-       auto-placed into whatever implicit cell was free -- measured on a phone,
-       the price column, where it pushed the + button across the price and hung
-       off the right edge of the card. A start line of 1 is unambiguous in both
-       kinds of grid: the plaque takes column 1 of the next free row. */
-    justify-self:start;grid-column-start:1;grid-column-end:-1;
-    margin-top:4px;padding:4px 7px;border-radius:999px;
+    margin-top:5px;padding:4px 7px;border-radius:999px;
     background:rgba(139,68,190,.14);
     border:1px solid rgba(168,120,214,.4);
     color:#6B3E93;
@@ -431,19 +427,22 @@
           setText(el, money(cents));
         });
       }
-      /* LAST, not next to the chip. The chip's parent is `.cols`, which is
-         `display:contents` -- its children are laid out by the row's grid, so a
-         plaque inserted beside the chip competes for a cell in the middle of the
-         row. Appended to the grid container itself it is placed after every
-         other item, which with grid-column-start:1 means a fresh row underneath
-         them. */
+      /* INSIDE THE TITLE'S CELL, not in a cell of its own. The row is a grid
+         with no explicit columns, its items placed by a mix of explicit areas
+         and auto-flow, and every attempt to claim a fresh row for the plaque as
+         a grid item landed it in someone else's cell -- measured stacked on the
+         SAVED chip, and before that in the price column shoving the + button
+         across the price. Hosted inside the h2 it is not a grid item at all:
+         it renders on its own line under the product title, inside space the
+         title's cell already owns, and cannot collide with anything the grid
+         places. */
       function noteOn(li, text){
         var note = li.querySelector('.pg-free-note');
         if (!note){
           note = document.createElement('span');
           note.className = 'pg-free-note';
         }
-        var host = li.querySelector('section') || li;
+        var host = li.querySelector('h2') || li.querySelector('section') || li;
         if (note.parentNode !== host || note !== host.lastElementChild) host.appendChild(note);
         setText(note, text);
       }
