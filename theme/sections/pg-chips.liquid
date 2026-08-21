@@ -46,9 +46,10 @@
   thing on every row and the pill's percentage is the arithmetic between the
   two figures a shopper can actually see.
 
-  Lines are matched to cart items by handle and then by order within that handle
-  -- the same approach pg-cart-variants uses -- so a product on two lines still
-  lines up. The FREE GIFT pill is left alone: it is a label, not a percentage.
+  Lines are matched to cart items by IDENTITY -- the variant id the row itself
+  carries, falling back to the product handle -- and never by position, because
+  the drawer re-renders out of cart order after an add. See groupsOf below. The
+  FREE GIFT pill is left alone: it is a label, not a percentage.
 
   (D) ONE ROW PER PRODUCT, AND WHY THE QUANTITY USED TO SKIP.
 
@@ -304,13 +305,6 @@
     });
   }).catch(function(){});
 
-  function handleOf(li){
-    var a = li.querySelector('a[href*="/products/"]');
-    if (!a) return null;
-    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
-    return m ? m[1] : null;
-  }
-
   function money(c){ return '$' + (c / 100).toFixed(2); }
 
   /* WHAT THE LINE ACTUALLY COST, whichever field the discount lands in.
@@ -331,20 +325,83 @@
     return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
   }
 
-  /* pair every rendered row with the cart line it came from, in cart order */
-  function pair(cart){
-    var out = [], seen = {};
-    Array.prototype.forEach.call(lines(), function(li){
-      var handle = handleOf(li);
-      if (!handle) return;
-      var n = seen[handle] || 0;
-      seen[handle] = n + 1;
-      var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
-      var item = hits[n];
-      if (!item) return;
-      out.push({li: li, item: item});
-    });
-    return out;
+  /* THE ROW SAYS WHICH VARIANT IT IS. This used to pair rows to cart lines by
+     HANDLE and DOM ORDER, and that is the bug behind "prices all over the place
+     after an upsell, fine again after a refresh".
+
+     Buy 2 Get 1 splits one product across several lines of the SAME handle, so
+     handle alone cannot tell them apart and the pairing fell through to
+     position. The drawer re-renders asynchronously after an add: measured
+     earlier in this cart, pressing + left the free row rendered ABOVE the paid
+     row while the cart still listed paid first. Whenever those two orders
+     disagree, every figure written below lands on the wrong row -- one line's
+     price on another line's row, the wrong row marked FREE, the deal plaque on
+     some rows and not others. A reload rebuilds the drawer in cart order, the
+     two agree again, and it all looks fixed.
+
+     The row itself knows its variant: pg-cart-variants renders a <select> whose
+     value is the variant id, and the title link carries ?variant= too. That is
+     an identity rather than a position, so re-ordering cannot break it. */
+  function variantOf(li){
+    var sel = li.querySelector('select.pg-vsel, select[data-pg-var]');
+    if (sel && /^\d+$/.test(sel.value || '')) return sel.value;
+    var a = li.querySelector('a[href*="variant="]');
+    if (a){
+      var m = (a.getAttribute('href') || '').match(/variant=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  /* Bucket rows and cart lines by the same key, and REFUSE THE PASS if the two
+     sides do not correspond exactly. Variant id is the precise key, but it is
+     only readable off a row when the theme has drawn a variant <select> or a
+     ?variant= link, and neither is guaranteed -- a single-variant product gets
+     no select at all. So the product handle is kept as a second key: coarser,
+     but every row carries a product link, and a handle bucket still separates
+     one product's lines from another's, which is all the split below needs.
+     If neither key identifies every row, this returns null and the pass is
+     skipped -- mid-rebuild the drawer can hold three rows while the cart holds
+     two, and the honest thing then is to leave the theme's own render alone
+     rather than write confident wrong numbers over it. That refusal is the
+     whole fix: the old code always produced a pairing, even when there was no
+     correct one to produce. */
+  function bucket(rows, items, rowKey, itemKey){
+    var rowsBy = {}, order = [], i, v;
+    for (i = 0; i < rows.length; i++){
+      v = rowKey(rows[i]);
+      if (!v) return null;
+      if (!rowsBy[v]){ rowsBy[v] = []; order.push(v); }
+      rowsBy[v].push(rows[i]);
+    }
+    var itemsBy = {};
+    for (i = 0; i < items.length; i++){
+      v = itemKey(items[i]);
+      if (!v) return null;
+      (itemsBy[v] = itemsBy[v] || []).push(items[i]);
+    }
+    if (order.length !== Object.keys(itemsBy).length) return null;
+    for (i = 0; i < order.length; i++){
+      v = order[i];
+      if (!itemsBy[v] || itemsBy[v].length !== rowsBy[v].length) return null;
+    }
+    return {order: order, rowsBy: rowsBy, itemsBy: itemsBy};
+  }
+
+  function groupsOf(cart){
+    var rows = Array.prototype.slice.call(lines());
+    var items = cart.items || [];
+    if (!rows.length || !items.length) return null;
+
+    return bucket(rows, items, variantOf, function(it){ return String(it.variant_id); })
+        || bucket(rows, items, handleOf,  function(it){ return it.handle || null; });
   }
 
   function setText(el, t){ if (el && el.textContent.trim() !== t) el.textContent = t; }
@@ -355,53 +412,10 @@
     if (!els.length) return;
 
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
-      var rows = pair(cart);
+      var G = groupsOf(cart);
+      if (!G) return;      /* drawer and cart disagree -- see groupsOf above */
 
-      /* ---- merge every row of one variant into the first of them ---- */
-      var groups = {}, order = [];
-      rows.forEach(function(r){
-        var k = String(r.item.variant_id);
-        if (!groups[k]){ groups[k] = []; order.push(k); }
-        groups[k].push(r);
-      });
-
-      function isFree(r){ return r.item.line_price === 0; }
-
-      /* WHICH DEAL THIS LINE IS ON. The orb ladder is not one offer, it is
-         several, and they do not all behave alike -- measured on the live cart:
-             4 orbs  PokeOrb - Buy 2 Get 1 Free   free line, 1 @ $0.00
-             6 orbs  PokeOrb - 6 Pack $137.20     ONE line, 6 @ $20.58, none free
-             9 orbs  PokeOrb - Buy 5 Get 3 Free   free line, 3 @ $0.00
-         So the plaque cannot say "BUY 2 GET 1" -- it has to name the rung the
-         shopper actually landed on. The title comes off the line's own discount,
-         skipping the standing order-wide 10%, which is on every line and is not
-         a rung. The "PokeOrb - " prefix is dropped: the row already says which
-         product it is. */
-      function dealTitleOf(item){
-        var ds = item.discounts || [], i, t, amt;
-        for (i = 0; i < ds.length; i++){
-          t = ds[i].title || ds[i].description || '';
-          amt = ds[i].amount != null ? ds[i].amount : (ds[i].total_allocated_amount || 0);
-          if (t && !/entire order/i.test(t) && amt > 0) return t;
-        }
-        /* the PAID half of a Buy-N-Get-M carries the same title at 0 allocated,
-           which is what names the rung when the free half is the other line */
-        for (i = 0; i < ds.length; i++){
-          t = ds[i].title || ds[i].description || '';
-          if (t && !/entire order/i.test(t)) return t;
-        }
-        return '';
-      }
-      function dealLabel(t){
-        return String(t || '').replace(/^[^-]*-\s*/, '').trim().toUpperCase();
-      }
-      function groupDeal(g){
-        for (var i = 0; i < g.length; i++){
-          var t = dealTitleOf(g[i].item);
-          if (t) return t;
-        }
-        return '';
-      }
+      function isFreeItem(it){ return it.line_price === 0; }
       function setWas(li, cents){
         li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
           if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
@@ -426,68 +440,103 @@
         if (n && n.parentNode) n.parentNode.removeChild(n);
       }
 
-      var primary = {};      /* li -> the paid group it now represents */
-      order.forEach(function(k){
-        var g = groups[k];
-        var frees = g.filter(isFree);
-        var paids = g.filter(function(r){ return !isFree(r); });
+      /* WHICH DEAL THIS LINE IS ON. The orb ladder is not one offer, it is
+         several, and they do not behave alike -- measured on the live cart:
+             4 orbs  PokeOrb - Buy 2 Get 1 Free   free line, 1 @ $0.00
+             6 orbs  PokeOrb - 6 Pack $137.20     ONE line, 6 @ $20.58, none free
+             9 orbs  PokeOrb - Buy 5 Get 3 Free   free line, 3 @ $0.00
+         So the plaque has to name the rung the shopper actually landed on. The
+         standing order-wide 10% is skipped: it is on every line and is not a
+         rung. The "PokeOrb - " prefix goes because the row already names the
+         product. */
+      function dealTitleOf(item){
+        var ds = item.discounts || [], i, t, amt;
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          amt = ds[i].amount != null ? ds[i].amount : (ds[i].total_allocated_amount || 0);
+          if (t && !/entire order/i.test(t) && amt > 0) return t;
+        }
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          if (t && !/entire order/i.test(t)) return t;
+        }
+        return '';
+      }
+      function dealLabel(t){
+        return String(t || '').replace(/^[^-]*-\s*/, '').trim().toUpperCase();
+      }
+      function dealOfItems(its){
+        for (var i = 0; i < its.length; i++){
+          var t = dealTitleOf(its[i]);
+          if (t) return t;
+        }
+        return '';
+      }
+
+      G.order.forEach(function(v){
+        var rws = G.rowsBy[v], its = G.itemsBy[v];
+
+        var freeItems = its.filter(isFreeItem);
+        var paidItems = its.filter(function(it){ return !isFreeItem(it); });
 
         var paidQty = 0, paidSum = 0, freeQty = 0;
-        paids.forEach(function(r){ paidQty += r.item.quantity; paidSum += (paidOf(r.item) || 0); });
-        frees.forEach(function(r){ freeQty += r.item.quantity; });
+        paidItems.forEach(function(it){ paidQty += it.quantity; paidSum += (paidOf(it) || 0); });
+        freeItems.forEach(function(it){ freeQty += it.quantity; });
 
-        var cap0 = CAP[g[0].item.variant_id] || 0;
+        var cap0 = CAP[its[0].variant_id] || 0;
+        var label = dealLabel(dealOfItems(its));
 
-        /* DUPLICATE PAID ROWS still merge -- that part was never the complaint.
-           Two rows of the same orb at two prices is what made the quantity look
-           wrong. The FREE row is different: it is a distinct thing the shopper is
-           getting, so it stays on screen. */
-        paids.forEach(function(r, i){
-          r.li.classList.remove('pg-free-line');
-          if (i === 0) r.li.classList.remove('pg-merged-away');
-          else r.li.classList.add('pg-merged-away');
+        /* ROLES BY COUNT, NOT BY IDENTITY. Every row in this group is the same
+           variant -- the same orb -- so which physical row is called the paid one
+           and which the free one is arbitrary. What matters is that the counts
+           match, and groupsOf has already refused the pass if they do not. The
+           last N rows take the N free lines. Nothing is read back off a row, so
+           the order the drawer happens to render them in cannot produce a wrong
+           figure any more. */
+        var cut = rws.length - freeItems.length;
+        var paidRows = rws.slice(0, cut);
+        var freeRows = rws.slice(cut);
+
+        paidRows.forEach(function(li, i){
+          li.classList.remove('pg-free-line');
+          if (i === 0) li.classList.remove('pg-merged-away');
+          else li.classList.add('pg-merged-away');
         });
 
-        var head = paids[0];
+        var head = paidRows[0];
         if (head){
-          /* the stepper still moves the product's WHOLE total, free units
-             included -- otherwise + would fight the offer over which units are
-             free. Every press changes something the shopper can see: either this
-             number or the free row below it. */
-          head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
-          head.li.setAttribute('data-pg-total', String(paidQty + freeQty));
+          head.setAttribute('data-pg-keys', its.map(function(it){ return it.key; }).join('|'));
+          head.setAttribute('data-pg-total', String(paidQty + freeQty));
 
-          var q = head.li.querySelector('input[type=number]');
+          var q = head.querySelector('input[type=number]');
           if (q && q.value !== String(paidQty)) q.value = String(paidQty);
 
-          setText(head.li.querySelector('.nc-lsave-now'), money(paidSum));
-          if (cap0) setWas(head.li, cap0 * paidQty);
+          setText(head.querySelector('.nc-lsave-now'), money(paidSum));
+          if (cap0) setWas(head, cap0 * paidQty);
 
-          /* If the rung produced free units they are on their own row and that
-             row carries the label. If it did NOT -- the 6 Pack is a fixed bundle
-             PRICE, so Shopify just charges less per unit and there is nothing to
-             put on a free line -- then the row would otherwise show six orbs at
-             $20.58 with no explanation of why. Name the deal here instead. */
-          if (freeQty > 0){
-            noteOff(head.li);
-          } else {
-            var hlabel = dealLabel(groupDeal(g));
-            if (hlabel) noteOn(head.li, hlabel); else noteOff(head.li);
+          var chip = head.querySelector('.pg-save-chip');
+          var base = cap0 * paidQty;
+          if (chip && base > 0){
+            var pct = Math.round((base - paidSum) / base * 100);
+            if (pct >= 1) setText(chip, '-' + pct + '%');
           }
 
-          primary[k] = {row: head, total: paidQty, paid: paidSum};
+          /* a rung that yields free units is labelled on the free row; one that
+             does not -- the 6 Pack is a fixed bundle PRICE -- is labelled here,
+             so the per-unit drop is never unexplained */
+          if (freeQty > 0) noteOff(head);
+          else if (label) noteOn(head, label);
+          else noteOff(head);
         }
 
-        /* every free line renders itself: MSRP struck, nothing charged, and a
-           label rather than a percentage. */
-        frees.forEach(function(r){
-          var li = r.li;
+        freeRows.forEach(function(li, i){
+          var it = freeItems[i];
           li.classList.remove('pg-merged-away');
           li.classList.add('pg-free-line');
           li.removeAttribute('data-pg-keys');
           li.removeAttribute('data-pg-total');
 
-          var fq = r.item.quantity;
+          var fq = it.quantity;
           var fi = li.querySelector('input[type=number]');
           if (fi && fi.value !== String(fq)) fi.value = String(fq);
 
@@ -496,63 +545,7 @@
 
           var fchip = li.querySelector('.pg-save-chip');
           if (fchip) setText(fchip, 'FREE');
-          var flabel = dealLabel(dealTitleOf(r.item) || groupDeal(g));
-          noteOn(li, flabel || (fq > 1 ? (fq + ' FREE') : 'FREE'));
-        });
-      });
-
-      rows.forEach(function(r){
-        if (r.li.classList.contains('pg-merged-away')) return;
-        if (r.li.classList.contains('pg-free-line')) return;   /* rendered above */
-        var li = r.li;
-        var item = r.item;
-        var grp = primary[String(item.variant_id)];
-
-        /* the free gift carries its own label, not a percentage */
-        if (item.properties && item.properties._free_gift) return;
-
-        var chip = li.querySelector('.pg-save-chip');
-        if (!chip) return;
-
-        var cap = CAP[item.variant_id];
-        if (!cap) return;
-        var qty = grp ? grp.total : item.quantity;
-        var base = cap * qty;
-        /* line_price, NOT final_line_price. final_line_price counts only the
-           LINE-level discounts, so once the extra 10% became an automatic ORDER
-           discount it stopped being included: measured on a two-orb line,
-           original_line_price 69.98, final_line_price 69.98, line_price 62.99 --
-           the order discount is in line_price alone. The chip was reading the
-           wrong one and printing SAVED 50% on a row whose own two figures,
-           $140.00 struck and $62.99 charged, are 55% apart. The shopper could
-           see the badge contradict the prices printed beside it. */
-        var paid = grp ? grp.paid : paidOf(item);
-        if (!base || typeof paid !== 'number') return;
-
-        var pct = Math.round((base - paid) / base * 100);
-        if (pct < 1) return;
-
-        /* "-55%", not "SAVED 55%". The pill's own geometry has been at zero
-           slack since the padding and tracking were fixed -- measured dead space
-           beyond glyphs+padding is 0.0px -- so its 4.1:1 stadium shape was the
-           STRING, not a layout fault, and no further CSS could round it. The
-           word is the only remaining lever: "SAVED 55%" is 81.8px of letters,
-           "-55%" is 42.0px, which with the taller box in STYLE above is a 1.75:1
-           badge instead of a 4.1:1 bar. pg-drawer's own pass() writes this same
-           element, so its string was changed to match -- two writers with
-           different text would fight at 300ms against 800ms and flicker. */
-        setText(chip, '-' + pct + '%');
-
-        /* and the struck figure beside it: MSRP for the whole line, so it means
-           the same thing on a discounted row as on a full-price one */
-        var was = money(base);
-        li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
-          if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
-          var t = (el.textContent || '').trim();
-          /* only touch nodes that are just a price -- never a sentence that
-             happens to contain one */
-          if (!/^\$[\d.,]+$/.test(t)) return;
-          if (t !== was) el.textContent = was;
+          noteOn(li, label || (fq > 1 ? (fq + ' FREE') : 'FREE'));
         });
       });
     }).catch(function(){});
