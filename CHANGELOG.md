@@ -1,3 +1,76 @@
+# Six orbs, six lines, none of them free
+
+The deal is sold as "Buy 4, Get 2 FREE". It is implemented as **PokeOrb - 6 Pack
+$137.20**: a `DiscountAutomaticBasic` taking a flat $72.74 off the product once
+the cart holds six. Shopify has no concept of a free unit there -- it prorates
+that lump across every line the discount applies to. Six orbs picked as six
+different characters are six separate cart lines, so every one came back at about
+$22.87 and not one said FREE. The shopper is promised two free orbs and then
+shown six identical part-prices.
+
+Working the split out per line cannot fix it: no single line is free, each is
+just 35% off. It has to be done across every line of the same handle at once --
+that is the unit the discount actually applies to.
+
+| | live today | now |
+|---|---|---|
+| 38 Mega Charizard Y | $20.58 | **$30.87** |
+| 19 Sylveon | $20.58 | $30.87 |
+| 18 Gyarados | $20.58 | $30.87 |
+| 11 Pikachu | $20.58 | $30.87 |
+| 07 Mewtwo | $20.58 | **FREE** |
+| 25 Gengar | $20.58 | **FREE** |
+
+The free units are handed out from the last line backwards, because that is the
+order the offer is sold in and the order the chooser lays out: the ones you pay
+for first, the free ones last.
+
+**This re-presents the same money, it does not invent any.** `perUnit x paidUnits`
+is what the product is actually charged, so the line figures still sum to the
+cart total -- they are just grouped the way the deal was sold rather than the way
+Shopify's proration happened to spread it.
+
+## Two details that would have been wrong
+
+**Rounding.** `perUnit` is the paid total divided by the paid units, rounded to
+the cent, so writing `perUnit x units` on every line can miss the real charge --
+seven orbs printed $154.95 against $154.97 charged. A shopper who adds the lines
+up should get the cart total exactly, so every paid line but the last shows
+`perUnit x its units` and the last absorbs the remainder. Verified at every
+quantity 1-12: the line figures now reconstruct the charge to the cent.
+
+**The badge on a free line.** A `-100%` pill beside a price cell reading FREE says
+it twice, so it is hidden -- but hiding it from the stylesheet does not work.
+`stamp()` writes `display:inline-flex` on these pills with inline `!important`,
+and only another inline `!important` beats that. It is hidden from the JS, the
+stamp skips pills inside a free line so it cannot fight them back into view, and
+the CSS rule stays as a backstop for a pill the stamp has not reached yet.
+
+`test/run-freeorb.mjs` covers the six-character cart with a `legacy` mode as the
+control: on the live code all six read $20.58 with `SAVED 71%` and nothing free.
+
+# The labels were unreadable and the block still too tall
+
+At 9px the price and FREE labels were the smallest text in the drawer, which
+defeats their purpose -- they are the whole reason the panel states the deal by
+itself. They are 11px now.
+
+The height that cost, and more, came from dropping the thumbnail while the panel
+is open. It was the tallest thing in the head row (30px against a 17px headline)
+and the least informative thing in the card at that moment: a generic orb photo
+above two dropdowns naming the actual characters, on a row whose product is
+already pictured in the cart directly above. The closed row keeps it, where the
+picture is the only thing identifying the offer.
+
+| | two rounds ago | last round | now |
+|---|---|---|---|
+| offer row | 247px | 139px | **122px** |
+| pinned pane, 390x844 | 324px (38.3%) | 216px (25.6%) | **199px (23.6%)** |
+| 375x667 | 42.9% | 32.2% | 30.0% |
+| 360x640 | 44.7% | 33.6% | 31.2% |
+
+Half the height it started at, with larger labels than it has ever had.
+
 # Three things the same size is not a hierarchy
 
 The shop owner's crop made the real complaint precise: the dropdowns and the

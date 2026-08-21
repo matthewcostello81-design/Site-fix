@@ -234,8 +234,17 @@
      pinned pane, leaving the desktop drawer -- and the phone in any state before
      the row was moved -- on the old chunky layout. The panel should look the same
      wherever it opens; the pane tier below just squeezes it further. */
-  #cart .pg-unlock.is-open{padding:8px 11px;gap:7px}
+  #cart .pg-unlock.is-open{padding:7px 10px;gap:5px}
   #cart .pg-unlock.is-open .pg-unlock-t small{display:none}
+  /* NO THUMBNAIL WHILE THE PANEL IS OPEN. It is the tallest thing in the head
+     row -- 30px against a 17px headline -- and it is the least informative thing
+     in the whole card once the panel is showing: a generic orb photo above two
+     dropdowns that name the actual characters, on a row whose product is already
+     pictured in the cart directly above. Dropping it takes the head row down to
+     the headline's own height, which is 13px of cart back for nothing lost. The
+     closed row keeps it: there the picture is the only thing identifying what
+     the offer is about. */
+  #cart .pg-unlock.is-open img{display:none}
   /* THE HEADLINE SITS BESIDE THE THUMBNAIL, NOT UNDER IT.
      `.pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}` gave the copy a full row of
      its own, which cost an entire line for nothing: the thumbnail sat alone with
@@ -262,8 +271,13 @@
   #cart .pg-unlock.is-open .pg-unlock-pick-r{
     display:flex;flex-direction:column;align-items:stretch;gap:1px;margin:0;
   }
+  /* THE LABEL IS THE PRICE, SO IT HAS TO BE READABLE. At 9px it was the
+     smallest text in the drawer and the shop owner could not read it -- which
+     defeats the point, since "$34.99" and "FREE" above the two dropdowns are the
+     whole reason the panel states the deal by itself. 11px, and the height it
+     costs is paid for several times over by dropping the thumbnail above. */
   #cart .pg-unlock.is-open .pg-unlock-pick-r span{
-    width:auto;font-size:9px;letter-spacing:.03em;line-height:1.2;
+    width:auto;font-size:11px;letter-spacing:.02em;line-height:1.15;
   }
   #cart .pg-unlock.is-open .pg-unlock-pick select{
     padding:4px 8px;font-size:11.5px;line-height:1.15;border-radius:8px;min-height:30px;
@@ -277,10 +291,10 @@
   }
 
   /* the pinned pane squeezes the same panel a little further */
-  #cart .sticky-in-panel .pg-unlock.is-open{padding:7px 10px;gap:6px}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t b{font-size:13px}
-  #cart .sticky-in-panel .pg-unlock.is-open img{width:28px;height:28px}
-  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:5px}
+  #cart .sticky-in-panel .pg-unlock.is-open{padding:6px 10px;gap:4px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t b{font-size:13.5px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:4px}
+  #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:32px}
 
 
   #cart .pg-unlock-pick-r{display:flex;align-items:center;gap:8px;margin:0 0 7px}

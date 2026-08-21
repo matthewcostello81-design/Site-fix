@@ -103,6 +103,17 @@
   #cart .l4ca > li.pg-merged-away,
   body.template-cart .l4ca > li.pg-merged-away{display:none !important}
 
+  /* A LINE THAT COSTS NOTHING SAYS SO. The percent badge is hidden on it in the
+     JS as well; this is the backstop, and it also stops the struck compare-at
+     price sitting next to the word FREE looking like a contradiction -- struck
+     price, then FREE, reads as the saving rather than as two prices. */
+  #cart .l4ca > li.pg-line-free .pg-save-chip,
+  body.template-cart .l4ca > li.pg-line-free .pg-save-chip{display:none !important}
+  #cart .l4ca > li.pg-line-free .nc-lsave-now,
+  body.template-cart .l4ca > li.pg-line-free .nc-lsave-now{
+    color:#1F8A4C !important;letter-spacing:.03em;
+  }
+
   /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.
      This note is inserted as a sibling of the SAVED chip, and the drawer makes
      that parent a GRID (`#cart .l4ca > li section{display:grid;...}`) which gives
@@ -230,6 +241,10 @@
     stamping = true;
     try {
       document.querySelectorAll(SEL).forEach(function(el){
+        /* a pill on a line that costs nothing is deliberately hidden by repct();
+           re-stamping display:inline-flex here would fight it back into view on
+           the next tick */
+        if (el.closest && el.closest('.pg-line-free')) return;
         if (isStamped(el)) return;
         for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
       });
@@ -357,6 +372,9 @@
         });
         var head = g[0];
         /* HOW MANY CAME FREE, AND WHAT THE REST REALLY COST EACH.
+           NOTE: these totals are per VARIANT line. The deal is per PRODUCT, so
+           the free/paid split is worked out in the pass below this loop, across
+           every line of the same handle at once -- see WHY THAT MATTERS there.
            `free` used to be counted as `line_price === 0`, i.e. only the lines
            Shopify itself split off at zero. That works for a Buy-2-Get-1, which
            is a BXGY and does split -- and not at all for the 6-pack, which is a
@@ -388,41 +406,106 @@
           if (unit > 0) free = Math.round((orig - fin) / unit);
         }
         if (free < 0) free = 0;
-        if (free >= total) free = 0;      /* everything free is a gift, not a bundle */
-        var paidUnits = total - free;
-        var perUnit = paidUnits > 0 ? Math.round(paid / paidUnits) : 0;
         head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
         head.li.setAttribute('data-pg-total', String(total));
-        primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length};
+        primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length,
+                      handle: head.item.handle, orig: orig, fin: fin};
 
         /* the one number the shopper steps up and down */
         var q = head.li.querySelector('input[type=number]');
         if (q && q.value !== String(total)) q.value = String(total);
+      });
 
-        /* the price charged for all of them together */
-        setText(head.li.querySelector('.nc-lsave-now'), money(paid));
+      /* ---- THE DEAL IS PER PRODUCT, NOT PER LINE ----
+         WHY THAT MATTERS. Buy 4 Get 2 is sold as two free orbs, but it is
+         implemented as "PokeOrb - 6 Pack $137.20": a DiscountAutomaticBasic
+         taking a FLAT $72.74 off the product once the cart holds six. Shopify
+         has no notion of a free unit there -- it prorates that lump across every
+         line it applies to. Six orbs picked as six different characters are six
+         cart lines, so each one came back at about $22.87 and not one of them
+         said FREE. The shopper is told they are getting two free and then shown
+         six identical part-prices.
 
-        /* say plainly how many of them are free, rather than leaving a $0.00
-           row the shopper has to work out for themselves */
-        var note = head.li.querySelector('.pg-free-note');
-        if (free > 0 && total > free){
-          if (!note){
-            note = document.createElement('span');
-            note.className = 'pg-free-note';
-            var chipEl = head.li.querySelector('.pg-save-chip');
-            if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
-            else head.li.appendChild(note);
-          }
-          /* THE SENTENCE THE SHOPPER NEEDS. "3 FREE INCLUDED" beside one blended
-             total still leaves them dividing that total by every unit. Naming the
-             paid units and their real each-price says the whole deal in one line
-             and never averages the free ones into the price: 4 x $34.30 is what
-             the four cost, the other two cost nothing, and the two figures
-             multiply back to exactly what the line is charged. */
-          setText(note, paidUnits + ' x ' + money(perUnit) + ' + ' + free + ' FREE');
-        } else if (note && note.parentNode){
-          note.parentNode.removeChild(note);
+         Working the split out per line cannot fix that: no single line is free,
+         each is just 35% off. It has to be done across every line of the same
+         handle at once -- that is the unit the discount actually applies to.
+
+         The allocation runs from the END of the product's lines backwards,
+         because that is the order the offer is sold in and the order the chooser
+         lays out: the ones you pay for first, the free ones last.
+
+         This RE-PRESENTS the same money, it does not invent any. perUnit x
+         paidUnits equals what the product is actually charged, to the cent, so
+         the line figures still sum to the cart total -- they are just grouped
+         the way the deal was sold instead of the way Shopify's proration
+         happened to spread it. */
+      var byHandle = {};
+      order.forEach(function(k){
+        var gp = primary[k]; if (!gp || !gp.handle) return;
+        var h = byHandle[gp.handle] || (byHandle[gp.handle] = {keys: [], total: 0, paid: 0, orig: 0, fin: 0});
+        h.keys.push(k); h.total += gp.total; h.paid += gp.paid; h.orig += gp.orig; h.fin += gp.fin;
+      });
+
+      Object.keys(byHandle).forEach(function(h){
+        var P = byHandle[h];
+        var freeUnits = 0;
+        if (P.orig > 0 && P.total > 0 && P.fin >= 0 && P.fin <= P.orig){
+          var u = P.orig / P.total;
+          if (u > 0) freeUnits = Math.round((P.orig - P.fin) / u);
         }
+        if (freeUnits < 0) freeUnits = 0;
+        if (freeUnits > P.total) freeUnits = P.total;
+        var paidUnits = P.total - freeUnits;
+        var perUnit = paidUnits > 0 ? Math.round(P.paid / paidUnits) : 0;
+
+        /* hand the free units out from the last line backwards */
+        var remaining = freeUnits;
+        var freeIn = {};
+        for (var i = P.keys.length - 1; i >= 0; i--){
+          var gk = P.keys[i], gt = primary[gk].total;
+          var take = Math.min(remaining, gt);
+          freeIn[gk] = take;
+          remaining -= take;
+        }
+
+        /* THE LAST PAID LINE ABSORBS THE ROUNDING. perUnit is P.paid divided by
+           the paid units and rounded to the cent, so writing perUnit x units on
+           every line can miss the real charge by a cent or two -- seven orbs
+           printed $154.95 against $154.97 charged. A shopper who adds the lines
+           up should get the cart total exactly, so every paid line but the last
+           shows perUnit x its units and the last one shows whatever is left. */
+        var lastPaid = -1, assigned = 0;
+        P.keys.forEach(function(gk, i){ if (primary[gk].total - (freeIn[gk] || 0) > 0) lastPaid = i; });
+
+        P.keys.forEach(function(gk, i){
+          var gp = primary[gk];
+          var f = freeIn[gk] || 0, pUnits = gp.total - f;
+          var li = gp.row.li;
+          gp.freeUnits = f; gp.paidUnits = pUnits; gp.perUnit = perUnit;
+
+          var cost = (i === lastPaid) ? (P.paid - assigned) : perUnit * pUnits;
+          if (pUnits > 0) assigned += cost;
+
+          /* the price cell: what THESE units cost, or the word when they cost
+             nothing. A bare $0.00 makes the shopper work out what happened. */
+          li.classList.toggle('pg-line-free', f > 0 && pUnits === 0);
+          setText(li.querySelector('.nc-lsave-now'), pUnits === 0 ? 'FREE' : money(cost));
+
+          /* and the sentence, only when one line genuinely holds both */
+          var note = li.querySelector('.pg-free-note');
+          if (f > 0 && pUnits > 0){
+            if (!note){
+              note = document.createElement('span');
+              note.className = 'pg-free-note';
+              var chipEl = li.querySelector('.pg-save-chip');
+              if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
+              else li.appendChild(note);
+            }
+            setText(note, pUnits + ' x ' + money(perUnit) + ' + ' + f + ' FREE');
+          } else if (note && note.parentNode){
+            note.parentNode.removeChild(note);
+          }
+        });
       });
 
       rows.forEach(function(r){
@@ -436,6 +519,19 @@
 
         var chip = li.querySelector('.pg-save-chip');
         if (!chip) return;
+
+        /* A PERCENT BADGE ON A LINE THAT COSTS NOTHING IS NOISE -- the price cell
+           already says FREE and "-100%" beside it says it twice. Hidden inline
+           rather than by the stylesheet rule further up, because stamp() writes
+           `display:inline-flex` on these pills with inline !important, and only
+           another inline !important can beat that. The rule stays as a backstop
+           for a pill the stamp has not reached yet. */
+        if (grp && grp.paidUnits === 0 && grp.freeUnits > 0){
+          chip.style.setProperty('display', 'none', 'important');
+          return;
+        }
+        /* and put it back if this line stops being the free one */
+        if (chip.style.display === 'none') chip.style.setProperty('display', 'inline-flex', 'important');
 
         var cap = CAP[item.variant_id];
         if (!cap) return;
