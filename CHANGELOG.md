@@ -1,3 +1,33 @@
+# Cart: frame upsell was invisible because the frame was unpublished
+
+## Cause
+`Black Wood Frame (30x40cm)` (9198161232100) was ACTIVE but had `publishedAt:
+null` and zero resource publications -- it was not on the Online Store sales
+channel, or any other. The upsell reads the live price from
+`/products/{handle}.js`, which 404s for an unpublished product, so `loadFrame()`
+never resolved, `render()` took its "price not known yet: show nothing" exit on
+every pass, and the row never drew. `/cart/add.js` would have rejected the
+variant as well, so even a hardcoded price would only have moved the failure
+from the render to the ADD button.
+
+This was not the section-group cap. That was a real second fault -- the row was
+registered as the 25th entry of footer-group, which silently drops its tail --
+and folding the code into `nc-linesave.liquid` fixed it, but it was masking
+this one, not causing it.
+
+## Fix
+Published the product to Online Store only (publication 187297399012).
+Deliberately not to Shop, Google & YouTube, Facebook & Instagram, Pinterest or
+the other channels: it is a cart accessory, not something to advertise
+standalone. It is now reachable at its product URL, which is the cost of having
+the storefront JSON and cart endpoints serve it.
+
+## Note for next time
+The row failing closed -- showing nothing rather than a made-up price -- is the
+right behaviour and stays. But it means a broken product feed looks exactly
+like a broken theme file. Check `onlineStoreUrl` on any product a cart script
+fetches before touching the theme.
+
 # Cart: wall-art frame upsell
 
 ## Change
