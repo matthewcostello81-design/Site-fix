@@ -1,0 +1,632 @@
+{%- comment -%}
+  PG Cart Mobile: cart drawer fixes.
+
+  1. The "Your Cart (n items)" bar stops sticking, so it scrolls with the list
+     instead of riding over what is beneath it.
+
+  2. The strip of cart peeking out under the pane is covered.
+     The drawer carries an inline `padding-bottom` written by the theme's own
+     script, and the pane sticks at `bottom:-10px`, so it settles short of the
+     bottom edge with the cart showing through the difference.
+
+     Covered by a skirt hung off the pane's bottom edge. It is PAINTED (a
+     box-shadow spread) rather than laid out: as a 400px-tall element it was
+     extending the drawer's scrollable height by 360px, which is the slab of
+     blank white below CHECKOUT. Both the earlier box-shadow attempt and this
+     one are written up by the rule -- read that note before touching it.
+
+  3. The pane gets shorter under 760px: smaller paddings and gaps, one step
+     down in type on the secondary rows, and the shipping-protection subtitle
+     hidden (label, price and toggle all remain). The total and the checkout
+     button are deliberately left large: they are what the pane is for.
+
+  3b/3c. NO BLANK SLAB UNDER CHECKOUT, AT ANY WIDTH. Two things left dead space
+     at the bottom of the pinned pane, and both used to be fixed on phones only:
+
+       - the drawer is a flex column, so a cart too short to fill the screen
+         drops its leftover height below the last child -- and the skirt from
+         (2) paints that white. A flex spacer before the pane takes the slack
+         instead. It was gated on max-width:760px; it is unconditional now, and
+         is zero pixels tall whenever there is nothing to absorb.
+       - the pane's own trailing padding and the CHECKOUT form's bottom margin.
+         The margin survived because pg-drawer moves the payment strip into the
+         pane as its last child and (4) hides it, so a `:last-child` rule was
+         landing on a display:none node. The trailing margins are named
+         explicitly now, and the pane's bottom padding is trimmed at every
+         width rather than under 600px only.
+
+  4. The payment-icon row is dropped from the pane at every width.
+
+  5. The upsell rail sits at the TOP on mobile, above the "Your Cart" bar --
+     the same place it holds on desktop, just lifted clear of the cart card. It
+     used to be moved DOWN into the pinned pane on phones; the shop owner asked
+     for it at the top, in every cart, for every product.
+
+  6. CHECKOUT can never end up out of reach. The pane is seated on the drawer's
+     clip edge (`bottom:0`, rule 2a) rather than hanging past it, and the JS
+     keeps a measured guarantee: if the button ever lands below the drawer's
+     visible floor and the drawer cannot scroll that far, the pane is raised by
+     exactly the overshoot. The old downward shift is GONE -- it is what cut the
+     button off once (2b) stopped making the drawer scrollable. Read both notes
+     before touching either.
+
+  NOT DONE, deliberately: unpinning the pane entirely. It was tried and it
+  turned the drawer blank on iOS Safari. Removing the sticky element drops a
+  compositing layer from a position:fixed, internally-scrolling container,
+  which iOS renders as unpainted white.
+{%- endcomment -%}
+<style>
+/* 1. header bar scrolls away, all widths */
+#cart .pg-cart-top{
+  position:static !important;
+  top:auto !important;
+  z-index:auto !important
+}
+
+/* 4. the payment-icon row comes out of the pinned pane, all widths. It is a
+   wrapped strip of card-brand logos permanently on screen because the pane is
+   pinned, saying what the "SECURE CHECKOUT" line above it already says. The
+   cards still show at checkout itself and in the site footer. Scoped to the
+   pane so the footer's strip is untouched. */
+#cart .sticky-in-panel .l4pm{display:none !important}
+
+/* 2. paint over the strip of cart showing below the pane, all widths.
+   A skirt hung off the pane's bottom edge: no layout effect, and the drawer's
+   own overflow clips it. `top:100%` is what makes it independent of the pane's
+   height, which changes with the cart. */
+/* 2a. THE PANE STOPS HANGING PAST THE DRAWER'S CLIP EDGE.
+
+   async-panels.css sticks it at `bottom:-10px`, and a stuck sticky box is not
+   held inside its containing block the way it reads like it should be: measured
+   against a scrollport ending at y=700, `-10px` put the pane's bottom at 704 and
+   the old seatPane shift put it at 720. Overflow clips at the padding box, so
+   that 4-20px of pane -- the bottom of the CHECKOUT button -- was outside the
+   drawer. It only ever worked because the 400px skirt below made the drawer
+   scrollable on every cart, so those pixels could be scrolled to; the moment the
+   skirt stopped inflating scrollHeight (2b) they became unreachable, and
+   CHECKOUT was cut off.
+
+   `bottom:0` seats it on that edge instead. Re-measured on the same scrollport:
+   pane bottom 694 against 700 at a 6px drawer padding, 666 at 34px -- inside it
+   either way, and the skirt still paints whatever is under it. */
+#cart .sticky-in-panel{position:sticky;bottom:0 !important}
+#cart .sticky-in-panel::after{
+  content:'';
+  position:absolute;
+  left:0;
+  right:0;
+  top:100%;
+  /* 2b. THE SKIRT IS PAINTED, NOT LAID OUT -- AND THIS IS THE BLANK WHITE SLAB.
+
+     It used to be a 400px-tall box with a white background. An absolutely
+     positioned descendant extends its scroll container's scrollable overflow,
+     and this one's container is the drawer, so every cart -- one line item or
+     twelve -- carried 360px of scrollable, pure-white nothing below CHECKOUT.
+     Measured on a 1280x900 window with two orbs: the drawer's content is 900px
+     and its scrollHeight was 1260px; with the skirt suppressed, 900px and not
+     scrollable at all. That void is the "blank white space at the bottom of the
+     pane": you reach CHECKOUT and the drawer keeps going, into white.
+
+     A box-shadow paints outside the border box without ever contributing to
+     scrollable overflow, so the cover survives and the void does not. The note
+     that a shadow was tried and rejected stands, and this is not that shadow:
+     that one was `0 400px 0 0`, an OFFSET, which slid the whole shadow 400px
+     down and left the strip immediately under CHECKOUT -- the only part that
+     needed covering -- bare. This is a 400px SPREAD from a zero-height box
+     pinned at the pane's bottom edge, which is the same thing `top:100%` was
+     chosen for: it cannot get the pane's height wrong.
+
+     clip-path keeps the spread below the box, since a spread grows in every
+     direction. Where clip-path is unsupported the upward half paints behind the
+     pane's rows -- `.m6pn .sticky-in-panel > *` carries z-index:1 and this
+     pseudo does not -- so the worst case is invisible, not broken.
+
+     Re-measured with this rule: scrollHeight 900px against a 900px client, and
+     the pixel 20px below the pane still samples rgb(255,255,255). */
+  height:0;
+  background:none;
+  box-shadow:0 0 0 400px #fff;
+  clip-path:inset(0 0 -400px 0);
+  pointer-events:none;
+}
+
+/* 9. SMOOTH OPEN (the drawer "pop-in"), all widths.
+   The drawer slides in over 0.4s while its contents are still being built:
+   the item rows fill out, the upsell lands, and the totals pane (Shipping
+   Protection, You saved, Total, CHECKOUT) does not appear until ~0.7s and then
+   settles for another few tenths. So the open is followed by a visible reshuffle.
+
+   When the drawer opens with its content not yet assembled, the rows below the
+   header are held invisible and faded in together once the pane has landed --
+   see the JS. This trades a brief settling beat for a clean single reveal
+   instead of a scramble. The header (close button, item count) stays visible
+   throughout, the hold is capped hard in JS so nothing can stay hidden, and a
+   re-open of an already-built cart skips the hold and is instant. */
+#cart .nc-drawer-top,#cart .l4ca,
+#cart #pg-unlock-slot,#cart .pg-unlock,#cart .sticky-in-panel{
+  transition:opacity .14s ease;
+}
+#cart.pg-settling .nc-drawer-top,#cart.pg-settling .l4ca,
+#cart.pg-settling #pg-unlock-slot,#cart.pg-settling .pg-unlock,
+#cart.pg-settling .sticky-in-panel{
+  opacity:0 !important;
+}
+
+/* 3b. PIN THE PANE -- AND THE CHECKOUT BUTTON WITH IT -- TO THE BOTTOM OF THE
+   DRAWER ON A SHORT CART, AT EVERY WIDTH. #cart is a flex column
+   (`.m6pn#cart{display:flex;flex-direction:column}`) and every child is
+   flex:0 1 auto, so when the contents do not fill the screen the leftover space
+   falls BELOW the last child, leaving a tall gap under CHECKOUT -- and the
+   pane's own ::after skirt below paints that gap white, which is why it reads
+   as a slab of blank white rather than as drawer ground.
+
+   This is done with a FLEX SPACER (pg-cart-spacer, inserted by the JS just
+   before the pane), NOT with margin-top:auto on the pane. An auto top margin
+   was tried and it broke the pane's position:sticky on iOS Safari -- auto
+   margins and sticky do not compose there -- so the pane stopped sticking and
+   scrolled away with the list. The spacer keeps the pane's margins clean: it
+   grows to swallow the free space above the pane on a short cart (pushing the
+   pane to the bottom), and collapses to zero the moment the cart overflows and
+   scrolls, leaving sticky to do its job untouched.
+
+   IT USED TO BE PHONES ONLY, and the gap it fixes is not. The rule and its JS
+   were both inside max-width:760px, so on a desktop drawer the free space still
+   landed under CHECKOUT; pg-cart-total's `#cart .l4ca{flex-grow:1}` took most
+   of it but only what the item list could absorb. The spacer is unconditional
+   now: it is a zero-basis flex item, so where there is no free space it is
+   zero pixels tall and changes nothing. */
+#cart .pg-cart-spacer{flex:1 1 0;min-height:0;align-self:stretch;pointer-events:none}
+
+/* 3c. THE PANE'S OWN TRAILING DEAD SPACE, AT EVERY WIDTH.
+
+   pg-drawer's pgPane() moves the payment-icon strip (.l4pm) INTO the pane as
+   its last child, and rule 4 above hides it. It is still the last element
+   child, so `.sticky-in-panel > *:last-child{margin-bottom:0}` -- which
+   pg-cart-fast applies under 600px -- lands on a display:none node and leaves
+   the real last visible row, the CHECKOUT form, with its margin intact.
+
+   So the trailing margins are named rather than selected positionally, and the
+   pane's bottom padding is trimmed at every width instead of only on the
+   narrowest phones. safe-area-inset-bottom is kept: it is the home-indicator
+   allowance and is 0px on anything that does not need it. */
+#cart .sticky-in-panel{padding-bottom:calc(6px + env(safe-area-inset-bottom)) !important}
+/* and the trailing margin of whatever the drawer's own last child turns out to
+   be -- the trust row once pgPane() has lifted the payment strip out of it.
+   That margin is bare drawer ground below everything on screen, which is the
+   same slab of white by another name. */
+#cart > *:last-child{margin-bottom:0 !important}
+#cart .sticky-in-panel > form.f8vl,
+#cart .sticky-in-panel > form.f8vl > .link-btn,
+#cart .sticky-in-panel > form.f8vl > .link-btn > *:last-child,
+#cart .sticky-in-panel > .link-btn:last-child,
+#cart .sticky-in-panel > *:last-child{margin-bottom:0 !important}
+
+@media (max-width:760px){
+  /* 3. compact the pane */
+  #cart .sticky-in-panel{padding-top:3px !important}
+
+  #cart .sticky-in-panel .pg-sp{margin:2px 0 5px !important;padding:6px 9px !important}
+  #cart .sticky-in-panel .pg-sp-ic{width:24px !important;height:24px !important}
+  #cart .sticky-in-panel .pg-sp-ic svg{width:14px !important;height:14px !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:12.5px !important;line-height:1.25 !important}
+  #cart .sticky-in-panel .pg-sp-t small{display:none !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:12.5px !important}
+  #cart .sticky-in-panel .pg-sp-sw{transform:scale(.9);transform-origin:right center}
+
+  #cart .sticky-in-panel .pg-sav{margin:2px 0 5px !important;padding:6px 9px !important}
+  #cart .sticky-in-panel .pg-sav-r{font-size:12px !important;line-height:1.4 !important}
+  #cart .sticky-in-panel .pg-sav-t{margin-top:3px !important;padding-top:4px !important;font-size:12.5px !important}
+
+  #cart .sticky-in-panel .l4tt{margin:1px 0 !important}
+  #cart .sticky-in-panel .l4tt li{font-size:12.5px !important;padding:0 !important;line-height:1.35 !important}
+  #cart .sticky-in-panel .l4tt li.pg-drow,#cart .sticky-in-panel .l4tt li.pg-drow *{font-size:12.5px !important}
+  #cart .sticky-in-panel .l4tt li.pg-tt,#cart .sticky-in-panel .l4tt li.pg-tt *{font-size:15px !important}
+
+  #cart .sticky-in-panel .nc-dtrust{margin:2px 0 !important;padding:0 !important}
+  #cart .sticky-in-panel .nc-dtrust span{font-size:10px !important}
+
+  #cart .sticky-in-panel form.f8vl{margin:2px 0 0 !important}
+  #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important}
+}
+</style>
+<script>
+(function(){
+  /* VERSIONED, not boolean. This used to be `if (window.pgCartFlush) return`,
+     which means an OLDER copy of this script still live in the theme takes the
+     flag first and silences this one for the whole session -- and placeUnlock()
+     is the single thing that makes the upsell row compact and puts it above
+     CHECKOUT, so losing it is not a degraded cart, it is the broken one. A
+     version number lets a newer copy supersede an older one instead. Raise it
+     whenever this file changes in a way an older copy would get wrong. */
+  if (window.pgCartFlush >= 3) return; window.pgCartFlush = 3;
+
+  /* 5. on phones, lift the upsell to the TOP of the drawer, above the "Your
+     Cart" bar -- the same position it holds on desktop, one level further out
+     so it clears the cart card rather than sitting inside it. This applies to
+     the whole rail, so every product's offer moves together.
+
+     MOVE THE SLOT, NOT A CARD. pg-unlock now renders its offer rows inside a
+     single container, #pg-unlock-slot, whose child order is pinned in CSS.
+     This function used to grab `querySelector('.pg-unlock')` -- the FIRST
+     offer row -- and move that one alone. With two offers in the cart (an orb
+     and the console) each 60ms MutationObserver tick moved whichever row was
+     currently first, so the two rows took turns being relocated and visibly
+     SWAPPED about ten times a second. That was the mobile "spazzing".
+
+     Moving the slot relocates both rows together as one unit, so there is
+     nothing to reorder. The position check makes this safe under the observer:
+     once the slot is already the pane's previous sibling there is nothing to
+     do, so the move cannot feed itself. Falls back to a lone .pg-unlock if the
+     slot is ever absent. */
+  /* KEPT, though the slot no longer lives here. pg-unlock still births the slot
+     inside the pane on a narrow viewport and asks this for the spot, and it then
+     calls pgPlaceUnlock() SYNCHRONOUSLY in that same task -- so the slot is
+     moved to the top before the browser paints either position and there is no
+     frame in which it is visibly in the pane. Removing this export would leave
+     pg-unlock inserting at pane.firstChild and fighting #pg-rush for one tick
+     on every rebuild, which is the swap this pair of functions was written to
+     end. It stays until pg-unlock itself is redeployed. */
+  function paneSlotAnchor(pane){
+    var rush = pane.querySelector('#pg-rush');
+    return (rush && rush.parentNode === pane) ? rush.nextSibling : pane.firstChild;
+  }
+  window.pgPaneAnchor = paneSlotAnchor;
+
+  /* The node the slot goes in front of at the top of the drawer: the "Your
+     Cart" bar, which pg-drawer's pgPane() creates as #cart's first child and
+     never repositions, so nothing contends for the place above it.
+     Walks up to the child of #cart in case that bar is ever nested, because
+     insertBefore demands a direct child and throws otherwise. The card is
+     skipped when looking for a fallback: without that, a slot already sitting
+     first would be measured against ITSELF, never read as seated, and be
+     re-inserted on every observer tick forever. */
+  function topAnchor(drawer, card){
+    var top = drawer.querySelector('.pg-cart-top');
+    while (top && top.parentNode !== drawer) top = top.parentNode;
+    if (top && top !== card) return top;
+    var n = drawer.firstChild;
+    while (n === card) n = n.nextSibling;
+    return n;
+  }
+  function unlockSeated(drawer, card){
+    if (card.parentNode !== drawer) return false;
+    return card.nextSibling === topAnchor(drawer, card);
+  }
+
+  function placeUnlock(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var card = drawer.querySelector('#pg-unlock-slot') || drawer.querySelector('.pg-unlock');
+    if (!card) return;
+
+    if (window.matchMedia('(max-width:760px)').matches){
+      /* TOP OF THE DRAWER, ABOVE "YOUR CART". The rail used to be moved the
+         other way -- down INTO .sticky-in-panel, so it sat directly above
+         Shipping Protection. The shop owner asked for it at the top instead, in
+         every cart and for every product, matching where it already sits on
+         desktop.
+
+         DO NOT "SIMPLIFY" THIS BY PARKING IT JUST ABOVE THE PANE. That was
+         tried and it does not work: .sticky-in-panel is position:sticky with
+         bottom:0 (rule 2a), and a bottom-anchored sticky box is lifted UP out of
+         its flow position by however far that position would fall below the
+         scrollport. Everything it is lifted across that is not itself positioned
+         disappears behind it, and the pane is opaque white at the theme's
+         z-index:5 while the slot is unpositioned. The pane's previous sibling is
+         exactly what gets covered. pg-cart-imglink records the measurement: a
+         291px pane at y=553..844 over an offer row at y=535..799. That is the
+         whole reason the rail was moved inside the pane in the first place, and
+         it is why it is now moved to the far end of the drawer rather than
+         anywhere near that box.
+
+         The top has no such hazard and no rival writer. pg-drawer's pgPane()
+         creates .pg-cart-top as #cart's first child and only ever re-creates it
+         when it is missing -- it never repositions it -- so nothing contends for
+         the place in front of it. Rule 1 above also forces that bar to
+         position:static at every width, so it cannot stick over the rail either.
+
+         Two long-standing fights end with this move rather than being managed:
+           - #pg-rush, pg-cart-timer's countdown banner, ends its render with
+             `if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild)`.
+             While the rail also wanted the pane's first child the two inserted
+             over each other roughly eight or nine times a SECOND for as long as
+             the offer window was open. The rail is no longer in the pane, so the
+             banner keeps first place uncontested.
+           - placeSpacer() wants to BE the pane's previous sibling and the rail
+             once wanted the same slot, with both running in the same apply().
+             Also gone.
+         Neither of those is a reason to move the rail back. */
+      if (unlockSeated(drawer, card)) return;
+      if (!card.pgHome) card.pgHome = {parent: card.parentNode, next: card.nextSibling};
+      drawer.insertBefore(card, topAnchor(drawer, card));
+    } else if (card.pgHome && card.pgHome.parent && card.pgHome.parent.isConnected){
+      var home = card.pgHome;
+      if (card.parentNode !== home.parent || card.nextSibling !== home.next){
+        home.parent.insertBefore(card, home.next && home.next.isConnected ? home.next : null);
+      }
+    } else {
+      /* No recorded home. pg-unlock now creates the slot directly inside the
+         pane when it is building for a phone (so the rows never paint in the
+         wrong place first), which means on a narrow-to-wide resize there is no
+         pgHome to restore from and the slot would have stayed pinned on
+         desktop. The desktop home is not a mystery -- it is immediately above
+         the item list -- so seat it there. */
+      var dlist = drawer.querySelector('.l4ca:not(.in-panel)');
+      if (dlist && dlist.parentNode && card.nextElementSibling !== dlist){
+        dlist.parentNode.insertBefore(card, dlist);
+      }
+    }
+  }
+  /* pg-unlock calls this synchronously in the same task it writes the offer
+     rows, so they are positioned before anything is painted rather than being
+     moved on this file's next 60ms observer tick. */
+  window.pgPlaceUnlock = placeUnlock;
+
+  /* 6. KEEP CHECKOUT REACHABLE. This used to be seatPane(), which pulled the
+     pane DOWN by the gap it measured below itself, up to 44px, to close the
+     strip the drawer's inline padding-bottom left under it. That shift is gone
+     -- it is what cut the CHECKOUT button off.
+
+     WHY IT CUT OFF, MEASURED. A stuck sticky pane is NOT confined to its
+     containing block the way the spec reading suggests: with the drawer's
+     scrollport ending at y=700, `bottom:-10px` put the pane's bottom at 704 and
+     seatPane's `bottom:-54px` put it at 720 -- 20px of pane, CHECKOUT included,
+     below the drawer's own clip. That was survivable only because the old
+     400px skirt made the drawer scrollable on EVERY cart, so those pixels could
+     always be scrolled into view. Removing the skirt removed the scroll, and
+     the same 20px became unreachable. With `bottom:0` (see the CSS) the pane's
+     bottom lands at 694 against a 700 scrollport, inside it at every cart
+     length that was measured.
+
+     So the downward shift is not restored, and what stays is the half that was
+     always the point: a guarantee. If the button ends up below the drawer's
+     visible floor -- from the theme's own offset, an in-app browser's toolbar,
+     anything -- and the drawer cannot be scrolled far enough to reach it, the
+     pane is raised by exactly the overshoot. Where nothing is wrong it writes
+     nothing, so there is one writer and no tick-to-tick fight.
+
+     The floor is the DRAWER's scrollport, not the viewport. Measuring against
+     the viewport was the original mistake: overflow clips at the drawer's
+     padding box, so that edge is what decides whether CHECKOUT is on screen.
+     It is still capped by the visual viewport, which excludes a mobile
+     browser's toolbars, so chrome that covers the drawer still counts.
+
+     (The cold-cart checkout repair that used to live here now has its own
+     file, snippets/pg-cart-morph-fix.liquid.) */
+  function floorOf(drawer){
+    var box = drawer.getBoundingClientRect();
+    var pad = parseFloat(getComputedStyle(drawer).paddingBottom) || 0;
+    var vh = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    return Math.min(box.bottom - pad, vh);
+  }
+
+  function seatPane(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var pane = drawer.querySelector('.sticky-in-panel');
+    var btn = drawer.querySelector('button[name="checkout"]');
+    if (!pane || !btn) return;
+
+    /* the resting position the stylesheet gives it, read once */
+    if (pane.pgBase == null){
+      var b = parseFloat(getComputedStyle(pane).bottom);
+      pane.pgBase = isNaN(b) ? 0 : b;
+    }
+
+    var lifted = pane.pgLift || 0;
+    var floor = floorOf(drawer);
+    var over = btn.getBoundingClientRect().bottom - floor;
+
+    /* what is still scrollable below the current position */
+    var reach = drawer.scrollHeight - drawer.clientHeight - drawer.scrollTop;
+
+    if (over > 1 && reach < over - 1){
+      pane.pgLift = lifted + Math.ceil(over);
+      pane.style.setProperty('bottom', (pane.pgBase + pane.pgLift) + 'px', 'important');
+      return;
+    }
+
+    /* nothing wrong: give back any lift that is no longer needed, one step at a
+       time so a cart that grows and shrinks does not snap */
+    if (lifted > 0 && over < -1){
+      pane.pgLift = Math.max(0, lifted - Math.min(lifted, Math.floor(-over)));
+      if (pane.pgLift === 0) pane.style.removeProperty('bottom');
+      else pane.style.setProperty('bottom', (pane.pgBase + pane.pgLift) + 'px', 'important');
+    }
+  }
+
+  /* 7. the chooser button noun. pg-unlock's buildChooser hard-codes " orb" in
+     the confirm button ("Add 1 orb to cart"), which is right for the orb but
+     read as "ADD 1 ORB TO CART" on the PocketBoy R36 console upsell -- a
+     console, not an orb. The correct fix is one line in pg-unlock, but that
+     file is 34KB and the running theme cannot practically be rewritten through
+     the API right now, so the label is corrected here from the row's handle:
+     the orb and the print keep their noun, the console (or anything else) just
+     says "Add N ... to cart". Idempotent, so when pg-unlock is next redeployed
+     clean this simply finds nothing to change. */
+  function fixLabels(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    drawer.querySelectorAll('.pg-unlock').forEach(function(row){
+      /* 7b. the offer NAME. pg-unlock's LADDERS still calls the free orb
+         "Crystal PokeOrb", so the row reads "Add your FREE 3rd Crystal PokeOrb".
+         The product is the Crystal Legends Orb -- rebrand it here (same reason
+         as the noun fix: pg-unlock is 34KB and impractical to redeploy live).
+         Fixed on the title element and idempotent. When pg-unlock is next
+         redeployed clean (its LADDERS name is already updated in source) this
+         finds nothing to change. */
+      var ttl = row.querySelector('.pg-unlock-t b') || row.querySelector('.pg-unlock-t');
+      if (ttl && /PokeOrb/i.test(ttl.textContent)){
+        ttl.textContent = ttl.textContent
+          .replace(/Crystal\s+PokeOrb/gi, 'Crystal Legends Orb')
+          .replace(/PokeOrb/gi, 'Legends Orb');
+      }
+      var go = row.querySelector('.pg-unlock-go');
+      if (!go) return;
+      var h = row.getAttribute('data-pg-unlock') || '';
+      if (h.indexOf('pokemon-crystal') > -1 || h.indexOf('anime-pokemon') > -1) return;
+      var t = go.textContent;
+      var fixed = t.replace(/\s+orb\b/i, '').replace(/\s+print\b/i, '');
+      if (fixed !== t) go.textContent = fixed;
+    });
+  }
+
+  /* 8. the Shipping Protection switch getting stuck. pg-drawer's toggle sets
+     data-busy on the .pg-sp box (which CSS dims and makes pointer-events:none)
+     and only clears it on ERROR -- on success it relies on the whole drawer
+     being rebuilt to throw the box away. pg-cart-smooth's morph now PRESERVES
+     that box instead of rebuilding it, so data-busy is never removed and the
+     switch stays dimmed and unclickable after the first on/off.
+
+     Cleared here. apply() runs on the childList mutation the refresh produces,
+     which is exactly when the operation has completed, so the switch frees the
+     moment the add/remove lands. The box's checkbox already reflects the new
+     cart state, so nothing else needs syncing. */
+  function unstickSP(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    drawer.querySelectorAll('.pg-sp[data-busy]').forEach(function(b){ b.removeAttribute('data-busy'); });
+  }
+
+  /* 3b (cont). Keep a flex spacer sitting directly before the pane so a short
+     cart's free space collapses ABOVE the pane instead of leaving white under
+     CHECKOUT. It is a plain element with no margins, so the pane's sticky
+     positioning is left untouched (see the CSS note).
+
+     EVERY WIDTH, not just phones. This was gated on max-width:760px and removed
+     the spacer on desktop, which is where the blank slab under the pane was
+     still showing: pg-cart-total's `#cart .l4ca{flex-grow:1}` hands the free
+     space to the item list, but only as much as that list as a flex child of
+     #cart can take, and anything left over lands under the pane with the
+     ::after skirt painting it white. Ungated it costs nothing where there is no
+     free space -- flex:1 1 0 resolves to zero height -- and it is removed only
+     when the pane itself is gone. */
+  function placeSpacer(){
+    var drawer = document.getElementById('cart');
+    if (!drawer) return;
+    var pane = drawer.querySelector('.sticky-in-panel');
+    var spacer = drawer.querySelector('.pg-cart-spacer');
+    if (!pane){
+      if (spacer && spacer.parentNode) spacer.parentNode.removeChild(spacer);
+      return;
+    }
+    if (!spacer){
+      spacer = document.createElement('div');
+      spacer.className = 'pg-cart-spacer';
+      spacer.setAttribute('aria-hidden', 'true');
+    }
+    /* must be the pane's immediate previous sibling */
+    if (pane.previousElementSibling !== spacer){
+      pane.parentNode.insertBefore(spacer, pane);
+    }
+  }
+
+  function apply(){ placeUnlock(); placeSpacer(); seatPane(); fixLabels(); unstickSP(); }
+
+  /* 9. SMOOTH OPEN. The theme adds `m6pn-open` to <html> when the drawer opens.
+     If the cart's totals pane is not rendered yet at that moment, the drawer is
+     opening onto content that is still assembling, so hold the rows invisible
+     (CSS class pg-settling) and clear it -- fading them in -- the instant the
+     totals pane stops moving (its position matches across two 50ms polls). That
+     is the earliest CLEAN moment: revealing before it settles trades the
+     reshuffle for a smaller post-reveal nudge, which is still a jump, so the
+     reveal is pinned to the settle instead. On a fast connection that is ~0.7s;
+     the poll is quick so there is no slack beyond it. A hard cap and a
+     close-resets guard mean the rows can never be stuck hidden, and a cart that
+     is already built when it opens skips the hold entirely (instant re-open). */
+  function smoothOpen(){
+    var drawer = document.getElementById('cart');
+    if (!drawer || drawer.classList.contains('pg-settling')) return;
+    if (drawer.querySelector('.sticky-in-panel')) return;   /* already built -- instant */
+    drawer.classList.add('pg-settling');
+    var start = Date.now(), lastTop = null, stable = 0;
+    (function wait(){
+      var d = document.getElementById('cart');
+      if (!d) return;
+      if (!d.classList.contains('toggle')){ d.classList.remove('pg-settling'); return; }
+      var pane = d.querySelector('.sticky-in-panel');
+      var done = Date.now() - start > 1200;   /* safety only -- stability reveals first */
+      if (pane){
+        var top = Math.round(pane.getBoundingClientRect().top);
+        if (top === lastTop) stable++; else { stable = 0; lastTop = top; }
+        if (stable >= 1) done = true;
+      }
+      if (done){ d.classList.remove('pg-settling'); return; }
+      setTimeout(wait, 50);
+    })();
+  }
+
+  function boot(){
+    apply();
+    window.addEventListener('resize', apply);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', apply);
+    /* watch the drawer's own class: the theme adds `toggle` to #cart when it
+       opens. Firing off that (rather than the <html> open class) is the reliable
+       hook -- the reveal starts the instant the drawer opens, before the
+       reshuffle can show. */
+    var drawerEl = document.getElementById('cart');
+    if (window.MutationObserver && drawerEl){
+      /* THE HOLD ARMS ONCE PER OPENING. Two faults, one flag, and the flag has
+         to live HERE rather than inside smoothOpen().
+
+         (a) RE-ARM. smoothOpen ends its hold by removing .pg-settling -- itself a
+             class change on #cart, which wakes this observer, which called
+             smoothOpen again. With no totals pane present the hold was
+             re-applied immediately and the drawer spent the rest of the session
+             invisible bar one frame every 1200ms. Measured on an empty drawer:
+             class flips at 0, 1205, 2410, 3615ms and onward without end. A
+             strobing drawer is about the worst thing this file could do.
+         (b) BLACKOUT MID-REBUILD. The theme replaces #cart's contents wholesale
+             on every add and quantity change, and the pane does not exist for
+             part of that. Any class write landing in that window got past the
+             `already built -- instant` bail and blacked out a drawer the shopper
+             was already looking at.
+
+         Gating on `toggle` having just been added fixes both, because both are
+         re-entries during a single opening. It must NOT be done by an early
+         return inside smoothOpen keyed on "the hold already ran": a drawer that
+         opens with its pane already built returns at the pane bail without ever
+         running the hold, so no such flag would be set, and fault (b) would come
+         straight back the next time the pane blinked out.
+
+         Nor may the hold be gated on the cart having rows -- the tempting fix,
+         and a regression. A shopper arriving from an ad opens an EMPTY drawer
+         and the item, the upsell and the CHECKOUT pane all land a beat later;
+         that is precisely the reshuffle this hold exists to cover, and at the
+         moment the drawer opens there are no rows to test for. Measured: gated
+         that way, the hold never arms in exactly that case. */
+      new MutationObserver(function(){
+        if (drawerEl.classList.contains('toggle')){
+          if (!drawerEl.pgOpened){ drawerEl.pgOpened = 1; smoothOpen(); }
+        } else {
+          drawerEl.pgOpened = 0;
+          /* classList.remove of an absent class still writes the attribute this
+             observer watches, so only touch it when there is something to go. */
+          if (drawerEl.classList.contains('pg-settling')) drawerEl.classList.remove('pg-settling');
+        }
+      }).observe(drawerEl, {attributes:true, attributeFilter:['class']});
+      /* the flag on this path too, or a page that boots with the drawer already
+         open still pays one extra 1.2s re-arm cycle */
+      if (drawerEl.classList.contains('toggle')){ drawerEl.pgOpened = 1; smoothOpen(); }
+    }
+    /* the theme replaces the drawer contents wholesale on every add, remove and
+       quantity change, and an add-to-cart round trip outruns fixed timers, so
+       watch for the re-render and re-apply. childList only. */
+    if (window.MutationObserver){
+      var queued = false;
+      new MutationObserver(function(){
+        if (queued) return;
+        queued = true;
+        setTimeout(function(){ queued = false; apply(); }, 60);
+      }).observe(document.body, {childList:true, subtree:true});
+    }
+    [400, 1000, 2200, 4500].forEach(function(t){ setTimeout(apply, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Mobile", "settings": []}
+{% endschema %}
