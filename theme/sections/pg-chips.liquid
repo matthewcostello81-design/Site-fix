@@ -73,7 +73,8 @@
   group: the paid quantity, the sum of the paid line prices, MSRP times that
   quantity struck through, and one honest percentage. Extra paid rows are hidden.
 
-  THE FREE ROW STAYS ON SCREEN, on its own line, by request -- and hiding it was
+  THE FREE ROW STAYS ON SCREEN, on its own line AT THE TOP OF THE CART, by
+  request -- and hiding it was
   a mistake worth naming. Merging it away removed the evidence for what the offer
   had done: the shopper pressed + and, when the new unit became the free one,
   nothing they could see moved. With the free row visible that press has an
@@ -506,16 +507,24 @@
         var cap0 = CAP[its[0].variant_id] || 0;
         var label = dealLabel(dealOfItems(its));
 
-        /* ROLES BY COUNT, NOT BY IDENTITY. Every row in this group is the same
-           variant -- the same orb -- so which physical row is called the paid one
-           and which the free one is arbitrary. What matters is that the counts
-           match, and groupsOf has already refused the pass if they do not. The
-           last N rows take the N free lines. Nothing is read back off a row, so
-           the order the drawer happens to render them in cannot produce a wrong
-           figure any more. */
-        var cut = rws.length - freeItems.length;
-        var paidRows = rws.slice(0, cut);
-        var freeRows = rws.slice(cut);
+        /* ROLES BY COUNT, NOT BY IDENTITY -- AND STICKY ONCE GIVEN. Every row
+           in this group is the same variant, so which physical row is called
+           the paid one and which the free one is arbitrary; the counts are what
+           matter, and groupsOf has already refused the pass if they disagree.
+           On a fresh render the last N rows take the N free lines. But the free
+           rows are then LIFTED to the top of the cart (liftFree below), so on
+           every later pass position would hand the roles out backwards --
+           the lifted row is first now -- and the two rows would trade labels
+           forever. So a row that already wears pg-free-line keeps the free role
+           whenever the class count still matches the cart, and the slice is
+           only the cold-start fallback. */
+        var freeRows = rws.filter(function(li){ return li.classList.contains('pg-free-line'); });
+        var paidRows = rws.filter(function(li){ return !li.classList.contains('pg-free-line'); });
+        if (freeRows.length !== freeItems.length){
+          var cut = rws.length - freeItems.length;
+          paidRows = rws.slice(0, cut);
+          freeRows = rws.slice(cut);
+        }
 
         paidRows.forEach(function(li, i){
           li.classList.remove('pg-free-line');
@@ -568,7 +577,40 @@
           noteOn(li, label || (fq > 1 ? (fq + ' FREE') : 'FREE'));
         });
       });
+
+      liftFree();
     }).catch(function(){});
+  }
+
+  /* FREE ITEMS AT THE TOP OF THE CART, by request. Runs after the pass above
+     has decided which rows are free, and moves them above the first paid row
+     in one batch, keeping their own relative order.
+
+     Written to SETTLE, not to fight: moving a node fires the drawer observer,
+     which schedules another pass -- so the reorder only happens when a free row
+     actually sits below a paid one, and a list already in order is left
+     untouched. That check is also what keeps this safe against the theme's own
+     rebuilds: a rebuild puts the rows back in cart order, the next pass lifts
+     the free rows once, and then nothing moves again. (The roles themselves
+     cannot flip underneath this -- see the sticky-role note above.) */
+  function liftFree(){
+    document.querySelectorAll('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)').forEach(function(list){
+      var rows = Array.prototype.slice.call(list.children).filter(function(el){
+        return el.tagName === 'LI';
+      });
+      var free = rows.filter(function(li){ return li.classList.contains('pg-free-line'); });
+      if (!free.length) return;
+      var ref = null;
+      for (var i = 0; i < rows.length; i++){
+        if (!rows[i].classList.contains('pg-free-line')){ ref = rows[i]; break; }
+      }
+      if (!ref) return;                       /* nothing paid to be above */
+      var settled = free.every(function(li){
+        return !!(li.compareDocumentPosition(ref) & Node.DOCUMENT_POSITION_FOLLOWING);
+      });
+      if (settled) return;
+      free.forEach(function(li){ list.insertBefore(li, ref); });
+    });
   }
 
   /* ---- +/- on a merged row sets the product's TOTAL -- see (D) above ---- */
