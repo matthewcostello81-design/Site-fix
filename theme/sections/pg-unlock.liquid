@@ -526,6 +526,51 @@
      shopper does not have -- defaulting to duplicates would recreate the bug
      this replaces, just with a dropdown in front of it. */
   var LASTCART = {};
+
+  /* ---------------- THE SHOPPER'S PICKS SURVIVE A REBUILD ----------------
+     render() refuses to replace a row the shopper has opened to choose designs,
+     which covers a re-render. It cannot cover the case that actually destroys
+     the panel: the theme replaces #cart's entire innerHTML on every add and
+     every quantity change, so a shopper who has picked Charizard and Gengar and
+     then taps + on a cart line watches the panel close and their picks vanish.
+     There is no row left to protect by then.
+
+     The picks are therefore captured the moment they are MADE, not read off the
+     DOM afterwards -- reading later always loses the race with the innerHTML
+     swap -- and replayed onto the fresh row only when the offer is provably the
+     same one, which data-sig already encodes (handle, rung and units). A
+     different sig means a different chooser shape, so the snapshot is dropped
+     rather than forced onto a panel it does not fit. */
+  var PICKS = {};
+  function snapPicks(rowEl){
+    if (!rowEl) return;
+    var h = rowEl.getAttribute('data-pg-unlock'), sig = rowEl.getAttribute('data-sig');
+    if (!h || !sig) return;
+    var vals = [];
+    rowEl.querySelectorAll('.pg-unlock-pick select').forEach(function(sel){ vals.push(sel.value); });
+    if (vals.length) PICKS[h] = {sig: sig, vals: vals, t: Date.now()};
+  }
+  function restorePicks(rowEl, o, sg){
+    var p = PICKS[o.handle];
+    if (!p || p.sig !== sg || Date.now() - p.t > 300000) return;
+    buildChooser(rowEl, o).then(function(built){
+      if (!built){ delete PICKS[o.handle]; return; }
+      var sels = rowEl.querySelectorAll('.pg-unlock-pick select');
+      if (sels.length !== p.vals.length){ delete PICKS[o.handle]; return; }
+      sels.forEach(function(sel, i){
+        for (var j = 0; j < sel.options.length; j++){
+          /* skip a variant that has gone away since they picked it */
+          if (sel.options[j].value === p.vals[i]){ sel.value = p.vals[i]; return; }
+        }
+      });
+      rowEl.classList.add('is-open');
+      var btn = rowEl.querySelector('.pg-unlock-add');
+      if (btn) btn.textContent = 'Choose designs below';
+    }, function(){});
+  }
+  document.addEventListener('change', function(e){
+    if (e.target && e.target.closest) snapPicks(e.target.closest('.pg-unlock.is-open'));
+  }, true);
   function heldVariants(handle){
     var held = {};
     (LASTCART.items || []).forEach(function(it){
@@ -651,6 +696,21 @@
      yanked mid-pick. */
   var lastCartSig = null;
   var rendering = false;
+  /* COALESCE, DO NOT DISCARD. The single-flight guard used to `return` on a
+     render that arrived while one was in flight, throwing that request away.
+     afterAdd() deliberately fires three renders in quick succession, so on a
+     slow cart the two follow-ups both landed inside the first one's /cart.js
+     round trip and evaporated -- measured with /cart.js at 800ms, the offer row
+     was absent for 1101ms after an add. Remembering that someone asked and
+     re-running once the flight lands closes the hole to 170ms.
+     done() must be called on EVERY exit that clears `rendering`, including the
+     two early returns below, or a request coalesced into one of those is
+     stranded and the row never comes back at all. */
+  var pending = false;
+  function done(){
+    rendering = false;
+    if (pending){ pending = false; scheduleRender(); }
+  }
 
   function cartSig(cart){
     return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(',');
@@ -670,7 +730,7 @@
   }
 
   function render(){
-    if (rendering) return;
+    if (rendering){ pending = true; return; }
     var c = document.getElementById('cart');
     if (!c) return;
     if (!c.querySelector('.l4ca:not(.in-panel)')) return;
@@ -688,7 +748,7 @@
          screen. */
       c = document.getElementById('cart');
       var list = c && c.querySelector('.l4ca:not(.in-panel)');
-      if (!c || !list){ rendering = false; return; }
+      if (!c || !list){ done(); scheduleRender(); return; }
       LASTCART = cart;
       var offs = offers(cart).sort(function(a, b){
         return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
@@ -696,9 +756,9 @@
       var sig = cartSig(cart);
 
       /* nothing changed and the rows are already right -> do absolutely nothing */
-      if (sig === lastCartSig && rowsPresent(c, offs)){ rendering = false; return; }
+      if (sig === lastCartSig && rowsPresent(c, offs)){ done(); return; }
 
-      if (consolidate(cart)){ rendering = false; return; }
+      if (consolidate(cart)){ done(); return; }
 
       /* lastCartSig is NOT advanced yet. It used to be set here, before the
          loop below decides whether it can actually apply the new cart -- and
@@ -781,6 +841,9 @@
           var el = row(o);
           el.setAttribute('data-sig', sg);
           slot.appendChild(el);
+          /* a rebuild leaves no .pg-unlock to match, so this fresh-row branch is
+             where a destroyed chooser lands -- put their picks back */
+          restorePicks(el, o, sg);
         }
       });
 
@@ -795,8 +858,8 @@
          the common path. */
       if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
       mark();
-      rendering = false;
-    }).catch(function(){ rendering = false; });
+      done();
+    }).catch(function(){ done(); });
   }
 
   /* ---------------- 3. mark first, hide the disc only once it is there ---------------- */
@@ -869,7 +932,10 @@
       body: JSON.stringify({items: items})
     }).then(function(r){
       if (!r || !r.ok) throw 0;
-      if (rowEl) rowEl.classList.remove('is-open');
+      if (rowEl){
+        rowEl.classList.remove('is-open');
+        delete PICKS[rowEl.getAttribute('data-pg-unlock')];   /* bought: nothing to restore */
+      }
       afterAdd();
     }).catch(function(){
       busy = false;
@@ -903,7 +969,11 @@
     };
     if (rowEl && !rowEl.classList.contains('is-open')){
       buildChooser(rowEl, oForPick).then(function(built){
-        if (built){ rowEl.classList.add('is-open'); btn.textContent = 'Choose designs below'; }
+        if (built){
+          rowEl.classList.add('is-open');
+          btn.textContent = 'Choose designs below';
+          snapPicks(rowEl);       /* seed with the defaults the chooser opens on */
+        }
         else directAdd(btn);
       });
       return;

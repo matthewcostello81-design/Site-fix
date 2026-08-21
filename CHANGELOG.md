@@ -1,3 +1,68 @@
+# The last two confirmed glitches, and one finding that was a harness artefact
+
+The wider audit finished: 37 findings, 8 confirmed, 29 refuted. Four of the eight
+were already fixed in the two commits above. This closes the other four.
+
+## A render arriving mid-flight was thrown away
+
+The single-flight guard `return`ed when a render was already in flight, dropping
+the request entirely. `afterAdd()` deliberately fires three renders in quick
+succession, so on a slow cart the two follow-ups both landed inside the first
+one's `/cart.js` round trip and evaporated. Measured with `/cart.js` at 800ms:
+the offer row was **absent for 1101ms** after an add.
+
+`pending` now remembers that someone asked, and `done()` re-runs once the flight
+lands. `done()` has to be called on *every* exit that clears `rendering` — the
+signature no-op and the consolidate branch included — or a request coalesced into
+one of those is stranded and the row never comes back at all.
+
+## The shopper's chooser picks were destroyed by any cart change
+
+`render()` refuses to replace a row the shopper has opened, which covers a
+re-render. It cannot cover what actually destroys the panel: the theme replaces
+`#cart`'s entire innerHTML on every add and quantity change. A shopper who picked
+Charizard and Gengar and then tapped **+** on a cart line watched the panel close
+and their picks vanish — there is no row left to protect by then.
+
+The picks are now captured the moment they are *made*, not read off the DOM
+afterwards (reading later always loses the race with the swap), and replayed onto
+the fresh row only when `data-sig` matches — same handle, same rung, same unit
+count, therefore the same chooser shape. A different sig drops the snapshot
+rather than forcing it onto a panel it does not fit, and a variant that has gone
+away since they picked it is skipped rather than selected blindly.
+
+`test/run-picks.mjs` covers both, with a `legacy` mode as the control:
+
+| | deployed | fixed |
+|---|---|---|
+| row returns after the rebuild | yes | yes |
+| chooser still open | **no** | yes |
+| picks preserved | **no** — empty | `["1","2"]` |
+
+Still passes with `/cart.js` at 900ms.
+
+## The `/cart.js` storm was the harness, not the cart
+
+One confirmed finding claimed five observers on `#cart` amplify each other into
+19 `/cart.js` reads per upsell add, with a shared-reader fix. It reproduced — but
+only because the harness never loaded **pg-cart-fast**, which already memoises
+that endpoint with a 500ms TTL and a shared in-flight promise, and already
+invalidates on every cart write.
+
+A/B on the same page, six seconds of a steady open cart:
+
+| | requests | rate |
+|---|---|---|
+| without `pg-cart-fast` (the harness) | 25 | 4.2/s |
+| with it (what actually ships) | 7 | **1.2/s** |
+
+So the proposed `window.pgCartJson` would have been a second memo stacked on an
+existing one — a new cross-file global, shared mutable parsed carts, and changed
+error semantics, for a saving already banked. Not applied. The fix's own
+load-order note also had the order backwards: it named `pg-cart-imglink` as the
+earliest of the group, but per `overlay-group.json` it loads at 22, *after*
+`pg-unlock` at 20.
+
 # Three corrections from the adversarial pass
 
 An independent verification round over the same code found three things wrong
