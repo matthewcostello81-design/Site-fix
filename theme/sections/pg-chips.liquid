@@ -109,9 +109,14 @@
      price, then FREE, reads as the saving rather than as two prices. */
   #cart .l4ca > li.pg-line-free .pg-save-chip,
   body.template-cart .l4ca > li.pg-line-free .pg-save-chip{display:none !important}
+  /* FREE is a price, so it wears the price's colour. It was briefly green, which
+     is the one colour in the cart that means nothing else -- every other figure
+     on these lines is #7A2FA2, so a green word read as a different kind of thing
+     rather than as this line's price. Same purple, same weight, same size as the
+     numbers beside it; being a word among figures is all the emphasis it needs. */
   #cart .l4ca > li.pg-line-free .nc-lsave-now,
   body.template-cart .l4ca > li.pg-line-free .nc-lsave-now{
-    color:#1F8A4C !important;letter-spacing:.03em;
+    color:#7A2FA2 !important;letter-spacing:.04em;
   }
 
   /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.

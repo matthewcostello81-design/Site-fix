@@ -1,3 +1,17 @@
+# FREE is purple, like every other price on the line
+
+It was briefly green, which is the one colour in this cart that means nothing
+else -- every other figure on a line is `#7A2FA2`, so a green word read as a
+different *kind* of thing rather than as that line's price. Now the same purple,
+weight and size as the numbers beside it; being a word among figures is all the
+emphasis it needs.
+
+`test/run-freeorb.mjs` asserts the *rendered* colour rather than the source, so a
+later `!important` from another stylesheet cannot quietly take it back:
+
+    check('FREE is the same purple as every other price',
+          freeRows.every(r => r.colour === 'rgb(122, 47, 162)'))
+
 # Six orbs, six lines, none of them free
 
 The deal is sold as "Buy 4, Get 2 FREE". It is implemented as **PokeOrb - 6 Pack
