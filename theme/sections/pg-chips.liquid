@@ -141,7 +141,14 @@
   body.template-cart .pg-free-note{
     display:inline-flex;align-items:center;
     width:fit-content;max-width:100%;min-width:0;
-    justify-self:start;grid-column:1 / -1;
+    /* grid-column-start, not just `1 / -1`. The row's grid declares no explicit
+       columns (grid-template-columns computes to `none`), and in that grid `-1`
+       resolves back to line 1, so `1 / -1` collapsed and the plaque was
+       auto-placed into whatever implicit cell was free -- measured on a phone,
+       the price column, where it pushed the + button across the price and hung
+       off the right edge of the card. A start line of 1 is unambiguous in both
+       kinds of grid: the plaque takes column 1 of the next free row. */
+    justify-self:start;grid-column-start:1;grid-column-end:-1;
     margin-top:4px;padding:4px 7px;border-radius:999px;
     background:rgba(139,68,190,.14);
     border:1px solid rgba(168,120,214,.4);
@@ -149,7 +156,7 @@
     font-size:11.5px;font-weight:800;
     letter-spacing:normal;word-spacing:normal;text-indent:0;
     text-transform:uppercase;
-    white-space:nowrap;
+    white-space:normal;overflow-wrap:anywhere;
   }
 </style>
 <script>
@@ -424,15 +431,20 @@
           setText(el, money(cents));
         });
       }
+      /* LAST, not next to the chip. The chip's parent is `.cols`, which is
+         `display:contents` -- its children are laid out by the row's grid, so a
+         plaque inserted beside the chip competes for a cell in the middle of the
+         row. Appended to the grid container itself it is placed after every
+         other item, which with grid-column-start:1 means a fresh row underneath
+         them. */
       function noteOn(li, text){
         var note = li.querySelector('.pg-free-note');
         if (!note){
           note = document.createElement('span');
           note.className = 'pg-free-note';
-          var chipEl = li.querySelector('.pg-save-chip');
-          if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
-          else li.appendChild(note);
         }
+        var host = li.querySelector('section') || li;
+        if (note.parentNode !== host || note !== host.lastElementChild) host.appendChild(note);
         setText(note, text);
       }
       function noteOff(li){
@@ -462,8 +474,17 @@
         }
         return '';
       }
+      /* The DEAL, not the price. Shopify names this rung "PokeOrb - 6 Pack
+         $137.20", and printing that in the plaque put a third figure on a row
+         that already shows a struck price and a charged one -- three numbers,
+         one of them the bundle total rather than anything to do with this line.
+         The product prefix and any trailing amount both come off, leaving the
+         offer: 6 PACK, BUY 5 GET 3 FREE. */
       function dealLabel(t){
-        return String(t || '').replace(/^[^-]*-\s*/, '').trim().toUpperCase();
+        return String(t || '')
+          .replace(/^[^-]*-\s*/, '')
+          .replace(/\s*[-–:]?\s*\$[\d.,]+\s*$/, '')
+          .trim().toUpperCase();
       }
       function dealOfItems(its){
         for (var i = 0; i < its.length; i++){
