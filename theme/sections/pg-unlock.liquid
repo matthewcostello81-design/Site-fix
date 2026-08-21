@@ -192,6 +192,29 @@
   #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
   #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
 
+  /* AN OPEN CHOOSER ON A SHORT SCREEN.
+     The panel now opens on arrival rather than waiting for a tap, which is the
+     point -- the offer IS the choosing, and hiding it behind a tap hid it. But
+     it is also the tallest thing the pinned pane ever holds, and the pane is
+     bottom-anchored: every pixel it takes is a pixel of cart the shopper cannot
+     see. Measured with the panel open: 324px, which is 38% of a 390x844 phone,
+     49% of an iPhone SE and 51% of a 360x640 -- over half the screen on the
+     smallest common phone, for a pane that is supposed to sit under the cart.
+
+     Trimmed here on height, not width, because height is what is scarce. The
+     subtitle goes first: with the panel open it is the one line that says
+     nothing the shopper cannot already see -- each slot is labelled with its
+     own price or FREE, and the confirm button repeats the count and the free
+     units. 324px -> 293px, which brings 360x640 back under half. */
+  @media (max-height:700px){
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-t small{display:none}
+    #cart .sticky-in-panel .pg-unlock.is-open img{width:36px;height:36px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick{padding-top:6px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick-r{margin:0 0 4px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-pick select{padding:7px 8px}
+    #cart .sticky-in-panel .pg-unlock.is-open .pg-unlock-go{min-height:40px;padding:8px 14px !important}
+  }
+
   /* ---------------- the design chooser ----------------
      The upsell used to add more of the variant already in the cart. On the orb
      that is the wrong unit: the character IS the product, and Shopify merges
@@ -550,20 +573,54 @@
     rowEl.querySelectorAll('.pg-unlock-pick select').forEach(function(sel){ vals.push(sel.value); });
     if (vals.length) PICKS[h] = {sig: sig, vals: vals, t: Date.now()};
   }
-  function restorePicks(rowEl, o, sg){
+  /* THE SLOTS ARE THERE BEFORE THEY ASK.
+     The panel used to be built only on the first tap of ADD, so the row said
+     "Unlock Buy 2, Get 1 FREE" and a shopper had to tap, wait for a
+     /products/<handle>.js round trip, and only then discover that the offer
+     wanted them to choose two designs and that one of the two was free. The
+     offer is the choosing; hiding it behind a tap hid the offer.
+     It is opened on arrival instead, with the shopper's own picks if they had
+     any and the defaults otherwise. ONE row at a time: the panel is the tallest
+     thing in the pinned pane and two open at once would leave no cart visible.
+     In practice only the orb has designs to choose -- buildChooser resolves
+     false for the single-variant wall art and console -- so the cap almost never
+     binds, but it is what stops a future multi-variant product from filling the
+     screen. */
+  function openChooser(rowEl, o, sg){
+    if (!rowEl || rowEl.classList.contains('is-open')) return;
     var p = PICKS[o.handle];
-    if (!p || p.sig !== sg || Date.now() - p.t > 300000) return;
+    var restoring = !!(p && p.sig === sg && Date.now() - p.t <= 300000);
+    if (!restoring){
+      /* Not on a screen that cannot afford it. Even compacted, the open panel is
+         286px, which is half of a 320x568 phone -- the pane would take more of
+         the screen than the cart it sits under. Below 600px of viewport the row
+         stays as it was, a tap away. Restoring a shopper's OWN half-made picks
+         is never suppressed: they asked for that panel, and losing their work to
+         a screen-size rule would be worse than a tall pane. */
+      if (window.innerHeight && window.innerHeight < 600) return;
+      var slot = rowEl.parentNode;
+      if (slot && slot.querySelector('.pg-unlock.is-open')) return;   /* one at a time */
+    }
     buildChooser(rowEl, o).then(function(built){
       if (!built){ delete PICKS[o.handle]; return; }
+      if (!rowEl.isConnected) return;                 /* a rebuild beat us to it */
       var sels = rowEl.querySelectorAll('.pg-unlock-pick select');
-      if (sels.length !== p.vals.length){ delete PICKS[o.handle]; return; }
-      sels.forEach(function(sel, i){
-        for (var j = 0; j < sel.options.length; j++){
-          /* skip a variant that has gone away since they picked it */
-          if (sel.options[j].value === p.vals[i]){ sel.value = p.vals[i]; return; }
-        }
-      });
+      if (restoring && sels.length === p.vals.length){
+        sels.forEach(function(sel, i){
+          for (var j = 0; j < sel.options.length; j++){
+            /* skip a variant that has gone away since they picked it */
+            if (sel.options[j].value === p.vals[i]){ sel.value = p.vals[i]; return; }
+          }
+        });
+      } else if (restoring){
+        delete PICKS[o.handle];                       /* shape changed: start clean */
+      }
+      /* re-check the cap here as well: two rows can be in flight at once, and
+         the fetch means this resolves a beat after the decision above */
+      var slot2 = rowEl.parentNode;
+      if (!restoring && slot2 && slot2.querySelector('.pg-unlock.is-open')) return;
       rowEl.classList.add('is-open');
+      snapPicks(rowEl);
       var btn = rowEl.querySelector('.pg-unlock-add');
       if (btn) btn.textContent = 'Choose designs below';
     }, function(){});
@@ -593,9 +650,24 @@
       var html = '';
       for (var i = 0; i < o.need; i++){
         var pick = pool[i % pool.length];
-        /* the LAST freeAdded picks are the free ones, so the labels line up with
-           the sentence above the panel however many that is */
-        var label = (o.rung.pct === 100 && i >= o.need - (o.freeAdded || 1)) ? 'Free' : 'Pick ' + (i + 1);
+        /* THE LABEL SAYS WHICH ONE IS FREE AND WHAT THE OTHERS COST.
+           It used to read "Pick 1" / "Pick 2" / "Free", which names the slot but
+           not the deal -- a shopper looking at three dropdowns could not tell
+           what they were about to be charged without reading the sentence above
+           and counting. The paid slots now carry their own price and the free
+           ones say FREE, so the panel states the offer by itself.
+           The LAST freeAdded picks are the free ones, which is the same order
+           the sentence above the panel uses. */
+        var isFree = (o.rung.pct === 100 && i >= o.need - (o.freeAdded || 1));
+        /* A price is only printed when there is a real one to print. o.price
+           comes from the cart line, and a cart shape that does not carry it
+           would otherwise render "$NaN" as the label on every paid slot -- a
+           broken-looking panel in the one place the offer has to read cleanly.
+           Fall back to the slot number, which is what this said before. */
+        var each = (typeof o.price === 'number' && isFinite(o.price) && o.price > 0)
+          ? Math.round(o.price * (100 - (o.rung.pct === 100 ? 0 : o.rung.pct)) / 100)
+          : null;
+        var label = isFree ? 'FREE' : (each ? money(each) : 'Pick ' + (i + 1));
         html += '<div class="pg-unlock-pick-r"><span>' + label + '</span><select data-i="' + i + '">';
         for (var j = 0; j < list.length; j++){
           html += '<option value="' + list[j].id + '"' +
@@ -837,13 +909,15 @@
           var fresh = row(o);
           fresh.setAttribute('data-sig', sg);
           existing.parentNode.replaceChild(fresh, existing);
+          openChooser(fresh, o, sg);
         } else {
           var el = row(o);
           el.setAttribute('data-sig', sg);
           slot.appendChild(el);
           /* a rebuild leaves no .pg-unlock to match, so this fresh-row branch is
-             where a destroyed chooser lands -- put their picks back */
-          restorePicks(el, o, sg);
+             where a destroyed chooser lands -- restore their picks, or open with
+             defaults if there are none */
+          openChooser(el, o, sg);
         }
       });
 

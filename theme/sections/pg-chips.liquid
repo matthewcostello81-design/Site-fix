@@ -356,12 +356,41 @@
           else r.li.classList.add('pg-merged-away');
         });
         var head = g[0];
-        var total = 0, paid = 0, free = 0;
+        /* HOW MANY CAME FREE, AND WHAT THE REST REALLY COST EACH.
+           `free` used to be counted as `line_price === 0`, i.e. only the lines
+           Shopify itself split off at zero. That works for a Buy-2-Get-1, which
+           is a BXGY and does split -- and not at all for the 6-pack, which is a
+           flat $72.74 off one line. Six orbs therefore showed no free units and
+           one blended figure, which a shopper divides by six and reads as
+           $22.87 an orb. It is not: it is four orbs and two free ones.
+
+           The line fields answer it for every deal shape at once.
+           original_line_price is the pre-discount total and final_line_price is
+           after LINE discounts only, so their difference is the product
+           discount alone -- immune to the standing Extra 10% off entire order,
+           which lands in line_price instead and would otherwise corrupt the
+           count. Divide that by the unit price and you have the number of free
+           units, whether Shopify split the line or not.
+
+           Checked against the live discounts at every quantity 1-12, with and
+           without the extra 10% stacked: q=3 -> 2 paid + 1 free, q=6 -> 4 + 2,
+           q=8 -> 5 + 3, q=12 -> 8 + 4, and paidUnits x perUnit reconstructs the
+           real charge to the cent every time. */
+        var total = 0, paid = 0, free = 0, orig = 0, fin = 0;
         g.forEach(function(r){
           total += r.item.quantity;
           paid += (paidOf(r.item) || 0);
-          if (r.item.line_price === 0) free += r.item.quantity;
+          if (typeof r.item.original_line_price === 'number') orig += r.item.original_line_price;
+          if (typeof r.item.final_line_price === 'number') fin += r.item.final_line_price;
         });
+        if (orig > 0 && total > 0 && fin >= 0 && fin <= orig){
+          var unit = orig / total;
+          if (unit > 0) free = Math.round((orig - fin) / unit);
+        }
+        if (free < 0) free = 0;
+        if (free >= total) free = 0;      /* everything free is a gift, not a bundle */
+        var paidUnits = total - free;
+        var perUnit = paidUnits > 0 ? Math.round(paid / paidUnits) : 0;
         head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
         head.li.setAttribute('data-pg-total', String(total));
         primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length};
@@ -384,7 +413,13 @@
             if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
             else head.li.appendChild(note);
           }
-          setText(note, free + ' FREE INCLUDED');
+          /* THE SENTENCE THE SHOPPER NEEDS. "3 FREE INCLUDED" beside one blended
+             total still leaves them dividing that total by every unit. Naming the
+             paid units and their real each-price says the whole deal in one line
+             and never averages the free ones into the price: 4 x $34.30 is what
+             the four cost, the other two cost nothing, and the two figures
+             multiply back to exactly what the line is charged. */
+          setText(note, paidUnits + ' x ' + money(perUnit) + ' + ' + free + ' FREE');
         } else if (note && note.parentNode){
           note.parentNode.removeChild(note);
         }

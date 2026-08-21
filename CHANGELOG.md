@@ -1,3 +1,106 @@
+# The cart line now states the deal per orb, and the slots open on arrival
+
+## Six orbs read as $20.58 each
+
+A discounted orb line showed one blended figure. Six orbs charged $123.48 with
+nothing beside it, so the only per-unit price a shopper could work out was
+$123.48 ÷ 6 = **$20.58** — a number that is true of no orb in the cart. Four of
+them cost $30.87 and two cost nothing.
+
+Worse, the free count only appeared for *some* deals. `free` was counted as
+`line_price === 0`, i.e. only the lines Shopify itself splits off at zero. That
+works for a Buy-2-Get-1, which is a BXGY and does split. It does not work at all
+for the 6-pack, which is a flat $72.74 off one line — so exactly the tier the
+shop owner had just built showed no free units at all.
+
+The line fields answer it for every deal shape at once.
+`original_line_price` is the pre-discount total and `final_line_price` is after
+LINE discounts only, so their difference is the product discount alone — immune
+to the standing Extra 10% off entire order, which lands in `line_price` instead
+and would otherwise corrupt the count. Divide by the unit price and you have the
+free units, split or not.
+
+The note now names the paid units and their real each-price:
+
+| qty | charged | before | after |
+|---|---|---|---|
+| 3 | $62.98 | `1 FREE INCLUDED` | `2 x $31.49 + 1 FREE` |
+| 5 | $125.96 | `1 FREE INCLUDED` | `4 x $31.49 + 1 FREE` |
+| **6** | $123.48 | *(nothing)* | `4 x $30.87 + 2 FREE` |
+| **7** | $154.97 | *(nothing)* | `5 x $30.99 + 2 FREE` |
+| 8 | $157.46 | `3 FREE INCLUDED` | `5 x $31.49 + 3 FREE` |
+| 12 | $251.93 | `4 FREE INCLUDED` | `8 x $31.49 + 4 FREE` |
+
+`test/run-perorb.mjs` drives the real `repct()` against the real pay curve — the
+four live discounts, one product discount per line, the cheapest winning — and
+asserts at every quantity 1–12 that the printed figures multiply back to the
+exact charge and that the blended average never appears. `test/paycurve.mjs`
+proves the arithmetic independently, with and without the extra 10% stacked.
+
+Note q=6 and q=7 give $30.87 and $30.99 rather than a round $31.49: the 6-pack's
+flat discount genuinely reduces the paid ones a little as well as freeing two.
+The figures are what the shopper is actually charged, not a tidy fiction.
+
+## The offer was hidden behind a tap
+
+The design slots were built only on the first tap of ADD, so the row said
+"Unlock Buy 2, Get 1 FREE" and the shopper had to tap, wait for a
+`/products/<handle>.js` round trip, and only then discover that the offer wanted
+them to choose two designs and that one of the two was free. The offer *is* the
+choosing; hiding it behind a tap hid the offer.
+
+It opens on arrival now — with the shopper's own picks if they had any and the
+defaults otherwise — and the labels carry the money instead of a slot number:
+
+    $34.99   [ Charizard ▾ ]
+    FREE     [ Gengar    ▾ ]
+    [ Add 2 to cart - 1 is FREE ]
+
+Three guards, because the panel is the tallest thing the pinned pane ever holds
+and the pane is bottom-anchored — every pixel it takes is cart the shopper
+cannot see:
+
+- **One row at a time.** In practice only the orb has designs to choose
+  (`buildChooser` resolves false for the single-variant wall art and console),
+  so the cap almost never binds — it is what stops a future multi-variant
+  product from filling the screen.
+- **Compacted on short screens.** Measured open: 324px, which is 38% of a
+  390×844 phone, 49% of an iPhone SE and **51% of a 360×640** — over half the
+  screen on the smallest common phone. Under 700px of viewport the subtitle goes
+  (with the panel open it is the one line saying nothing the shopper cannot
+  already see — each slot is labelled and the confirm button repeats the count)
+  along with tighter selects and thumbnail: 324px → 286px, which brings 360×640
+  to 44.7%.
+- **Not at all below 600px of viewport.** Even compacted, 286px is half of a
+  320×568 phone. There the row stays a tap away, as before. Restoring a
+  shopper's own half-made picks is never suppressed by this — they asked for
+  that panel.
+
+| viewport | pane with the chooser open | auto-opens? |
+|---|---|---|
+| 390×844 | 324px — 38.3% | yes |
+| 375×667 | 286px — 42.9% | yes |
+| 360×640 | 286px — 44.7% | yes |
+| 320×568 | 286px — 50.4% | **no**, tap to open |
+
+## A deploy that had to be repaired
+
+The first upload of `pg-chips` landed corrupt, twice. The note originally used
+`\u00D7` and `\u00B7` escapes for × and ·, and my instruction to the uploading
+agent described those as "non-ASCII characters" — they are not, they are literal
+backslash sequences in the source. Attempt one converted them to glyphs (8 bytes
+short); attempt two over-corrected to doubled backslashes (6 bytes long), which
+also doubled the backslashes in
+
+    /\/products\/([^/?#]+)/
+
+so `handleOf()` matched nothing and every cart row failed to pair. Caught by the
+checksum verification, on an unpublished theme, so nothing live was affected.
+
+The root cause is fixed rather than worked around: the note is now pure ASCII
+(`4 x $30.87 + 2 FREE`), leaving one deliberate non-ASCII byte in the whole file
+— the U+2212 minus sign in a keypad comparison that predates this work.
+
 # The last two confirmed glitches, and one finding that was a harness artefact
 
 The wider audit finished: 37 findings, 8 confirmed, 29 refuted. Four of the eight
