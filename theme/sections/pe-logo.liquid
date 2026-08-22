@@ -160,6 +160,52 @@ html body a.pg-wordmark.pg-wordmark{
       min-height:0 !important}
   }
 </style>
+<style>
+  /* ---- THE LOAD CURTAIN ---- (no boxes may jump while the page dresses)
+     This theme is styled in layers: the base theme paints first, and the
+     Pocket Era styling lives in sections at the END of the document, so a
+     streaming first paint shows the base look for ~400ms and then the whole
+     page re-styles at once when the parser reaches the bottom -- measured on a
+     393x852 iPhone viewport as the cards doubling in size and the grid
+     re-seating by ~500px at t=1.4s. Nothing can reorder that parse, so the
+     page is held invisible on the brand-dark ground until it is fully dressed,
+     then faded in as one piece.
+
+     This section is registered in the HEADER group, so this style and the
+     script below parse before any content can paint -- a curtain at the end of
+     the document would rise after the flash it exists to hide. The class is
+     added by script, so with JavaScript off the page simply renders normally.
+     The theme editor is exempted (designMode), and a hard 3.8s cap plus a
+     bfcache pageshow hook guarantee the curtain can never trap the page. */
+  html.pg-calm{background:#0B0710 !important}
+  html.pg-calm body{opacity:0 !important}
+  html.pg-calm-fade body{transition:opacity .22s ease}
+</style>
+<script>
+(function(){
+  if (window.pgCalm) return; window.pgCalm = 1;
+  if (window.Shopify && window.Shopify.designMode) return;
+  var de = document.documentElement;
+  de.classList.add('pg-calm');
+  var done = false;
+  function reveal(){
+    if (done) return; done = true;
+    window.pgCalmRevealAt = performance.now();
+    de.classList.add('pg-calm-fade');
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      de.classList.remove('pg-calm');
+    }); });
+    setTimeout(function(){ de.classList.remove('pg-calm-fade'); }, 700);
+  }
+  /* DCL means the parser has reached the end of the document, i.e. every
+     late style layer has been applied; the extra beat lets the scripts that
+     fire AT DCL (the gallery rebuild, the tile ladder) finish their one-shot
+     moves before anyone is watching. */
+  document.addEventListener('DOMContentLoaded', function(){ setTimeout(reveal, 400); });
+  setTimeout(reveal, 3800);
+  window.addEventListener('pageshow', function(e){ if (e.persisted) reveal(); });
+})();
+</script>
 {% schema %}
 {"name": "PE Logo", "settings": []}
 {% endschema %}
