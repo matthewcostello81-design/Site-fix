@@ -1,3 +1,44 @@
+# Cart: remove the "6 PACK" deal plaque from paid lines
+
+## What it was
+pg-chips appends a `.pg-free-note` pill to a cart line's title naming the deal
+the line matched, when that rung yields no free units -- the 6 Pack, which is a
+fixed bundle price rather than a free-unit offer. On the live theme it renders
+with the amount still attached ("6 PACK $137.20").
+
+By the time it draws, the row already shows the struck total, the charged total
+and this file's own "Save %" badge. It was the fourth statement of one discount
+and the widest element on the line.
+
+## What was hidden, and what was not
+Only the note on PAID rows:
+
+    #cart li:not(.pg-free-line) .pg-free-note { display:none !important }
+
+The same element on a FREE row reads "FREE" or "3 FREE", which names units the
+shopper is getting and is stated nowhere else on the row, so `.pg-free-line`
+(set by pg-chips on those rows) is what separates the two.
+
+## Why plain display:none is enough here
+Unlike `.pg-save-chip` above it, `.pg-free-note` is NOT in pg-chips' stamp list
+-- `SEL` is `.pg-free-tag, .pg-save-chip, .nc-lsave-off` -- so nothing writes
+inline `display` to it on the 300ms interval, and its own rule sets
+`display:flex` without `!important`. The four-property dance the chip needs is
+not required.
+
+## Why here rather than in pg-chips
+This file already owns "suppress the duplicate discount labels on a cart line",
+and hiding costs one rule against a 34KB rewrite of pg-chips for a three-line
+change. The plaque is still generated; it simply is not painted on paid rows.
+
+## Verified
+Chromium, pg-chips' real CSS plus this rule over a paid row and a free row: the
+paid row's "6 PACK" computes to display:none at 0x0, the free row's "3 FREE"
+stays display:flex at 55x22.
+
+## Scope note
+Hidden at every width, not only on phones.
+
 # Wall art: swipe hint on the photo strip
 
 Mirrors the orb page's pill (`pg-gallery-tweaks`): "< SWIPE - 4/28 >" pinned to
