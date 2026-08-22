@@ -1,3 +1,35 @@
+# Wall art: removed a duplicate photo from the gallery
+
+## What it was
+Two of the product's media entries were the SAME image uploaded twice:
+
+  hf_20260812_013125_456526a8...png   4,671,308 bytes
+  hf_20260812_013125_dff28aff...png   4,671,308 bytes
+
+Byte-for-byte identical file sizes, same generation timestamp. Both sat in the
+photo strip (which renders the media list at offset 1), so the Legendary Poke
+Trio shot appeared twice.
+
+## How it was found
+The CDN is blocked from this environment, so the images could not be compared by
+eye. `MediaImage.originalSource.fileSize` settles it without looking: identical
+byte counts across a 2048x2048 PNG is not a coincidence. Every other image on
+the product has a distinct size, so this was the only duplicate -- checked
+across all 29.
+
+## What was deleted
+`MediaImage/71928007950564`, the 456526a8 copy. It was chosen over its twin
+because it carried no alt text of its own until this session, when one was
+invented for it without seeing the picture; the surviving copy
+(`71926378365156`) keeps its original author-written alt, "Heroic 3D Wall Art -
+holo, dark bedroom above bed", which still maps to Legendary Poke Trio through
+the DESIGNS table.
+
+Checked before deleting: it was not the featured image (that is 71952743366884)
+and not any variant's image, so nothing on the collection card, the bundle tile
+or the cart line pointed at it. The picture itself is still on the product via
+the surviving entry -- nothing visual was lost, only the repeat.
+
 # Wall art: design name on every video and every photo
 
 Mirrors the pill the orb page already carries (`pg-gallery-tweaks`), for the
