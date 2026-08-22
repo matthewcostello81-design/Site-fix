@@ -102,6 +102,20 @@
      one, or "Blastoise EX" lands on Blastoise Evolution. A photo that matches
      nothing gets NO label rather than a wrong one.
 
+  5. THE SWIPE HINT, also from the orb page. pg-gallery-mobile hides the strip's
+     arrows under 900px because they sat on top of the artwork, which left no
+     sign the strip scrolls at all -- 28 photos reading as a dead row. The pill
+     sits ON the strip, pinned to the top edge of the photo, so it is
+     unambiguously about the photos rather than about the video above them, and
+     it carries the position (4/28) so it answers "how many more" and not just
+     "there are more". Phones only: desktop keeps the real arrows.
+
+     It is a standing label, never dismissed. The orb page tried removing it on
+     first scroll and then on first touchmove, and both were too eager -- a
+     finger that starts on the gallery and drags DOWN scrolls the page, which
+     fires touchmove on the strip, so simply scrolling past the photos killed
+     the hint.
+
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
 {%- endcomment -%}
@@ -167,6 +181,52 @@
   #pgx .pgx-vid .pgw-arrow.next{right:10px !important;left:auto !important}
   @media (max-width:600px){
     #pgx .pgx-vid .pgw-arrow{width:38px !important;height:38px !important;font-size:22px !important}
+  }
+
+  /* the swipe hint, pinned to the top of the photo the strip is showing.
+     .pgx-thumbwrap is position:relative on both breakpoints (pg-landing sets it,
+     pg-gallery-mobile re-asserts it under 900px), so this anchors to the strip. */
+  #pgx .pgx-thumbwrap .pgw-swipe{
+    position:absolute;
+    top:8px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    display:none;
+    align-items:center;justify-content:center;gap:10px;
+    margin:0;
+    padding:9px 18px;
+    width:max-content;max-width:calc(100% - 24px);
+    border-radius:999px;
+    background:rgba(11,7,16,.82);
+    border:1px solid rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+    color:#EEE1FB;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:13.5px;font-weight:800;
+    letter-spacing:.10em;text-transform:uppercase;
+    white-space:nowrap;
+    pointer-events:none;
+  }
+  #pgx .pgx-thumbwrap .pgw-swipe span{display:inline-block;font-size:21px;line-height:.7;color:#F6ECFF;animation:pgwNudge 1.5s ease-in-out infinite}
+  #pgx .pgx-thumbwrap .pgw-swipe .pgw-l{animation-direction:reverse}
+  /* the counter repaints on every scroll frame, so it is fixed-width: tabular
+     figures plus a min-width sized for the widest reading stop the centred pill
+     shimmying as the digits change under the finger. */
+  #pgx .pgx-thumbwrap .pgw-swipe b.pgw-n{
+    display:inline-block;
+    min-width:4.8ch;text-align:center;
+    font-weight:800;color:#FFFFFF;letter-spacing:.04em;
+    font-variant-numeric:tabular-nums;
+  }
+  @keyframes pgwNudge{
+    0%,100%{transform:translateX(0);opacity:.55}
+    50%    {transform:translateX(4px);opacity:1}
+  }
+  /* phones only -- desktop keeps pg-landing's real arrows */
+  @media (max-width:900px){
+    #pgx .pgx-thumbwrap .pgw-swipe.pgw-on{display:flex}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #pgx .pgx-thumbwrap .pgw-swipe span{animation:none}
   }
 
   /* the design name pill -- same look on the video and on the photos below it.
@@ -554,6 +614,13 @@
     }
     if (best < 0) return;
 
+    /* the swipe pill's counter */
+    var cnt = wrap.querySelector('.pgw-swipe .pgw-n');
+    if (cnt){
+      var pos = (best + 1) + '/' + btns.length;
+      if (cnt.textContent !== pos) cnt.textContent = pos;
+    }
+
     var text = designForImg(btns[best].querySelector('img'));
     var tag = wrap.querySelector('.pgw-shot');
     if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
@@ -564,6 +631,25 @@
       wrap.appendChild(tag);
     }
     if (tag.textContent !== text) tag.textContent = text;
+  }
+
+  /* the swipe hint. Inserted only once the strip actually has somewhere to
+     scroll to, and re-inserted whenever pg-landing rebuilds the gallery and
+     throws it away. Never removed on scroll -- see the note at the top. */
+  function hint(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    if (wrap.querySelector('.pgw-swipe')) return;      /* already there */
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+    if (strip.scrollWidth <= strip.clientWidth + 4) return;   /* nothing to swipe to */
+
+    var el = document.createElement('div');
+    el.className = 'pgw-swipe pgw-on';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = '<span class="pgw-l">&lsaquo;</span> Swipe &middot; <b class="pgw-n"></b> <span>&rsaquo;</span>';
+    wrap.appendChild(el);
+    stripLabel();                                       /* fill the counter now */
   }
 
   /* `scroll` does not bubble, but it DOES capture, so listening on the document
@@ -579,7 +665,7 @@
     if (!sraf) sraf = requestAnimationFrame(function(){ sraf = 0; stripLabel(); });
   }, {capture: true, passive: true});
 
-  window.addEventListener('resize', function(){ MIDS = null; stripLabel(); }, {passive: true});
+  window.addEventListener('resize', function(){ MIDS = null; hint(); stripLabel(); }, {passive: true});
 
   /* pg-landing rebuilds the gallery after its own fetch, which throws the pill
      away and moves every button, so the cache is dropped and the label redrawn.
@@ -593,11 +679,11 @@
       if (queuedLbl) return;
       queuedLbl = true;
       MIDS = null;
-      setTimeout(function(){ queuedLbl = false; stripLabel(); }, 80);
+      setTimeout(function(){ queuedLbl = false; hint(); stripLabel(); }, 80);
     }).observe(pgxRoot, {childList: true, subtree: true});
   }
-  stripLabel();
-  [300, 900, 2000, 4000].forEach(function(ms){ setTimeout(stripLabel, ms); });
+  hint(); stripLabel();
+  [300, 900, 2000, 4000].forEach(function(ms){ setTimeout(function(){ hint(); stripLabel(); }, ms); });
 
   /* pg-landing renders .pgx-vid server-side, so it is normally there already;
      the retry only covers this section being evaluated before it. */

@@ -1,3 +1,34 @@
+# Wall art: swipe hint on the photo strip
+
+Mirrors the orb page's pill (`pg-gallery-tweaks`): "< SWIPE - 4/28 >" pinned to
+the top edge of the photo the strip is showing, with the name pill at the bottom
+of the same photo so the two can never collide.
+
+## Why the strip needs it
+pg-gallery-mobile hides the strip's arrows under 900px, because they sat on top
+of the artwork. That fixed the covering but left no sign the strip scrolls at
+all, so 28 photos read as a dead row. Phones only -- desktop keeps pg-landing's
+real arrows, so the pill would be noise there.
+
+## Placement and behaviour, inherited from the orb page's two failed passes
+- ON the strip, not above or below it. Under the strip it fell below the fold on
+  a 390x844 phone; between the video and the strip it read as a caption for the
+  VIDEO, since nothing tied it to the photos underneath.
+- Never dismissed. Removing it on first scroll, then on first touchmove, were
+  both too eager: a finger that starts on the gallery and drags DOWN scrolls the
+  page and fires touchmove on the strip, so scrolling past the photos killed the
+  hint. It is a standing label.
+- The counter repaints per animation frame, sharing the existing `stripLabel()`
+  pass, so it counts up under the finger rather than jumping once when the strip
+  settles. Tabular figures and a 4.8ch min-width stop the centred pill shimmying
+  as the digits change.
+
+## Verified
+Playwright harness, phone and desktop: pill visible at 390px reading "1/10",
+counter tracking the strip through 1/10 -> 4/10 -> 10/10 with the name pill
+following, 8px below the strip's top edge, 313px clear of the name pill; hidden
+at 1280px while the name pill stays.
+
 # Wall art: removed a duplicate photo from the gallery
 
 ## What it was
