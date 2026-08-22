@@ -1,3 +1,44 @@
+# Cart: remove the duplicate frame upsell
+
+## Why there were two
+Two independent implementations of the same offer were rendering:
+
+1. `sections/pg-frame-add.liquid` -- "Add the matching frame", registered in
+   footer-group. The purpose-built one.
+2. The `.pg-fup` row folded into `sections/nc-linesave.liquid` -- "Add a Black
+   Wood Frame". The older one.
+
+pg-frame-add already guards against exactly this: its `focusOne()` benches every
+upsell but one. It can only bench what it knows about, though -- it sweeps
+`#cart .pg-unlock, #cart .pg-frameoffer`, and the nc-linesave row answered to
+neither class, so it sat there next to the winner untouched.
+
+## Which one went, and why that one
+The nc-linesave copy. It only ever lived in that file because footer-group was
+at Shopify's 25-section cap at the time: a section registered past the cap is
+accepted, reported back correctly by the API, and silently never rendered, so
+the row had to ride inside a file that already rendered.
+
+pg-frame-add is that constraint solved properly, and is a better version of the
+offer besides:
+- puts the same offer on the product page, above ADD TO CART
+- hides the frame's own card in "You may also like", so one product is not
+  pitched twice at two different prices
+- reads cart state off the rendered rows rather than polling /cart.js, on a cart
+  four other sections already fetch
+- rides inside `#pg-unlock-slot`, which pg-cart-mobile lifts above the pinned
+  checkout pane on phones. Parked under the line list -- where the nc-linesave
+  row was -- it measured y=783 on an 844px screen, underneath the pane, which
+  is the "they can't add the frame" bug that file's own header records.
+
+Teaching `focusOne()` a third class would have kept two implementations of one
+offer alive. Deleting the older one is the fix.
+
+## Left behind
+nc-linesave is back to one concern: the per-line savings badge, plus the two
+rules hiding pg-drawer's `.pg-save-chip` and pg-chips' paid-row deal plaque.
+14,298 bytes down to 7,173.
+
 # Cart: remove the "6 PACK" deal plaque from paid lines
 
 ## What it was
