@@ -54,38 +54,27 @@
       tile                orbs   cart charges   struck    save
       Single Item            1         $34.99    $70.00    50%
       Buy 2, Get 1 FREE      3         $69.98   $210.00    66%
-      Buy 4, Get 2 FREE      6        $137.20   $420.00    67%
+      Buy 4, Get 2 FREE      6        $139.96   $420.00    66%
       Buy 5, Get 3 FREE      8        $174.95   $560.00    68%
 
   Single and Buy 2 Get 1 Free are still not touched for price by this file:
   those figures are pgLadder's own arithmetic on the variant price, so they
   follow the orb automatically. Only the BADGE on tier 1 is rewritten here.
 
-  THE 6-PACK IS NOT A WHOLE NUMBER OF ORBS, DELIBERATELY. Every other rung is
-  (paid units x unit price), because a buy-X-get-Y discount can only ever take
-  WHOLE units off. Six orbs under a pure Buy 4 Get 2 is 4 x $34.99 = $139.96,
-  and against $209.94 that reads SAVE 33% -- the identical rate to Buy 2 Get 1,
-  because 2 free of 6 IS 1 free of 3. Two rungs reading the same number is what
-  made the ladder look flat.
+  EVERY RUNG IS A WHOLE NUMBER OF ORBS NOW, by owner request. The 6-pack used
+  to be $137.20 -- a hand-tuned amount-off discount ($72.74 off six), kept
+  because a straight Buy 4 Get 2 ties the 3-pack's badge. But an amount-off
+  has no free units, so the cart showed six orbs at a REDUCED PER-ORB price
+  on one line, while every other rung showed regular-priced orbs plus a
+  separate FREE line. The owner chose consistency over the badge: every rung
+  now shows free orbs, and the 6-pack is plain (paid units x unit price) like
+  the rest. The "PokeOrb - 6 Pack $137.20" discount is DEACTIVATED rather
+  than deleted, so this is one switch to reverse.
 
-  So the 6-pack takes $72.74 off instead -- 2.08 orbs -- which lands on $137.20
-  and reads 35%. That is exactly what the competitor charges, and inspecting
-  their figure is where the number came from: their $72.74 is two free orbs plus
-  $2.76, bought purely to move the badge off 33.
-
-  The band is narrow: anything from $135.42 to $137.51 rounds to 35%. $137.20 is
-  the competitor's own price, so it is the defensible point in that band.
-
-  THIS RUNG NEEDS A DIFFERENT DISCOUNT TYPE. No BXGY can produce $137.20, so the
-  store's "PokeOrb - Buy 4 Get 2 Free" is replaced by a fixed-amount automatic
-  discount, $72.74 off six or more orbs. The old BXGY is DEACTIVATED rather than
-  deleted, so this is one switch to reverse.
-
-  (An earlier attempt dropped the orb to $33.55 so that 4 x 33.55 would land on
-  $134.20 exactly. It was reverted: one unit price cannot satisfy two wanted
-  figures -- 5 x 33.55 is $167.75, not $169.95 -- so it bought one of them at the
-  cost of dropping the orb's price on every other surface of the shop. Discounting
-  the bundle instead leaves the orb's own price alone.)
+  NO SIX-ORB DISCOUNT NEEDS TO EXIST FOR THIS RUNG. The repeating Buy 2 Get 1
+  frees floor(n/3) orbs at any quantity, so at six it frees two -- exactly
+  this tile's promise -- and Shopify splits the free units onto their own $0
+  line, which is what makes the cart display them as free orbs.
 
   WHY THE PRICES ARE STILL LITERAL HERE. They could be derived now, but the
   point of EXTRA is that a tier is a chosen offer, not a formula: change the
@@ -105,7 +94,8 @@
   also what the cart's own "You saved" line measures, so the badge a shopper
   taps on and the saving the cart then reports finally agree with each other.
   The struck figure on every rung is the same measure -- MSRP x units -- so the
-  badge is exactly the arithmetic between the two prices printed beside it.
+  badge is exactly the arithmetic between the two figures a shopper can
+  actually see.
 
   Tier 0 now carries the same badge as everyone else -- SAVE 50%, its own MSRP
   markdown; it has no free units to add -- injected by ladder(), since
@@ -118,13 +108,12 @@
   would have left the one rung a shopper is meant to land on as the only one
   not saying what it saves.
 
-  WHY THE PERCENT IS FLOORED, NOT ROUNDED. Against MSRP the rungs land on
-  50.0 / 66.7 / 67.3 / 68.8, and rounding collapses the middle two to 67 -- the
-  ladder goes flat at exactly the rung the hand-tuned $137.20 price exists to
-  lift (2 free of 6 IS 1 free of 3, so without the $2.76 sweetener they would
-  tie outright). Flooring keeps every rung distinct -- 50 / 66 / 67 / 68 -- and
-  a floored badge can only understate the saving, which is the safe direction
-  for a printed claim.
+  WHY THE PERCENT IS FLOORED, NOT ROUNDED: a floored badge can only
+  understate the saving, which is the safe direction for a printed claim.
+  With the hand-tuned 6-pack retired, the 3-pack and 6-pack legitimately tie
+  at 66 -- 2 free of 6 IS 1 free of 3, so an honest badge cannot separate
+  them, and the owner chose free-orb display over a distinct number there.
+  The ladder reads 50 / 66 / 66 / 68.
 
   TIER NUMBERS 4 AND 5, NOT 2 AND 3. ladder() above deletes any tile whose
   data-pg-tier is '2' or '3' -- those are pgLadder's dead Trio and Quad offers.
@@ -147,13 +136,12 @@
 
       PokeOrb - Buy 2 Get 1 Free  BXGY, NO per-order limit, so it REPEATS:
                                   frees floor(n/3) orbs at any quantity
-      PokeOrb - 6 Pack $137.20    amount-off, $72.74 off at 6+, once per order
       PokeOrb - Buy 5 Get 3 Free  BXGY, buy 5 get 3 at 100% off, once per order
 
-  "PokeOrb - Buy 4 Get 2 Free" is DEACTIVATED. It was redundant even before the
-  price change -- the repeating Buy 2 Get 1 already frees two orbs at six, so it
-  produced the identical $139.96 -- and it now competes with the amount-off
-  discount that replaced it.
+  "PokeOrb - Buy 4 Get 2 Free" stays DEACTIVATED as redundant: the repeating
+  Buy 2 Get 1 already frees two orbs at six, producing the identical $139.96.
+  "PokeOrb - 6 Pack $137.20" (amount-off) is DEACTIVATED too -- see the note
+  above: it priced six orbs $2.76 lower but could not show free units.
 
   ONLY ONE PRODUCT DISCOUNT APPLIES PER CART LINE. This store is not Plus, and
   same-line stacking needs either Plus + productDiscountsWithTagsOnSameCartLine
@@ -165,26 +153,15 @@
 
   THE WHOLE CURVE, COMPUTED AGAINST THOSE THREE (orbs -> what the cart bills):
 
-      1  $34.99   2  $69.98   3  $69.98   4 $104.97   5 $139.96   6 $137.20
-      7 $172.19   8 $174.95   9 $209.94  10 $244.93  11 $279.92  12 $279.92
+      1  $34.99   2  $69.98   3  $69.98   4 $104.97   5 $139.96   6 $139.96
+      7 $174.95   8 $174.95   9 $209.94  10 $244.93  11 $279.92  12 $279.92
 
-  The three bundle tiles land exactly: 3 -> $69.98, 6 -> $137.20, 8 -> $174.95.
+  The three bundle tiles land exactly: 3 -> $69.98, 6 -> $139.96, 8 -> $174.95.
 
-  TWO THINGS TO KNOW ABOUT THAT CURVE.
-
-  First, six orbs cost LESS than five ($137.20 against $139.96). The sixth orb
-  is free AND takes $2.76 off. That was already half true -- the repeating Buy 2
-  Get 1 made the sixth orb free, so 5 and 6 both billed $139.96 -- and the
-  amount-off deepens it by $2.76. Nobody should ever buy exactly five, and the
-  cart upsell already walks them to six.
-
-  Second, the 6-pack discount wins by a THIN margin and only in a narrow band.
-  At six orbs it beats the repeating Buy 2 Get 1 by $72.74 - $69.98 = $2.76, and
-  it wins only at 6, 7 and 8; from nine up Buy 2 Get 1 frees three orbs
-  ($104.97) and takes over again. Shopify's "best for the customer" tie-break is
-  observed behaviour rather than documented behaviour, so if the orb's price
-  ever moves, re-check that $72.74 still beats floor(6/3) x unit, or the 6-pack
-  silently reverts to $139.96 while the tile still promises $137.20.
+  ONE THING TO KNOW ABOUT THAT CURVE: six orbs cost the SAME as five, and
+  eight the same as seven -- the extra unit is the free one the current rung
+  hands over. Nobody should ever buy exactly five or seven, and the cart
+  upsell already walks them to the next rung.
 
   The standing "Extra 10% off entire order" is an ORDER-class discount and DOES
   combine on top of whichever product discount won, so the shopper actually pays
@@ -299,18 +276,17 @@
   var PACK = B2G1[HANDLE] || null;
 
   /* The extra volume tiers, orb only. `pay` is the price shown, in cents, and
-     is what the cart actually charges. The 8-pack is 5 paid orbs at $34.99; the
-     6-pack is NOT a whole number of orbs -- it is $72.74 off six, which is why
-     it needs an amount-off discount rather than a buy-X-get-Y (see the note at
-     the top of the file). If the unit price ever moves, BOTH figures here have
-     to move with it and the discount has to be re-cut, or the tiles stop
+     is what the cart actually charges: paid units x $34.99 on every rung, now
+     that the amount-off 6-pack is retired (see the note at the top of the
+     file) -- 4 paid for the 6-pack, 5 paid for the 8-pack. If the unit price
+     ever moves, BOTH figures here have to move with it, or the tiles stop
      agreeing with the cart.
      `units` is how many orbs the tile adds, and how many pickers it draws. The
      struck-through figure is NOT here: it is the single price x units, derived
      at render time so it matches the tile above. */
   var EXTRA_ON = HANDLE.indexOf('pokemon-crystal') !== -1;
   var EXTRA = [
-    {tier: '4', units: 6, free: 2, pay: 13720, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
+    {tier: '4', units: 6, free: 2, pay: 13996, title: 'Buy 4, Get 2 FREE', chip: '+6 FREE LED Bases'},
     {tier: '5', units: 8, free: 3, pay: 17495, title: 'Buy 5, Get 3 FREE', chip: '+8 FREE LED Bases', best: true}
   ];
 
@@ -343,11 +319,9 @@
      cart's own "You saved" line, which measures the same way. One helper so
      every rung is measured the same way and none of them can drift.
 
-     FLOOR, not round. Against MSRP the 3-pack lands on 66.7% and the 6-pack on
-     67.3%; rounding makes both read 67 and the ladder goes flat at exactly the
-     rung the hand-tuned $137.20 exists to lift. Flooring keeps every rung
-     distinct -- 50 / 66 / 67 / 68 -- and only ever understates, which is the
-     safe direction for a claim printed on a price. */
+     FLOOR, not round: it only ever understates, which is the safe direction
+     for a claim printed on a price. The 3-pack and 6-pack legitimately tie at
+     66 now that both are plain buy-X-get-Y arithmetic. */
   function pctOff(pay, full){
     return full > pay ? Math.floor((full - pay) / full * 100) : 0;
   }
