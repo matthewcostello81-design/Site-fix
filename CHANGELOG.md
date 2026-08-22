@@ -1,3 +1,35 @@
+# Wall art slideshow: one box for all ten slides
+
+## Change
+Every slide is now 990x1080, the original clip's shape, at every width. The nine
+newer clips are zoomed (`z: 1.66` per entry) so their pillarbox is pushed off
+both edges and clipped by the stage's `overflow:hidden`.
+
+## Why a zoom and not a fit
+`cover` fits the file's height to the box, which leaves the footage at
+(footage aspect / box aspect) of the box width -- 0.61 in theory for 9:16 in
+990x1080, about 0.64 as measured on the page. Both are short of the edges, and
+cover only crops what overflows, so it could never reach them. Scaling the
+element past 1 is the only way to make tall footage fill a wider box.
+
+1.66 clears both the theoretical fill (1/0.61 = 1.63) and the measured one
+(1/0.64 = 1.56) with a few percent to spare. A visible bar is the failure that
+matters here; a few extra cropped pixels are not.
+
+## What it costs
+About 40% of each of those nine clips is cropped vertically, a fifth off the top
+and a fifth off the bottom. This is inherent: 9:16 footage cannot fill a 0.9167
+box any other way. The clips are centre-framed on the poster, so the crop takes
+room rather than subject.
+
+Re-encoding the nine to 990x1080 with the footage centred would let every `z` go
+back to 1 and cost no crop at all. That is the permanent fix if the crop reads
+badly.
+
+## Mobile
+Same box, same zoom, at every width -- the old 1:1 override is gone, since a
+square box was simply another box too wide for the footage.
+
 # Wall art slideshow: each slide sized to its own footage
 
 ## Cause of the leftover black sides

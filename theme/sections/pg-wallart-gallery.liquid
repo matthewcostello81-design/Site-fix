@@ -42,32 +42,41 @@
   outgoing one is paused after the fade. Nothing but the first clip is fetched
   until a shopper actually asks for it.
 
-  ASPECT -- EVERY SLIDE IS SIZED TO ITS OWN FOOTAGE, via `ar` on each entry.
-  There is no single stage shape because the clips are not one shape: the nine
-  newer ones are 1920x1080 FILES with roughly 9:16 footage pillarboxed inside
-  them (the black bars are baked into the frames, not added by the layout),
-  while the original gallery clip is a real 990x1080.
+  ASPECT. Every slide is the same size, 990x1080 -- the shape of the original
+  gallery clip, which is what set the height of this slot before there was a
+  slideshow. The box never changes, so paging or switching variant never moves
+  the page.
 
-  Two earlier attempts got this wrong and both are worth knowing about:
+  The nine newer clips do not natively fit that box. They are 1920x1080 FILES
+  with roughly 9:16 footage pillarboxed inside them; the black bars are baked
+  into the frames, not letterboxing added by the layout. Three attempts, and
+  only the third holds:
 
-    - CONTAIN in a 16:9 box. Reading the files as genuine 16:9 content fits the
-      whole frame in, so every baked-in bar stays on screen and the footage is
-      shrunk to make room for them.
-    - COVER in the original 990x1080 box. Cover only crops what OVERFLOWS, and
-      9:16 footage scaled to that box does not overflow it sideways -- it falls
-      short. Measured: the footage covers 0.5625/0.9167 = 61% of the box width,
-      so 39% of it stayed black. Cover cannot remove a bar the box is too wide
-      to hide.
+    - CONTAIN in a 16:9 box. Reads the files as genuine 16:9 content and fits
+      the whole frame in, so every baked-in bar stays on screen and the footage
+      shrinks to make room for them.
+    - COVER in the 990x1080 box. Cover only crops what OVERFLOWS. Tall narrow
+      footage scaled into a wider box does not overflow it sideways, it falls
+      SHORT -- measured on the page, the footage reached about 64% of the box
+      width and the remaining 36% stayed black. Cover cannot remove a bar the
+      box is too wide to hide.
+    - ZOOM, which is this. `z` on each entry scales the element up until the
+      footage itself is wider than the box, so the bars are pushed off both
+      edges and clipped away.
 
-  Filling the box needs the box to be no wider than the footage, which is what
-  `ar` does. The nine use 11/20 (0.55) rather than 9/16 (0.5625): a shade
-  narrower than the footage, so cover trims about 1% off each side and a clip
-  whose bars are not perfectly symmetric still cannot show one. The original
-  clip keeps its own 990x1080 and so is never cropped either.
+  WHERE 1.66 COMES FROM. Cover already fits the file's height to the box, so the
+  footage lands at (footage aspect / box aspect) of the box width. For 9:16 in
+  990x1080 that is 0.5625 / 0.9167 = 0.61, and the page measured about 0.64;
+  1 / 0.61 = 1.63 is the theoretical fill and 1 / 0.64 = 1.56 the measured one.
+  1.66 clears both with a few percent to spare, because a bar left showing is
+  the visible failure here and a few extra cropped pixels are not.
 
-  The cost is that the slot changes height between that one clip and the other
-  nine. That is the price of showing all ten whole; re-encoding the original to
-  match the rest is what would settle it for good.
+  WHAT IT COSTS. Zooming past the width crops the height: about 40% of these
+  clips, a fifth off the top and a fifth off the bottom. That is inherent -- 9:16
+  footage cannot fill a 0.9167 box any other way. The clips are framed with the
+  poster centred, so the crop takes room rather than subject, but it IS a crop.
+  Re-encoding the nine to 990x1080 with the footage centred would let `z` go
+  back to 1 and cost nothing at all.
 
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
@@ -85,12 +94,14 @@
   }
 
   /* ---- the video slideshow ---- */
-  /* a fallback only -- the JS sets aspect-ratio per slide from VIDS[i].ar */
-  #pgx .pgx-vid .pgw-stage{position:relative;width:100%;aspect-ratio:11/20;background:#0d0d0d}
+  /* one box for all ten slides: the original clip's shape. overflow:hidden is
+     load-bearing, not tidiness -- it is what clips the zoomed-off bars. */
+  #pgx .pgx-vid .pgw-stage{position:relative;width:100%;aspect-ratio:990/1080;background:#0d0d0d;overflow:hidden}
   #pgx .pgx-vid .pgw-v{
     position:absolute !important;inset:0 !important;
     width:100% !important;height:100% !important;
     object-fit:cover !important;display:block !important;
+    transform-origin:center center !important;   /* zoom out of the middle, where the footage is */
     opacity:0;transition:opacity .28s ease;
   }
   #pgx .pgx-vid .pgw-v.on{opacity:1}
@@ -139,10 +150,8 @@
   #pgx .pgx-vid .pgw-dot.on{background:#fff !important;width:18px !important;border-radius:999px !important}
 
   /* NO mobile aspect override. pg-landing squared this slot off at 1:1, which
-     on a pillarboxed file leaves the same black bars as any other too-wide box
-     -- the footage would cover 56% of the width there. The per-slide ratio
-     applies at every width instead, so phones show these vertical clips
-     vertically, which is the shape they were shot in. */
+     is just another box too wide for the footage and showed the same bars. The
+     one 990x1080 box and its zoom apply at every width. */
 </style>
 <script>
 (function(){
@@ -158,19 +167,20 @@
      with the variant option value -- that string IS the key the buy-box selects
      and the cart's variant picker both report, and matching is what points the
      slideshow at the right clip. Renaming a variant in Shopify without editing
-     this list leaves that one design falling back to slide 0. `ar` is the shape
-     of that clip's footage; see the ASPECT note above before changing one. */
+     this list leaves that one design falling back to slide 0. `z` is how far
+     that clip has to be zoomed to push its baked-in pillarbox off the edges of
+     the box; see the ASPECT note above before changing one. */
   var VIDS = [
-    {ar: "990/1080", v: "Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/372c232efb264da688df7ddecba254c7/372c232efb264da688df7ddecba254c7.HD-720p-4.5Mbps-92098881.mp4"},
-    {ar: "11/20", v: "Blue Eyes, Dark Magician, Red Eyes", u: "https://cdn.shopify.com/videos/c/vp/9d6a76bbc7504f589d013b52660475b2/9d6a76bbc7504f589d013b52660475b2.HD-720p-4.5Mbps-92296781.mp4"},
-    {ar: "11/20", v: "Gengar Evolution", u: "https://cdn.shopify.com/videos/c/vp/34da042ae6e64494be9fdfcbfc58b43d/34da042ae6e64494be9fdfcbfc58b43d.HD-720p-3.0Mbps-92296780.mp4"},
-    {ar: "11/20", v: "Blastoise Evolution", u: "https://cdn.shopify.com/videos/c/vp/d5d5246b3616411ca0ed05f1b982f44c/d5d5246b3616411ca0ed05f1b982f44c.HD-720p-3.0Mbps-92296779.mp4"},
-    {ar: "11/20", v: "EX Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/8a2173f6b8ca40c2b5819534a0be89f9/8a2173f6b8ca40c2b5819534a0be89f9.HD-720p-4.5Mbps-92296778.mp4"},
-    {ar: "11/20", v: "Eeveelutions", u: "https://cdn.shopify.com/videos/c/vp/74b84084bd414500a949f60c972172b0/74b84084bd414500a949f60c972172b0.HD-720p-3.0Mbps-92296777.mp4"},
-    {ar: "11/20", v: "Mewtwo EX, V, V Star", u: "https://cdn.shopify.com/videos/c/vp/28bedf6bfa444dc68d3aa93170d0f0d8/28bedf6bfa444dc68d3aa93170d0f0d8.HD-720p-2.1Mbps-92296776.mp4"},
-    {ar: "11/20", v: "One Piece", u: "https://cdn.shopify.com/videos/c/vp/79e22ac3490d404f80990b5e764ec531/79e22ac3490d404f80990b5e764ec531.HD-720p-3.0Mbps-92296775.mp4"},
-    {ar: "11/20", v: "Dragon Ball", u: "https://cdn.shopify.com/videos/c/vp/8c2e1751c07744dd9846e44ad1050462/8c2e1751c07744dd9846e44ad1050462.HD-720p-3.0Mbps-92296774.mp4"},
-    {ar: "11/20", v: "Goku", u: "https://cdn.shopify.com/videos/c/vp/1a5d4284598e442da8c01b753ee09909/1a5d4284598e442da8c01b753ee09909.HD-720p-2.1Mbps-92296773.mp4"}
+    {z: 1, v: "Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/372c232efb264da688df7ddecba254c7/372c232efb264da688df7ddecba254c7.HD-720p-4.5Mbps-92098881.mp4"},
+    {z: 1.66, v: "Blue Eyes, Dark Magician, Red Eyes", u: "https://cdn.shopify.com/videos/c/vp/9d6a76bbc7504f589d013b52660475b2/9d6a76bbc7504f589d013b52660475b2.HD-720p-4.5Mbps-92296781.mp4"},
+    {z: 1.66, v: "Gengar Evolution", u: "https://cdn.shopify.com/videos/c/vp/34da042ae6e64494be9fdfcbfc58b43d/34da042ae6e64494be9fdfcbfc58b43d.HD-720p-3.0Mbps-92296780.mp4"},
+    {z: 1.66, v: "Blastoise Evolution", u: "https://cdn.shopify.com/videos/c/vp/d5d5246b3616411ca0ed05f1b982f44c/d5d5246b3616411ca0ed05f1b982f44c.HD-720p-3.0Mbps-92296779.mp4"},
+    {z: 1.66, v: "EX Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/8a2173f6b8ca40c2b5819534a0be89f9/8a2173f6b8ca40c2b5819534a0be89f9.HD-720p-4.5Mbps-92296778.mp4"},
+    {z: 1.66, v: "Eeveelutions", u: "https://cdn.shopify.com/videos/c/vp/74b84084bd414500a949f60c972172b0/74b84084bd414500a949f60c972172b0.HD-720p-3.0Mbps-92296777.mp4"},
+    {z: 1.66, v: "Mewtwo EX, V, V Star", u: "https://cdn.shopify.com/videos/c/vp/28bedf6bfa444dc68d3aa93170d0f0d8/28bedf6bfa444dc68d3aa93170d0f0d8.HD-720p-2.1Mbps-92296776.mp4"},
+    {z: 1.66, v: "One Piece", u: "https://cdn.shopify.com/videos/c/vp/79e22ac3490d404f80990b5e764ec531/79e22ac3490d404f80990b5e764ec531.HD-720p-3.0Mbps-92296775.mp4"},
+    {z: 1.66, v: "Dragon Ball", u: "https://cdn.shopify.com/videos/c/vp/8c2e1751c07744dd9846e44ad1050462/8c2e1751c07744dd9846e44ad1050462.HD-720p-3.0Mbps-92296774.mp4"},
+    {z: 1.66, v: "Goku", u: "https://cdn.shopify.com/videos/c/vp/1a5d4284598e442da8c01b753ee09909/1a5d4284598e442da8c01b753ee09909.HD-720p-2.1Mbps-92296773.mp4"}
   ];
 
   function boot(){
@@ -232,7 +242,7 @@
       function swap(){
         if (swapped || mine !== token) return;
         swapped = true;
-        stage.style.aspectRatio = VIDS[i].ar;   /* resize as the clip appears, not before */
+        incoming.style.transform = 'scale(' + VIDS[i].z + ')';
         incoming.play().catch(function(){});
         incoming.classList.add('on');
         outgoing.classList.remove('on');
