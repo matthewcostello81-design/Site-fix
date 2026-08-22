@@ -1,0 +1,299 @@
+{%- comment -%}
+  PG Frame Add: the 30x40 black wood frame offered as a paid ADD-ON, the way
+  the spare case is on the console page -- on the wall-art product page and in
+  the cart -- and NOT as a card in "You may also like".
+
+  Two parts, both DOM-only.
+
+  THERE WAS A THIRD, AND IT IS GONE ON PURPOSE: a tile above ADD TO CART on the
+  wall art product page, offering the same frame before the print was even in
+  the cart. The shop owner asked for it removed at every width. The cart row
+  below is the only place the frame is pitched now, which is the right moment
+  for it anyway -- an add-on reads as an add-on once there is something to add
+  it to, and on the product page it competed with ADD TO CART for the same
+  click. Deleted rather than hidden, so nothing renders and is then covered up:
+  its markup, its styling and its `onPrintPage()` guard all went with it.
+
+  If it is ever wanted back, the one trap it was built around is worth knowing:
+  its button was `.pgx-frame-add` and deliberately NOT `.pgx-case-add`, because
+  pg-mobile and pg-case-add both listen for that class in the CAPTURE phase and
+  post the CASE variant -- a shared class would have added a case to the cart
+  when the shopper asked for a frame.
+
+  (1) CART. The same offer as one compact light row, shown only while the print
+      is in the cart and the frame is not. It lives INSIDE #pg-unlock-slot when
+      pg-unlock has built one -- pg-cart-mobile moves that slot above the pinned
+      checkout pane on phones, and riding in it is what keeps this row reachable
+      there; parked after the line list it measured y=783 on an 844px screen,
+      underneath the pane, which is why "they can't add the frame". It still
+      does NOT wear the `.pg-unlock` class: pg-unlock's own render sweeps rows
+      by that class and removes any it did not ask for, and pg-cart-mobile's
+      fallback selector grabs the first one.
+
+  (1b) ONE UPSELL AT A TIME. With the wall art, an orb and a console all in the
+      cart, the drawer stacked pg-unlock's three offer rows plus this one --
+      four pitches in a row, which reads as clutter and, when two point at the
+      same product family, as duplication. focusOne() below keeps exactly one
+      of them visible: the frame offer first whenever it is eligible (owner's
+      rule: wall art in cart means the frame is the upsell), then the offer for
+      the product whose quantity moved most recently, then the slot's own CSS
+      order. The losers are benched with a class, not removed -- pg-unlock
+      counts its rows to decide whether to rebuild, and removing them would
+      make it rebuild forever. A row mid-interaction (is-open, or holding
+      focus) is never benched out from under the shopper.
+
+  (2) "YOU MAY ALSO LIKE". The frame card is hidden there, exactly as pg-mobile
+      hides the case card -- an add-on and a standalone product card for the
+      same thing read as two different offers at two different prices.
+
+  Nothing here polls /cart.js. Whether the print and the frame are in the cart
+  is read off the rendered rows, so the offer costs no requests on a cart that
+  four other sections are already fetching.
+{%- endcomment -%}
+<style>
+  /* ---- the cart row ---- */
+  /* The drawer is light where the product page is dark, so this is its own
+     palette rather than a reuse of the tile above. */
+  #cart .pg-frameoffer,body.template-cart .pg-frameoffer{
+    display:flex;align-items:center;gap:11px;
+    margin:10px 0 4px;padding:11px 12px;
+    border:1px solid rgba(122,47,162,.26);border-radius:13px;
+    background:linear-gradient(120deg,#F7F1FC,#EDDFF9 55%,#F4E9FD);
+    box-sizing:border-box
+  }
+  #cart .pg-frameoffer img,body.template-cart .pg-frameoffer img{
+    width:44px;height:44px;flex:none;border-radius:9px;object-fit:cover;
+    background:#EADCF8
+  }
+  #cart .pg-frameoffer-t,body.template-cart .pg-frameoffer-t{flex:1;min-width:0}
+  #cart .pg-frameoffer-t b,body.template-cart .pg-frameoffer-t b{
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800
+  }
+  #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{
+    display:block;font-size:11.5px;line-height:1.35;color:#7B6A8E;margin-top:2px
+  }
+  #cart .pg-frameoffer-p,body.template-cart .pg-frameoffer-p{
+    flex:none;font-weight:800;font-size:14px;color:#7A2FA2
+  }
+  #cart .pg-frameoffer-add,body.template-cart .pg-frameoffer-add{
+    flex:none;border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;font-family:inherit;font-weight:800;font-size:11.5px;
+    letter-spacing:.06em;text-transform:uppercase;border-radius:999px !important;
+    padding:10px 16px;cursor:pointer;
+    box-shadow:0 10px 22px -12px rgba(139,68,190,.7) !important
+  }
+  html body #cart .pg-frameoffer-add::before,html body #cart .pg-frameoffer-add::after{
+    display:none !important;content:none !important;background:none !important
+  }
+  /* Inside the slot the row goes FIRST -- the slot is a CSS-ordered flex
+     column, and every pg-unlock row already carries an explicit order, so the
+     frame offer takes a rank below them all. */
+  #cart #pg-unlock-slot .pg-frameoffer{order:-1}
+
+  /* The bench. Hidden, not removed: pg-unlock decides whether to rebuild by
+     COUNTING its rows, so a removed row would be rebuilt on the next pass and
+     the drawer would churn. display beats the slot's flex layout either way. */
+  #cart .pg-upsell-bench,body.template-cart .pg-upsell-bench{display:none !important}
+
+  /* On a phone the price and the button will not both fit beside the copy at
+     44px of thumbnail, so the price moves under the title rather than being
+     squeezed against the button. */
+  @media (max-width:480px){
+    #cart .pg-frameoffer,body.template-cart .pg-frameoffer{gap:9px;padding:10px}
+    #cart .pg-frameoffer-p,body.template-cart .pg-frameoffer-p{display:none}
+    #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{color:#6B3E93;font-weight:700}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgFrameAdd) return; window.pgFrameAdd = 1;
+
+  var FRAME_VARIANT = 49688364613860;          /* Black frame - 30x40, $14.99 */
+  var FRAME_MARK    = '30x40cm-frame';         /* enough of the handle to match */
+  var PRINT_MARK    = 'lenticular-poster';     /* likewise, for the wall art */
+  var FRAME_IMG     = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/blackframe.png?v=1787284280';
+  var PRICE         = '$14.99';
+
+  function thumb(){ return FRAME_IMG.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); }
+
+  /* ---------------- (1) the cart row ---------------- */
+  function cartLines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+  function cartHas(mark){
+    var ls = cartLines();
+    for (var i = 0; i < ls.length; i++){
+      if (ls[i].querySelector('a[href*="' + mark + '"]')) return true;
+    }
+    return false;
+  }
+  function offer(){
+    var list = document.querySelector('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)');
+
+    /* one row, ever -- a drawer rebuild that clones its own content can leave
+       copies behind, and every copy after the first is somebody's confusion */
+    var rows = document.querySelectorAll('.pg-frameoffer');
+    var row = rows[0] || null;
+    for (var i = 1; i < rows.length; i++){
+      if (rows[i].parentNode) rows[i].parentNode.removeChild(rows[i]);
+    }
+
+    /* The offer earns its space only while it is actionable: the print is in
+       the cart and the frame is not. Once the frame is added it is an ordinary
+       cart line and repeating the pitch beside it would read as a second one. */
+    var wanted = !!list && cartHas(PRINT_MARK) && !cartHas(FRAME_MARK);
+    if (!wanted){
+      if (row && row.parentNode) row.parentNode.removeChild(row);
+      return;
+    }
+    if (!row){
+      row = document.createElement('div');
+      row.className = 'pg-frameoffer';
+      row.innerHTML =
+          '<img alt="Black wood frame" src="' + thumb() + '">'
+        + '<div class="pg-frameoffer-t"><b>Add the matching frame</b>'
+        + '<small>30x40cm black wood grain &middot; ' + PRICE + '</small></div>'
+        + '<span class="pg-frameoffer-p">' + PRICE + '</span>'
+        + '<button type="button" class="pg-frameoffer-add">Add</button>';
+    }
+    /* ride in pg-unlock's slot when there is one -- pg-cart-mobile moves the
+       whole slot above the checkout pane on phones, and that placement is what
+       makes this row reachable there. Otherwise, directly under the lines. */
+    var slot = document.querySelector('#cart #pg-unlock-slot');
+    if (slot){
+      if (row.parentNode !== slot) slot.appendChild(row);
+    } else if (row.previousElementSibling !== list || row.parentNode !== list.parentNode){
+      list.parentNode.insertBefore(row, list.nextSibling);
+    }
+  }
+
+  /* ---------------- (1b) one upsell at a time ----------------
+     Candidates are the frame offer plus every pg-unlock row. The winner:
+       1. any row the shopper is interacting with (open picker / focus)
+       2. the frame offer, whenever it is on screen at all -- offer() has
+          already established eligibility by then
+       3. the row for the product whose cart quantity changed most recently
+       4. the slot's own CSS order
+     Everyone else gets the bench class. */
+  var lastTouched = '', prevQty = null;
+  function trackTouch(){
+    var q = {};
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li').forEach(function(li){
+      var a = li.querySelector('a[href*="/products/"]');
+      if (!a) return;
+      var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+      if (!m) return;
+      var inp = li.querySelector('input[type=number]');
+      q[m[1]] = (q[m[1]] || 0) + (inp ? (parseInt(inp.value, 10) || 0) : 1);
+    });
+    if (prevQty){
+      for (var h in q){
+        if (!(h in prevQty) || q[h] > prevQty[h]) lastTouched = h;
+      }
+    }
+    prevQty = q;
+  }
+  function focusOne(){
+    var cands = [];
+    document.querySelectorAll('#cart .pg-unlock, #cart .pg-frameoffer').forEach(function(el){
+      cands.push(el);
+    });
+    if (cands.length < 2){
+      cands.forEach(function(el){ el.classList.remove('pg-upsell-bench'); });
+      return;
+    }
+    var winner = null, i, el;
+    for (i = 0; i < cands.length && !winner; i++){
+      el = cands[i];
+      if (el.classList.contains('is-open') || el.contains(document.activeElement)) winner = el;
+    }
+    if (!winner){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].classList.contains('pg-frameoffer')) winner = cands[i];
+      }
+    }
+    if (!winner && lastTouched){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].getAttribute('data-pg-unlock') === lastTouched) winner = cands[i];
+      }
+    }
+    if (!winner){
+      var best = null;
+      for (i = 0; i < cands.length; i++){
+        var o = parseInt(getComputedStyle(cands[i]).order, 10) || 0;
+        if (best === null || o < best){ best = o; winner = cands[i]; }
+      }
+    }
+    cands.forEach(function(c){ c.classList.toggle('pg-upsell-bench', c !== winner); });
+  }
+
+  /* ---------------- adding it ---------------- */
+  /* Capture phase, delegated: the row above is re-created by the sweep below
+     whenever the drawer rebuilds, so a listener bound to the button itself
+     would not survive; and the drawer's own handlers call stopPropagation on
+     clicks inside it. */
+  var busy = false;
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('.pg-frameoffer-add');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (busy) return;
+    busy = true;
+    var was = btn.textContent;
+    btn.textContent = 'ADDING...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: [{id: FRAME_VARIANT, quantity: 1}]})
+    }).then(function(r){
+      if (!r.ok) throw 0;
+      btn.innerHTML = 'ADDED ✓';
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).then(function(){
+      /* the pgOpenCart() call that used to live here belonged to the product
+         page tile -- adding from the cart means the cart is already open */
+      setTimeout(function(){ busy = false; offer(); }, 400);
+      setTimeout(function(){ btn.textContent = was; }, 2200);
+    }).catch(function(){
+      /* reverting silently to ADD reads as a dead button -- say it failed */
+      btn.textContent = 'TRY AGAIN';
+      setTimeout(function(){ btn.textContent = was; }, 2000);
+      busy = false;
+    });
+  }, true);
+
+  /* ---------------- (2) out of "You may also like" ---------------- */
+  function ymlTrim(){
+    document.querySelectorAll('.pgu-yml a, .pgu-yml-grid a').forEach(function(a){
+      if ((a.getAttribute('href') || '').indexOf(FRAME_MARK) > -1){
+        var card = a.closest('.pgu-yml-card') || a;
+        card.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  function pass(){ offer(); trackTouch(); focusOne(); ymlTrim(); }
+
+  /* Event-driven, with a slow backstop -- the drawer rebuilds on every cart
+     change and fires no event this section can subscribe to. Nothing in the
+     pass touches the network. */
+  if (window.MutationObserver){
+    var t = null;
+    new MutationObserver(function(){
+      if (t) return;
+      t = setTimeout(function(){ t = null; pass(); }, 120);
+    }).observe(document.body, {childList: true, subtree: true});
+  }
+  setInterval(pass, 1500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  else pass();
+})();
+</script>
+{% schema %}
+{"name": "PG Frame Add", "settings": []}
+{% endschema %}

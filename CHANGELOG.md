@@ -1,3 +1,36 @@
+# Wall art PDP: remove the frame add-on tile
+
+## Change
+pg-frame-add had three surfaces; the product-page one is gone at every width.
+What went:
+
+- the `.pgx-case.pgx-frame` tile built above ADD TO CART
+- `tile()` and its `onPrintPage()` guard, and the `tile()` call in `pass()`
+- the whole `.pgx-frame-add` style block, including the `max-width:600px`
+  two-row override that restated pg-case-mobile's phone layout for it
+- `.pgx-frame-add` from the delegated click selector
+- the `pgOpenCart()` call after a successful add, which existed only to open the
+  drawer when the add came from the product page
+
+## What stays, deliberately
+The cart row (`.pg-frameoffer`), its `focusOne()` one-upsell-at-a-time logic,
+and the rule hiding the frame's card in "You may also like". The owner asked for
+the product-page tile only.
+
+`PRINT_MARK` stays too -- it is what `cartHas()` tests to decide whether the
+print is in the cart, so it outlived the page check that shared the name.
+
+## Deleted, not hidden
+A `display:none` would leave the tile rendering into the buy column on every
+pass and then covering it up, and would leave a live ADD button in the DOM. The
+markup is simply never built now.
+
+## Kept in the header for whoever restores it
+That tile's button was `.pgx-frame-add` and deliberately NOT `.pgx-case-add`:
+pg-mobile and pg-case-add both listen for that class in the capture phase and
+post the CASE variant, so sharing the class would have added a case to the cart
+when the shopper asked for a frame. Worth not rediscovering.
+
 # Cart: remove the duplicate frame upsell
 
 ## Why there were two
