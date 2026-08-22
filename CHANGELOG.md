@@ -1,3 +1,33 @@
+# Wall art slideshow: each slide sized to its own footage
+
+## Cause of the leftover black sides
+`cover` only crops what OVERFLOWS the box. The footage inside the nine 1920x1080
+files is roughly 9:16 (0.5625); the box was the original clip's 990x1080
+(0.9167). Scaled to that box the footage does not overflow sideways -- it falls
+short, covering 0.5625 / 0.9167 = 61% of the width, leaving the other 39% black.
+Cover cannot remove a bar that the box is too wide to hide. Sizing the box down
+to the footage is the only thing that does.
+
+## Fix
+Each entry in `VIDS` now carries an `ar`, and the stage takes that ratio as the
+slide appears. The nine new clips use 11/20 (0.55) and the original keeps
+990/1080, so every clip is shown whole with no bars and no meaningful crop.
+
+11/20 rather than 9/16 on purpose: a shade narrower than the footage, so cover
+trims roughly 1% off each side. That is invisible, and it means a clip whose
+pillarbox is not perfectly symmetric still cannot show a sliver of one.
+
+## Mobile
+The 1:1 override is gone. A square box is just another box too wide for 9:16
+footage -- it would have shown the same bars (the footage covers 56% of the
+width there). The per-slide ratio now applies at every width, so phones play
+these vertical clips vertically, which is how they were shot.
+
+## Known trade-off
+The slot changes height between the original clip and the other nine, because
+they genuinely are different shapes. Re-encoding the original to match the rest
+is what would settle it.
+
 # Wall art slideshow: original video's shape, cropped to fill
 
 ## Change
