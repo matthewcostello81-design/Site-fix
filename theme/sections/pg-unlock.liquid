@@ -90,36 +90,107 @@
     box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
     font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
   }
-  #cart .pg-unlock img{width:52px;height:52px;border-radius:10px;object-fit:cover;flex:none;background:#efe4f8}
+  #cart .pg-unlock img{width:54px;height:54px;border-radius:11px;object-fit:cover;flex:none;background:#efe4f8}
   #cart .pg-unlock-t{flex:1;min-width:0}
-  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.3;color:#3B1553}
-  #cart .pg-unlock-t small{display:block;font-size:11.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-t b{display:block;font-size:14.5px;line-height:1.27;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:12px;line-height:1.33;color:#6E5C80;margin-top:2px}
+  /* Same geometry the cart-line SAVED chip was narrowed to. This pill was built
+     with 10px of padding a side and .04em of tracking for 52px of glyphs -- 38%
+     more purple than text, the worst ratio of any pill in the cart, and sitting
+     directly above lines whose pills are tight. letter-spacing goes to `normal`
+     rather than a smaller number because tracking applies after the FINAL glyph
+     too, leaving a gap past "off" that no padding value can balance out. */
   #cart .pg-unlock-tag{
-    display:inline-block;margin-top:4px;padding:3px 9px;border-radius:999px;
-    font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+    display:inline-block;width:fit-content;margin-top:4px;
+    padding:3px 7px;border-radius:999px;
+    font-size:11.5px;font-weight:800;letter-spacing:normal;word-spacing:normal;
+    text-transform:uppercase;
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
   }
+  /* ONE SIZE, AND ITS HEIGHT DOES NOT COME FROM PADDING.
+     This button used to be three different sizes depending on where its row
+     happened to be in the DOM, and the biggest of them was the shop owner's
+     "so huge". The @media(max-width:600px) block below used to give it
+     `flex:1 1 100%`, throwing it onto its own full-width line at 14px -- a
+     322x42 slab on a 390px phone -- and the ONLY thing that ever prevented that
+     was pg-cart-mobile physically moving the row inside .sticky-in-panel, which
+     is a higher-specificity ancestor. So the compact size was never conditioned
+     on the viewport; it was conditioned on a JS DOM move having already
+     happened. Before that move -- on every drawer rebuild, and permanently if
+     the move ever fails -- the slab was what the shopper saw.
+     Now the button is `flex:0 0 auto` at every width, so it sits beside the
+     copy everywhere and no rule below needs to override it.
+     Height comes from min-height, not padding: padding-derived height put the
+     pinned button at 32px, under the 40px minimum for a tap target sitting
+     directly above CHECKOUT. Measured after this change: 55-59px x 40px in all
+     six contexts (in-pane, in-list, 375/390/700/900/1280). */
   #cart .pg-unlock-add{
-    flex:none;border:1.5px solid #7A2FA2 !important;background:#fff !important;
+    flex:0 0 auto;order:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    min-height:40px;line-height:1;white-space:nowrap;
+    border:1.5px solid #7A2FA2 !important;background:#fff !important;
     background-image:none !important;color:#7A2FA2 !important;
-    border-radius:999px !important;padding:9px 18px !important;
+    border-radius:999px !important;padding:0 16px !important;
     font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
     animation:none !important;transition:background .15s ease,color .15s ease;
   }
   #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
   #cart .pg-unlock-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important}
   #cart .pg-unlock-add[disabled]{opacity:.6;cursor:default}
-  /* MOBILE PARITY: the row keeps the same three parts in the same order as
-     desktop -- image, copy, button -- the button simply drops to its own full
-     width line instead of shrinking the copy to nothing. */
+  /* MOBILE PARITY: the row keeps the same three parts in the same order at
+     every width -- image, copy, button, all on one line.
+     Two declarations are deliberately absent from this block now. The button no
+     longer becomes full-width here (see the note on the base rule): it was the
+     "huge" one. And .pg-unlock-t no longer carries `flex:1 1 60%` -- a 60%
+     flex-basis makes the copy's hypothetical size large enough to push the
+     button onto a second line even when the button is narrow, so it undid the
+     fix on its own. The base `flex:1` (= 1 1 0%) lets the copy take exactly
+     what is left. */
   @media(max-width:600px){
-    #cart .pg-unlock{flex-wrap:wrap;gap:10px}
-    #cart .pg-unlock img{width:46px;height:46px}
-    #cart .pg-unlock-t{flex:1 1 60%;min-width:0}
-    #cart .pg-unlock-t b{font-size:13px}
+    #cart .pg-unlock{flex-wrap:wrap;gap:11px}
+    #cart .pg-unlock img{width:48px;height:48px}
+    #cart .pg-unlock-t b{font-size:14px}
     #cart .pg-unlock-t small{font-size:11.5px}
-    #cart .pg-unlock-add{flex:1 1 100%;order:4;padding:11px 18px !important;font-size:13.5px}
   }
+
+  /* ---------------- COMPACT INSIDE THE PINNED PANE ----------------
+     pg-cart-mobile moves #pg-unlock-slot INTO .sticky-in-panel under 760px, so
+     on a phone this row is not scroll content any more -- it is pinned, and
+     every pixel it takes is a pixel the shopper cannot use to look at the cart.
+     Measured before this rule existed: the row was 155px tall and the pane 312px,
+     which is 47% of an iPhone SE. The full-width ADD button was most of it --
+     the max-width:600px rule below drops it onto its own line, costing a whole
+     row of height for a button that fits perfectly well beside the copy.
+
+     So the pinned copy is compacted: the button comes back onto the line, the
+     thumbnail loses a third of its size, and the FREE pill goes -- the headline
+     already says FREE, and a third line of text is expensive here in a way it
+     is not in the scrolling list.
+
+     Scoped to .sticky-in-panel, so the desktop drawer (where the row stays in
+     the list and space is not scarce) keeps the readable size above. The
+     specificity beats the max-width:600px rule whatever the source order. */
+  #cart .sticky-in-panel .pg-unlock{
+    gap:10px;padding:8px 10px;margin:0 0 6px;border-radius:11px;
+    box-shadow:0 6px 16px -14px rgba(74,28,102,.45);
+  }
+  #cart .sticky-in-panel .pg-unlock img{width:42px;height:42px;border-radius:9px}
+  #cart .sticky-in-panel .pg-unlock-t b{font-size:13px;line-height:1.25}
+  #cart .sticky-in-panel .pg-unlock-t small{font-size:11px;line-height:1.3;margin-top:1px}
+  #cart .sticky-in-panel .pg-unlock-tag{display:none}
+  /* the button is already compact and beside the copy everywhere (base rule);
+     inside the pinned pane it only gives up 2px of side padding. */
+  #cart .sticky-in-panel .pg-unlock-add{padding:0 14px !important}
+  /* THE CHOOSER, PINNED. Tapping ADD on a multi-design product hides the button
+     and opens this panel, whose own confirm button is full-width by design --
+     it IS the CTA at that point. Uncompacted it took the pinned row to 210px
+     and the pane to 359px, 42.5% of a 390x844 phone and about 54% of an SE,
+     which left almost no cart visible. Trimmed here to 171px / 320px, and the
+     confirm button's height moved off padding onto min-height so it GAINS a
+     5px taller tap target while the row shrinks. */
+  #cart .sticky-in-panel .pg-unlock-pick{padding-top:8px;margin-top:0}
+  #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
+  #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
 
   /* ---------------- the design chooser ----------------
      The upsell used to add more of the variant already in the cart. On the orb
@@ -152,7 +223,9 @@
   }
   #cart .pg-unlock-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
   #cart .pg-unlock-go{
-    width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;padding:12px 16px !important;
+    width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;
+    display:flex;align-items:center;justify-content:center;
+    min-height:44px;line-height:1;padding:10px 16px !important;
     background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
     background-image:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
     color:#fff !important;font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;animation:none !important;
@@ -244,10 +317,21 @@
 (function(){
   if (window.pgUnlock) return; window.pgUnlock = 1;
 
+  /* THE RUNG IS A PAID QUANTITY, and `free` is what it earns. The orb ladder
+     matches the three tiles on the product page -- Buy 2 Get 1, Buy 4 Get 2,
+     Buy 5 Get 3 -- so the cart offers the next one up from wherever the shopper
+     actually is, rather than only ever offering the 3rd orb. `nth` is only read
+     for the percentage rungs now; for the free ones the ordinals are worked out
+     from the units actually being added (see offers()), because the same rung
+     is reached from different quantities and the phrase differs each time. */
   var LADDERS = {
     'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': {
       name: 'Crystal Legends Orb',
-      rungs: {2: {pct: 100, nth: '3rd'}}
+      rungs: {
+        2: {pct: 100, free: 1},
+        4: {pct: 100, free: 2},
+        5: {pct: 100, free: 3}
+      }
     },
     'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame': {
       name: 'Heroic Holographic Wall Art',
@@ -255,7 +339,7 @@
     },
     'handheld-game-console': {
       name: 'PocketBoy R36',
-      rungs: {1: {pct: 25, nth: '2nd'}}
+      rungs: {1: {pct: 25, nth: '2nd', free: 0}}
     }
   };
 
@@ -263,6 +347,24 @@
   var lastKey = '';
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* a 100%-off rung frees whole units; a percentage rung discounts exactly one */
+  function freeOf(g){ return g.pct === 100 ? (g.free == null ? 1 : g.free) : 1; }
+
+  function ordinal(k){
+    var t = k % 10, h = k % 100;
+    if (t === 1 && h !== 11) return k + 'st';
+    if (t === 2 && h !== 12) return k + 'nd';
+    if (t === 3 && h !== 13) return k + 'rd';
+    return k + 'th';
+  }
+  /* "3rd", "5th & 6th", "6th, 7th & 8th" */
+  function nthPhrase(from, to){
+    var parts = [];
+    for (var i = from; i <= to; i++) parts.push(ordinal(i));
+    var last = parts.pop();
+    return (parts.length ? parts.join(', ') + ' & ' : '') + last;
+  }
 
   /* ---------------- one line per variant ---------------- */
   var merging = false;
@@ -286,6 +388,19 @@
     var byVariant = {};
     (cart.items || []).forEach(function(it){
       if (it.properties && it.properties._free_gift) return;
+      /* A FREE LINE IS NOT A DUPLICATE. Buy 2 Get 1 splits ONE product into a
+         paid line and a $0 line of the SAME variant -- that pair is the offer
+         working, not an accident. Merging it was a measured money bug: the
+         merge sets the paid line to the combined total BEFORE zeroing the free
+         line, Shopify re-splits the bigger cart in between, the old free
+         line's key no longer exists, and the zeroing dies silently -- six
+         same-variant orbs became eight on one reload (4+2 -> 5+3, the applied
+         discount switching to Buy 5 Get 3 as proof the cart really grew), and
+         every further reload grows it again. Free lines simply do not join
+         this scan, so a split pair leaves at most one PAID line per variant
+         and there is nothing to merge; two genuinely duplicated paid lines
+         still merge exactly as before. */
+      if (it.line_price === 0) return;
       (byVariant[it.variant_id] = byVariant[it.variant_id] || []).push(it);
     });
 
@@ -341,22 +456,35 @@
     Object.keys(byHandle).forEach(function(handle){
       var rec = byHandle[handle];
       var rungs = LADDERS[handle].rungs;
-      var rung = rungs[rec.qty];
-      var at = rec.qty;
+      var keys = Object.keys(rungs).map(Number).sort(function(a, b){ return a - b; });
 
-      if (!rung){
-        var best = null;
-        Object.keys(rungs).forEach(function(k){
-          var q = parseInt(k, 10);
-          if (q > rec.qty && (best === null || q < best)) best = q;
-        });
-        if (best === null) return;
-        rung = rungs[best];
-        at = best;
+      /* HOW MANY OF THE UNITS ALREADY IN THE CART CAME FREE. The rung is a PAID
+         quantity, so reading the ladder off the raw count is what made the old
+         version stall: a shopper holding three orbs is paying for two, and
+         asking "which rung is >= 3" jumps them past the tier they are actually
+         standing on. The largest rung whose full pack (paid + free) already
+         fits inside what they hold is the tier they are on. */
+      var freeNow = 0;
+      keys.forEach(function(r){
+        var f = freeOf(rungs[r]);
+        if (f && r + f <= rec.qty && f > freeNow) freeNow = f;
+      });
+      var paidNow = rec.qty - freeNow;
+
+      /* the first rung they have not paid their way to, and have not completed */
+      var at = null, rung = null, freeUnits = 0;
+      for (var i = 0; i < keys.length; i++){
+        var r = keys[i], g = rungs[r], f = freeOf(g);
+        if (r < paidNow) continue;              /* paid past it */
+        if (r + f <= rec.qty) continue;         /* already taken it */
+        at = r; rung = g; freeUnits = f; break;
       }
+      if (!rung) return;                        /* top of the ladder: nothing to offer */
 
-      var need = (at + 1) - rec.qty;
+      var need = (at + freeUnits) - rec.qty;
       if (need < 1) return;
+      var paidAdded = Math.max(0, at - paidNow);
+      var freeAdded = Math.max(0, need - paidAdded);
 
       out.push({
         handle: handle,
@@ -368,7 +496,19 @@
         image: rec.item.image,
         price: rec.item.price,
         rung: rung,
-        need: need
+        /* the PDP tier this offer lands them on: `at` is the rung's paid units
+           and `freeUnits` what comes with it, i.e. exactly the "Buy 4, Get 2
+           FREE" the product page advertises. Carried so the cart row can name
+           the bundle instead of only describing the step. */
+        tierPaid: at,
+        tierFree: freeUnits,
+        need: need,
+        paidAdded: paidAdded,
+        freeAdded: freeAdded,
+        /* the ordinals of the units that arrive free, counted across the whole
+           cart -- "3rd", "5th & 6th" -- so the sentence names the orbs the
+           shopper is about to get rather than a rung number */
+        freeNth: freeAdded > 0 ? nthPhrase(rec.qty + need - freeAdded + 1, rec.qty + need) : ''
       });
     });
     return out;
@@ -399,6 +539,51 @@
      shopper does not have -- defaulting to duplicates would recreate the bug
      this replaces, just with a dropdown in front of it. */
   var LASTCART = {};
+
+  /* ---------------- THE SHOPPER'S PICKS SURVIVE A REBUILD ----------------
+     render() refuses to replace a row the shopper has opened to choose designs,
+     which covers a re-render. It cannot cover the case that actually destroys
+     the panel: the theme replaces #cart's entire innerHTML on every add and
+     every quantity change, so a shopper who has picked Charizard and Gengar and
+     then taps + on a cart line watches the panel close and their picks vanish.
+     There is no row left to protect by then.
+
+     The picks are therefore captured the moment they are MADE, not read off the
+     DOM afterwards -- reading later always loses the race with the innerHTML
+     swap -- and replayed onto the fresh row only when the offer is provably the
+     same one, which data-sig already encodes (handle, rung and units). A
+     different sig means a different chooser shape, so the snapshot is dropped
+     rather than forced onto a panel it does not fit. */
+  var PICKS = {};
+  function snapPicks(rowEl){
+    if (!rowEl) return;
+    var h = rowEl.getAttribute('data-pg-unlock'), sig = rowEl.getAttribute('data-sig');
+    if (!h || !sig) return;
+    var vals = [];
+    rowEl.querySelectorAll('.pg-unlock-pick select').forEach(function(sel){ vals.push(sel.value); });
+    if (vals.length) PICKS[h] = {sig: sig, vals: vals, t: Date.now()};
+  }
+  function restorePicks(rowEl, o, sg){
+    var p = PICKS[o.handle];
+    if (!p || p.sig !== sg || Date.now() - p.t > 300000) return;
+    buildChooser(rowEl, o).then(function(built){
+      if (!built){ delete PICKS[o.handle]; return; }
+      var sels = rowEl.querySelectorAll('.pg-unlock-pick select');
+      if (sels.length !== p.vals.length){ delete PICKS[o.handle]; return; }
+      sels.forEach(function(sel, i){
+        for (var j = 0; j < sel.options.length; j++){
+          /* skip a variant that has gone away since they picked it */
+          if (sel.options[j].value === p.vals[i]){ sel.value = p.vals[i]; return; }
+        }
+      });
+      rowEl.classList.add('is-open');
+      var btn = rowEl.querySelector('.pg-unlock-add');
+      if (btn) btn.textContent = 'Choose designs below';
+    }, function(){});
+  }
+  document.addEventListener('change', function(e){
+    if (e.target && e.target.closest) snapPicks(e.target.closest('.pg-unlock.is-open'));
+  }, true);
   function heldVariants(handle){
     var held = {};
     (LASTCART.items || []).forEach(function(it){
@@ -421,7 +606,9 @@
       var html = '';
       for (var i = 0; i < o.need; i++){
         var pick = pool[i % pool.length];
-        var label = (o.rung.pct === 100 && i === o.need - 1) ? 'Free' : 'Pick ' + (i + 1);
+        /* the LAST freeAdded picks are the free ones, so the labels line up with
+           the sentence above the panel however many that is */
+        var label = (o.rung.pct === 100 && i >= o.need - (o.freeAdded || 1)) ? 'Free' : 'Pick ' + (i + 1);
         html += '<div class="pg-unlock-pick-r"><span>' + label + '</span><select data-i="' + i + '">';
         for (var j = 0; j < list.length; j++){
           html += '<option value="' + list[j].id + '"' +
@@ -430,9 +617,12 @@
         }
         html += '</select></div>';
       }
+      var nFree = o.freeAdded || 0;
       html += '<button type="button" class="pg-unlock-go">Add ' + o.need +
               (o.need === 1 ? ' orb' : '') + ' to cart' +
-              (o.rung.pct === 100 ? ' - 1 is FREE' : '') + '</button>';
+              (o.rung.pct === 100 && nFree > 0
+                 ? ' - ' + nFree + (nFree === 1 ? ' is FREE' : ' are FREE')
+                 : '') + '</button>';
       panel.innerHTML = html;
       panel.dataset.built = '1';
       return true;
@@ -449,16 +639,25 @@
 
     var title, note;
     if (free){
-      if (o.need === 1){
-        title = 'Add your FREE ' + o.rung.nth + ' ' + o.name;
-        note = 'You already qualify - this one costs nothing';
+      if (o.paidAdded === 0){
+        /* they have already paid their way to this rung: everything on offer
+           is free, however many units that is */
+        title = 'Add your FREE ' + o.freeNth + ' ' + o.name + (o.freeAdded === 1 ? '' : 's');
+        note = 'You already qualify for Buy ' + o.tierPaid + ', Get ' + o.tierFree +
+               ' FREE - ' + (o.freeAdded === 1 ? 'this one costs' : 'these cost') + ' nothing';
       } else {
-        /* They pay for one more and two arrive. That is the sentence -- not
-           "add 2 more", which reads as though the offer moved further away the
+        /* They pay for N more and N+M arrive. That is the sentence -- not
+           "add 3 more", which reads as though the offer moved further away the
            moment they bought one. */
-        var pay = o.need - 1;
-        title = 'Buy ' + pay + ' more, get 1 FREE';
-        note = 'Adds ' + o.need + ' to your cart - you only pay for ' + pay;
+        /* NAME THE BUNDLE. "Buy 1 more, get 1 FREE" is arithmetically right
+           but it never says WHICH deal it is walking them into, so a shopper
+           sitting on the 6-orb Buy 4 Get 2 could not tell the row was stepping
+           them up to the 8-orb Buy 5 Get 3 -- it read like a fourth, unrelated
+           offer. The tier goes in the headline and the step stays in the note,
+           so the row answers "what do I get" before "what does it cost". */
+        title = 'Unlock Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
+        note = 'Add ' + o.paidAdded + ' more (' + (o.tierPaid + o.tierFree) + ' ' +
+               o.name.toLowerCase() + 's total) - ' + o.freeAdded + ' of them free';
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;
@@ -466,7 +665,13 @@
     }
 
     el.innerHTML =
-      '<img alt="" src="' + img + '">' +
+      /* width/height are ATTRIBUTES, not CSS, and they are load-bearing. A
+         rebuild replaces this row wholesale, which means a brand-new <img>
+         element even when the URL is identical; without intrinsic dimensions
+         the browser lays it out at 0x0 until the (cached) bitmap is attached,
+         so the row reflowed and the thumbnail flashed its lilac placeholder for
+         at least a frame on every cart change. The values match the CSS box. */
+      '<img alt="" width="54" height="54" decoding="sync" src="' + img + '">' +
       '<div class="pg-unlock-t">' +
         '<b>' + title + '</b>' +
         '<small>' + note + '</small>' +
@@ -504,6 +709,21 @@
      yanked mid-pick. */
   var lastCartSig = null;
   var rendering = false;
+  /* COALESCE, DO NOT DISCARD. The single-flight guard used to `return` on a
+     render that arrived while one was in flight, throwing that request away.
+     afterAdd() deliberately fires three renders in quick succession, so on a
+     slow cart the two follow-ups both landed inside the first one's /cart.js
+     round trip and evaporated -- measured with /cart.js at 800ms, the offer row
+     was absent for 1101ms after an add. Remembering that someone asked and
+     re-running once the flight lands closes the hole to 170ms.
+     done() must be called on EVERY exit that clears `rendering`, including the
+     two early returns below, or a request coalesced into one of those is
+     stranded and the row never comes back at all. */
+  var pending = false;
+  function done(){
+    rendering = false;
+    if (pending){ pending = false; scheduleRender(); }
+  }
 
   function cartSig(cart){
     return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(',');
@@ -523,13 +743,25 @@
   }
 
   function render(){
-    if (rendering) return;
+    if (rendering){ pending = true; return; }
     var c = document.getElementById('cart');
     if (!c) return;
-    var list = c.querySelector('.l4ca:not(.in-panel)');
-    if (!list) return;
+    if (!c.querySelector('.l4ca:not(.in-panel)')) return;
     rendering = true;
     fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      /* RE-READ THE DRAWER. `c` and `list` used to be captured before this
+         await and used after it. The theme replaces #cart's entire innerHTML on
+         every add and quantity change (pg-drawer's spRefreshDrawer), so a
+         rebuild landing inside this round trip left both references pointing at
+         detached nodes: the insert below then happened in a subtree nothing was
+         showing, and because lastCartSig had already been advanced the next
+         render short-circuited and never put the rows back. The offer simply
+         vanished until the cart changed again. Reading them here, after the
+         await, means we always write into the drawer that is actually on
+         screen. */
+      c = document.getElementById('cart');
+      var list = c && c.querySelector('.l4ca:not(.in-panel)');
+      if (!c || !list){ done(); scheduleRender(); return; }
       LASTCART = cart;
       var offs = offers(cart).sort(function(a, b){
         return a.handle < b.handle ? -1 : a.handle > b.handle ? 1 : 0;
@@ -537,21 +769,62 @@
       var sig = cartSig(cart);
 
       /* nothing changed and the rows are already right -> do absolutely nothing */
-      if (sig === lastCartSig && rowsPresent(c, offs)){ rendering = false; return; }
+      if (sig === lastCartSig && rowsPresent(c, offs)){ done(); return; }
 
-      if (consolidate(cart)){ rendering = false; return; }
-      lastCartSig = sig;
+      if (consolidate(cart)){ done(); return; }
+
+      /* lastCartSig is NOT advanced yet. It used to be set here, before the
+         loop below decides whether it can actually apply the new cart -- and
+         that loop skips any row the shopper has opened to pick designs, so a
+         change arriving mid-pick was recorded as applied without being applied.
+         Every later render then short-circuited on the signature and the open
+         row stayed frozen on stale copy and a stale unit count for the rest of
+         the session. The signature is now advanced at the end, and only for
+         what was really written: if a row was skipped it stays unset so the
+         next render (the one after the chooser closes) picks the change up. */
+      var deferred = false;
 
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
 
-      /* the slot: one container, CSS-ordered. Created once, recreated when a
-         drawer rebuild destroys it. */
+      /* THE SLOT IS BORN WHERE IT BELONGS. Created once, recreated when a
+         drawer rebuild destroys it -- and a rebuild destroys it on every add and
+         every quantity change.
+         It used to be re-created unconditionally above the item list, which is
+         its DESKTOP home. On a phone pg-cart-mobile then moved it down into the
+         pinned pane -- but only on its own 60ms observer tick, one whole frame
+         or more later. So every cart change played the same sequence: the offer
+         rows reappeared at the top of the drawer, at their un-pinned size, and
+         were then teleported to the bottom. Measured at ~81ms of visible wrong
+         position per rebuild in a zero-latency harness, longer on a real phone
+         where a /cart.js round trip precedes it. That teleport is the "glitching"
+         the shop owner reported.
+         Creating it in the pane directly, when a pane exists and we are at a
+         width where it belongs there, removes the intermediate position
+         entirely -- there is no first paint to correct. placeUnlock() still runs
+         and is still the authority; it now finds the slot already correct and
+         returns without touching anything. */
       var slot = c.querySelector('#pg-unlock-slot');
       if (!slot){
         slot = document.createElement('div');
         slot.id = 'pg-unlock-slot';
-        list.parentNode.insertBefore(slot, list);
+        var pane = c.querySelector('.sticky-in-panel');
+        if (pane && window.matchMedia('(max-width:760px)').matches){
+          /* pg-cart-mobile owns where in the pane this goes -- the countdown
+             banner also claims the first slot, and the two used to fight over it
+             several times a second. Use its anchor so the row is born in the
+             position it will keep. */
+          /* Record the home placeUnlock would have recorded had it done the
+             move itself. Without it there is nothing for its restore branch to
+             put back when the viewport widens past 760px -- rotate to landscape,
+             or a desktop resize -- and the row stays pinned in the pane at a
+             width where it belongs above the list. */
+          slot.pgHome = {parent: list.parentNode, next: list};
+          var anchor = window.pgPaneAnchor ? window.pgPaneAnchor(pane) : pane.firstChild;
+          pane.insertBefore(slot, anchor);
+        } else {
+          list.parentNode.insertBefore(slot, list);
+        }
       }
 
       /* adopt strays and kill duplicates: any row outside the slot (an older
@@ -568,11 +841,12 @@
       });
 
       offs.forEach(function(o){
-        var sg = o.handle + ':' + o.rung.nth + ':' + o.need;
+        var sg = o.handle + ':' + (o.freeNth || o.rung.nth) + ':' + o.need;
         var existing = seen[o.handle];
         if (existing){
           if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
-          if (existing.classList.contains('is-open')) return;      /* mid-pick: don't yank */
+          /* mid-pick: don't yank -- and remember that this cart was not applied */
+          if (existing.classList.contains('is-open')){ deferred = true; return; }
           var fresh = row(o);
           fresh.setAttribute('data-sig', sg);
           existing.parentNode.replaceChild(fresh, existing);
@@ -580,10 +854,25 @@
           var el = row(o);
           el.setAttribute('data-sig', sg);
           slot.appendChild(el);
+          /* a rebuild leaves no .pg-unlock to match, so this fresh-row branch is
+             where a destroyed chooser lands -- put their picks back */
+          restorePicks(el, o, sg);
         }
       });
-      rendering = false;
-    }).catch(function(){ rendering = false; });
+
+      if (!deferred) lastCartSig = sig;
+
+      /* PLACE IT IN THE SAME TASK. pg-cart-mobile owns where the slot lives, and
+         it normally reacts on a 60ms observer tick -- a tick the shopper can see.
+         Calling it synchronously here means the rows are written and positioned
+         before the browser gets a chance to paint either, so there is no frame
+         in which they are in the wrong place. It is idempotent and returns
+         immediately when the slot is already correct, so this costs nothing on
+         the common path. */
+      if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
+      mark();
+      done();
+    }).catch(function(){ done(); });
   }
 
   /* ---------------- 3. mark first, hide the disc only once it is there ---------------- */
@@ -601,8 +890,14 @@
       top.insertBefore(box, top.firstChild);
     }
     if (!top.querySelector('.pg-cart-mark')) return;
+    /* GUARDED. This ran unconditionally on a 500ms interval, so it rewrote the
+       inline style attribute of every drawer logo twice a second for the life of
+       the page. Nothing in #cart observes attributes today, which is the only
+       reason it was harmless -- it was one attributeFilter away from being a
+       2 Hz engine driving every observer in the cart. Writing only on a real
+       change costs nothing and removes the trap. */
     document.querySelectorAll('#cart img.nc-dlogo').forEach(function(img){
-      img.style.setProperty('display', 'none', 'important');
+      if (img.style.display !== 'none') img.style.setProperty('display', 'none', 'important');
     });
   }
 
@@ -650,7 +945,10 @@
       body: JSON.stringify({items: items})
     }).then(function(r){
       if (!r || !r.ok) throw 0;
-      if (rowEl) rowEl.classList.remove('is-open');
+      if (rowEl){
+        rowEl.classList.remove('is-open');
+        delete PICKS[rowEl.getAttribute('data-pg-unlock')];   /* bought: nothing to restore */
+      }
       afterAdd();
     }).catch(function(){
       busy = false;
@@ -684,7 +982,11 @@
     };
     if (rowEl && !rowEl.classList.contains('is-open')){
       buildChooser(rowEl, oForPick).then(function(built){
-        if (built){ rowEl.classList.add('is-open'); btn.textContent = 'Choose designs below'; }
+        if (built){
+          rowEl.classList.add('is-open');
+          btn.textContent = 'Choose designs below';
+          snapPicks(rowEl);       /* seed with the defaults the chooser opens on */
+        }
         else directAdd(btn);
       });
       return;
@@ -761,6 +1063,7 @@
      one observer bounce our own insert causes settles immediately. */
   var renderTimer = null;
   function scheduleRender(){
+    mark();                    /* same task as the mutation that woke us */
     if (renderTimer) return;
     renderTimer = setTimeout(function(){ renderTimer = null; render(); }, 120);
   }
@@ -797,7 +1100,20 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
 
-  setInterval(mark, 500);   /* the wordmark is cheap and idempotent; leave it */
+  /* THE WORDMARK LANDS WITH THE ROWS, NOT HALF A SECOND LATER.
+     mark() used to be driven only by this interval, so after a drawer rebuild
+     the header sat logo-less for up to 500ms and then popped in -- a second,
+     separate jump on top of the one the offer rows were making, and one more
+     observer cascade with it. It is now called synchronously from render() (the
+     same task that writes the rows) and from the observer, so the drawer
+     reassembles in one step. The interval stays as the backstop for a rebuild
+     that somehow wakes neither -- and it stays at 500ms rather than being slowed
+     down, because the write it makes is value-guarded now and therefore free.
+     It is load-bearing: pg-cart-badge carries a byte-identical mark(), but that
+     section is rendered by nothing (it appears in no section group and in no
+     template), so this really is the only thing that re-hides the theme's old
+     logo disc after a drawer rebuild. */
+  setInterval(mark, 500);
   render();
   mark();
 })();
