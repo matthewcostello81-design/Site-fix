@@ -14,12 +14,27 @@
       when the shopper asked for a frame. The button's own styling is restated
       here for the same reason.
 
-  (2) CART. The same offer as one compact light row under the cart lines, shown
-      only while the print is in the cart and the frame is not. It is not given
-      the `.pg-unlock` class: pg-cart-mobile relocates offer rows by that class
-      on phones, and a second element answering that selector is what made the
-      upsell rows swap places. This row is placed once, after the line list, and
-      left alone.
+  (2) CART. The same offer as one compact light row, shown only while the print
+      is in the cart and the frame is not. It lives INSIDE #pg-unlock-slot when
+      pg-unlock has built one -- pg-cart-mobile moves that slot above the pinned
+      checkout pane on phones, and riding in it is what keeps this row reachable
+      there; parked after the line list it measured y=783 on an 844px screen,
+      underneath the pane, which is why "they can't add the frame". It still
+      does NOT wear the `.pg-unlock` class: pg-unlock's own render sweeps rows
+      by that class and removes any it did not ask for, and pg-cart-mobile's
+      fallback selector grabs the first one.
+
+  (2b) ONE UPSELL AT A TIME. With the wall art, an orb and a console all in the
+      cart, the drawer stacked pg-unlock's three offer rows plus this one --
+      four pitches in a row, which reads as clutter and, when two point at the
+      same product family, as duplication. focusOne() below keeps exactly one
+      of them visible: the frame offer first whenever it is eligible (owner's
+      rule: wall art in cart means the frame is the upsell), then the offer for
+      the product whose quantity moved most recently, then the slot's own CSS
+      order. The losers are benched with a class, not removed -- pg-unlock
+      counts its rows to decide whether to rebuild, and removing them would
+      make it rebuild forever. A row mid-interaction (is-open, or holding
+      focus) is never benched out from under the shopper.
 
   (3) "YOU MAY ALSO LIKE". The frame card is hidden there, exactly as pg-mobile
       hides the case card -- an add-on and a standalone product card for the
@@ -93,6 +108,16 @@
   html body #cart .pg-frameoffer-add::before,html body #cart .pg-frameoffer-add::after{
     display:none !important;content:none !important;background:none !important
   }
+  /* Inside the slot the row goes FIRST -- the slot is a CSS-ordered flex
+     column, and every pg-unlock row already carries an explicit order, so the
+     frame offer takes a rank below them all. */
+  #cart #pg-unlock-slot .pg-frameoffer{order:-1}
+
+  /* The bench. Hidden, not removed: pg-unlock decides whether to rebuild by
+     COUNTING its rows, so a removed row would be rebuilt on the next pass and
+     the drawer would churn. display beats the slot's flex layout either way. */
+  #cart .pg-upsell-bench,body.template-cart .pg-upsell-bench{display:none !important}
+
   /* On a phone the price and the button will not both fit beside the copy at
      44px of thumbnail, so the price moves under the title rather than being
      squeezed against the button. */
@@ -147,7 +172,14 @@
   }
   function offer(){
     var list = document.querySelector('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)');
-    var row  = document.querySelector('#cart .pg-frameoffer, body.template-cart .pg-frameoffer');
+
+    /* one row, ever -- a drawer rebuild that clones its own content can leave
+       copies behind, and every copy after the first is somebody's confusion */
+    var rows = document.querySelectorAll('.pg-frameoffer');
+    var row = rows[0] || null;
+    for (var i = 1; i < rows.length; i++){
+      if (rows[i].parentNode) rows[i].parentNode.removeChild(rows[i]);
+    }
 
     /* The offer earns its space only while it is actionable: the print is in
        the cart and the frame is not. Once the frame is added it is an ordinary
@@ -157,20 +189,85 @@
       if (row && row.parentNode) row.parentNode.removeChild(row);
       return;
     }
-    if (row){
-      /* keep it directly under the lines even if the drawer rebuilt around it */
-      if (row.previousElementSibling !== list) list.parentNode.insertBefore(row, list.nextSibling);
+    if (!row){
+      row = document.createElement('div');
+      row.className = 'pg-frameoffer';
+      row.innerHTML =
+          '<img alt="Black wood frame" src="' + thumb() + '">'
+        + '<div class="pg-frameoffer-t"><b>Add the matching frame</b>'
+        + '<small>30x40cm black wood grain &middot; ' + PRICE + '</small></div>'
+        + '<span class="pg-frameoffer-p">' + PRICE + '</span>'
+        + '<button type="button" class="pg-frameoffer-add">Add</button>';
+    }
+    /* ride in pg-unlock's slot when there is one -- pg-cart-mobile moves the
+       whole slot above the checkout pane on phones, and that placement is what
+       makes this row reachable there. Otherwise, directly under the lines. */
+    var slot = document.querySelector('#cart #pg-unlock-slot');
+    if (slot){
+      if (row.parentNode !== slot) slot.appendChild(row);
+    } else if (row.previousElementSibling !== list || row.parentNode !== list.parentNode){
+      list.parentNode.insertBefore(row, list.nextSibling);
+    }
+  }
+
+  /* ---------------- (2b) one upsell at a time ----------------
+     Candidates are the frame offer plus every pg-unlock row. The winner:
+       1. any row the shopper is interacting with (open picker / focus)
+       2. the frame offer, whenever it is on screen at all -- offer() has
+          already established eligibility by then
+       3. the row for the product whose cart quantity changed most recently
+       4. the slot's own CSS order
+     Everyone else gets the bench class. */
+  var lastTouched = '', prevQty = null;
+  function trackTouch(){
+    var q = {};
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li').forEach(function(li){
+      var a = li.querySelector('a[href*="/products/"]');
+      if (!a) return;
+      var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+      if (!m) return;
+      var inp = li.querySelector('input[type=number]');
+      q[m[1]] = (q[m[1]] || 0) + (inp ? (parseInt(inp.value, 10) || 0) : 1);
+    });
+    if (prevQty){
+      for (var h in q){
+        if (!(h in prevQty) || q[h] > prevQty[h]) lastTouched = h;
+      }
+    }
+    prevQty = q;
+  }
+  function focusOne(){
+    var cands = [];
+    document.querySelectorAll('#cart .pg-unlock, #cart .pg-frameoffer').forEach(function(el){
+      cands.push(el);
+    });
+    if (cands.length < 2){
+      cands.forEach(function(el){ el.classList.remove('pg-upsell-bench'); });
       return;
     }
-    row = document.createElement('div');
-    row.className = 'pg-frameoffer';
-    row.innerHTML =
-        '<img alt="Black wood frame" src="' + thumb() + '">'
-      + '<div class="pg-frameoffer-t"><b>Add the matching frame</b>'
-      + '<small>30x40cm black wood grain &middot; ' + PRICE + '</small></div>'
-      + '<span class="pg-frameoffer-p">' + PRICE + '</span>'
-      + '<button type="button" class="pg-frameoffer-add">Add</button>';
-    list.parentNode.insertBefore(row, list.nextSibling);
+    var winner = null, i, el;
+    for (i = 0; i < cands.length && !winner; i++){
+      el = cands[i];
+      if (el.classList.contains('is-open') || el.contains(document.activeElement)) winner = el;
+    }
+    if (!winner){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].classList.contains('pg-frameoffer')) winner = cands[i];
+      }
+    }
+    if (!winner && lastTouched){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].getAttribute('data-pg-unlock') === lastTouched) winner = cands[i];
+      }
+    }
+    if (!winner){
+      var best = null;
+      for (i = 0; i < cands.length; i++){
+        var o = parseInt(getComputedStyle(cands[i]).order, 10) || 0;
+        if (best === null || o < best){ best = o; winner = cands[i]; }
+      }
+    }
+    cands.forEach(function(c){ c.classList.toggle('pg-upsell-bench', c !== winner); });
   }
 
   /* ---------------- adding it ---------------- */
@@ -221,7 +318,7 @@
     });
   }
 
-  function pass(){ tile(); offer(); ymlTrim(); }
+  function pass(){ tile(); offer(); trackTouch(); focusOne(); ymlTrim(); }
 
   /* Event-driven, with a slow backstop -- the drawer rebuilds on every cart
      change and the buy box on every variant change, and neither fires an event
