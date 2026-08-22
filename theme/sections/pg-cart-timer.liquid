@@ -283,6 +283,56 @@
   else boot();
 })();
 </script>
+<style>
+  /* ---- SMALL-PHONE COMPACT MODE (iPhone 15/16/17 non-Max and down) ----
+     The cart was laid out on a 430x932 Pro Max; on the 393x852 phones most
+     people carry, the pinned checkout pane measured 402px -- 47% of the screen
+     -- leaving 200px for the items themselves: barely one row. Everything the
+     pane and the rows spend on padding and display type is cut one step at
+     this width. Measured on a 393x852 viewport: pane 402px -> 344px, item area
+     200px -> 258px, rows ~170-200px -> ~150-170px.
+
+     414px, not 430: every non-Max iPhone (SE, mini, 15/16/17) is at most
+     414 CSS px wide, and the 430px Pro Max keeps the roomier layout it was
+     tuned on. Everything here is display-only -- no element is removed except
+     the taxes note, which Shopify's checkout restates anyway. The SAVED chips
+     are shrunk with transform because pg-chips stamps their geometry inline
+     with !important, which a stylesheet cannot outrank -- transform is the one
+     lever the stamp does not hold. */
+  @media (max-width:414px){
+    #cart .l4ca:not(.in-panel) > li{padding:7px 0 !important}
+    #cart .l4ca:not(.in-panel) > li figure{width:78px !important;min-width:78px !important;flex:none !important}
+    #cart .l4ca:not(.in-panel) > li figure img{width:78px !important;height:78px !important}
+    #cart .l4ca:not(.in-panel) > li section{row-gap:3px !important}
+    #cart .l4ca:not(.in-panel) > li h2,
+    #cart .l4ca:not(.in-panel) > li h2 a{font-size:14px !important;line-height:1.3 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-varp{margin:0 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-varp select,
+    #cart .l4ca:not(.in-panel) > li select.pg-vsel{padding:4px 24px 4px 8px !important;font-size:12px !important}
+    #cart .l4ca:not(.in-panel) > li .nc-lsave{font-size:11.5px !important;line-height:1.25 !important}
+    #cart .l4ca:not(.in-panel) > li .nc-lsave-now{font-size:15px !important}
+    #cart .l4ca:not(.in-panel) > li footer{margin:0 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-qbtn{width:26px !important;height:26px !important}
+    #cart .l4ca:not(.in-panel) > li input[type=number]{height:26px !important;font-size:13px !important}
+    #cart .l4ca:not(.in-panel) > li .pg-save-chip{transform:scale(.82);transform-origin:left center}
+    #cart .l4ca:not(.in-panel) > li .pg-free-note{font-size:10.5px !important;padding:3px 6px !important;margin-top:3px !important}
+
+    /* the pinned pane, block by block */
+    #pg-rush{padding:7px 10px !important}
+    #pg-rush, #pg-rush *{font-size:12px !important;line-height:1.35 !important}
+    #cart #pg-unlock-slot{margin:6px 0 !important}
+    #cart #pg-unlock-slot .pg-unlock{padding:7px 10px !important;gap:8px !important;min-height:0 !important;margin:0 !important}
+    #cart #pg-unlock-slot .pg-unlock img{width:38px !important;height:38px !important}
+    #cart #pg-unlock-slot .pg-unlock,
+    #cart #pg-unlock-slot .pg-unlock *{font-size:12px !important;line-height:1.3 !important}
+    #cart #pg-unlock-slot .pg-unlock b{font-size:12.5px !important}
+    #cart .pg-frameoffer{padding:7px 10px !important;gap:8px !important;margin:6px 0 2px !important}
+    #cart .pg-frameoffer img{width:36px !important;height:36px !important}
+    #cart .pg-sp{padding:6px 10px !important}
+    #cart .sticky-in-panel .l4tt{display:none !important}
+    #cart .sticky-in-panel .nc-dtrust{transform:scale(.86);transform-origin:center top;margin-bottom:-6px !important}
+  }
+</style>
 {% schema %}
 {"name": "PG Cart Timer", "settings": [], "presets": [{"name": "PG Cart Timer"}]}
 {% endschema %}
