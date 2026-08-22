@@ -1,75 +1,64 @@
-# Cart: the drawer hijacks its own scroll after an upsell selection
+# Wall art: the video slideshow is swiped, not clicked
 
-## Symptom
-Reported as: the cart "is flashing and tweaking" on desktop, pointing at the
-pinned totals pane (You saved / Shipping Protection / Total / CHECKOUT), and
-"it won't let me scroll within the cart".
+## What changed
+The two purple chevrons on the gallery video were removed and replaced with the
+same "< SWIPE - n/10 >" pill the photo strip below already carries.
 
-## Cause
-`reveal()` in pg-cart-imglink runs 260ms and 900ms after every `.pg-unlock-add`
-click, to lift the free-orb picker out from behind the pinned pane. It issued
-TWO scroll commands in the same task:
+## Why this was not just a CSS swap
+The photo strip's pill only had to LABEL a gesture the browser already handled:
+`.pgx-thumbs` is a real `overflow-x` scroller. The video stage is not a scroller
+-- it is two stacked, absolutely positioned `<video>` elements -- so nothing
+would have answered a finger there. Dropping the arrows and adding only the pill
+would have advertised a swipe that does nothing, and the arrows were the ONLY
+manual control at desktop widths too (the dots alone are poor for ten slides).
+So the drag handler is the substantive half of this change; the pill is the
+label on it.
 
-    pick.scrollIntoView({block: 'center', behavior: 'smooth'});
-    var sc = scroller();
-    if (sc) sc.scrollTop += over + 14;
+## How the gesture behaves
+  - Pointer events, so touch, pen and a desktop mouse drag take one path.
+  - The gesture stays undecided until it has moved 10px further sideways than
+    down, and only claims the drag (and starts calling preventDefault) at that
+    point -- a finger that lands on the video and pulls DOWN still scrolls the
+    page. The axis is LATCHED once decided so a curved drag cannot flip halfway.
+  - `touch-action:pan-y` on the stage says the same thing to the compositor,
+    which is what actually arbitrates the gesture; vertical panning stays on the
+    fast path instead of waiting on this handler.
+  - 40px of travel commits to a slide change; anything shorter is ignored.
+  - `setPointerCapture` keeps the moves coming when the finger leaves the short
+    stage and guarantees the matching up/cancel.
+  - A gesture starting on a dot is ignored, so the dots stay clickable.
+  - Arrow keys page it, and the stage took tabindex/role/aria-label, so the
+    slideshow keeps a keyboard route now that the buttons are gone.
 
-Two defects, both measured in a Chromium harness running the real cart sections
-over the theme's own async-panels.css:
+The counter is painted from `paintDots()`, the one funnel every slide change
+already goes through -- swipe, dot, keyboard, or a variant chosen anywhere else
+on the page -- so it cannot drift out of step with what is on screen. It writes
+only on a change, because the pill sits inside `#pgx`, which carries a childList
+MutationObserver.
 
-1. BOTH COMMANDS ANIMATE, AND THEY FIGHT. The theme gives the drawer
-   `scroll-behavior: smooth` (async-panels.css, `.m6pn`), so the bare
-   `scrollTop +=` is animated too -- and it retargets the animation
-   `scrollIntoView` had just started, from wherever it had reached rather than
-   from where it began. reveal() fires twice per selection, so up to four
-   overlapping animations are in flight. A wheel or trackpad gesture arriving
-   during any of them is overwritten by the next frame of the one still running:
-   the cart slides on its own and refuses to be scrolled by hand.
+The photo strip's pill stays phones-only (desktop keeps pg-landing's real
+arrows there); the video pill shows at every width, since that stage now has no
+arrows at any width.
 
-   `scrollIntoView` was also the wrong one to keep: `block:'center'` targets a
-   position the pinned pane can make unsatisfiable (centre a picker taller than
-   half the scrollport and its bottom is still under the pane), and it scrolls
-   EVERY scrollable ancestor, so on desktop it moved the page behind the drawer
-   as well.
+## Verified in a Chromium harness running the real section over local fixtures
+At 390x844 and 1280x900, both green on every line:
 
-2. THE FALLBACK SCROLLED THE WRONG PANEL ENTIRELY. `scroller()` walked up from
-   the item list looking for a scrollable ancestor and, failing that, fell back
-   to `document.querySelector('#cart .m6pn') || document.querySelector('.m6pn')`.
-   The first can never match -- `.m6pn` IS `#cart`, not a descendant of it -- so
-   the fallback was always the second: the FIRST PANEL IN THE DOCUMENT, which on
-   most pages is the nav drawer. Measured with a short cart (drawer not itself
-   scrollable, which pg-cart-mobile's rule 2b deliberately makes the common
-   case): `scroller()` returned `#nav-panel.m6pn`, not the cart.
+    arrow buttons present ......... 0
+    pill visible, counter ......... 1/10, tracks every change
+    swipe left / right ............ advances / goes back
+    real touch swipe (CDP) ........ advances / goes back
+    vertical drag ................. slide unchanged, defaultPrevented false
+    sub-threshold drag (25px) ..... ignored
+    dots still clickable .......... dot #5 -> 5/10, "EX Legendary Poke Trio"
+    keyboard ArrowRight ........... advances
+    variant <select> integration .. "Goku" -> 10/10
+    visible clip .................. advancing, playbackRate 2.5, not paused
+    page errors ................... none
 
-## Fix
-One scroll command, bounded to the cart:
-
-  - `scroller()` stops at `#cart` and returns null rather than reaching for an
-    unrelated panel.
-  - `reveal()` drops `scrollIntoView` and performs a single nudge by exactly the
-    measured overlap, clamped to the scroller's own maximum, with
-    `behavior:'auto'` so it lands in one frame and leaves nothing animating for
-    a gesture to fight. Still best-effort -- the `.is-open` z-index rule is what
-    makes the picker usable; this only tidies its position.
-
-## What this does NOT cover
-The pinned pane's own position is written by `seatPane()` in pg-cart-mobile,
-which is the only code that can move that section. It was measured as INERT at
-ten viewport sizes (1280x900/700/600/520/460/400/360, 1440x760/480, 1512x820,
-390x844): `pane.pgLift` stayed 0 and no inline `bottom` was ever written,
-because rule 2a (`bottom:0 !important`) already seats CHECKOUT 6px above the
-drawer's clip floor at every one of them. So no change was made there. If the
-pane is still seen to twitch after this, seatPane is the place to look and it
-will need a reproduction from the affected machine.
-
-Verified: uploaded checksum 06ae37a6f849ddcd28b29b80c613bdc3 matches the local
-file byte for byte.
-
-Deployed to the DRAFT theme "Copy of Simpler cart + frame add-on (Claude)"
-(163134439652) -- confirmed a byte-identical duplicate of live across the first
-100 files including config/settings_data.json and layout/theme.liquid -- because
-the live theme is now published and theme-file writes against it are blocked.
-Needs publishing from Shopify admin.
+Uploaded checksum 730a34fbf560290c28b14f9144b3d25a matches the local file byte
+for byte. Deployed to the DRAFT theme "Copy of Small-iPhone cart polish (Claude)"
+(163138175204) -- the live theme rotated twice during this session and theme
+file writes against the published theme are blocked. Needs publishing.
 
 ---
 

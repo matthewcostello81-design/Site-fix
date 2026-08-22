@@ -24,7 +24,8 @@
   3. The single gallery video is now a ten-slide video slideshow, one clip per
      variant, and selecting a design anywhere on the page -- the buy-box
      dropdowns or the variant picker inside the cart drawer -- moves the
-     slideshow to that design's clip. Arrows and dots page through it by hand.
+     slideshow to that design's clip. A swipe and the dots page through it by
+     hand; there are no arrow buttons, at any width -- see note 6.
      The nine newer clips play at 2.5x, the original at normal speed; the rate
      is per clip, as `r` in the script.
 
@@ -102,9 +103,9 @@
      one, or "Blastoise EX" lands on Blastoise Evolution. A photo that matches
      nothing gets NO label rather than a wrong one.
 
-  5. THE SWIPE HINT, also from the orb page. pg-gallery-mobile hides the strip's
-     arrows under 900px because they sat on top of the artwork, which left no
-     sign the strip scrolls at all -- 28 photos reading as a dead row. The pill
+  5. THE SWIPE HINT on the photo strip, also from the orb page.
+     pg-gallery-mobile hides the strip's arrows under 900px because they sat on
+     top of the artwork, which left no sign the strip scrolls at all -- 28 photos reading as a dead row. The pill
      sits ON the strip, pinned to the top edge of the photo, so it is
      unambiguously about the photos rather than about the video above them, and
      it carries the position (4/28) so it answers "how many more" and not just
@@ -115,6 +116,32 @@
      finger that starts on the gallery and drags DOWN scrolls the page, which
      fires touchmove on the strip, so simply scrolling past the photos killed
      the hint.
+
+  6. THE VIDEO SLIDESHOW IS SWIPED, NOT CLICKED. The two purple chevrons that
+     used to sit on the artwork were dropped at the owner's request, replaced by
+     the same pill the photo strip carries.
+
+     THE HINT AND THE GESTURE SHIP TOGETHER. The photo strip is a real
+     overflow-x scroller, so its pill only had to LABEL a gesture the browser
+     already handled. The video stage is not a scroller -- it is two stacked,
+     absolutely positioned <video> elements -- so nothing would have answered a
+     finger there. Removing the arrows without adding the gesture would leave a
+     pill advertising a swipe that does nothing, so the drag handler below is
+     the substantive half of this change and the pill is the label on it.
+
+     Pointer events, so one path covers touch, pen and a desktop mouse drag --
+     the arrows were the only control at desktop widths too, and the dots alone
+     are a poor replacement for ten slides. The gesture commits to horizontal
+     only once it has moved further sideways than down (10px), and only then
+     starts calling preventDefault, so a finger that lands on the video and
+     drags DOWN still scrolls the page. `touch-action:pan-y` on the stage says
+     the same thing to the compositor, which is what keeps the page scrolling at
+     60fps instead of waiting on this handler. A gesture that starts on a dot is
+     ignored so the dots stay clickable.
+
+     The counter is painted from paintDots(), which already runs on every slide
+     change from every source -- arrow, dot, swipe, or a variant being chosen
+     elsewhere on the page -- so it cannot drift out of step with the slide.
 
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
@@ -155,38 +182,25 @@
   }
   #pgx .pgx-vid .pgw-v.on{opacity:1}
 
-  /* Same skin as pg-landing's .pgx-tharrow, and stamped just as hard for the
-     same reason: the base theme paints every button as a black bar with pseudo
-     overlays. Its own class, not .pgx-tharrow, because that one is display:none
-     under 900px -- on a phone these arrows and the dots are the only manual way
-     through the slideshow, so they stay visible at every width. */
-  #pgx .pgx-vid .pgw-arrow{
-    position:absolute !important;top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;
-    z-index:5 !important;width:44px !important;height:44px !important;
-    min-width:0 !important;min-height:0 !important;max-width:none !important;
-    padding:0 0 4px !important;margin:0 !important;border:0 !important;border-radius:50% !important;
-    background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;
-    color:#fff !important;font-size:26px !important;line-height:1 !important;font-weight:400 !important;
-    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
-    display:flex !important;align-items:center !important;justify-content:center !important;
-    text-transform:none !important;letter-spacing:0 !important;text-indent:0 !important;
-    overflow:hidden !important;isolation:isolate !important;cursor:pointer !important;
-    box-shadow:0 10px 24px -10px rgba(0,0,0,.75) !important;
-    animation:none !important;transition:background .15s ease !important;
+  /* THE ARROWS ARE GONE -- see note 6. The stage is dragged instead, so it has
+     to tell the compositor which axis it wants: pan-y hands vertical scrolling
+     straight to the browser (the page keeps scrolling through the video at full
+     speed) and reserves horizontal for the handler in the script. Without it a
+     horizontal drag is claimed as a page pan before preventDefault can run.
+     Selection is off so a slow drag does not start highlighting the page, and
+     the grab cursor is the desktop affordance the chevrons used to be. */
+  #pgx .pgx-vid .pgw-stage{
+    touch-action:pan-y;
+    -webkit-user-select:none;user-select:none;
+    cursor:grab;
   }
-  #pgx .pgx-vid .pgw-arrow::before,
-  #pgx .pgx-vid .pgw-arrow::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important;border:0 !important}
-  #pgx .pgx-vid .pgw-arrow:hover{background:#8B44BE !important;background-color:#8B44BE !important}
-  #pgx .pgx-vid .pgw-arrow.prev{left:10px !important;right:auto !important}
-  #pgx .pgx-vid .pgw-arrow.next{right:10px !important;left:auto !important}
-  @media (max-width:600px){
-    #pgx .pgx-vid .pgw-arrow{width:38px !important;height:38px !important;font-size:22px !important}
-  }
+  #pgx .pgx-vid .pgw-stage.pgw-drag{cursor:grabbing}
 
   /* the swipe hint, pinned to the top of the photo the strip is showing.
      .pgx-thumbwrap is position:relative on both breakpoints (pg-landing sets it,
      pg-gallery-mobile re-asserts it under 900px), so this anchors to the strip. */
-  #pgx .pgx-thumbwrap .pgw-swipe{
+  #pgx .pgx-thumbwrap .pgw-swipe,
+  #pgx .pgx-vid .pgw-swipe{
     position:absolute;
     top:8px;left:50%;transform:translateX(-50%);
     z-index:4;
@@ -206,12 +220,15 @@
     white-space:nowrap;
     pointer-events:none;
   }
-  #pgx .pgx-thumbwrap .pgw-swipe span{display:inline-block;font-size:21px;line-height:.7;color:#F6ECFF;animation:pgwNudge 1.5s ease-in-out infinite}
-  #pgx .pgx-thumbwrap .pgw-swipe .pgw-l{animation-direction:reverse}
+  #pgx .pgx-thumbwrap .pgw-swipe span,
+  #pgx .pgx-vid .pgw-swipe span{display:inline-block;font-size:21px;line-height:.7;color:#F6ECFF;animation:pgwNudge 1.5s ease-in-out infinite}
+  #pgx .pgx-thumbwrap .pgw-swipe .pgw-l,
+  #pgx .pgx-vid .pgw-swipe .pgw-l{animation-direction:reverse}
   /* the counter repaints on every scroll frame, so it is fixed-width: tabular
      figures plus a min-width sized for the widest reading stop the centred pill
      shimmying as the digits change under the finger. */
-  #pgx .pgx-thumbwrap .pgw-swipe b.pgw-n{
+  #pgx .pgx-thumbwrap .pgw-swipe b.pgw-n,
+  #pgx .pgx-vid .pgw-swipe b.pgw-n{
     display:inline-block;
     min-width:4.8ch;text-align:center;
     font-weight:800;color:#FFFFFF;letter-spacing:.04em;
@@ -221,12 +238,16 @@
     0%,100%{transform:translateX(0);opacity:.55}
     50%    {transform:translateX(4px);opacity:1}
   }
-  /* phones only -- desktop keeps pg-landing's real arrows */
+  /* the PHOTO strip's pill is phones only -- desktop keeps pg-landing's real
+     arrows there. The VIDEO stage has no arrows left at any width, so its pill
+     shows at every width. */
   @media (max-width:900px){
     #pgx .pgx-thumbwrap .pgw-swipe.pgw-on{display:flex}
   }
+  #pgx .pgx-vid .pgw-swipe.pgw-on{display:flex}
   @media (prefers-reduced-motion:reduce){
-    #pgx .pgx-thumbwrap .pgw-swipe span{animation:none}
+    #pgx .pgx-thumbwrap .pgw-swipe span,
+    #pgx .pgx-vid .pgw-swipe span{animation:none}
   }
 
   /* the design name pill -- same look on the video and on the photos below it.
@@ -392,12 +413,15 @@
     }
     var a = mk(), b = mk(), front = a, cur = -1, want = -1, token = 0, inflight = null;
 
-    var prev = document.createElement('button');
-    prev.type = 'button'; prev.className = 'pgw-arrow prev';
-    prev.setAttribute('aria-label','Previous video'); prev.innerHTML = '&#8249;';
-    var next = document.createElement('button');
-    next.type = 'button'; next.className = 'pgw-arrow next';
-    next.setAttribute('aria-label','Next video'); next.innerHTML = '&#8250;';
+    /* the pill that replaced the two chevrons -- same markup as the photo
+       strip's, so the two read as one idea. aria-hidden and pointer-events:none:
+       it is a label on the gesture, not a control, and the dots below remain the
+       keyboard- and screen-reader-reachable way through the slideshow. */
+    var swipe = document.createElement('div');
+    swipe.className = 'pgw-swipe pgw-on';
+    swipe.setAttribute('aria-hidden', 'true');
+    swipe.innerHTML = '<span class="pgw-l">&lsaquo;</span> Swipe &middot; <b class="pgw-n"></b> <span>&rsaquo;</span>';
+    var swipeN = swipe.querySelector('.pgw-n');
 
     var dots = document.createElement('div');
     dots.className = 'pgw-dots';
@@ -414,7 +438,7 @@
     nameEl.className = 'pgw-name';
     nameEl.setAttribute('aria-hidden', 'true');
 
-    stage.appendChild(prev); stage.appendChild(next); stage.appendChild(dots); stage.appendChild(nameEl);
+    stage.appendChild(swipe); stage.appendChild(dots); stage.appendChild(nameEl);
 
     /* pg-landing's own <video> is replaced only now that the stage is built, so
        a failure above leaves the original single video untouched on screen. */
@@ -423,6 +447,16 @@
 
     function paintDots(){
       dotEls.forEach(function(d, i){ d.classList.toggle('on', i === want); });
+      /* paintDots() is the one funnel every slide change goes through -- arrow-
+         less swipe, dot, or a variant chosen elsewhere on the page -- so the
+         counter cannot drift out of step with what is on screen. Written only on
+         a change: this element sits inside #pgx, which carries a childList
+         MutationObserver further down, and an unconditional write would wake it
+         on every swap for nothing. */
+      if (swipeN){
+        var pos = (want + 1) + '/' + VIDS.length;
+        if (swipeN.textContent !== pos) swipeN.textContent = pos;
+      }
     }
 
     /* THE SUPERVISOR -- a frozen slide fixes itself within a second.
@@ -544,13 +578,72 @@
     }
 
     /* Stepped from `want`, not `cur`. `cur` only moves once a clip has loaded, so
-       on a slow connection every click during the wait recomputed the SAME
+       on a slow connection every step during the wait recomputed the SAME
        neighbour and restarted the same download -- measured in a throttled
-       harness, six clicks advanced the slideshow by one slide and kept
+       harness, six inputs advanced the slideshow by one slide and kept
        cancelling the load that would have ended the wait. Stepping from what was
-       last requested makes each click count. */
-    prev.addEventListener('click', function(){ show((want - 1 + VIDS.length) % VIDS.length); });
-    next.addEventListener('click', function(){ show((want + 1) % VIDS.length); });
+       last requested makes each one count. */
+    function step(dir){
+      show(((want + dir) % VIDS.length + VIDS.length) % VIDS.length);
+    }
+
+    /* THE SWIPE. See note 6 at the top: the stage is not a scroller, so this is
+       what actually moves the slideshow now that the arrows are gone.
+
+       Pointer events cover touch, pen and a desktop mouse drag in one path. The
+       gesture stays undecided until it has moved 10px further sideways than
+       down; only then does it claim the drag and start calling preventDefault,
+       so a finger that lands on the video and pulls DOWN still scrolls the page
+       normally. AXIS is latched once decided -- re-testing every move would let
+       a curved drag flip mid-gesture.
+
+       setPointerCapture keeps the moves coming when the finger leaves the video,
+       which is common on a short stage, and guarantees the matching up/cancel.
+       A gesture starting on a dot is left alone so the dots stay clickable. */
+    var sx = 0, sy = 0, sid = null, axis = 0;   /* axis: 0 undecided, 1 horizontal, -1 vertical */
+    var THRESH = 40;                            /* px of travel that counts as a swipe */
+
+    stage.addEventListener('pointerdown', function(e){
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (e.target && e.target.closest && e.target.closest('.pgw-dot')) return;
+      sid = e.pointerId; sx = e.clientX; sy = e.clientY; axis = 0;
+      try { stage.setPointerCapture(sid); } catch (err){}
+    });
+
+    stage.addEventListener('pointermove', function(e){
+      if (sid === null || e.pointerId !== sid) return;
+      var dx = e.clientX - sx, dy = e.clientY - sy;
+      if (axis === 0){
+        if (Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)){
+          axis = 1;
+          stage.classList.add('pgw-drag');
+        } else if (Math.abs(dy) > 10){
+          axis = -1;                            /* the page's gesture, not ours */
+        }
+      }
+      if (axis === 1 && e.cancelable) e.preventDefault();
+    }, {passive: false});
+
+    function endDrag(e){
+      if (sid === null || (e && e.pointerId !== undefined && e.pointerId !== sid)) return;
+      var dx = (e && e.clientX !== undefined) ? e.clientX - sx : 0;
+      var was = axis;
+      sid = null; axis = 0;
+      stage.classList.remove('pgw-drag');
+      if (was !== 1 || Math.abs(dx) < THRESH) return;
+      step(dx < 0 ? 1 : -1);                    /* drag left = next, as the content follows the finger */
+    }
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+
+    /* the slideshow keeps a keyboard route now that the buttons are gone */
+    stage.setAttribute('tabindex', '0');
+    stage.setAttribute('role', 'group');
+    stage.setAttribute('aria-label', 'Product video slideshow');
+    stage.addEventListener('keydown', function(e){
+      if (e.key === 'ArrowLeft'){ step(-1); e.preventDefault(); }
+      else if (e.key === 'ArrowRight'){ step(1); e.preventDefault(); }
+    });
 
     function indexOf(s){
       if (!s) return -1;
