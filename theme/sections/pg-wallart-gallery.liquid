@@ -201,7 +201,7 @@
       stage.appendChild(v);
       return v;
     }
-    var a = mk(), b = mk(), front = a, cur = -1, token = 0;
+    var a = mk(), b = mk(), front = a, cur = -1, token = 0, inflight = null;
 
     var prev = document.createElement('button');
     prev.type = 'button'; prev.className = 'pgw-arrow prev';
@@ -232,24 +232,79 @@
       dotEls.forEach(function(d, i){ d.classList.toggle('on', i === cur); });
     }
 
+    /* Ask a video to play and make sure it actually did. A single play() call is
+       not enough: it can be refused, or land while the element is still being
+       reset by load(), and a refusal leaves a frozen first frame with no error
+       anywhere. Re-asks a few times, and stops the moment the clip is running or
+       another slide has been requested. */
+    function kick(v, mine){
+      var n = 0;
+      (function again(){
+        if (mine !== token || !v.paused) return;
+        var p = v.play();
+        if (p && p.catch) p.catch(function(){});
+        if (++n < 5) setTimeout(again, 250);
+      })();
+    }
+
     function show(i){
       if (i < 0 || i >= VIDS.length || i === cur) return;
-      var incoming = (front === a) ? b : a;
-      var outgoing = front;
+
+      /* WHICH ELEMENT THE CLIP LOADS INTO. Normally the one that is not on
+         screen. But when a slide is ALREADY loading, that pending element is the
+         off-screen one -- so this must reuse it rather than work out a fresh
+         answer from `front`, which still points at the visible clip and would
+         hand back the element the shopper is watching.
+
+         That is the bug this replaced. Two show() calls overlapping (the init
+         call still loading when a variant change or an arrow arrives) had the
+         second one take `front` as its incoming element: it reset the src of the
+         clip on screen, then added and immediately removed its own `on` class,
+         leaving the visible slide invisible AND paused by the outgoing timer.
+         Recovery needed a page past and back, which is exactly what was
+         reported for the two slides nearest the start -- the ones reachable
+         while the opening clip is still loading. */
+      var incoming = inflight || ((front === a) ? b : a);
+      if (incoming === front) return;
+      inflight = incoming;
+
       var mine = ++token;                  /* a later request wins; this one goes quiet */
       var swapped = false;
 
       function swap(){
         if (swapped || mine !== token) return;
         swapped = true;
+        inflight = null;
+
+        /* read the outgoing element HERE, not when show() was called: a swap
+           that happened in between would have moved it. */
+        var outgoing = front;
+
         incoming.style.transform = 'scale(' + VIDS[i].z + ')';
-        incoming.play().catch(function(){});
         incoming.classList.add('on');
-        outgoing.classList.remove('on');
-        setTimeout(function(){ if (mine === token) { try { outgoing.pause(); } catch(e){} } }, 320);
+        var p = incoming.play();
+        if (p && p.catch) p.catch(function(){});
+
+        if (outgoing !== incoming){
+          outgoing.classList.remove('on');
+          /* `outgoing !== front` and not a token check: the token moves on every
+             request, which used to leave a superseded clip playing forever, and
+             a stale timer could pause whatever had since become visible. Asking
+             whether this element is still off screen is the question that
+             actually matters. */
+          setTimeout(function(){
+            if (outgoing !== front) { try { outgoing.pause(); } catch(e){} }
+          }, 320);
+        }
+
         front = incoming; cur = i; paintDots();
+        kick(incoming, mine);
       }
 
+      /* drop the previous attempt's listener -- once:true only removes it if it
+         actually fired, and a load that was superseded never fires */
+      if (incoming.pgwOn) incoming.removeEventListener('loadeddata', incoming.pgwOn);
+      incoming.pgwOn = swap;
       incoming.addEventListener('loadeddata', swap, {once: true});
       incoming.src = VIDS[i].u;
       try { incoming.load(); } catch(e){}

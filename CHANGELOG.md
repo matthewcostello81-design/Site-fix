@@ -1,3 +1,39 @@
+# Wall art slideshow: overlapping show() calls froze the early slides
+
+## Symptom
+Slides 1 and 2 (Blue Eyes / Dark Magician / Red Eyes, and Gengar Evolution)
+arrived stopped on their first frame. Paging past them and back played them
+normally. Slides 3-9 were never affected.
+
+## Cause
+`show()` picked its incoming element as "whichever one is not `front`". That is
+only true when no other slide is mid-load. With two `show()` calls overlapping,
+`front` still pointed at the visible clip, so the second call chose the element
+the shopper was watching: it reset that element's `src`, then in `swap()` added
+its own `on` class and immediately removed it again (`outgoing` and `incoming`
+were the same element), and the outgoing timer paused it 320ms later. The
+visible slide ended up invisible and stopped, and the first call's swap was
+already dead on the token check, so nothing recovered it until the next
+`show()` -- a page past and back.
+
+Only the earliest slides could hit it, because overlapping requires a second
+request to land while the opening clip is still loading.
+
+## Fix
+- `inflight` tracks the element a pending load owns, and `show()` reuses it
+  instead of re-deriving one from `front`. The visible element can no longer be
+  hijacked, and a guard bails if it somehow would be.
+- `outgoing` is read inside `swap()` rather than captured when `show()` started,
+  so it reflects what is actually on screen at swap time.
+- The outgoing pause is guarded on `outgoing !== front` rather than a token
+  match. The old check let a superseded clip keep playing forever, and could
+  pause whatever had since become visible.
+- Stale `loadeddata` listeners are removed before a new one is attached:
+  `once:true` only detaches a listener that actually fired, and a superseded
+  load never fires.
+- `kick()` re-asks a slide to play up to five times over a second if it is still
+  paused, so a refused or badly-timed `play()` cannot leave a frozen frame.
+
 # Wall art slideshow: one box for all ten slides
 
 ## Change
