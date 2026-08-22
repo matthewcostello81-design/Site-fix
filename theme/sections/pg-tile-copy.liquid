@@ -267,12 +267,14 @@
   }
   #pg-sticky .pgs-pick select option{background:#16101F;color:#EFE8F7}
   #pg-sticky .pgs-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
-  @media(max-width:700px){
-    #pg-sticky .pgs-pick{gap:8px;margin-bottom:8px}
-    /* the bundle option text names itself ("Buy 5, Get 3 FREE - $174.95");
-       the option field's label does not, so only the pack label goes */
-    #pg-sticky .pgs-pick .pgs-f-pack > span{display:none}
-    #pg-sticky .pgs-pick select{font-size:12.5px;padding:9px 8px}
+  /* NO PICKER ROW ON PHONES, by owner request. On a 390px screen the row sat
+     as its own sticky band above the price + ADD TO CART bar, and the two
+     stacked bands ate a fifth of the viewport; the ladder itself is one swipe
+     up. Hidden by CSS rather than skipped in buybar(): the JS keeps the row
+     built and synced, so rotating a phone to a wide screen shows a correct
+     picker instantly and nothing else needs to know about the breakpoint. */
+  @media(max-width:760px){
+    #pg-sticky .pgs-pick{display:none !important}
   }
 </style>
 <script>
@@ -659,6 +661,9 @@
      So the bar gets one row above it: a <select> naming every visible tile with
      its price and its saving, and -- for products whose tile carries native
      option selects (the console's Storage) -- a second mirroring that one.
+     DESKTOP ONLY: on phones the row is hidden outright (see the media rule
+     above) -- the owner found two stacked sticky bands too tall for a 390px
+     screen, and the thumbnail + price still say what the button sells.
 
      IT DRIVES THE PAGE'S OWN CONTROLS, IT DOES NOT REPLACE THEM. Choosing a
      pack CLICKS the tile, so pgLadder's per-tile handler and ownSelection()
