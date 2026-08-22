@@ -1,3 +1,40 @@
+# Cart: variant pickers vanish after an upsell hands over free units
+
+## Symptom
+After adding through an upsell that yields free units, every affected cart line
+showed its design as plain text -- "15 Dragonite", "18 Gyarados" -- instead of
+the interactive dropdown.
+
+## Cause
+`grow()` matched rendered lines to cart items BY POSITION: the Nth rendered line
+for a handle is the Nth cart item for that handle. Its own comment claimed this
+"stays correct when the same product appears twice, as it does when a BXGY hands
+over a free 5th orb as its own $0.00 line" -- and that is exactly the case that
+breaks it.
+
+pg-chips' `liftFree()` moves every free row above the first paid one. Rendered
+order then no longer matches `cart.items`, so each line is handed its
+neighbour's item, `titleP()` cannot find a `<p>` holding THAT item's variant
+title, and `build()` returns without a picker. Both lines lose it, not just the
+lifted one -- the mismatch is mutual.
+
+## Fix
+Lines are matched by the variant name PRINTED on the line, never by position.
+That is the same evidence `build()` already requires: a line can only get a
+picker if its variant title is on screen to be replaced.
+
+- `used` marks a claimed item so two lines can never take the same one.
+- Quantity breaks ties when one product holds two lines of the same variant
+  (one free, one paid).
+- No positional fallback. It only ever worked when the printed title happened to
+  line up, and keeping it would let the same silent mismatch back in.
+
+## Verified
+Playwright, real section JS, stubbed cart: two orb lines rendered free-first
+while `cart.items` is paid-first.
+- before: neither line gets a picker (reproduces the report exactly)
+- after: both get one, each selecting its own variant, 3 options, interactive
+
 # Wall art PDP: remove the frame add-on tile
 
 ## Change

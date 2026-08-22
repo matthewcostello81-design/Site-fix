@@ -1,0 +1,283 @@
+{%- comment -%}
+  PG Cart Variants: make every multi-variant cart line switchable.
+
+  TWO JOBS.
+
+  (A) Style and unblock the console picker that pg-drawer already builds.
+
+  pg-drawer's vsel() builds a real <select> of every handheld-game-console
+  variant on the cart line and, on change, zeroes the old variant and adds the
+  new one at the same quantity. Two things stopped it working as a control:
+
+  1. No dropdown affordance. vsel() stamps its look as INLINE `!important`
+     styles (height:26px, max-width:96px, border:1px solid #ddd, no chevron), and
+     an inline !important declaration outranks every stylesheet rule -- the same
+     trap as the cart pills. So the look has to be re-stamped on the element,
+     not written in CSS.
+
+  2. Clicking it navigated to the product page. pg-drawer parks the select
+     inside `section > p`, and its own rule sets
+
+       #cart .l4ca > li section > p:not(.pg-varp){pointer-events:none}
+
+     with `.pg-varp` re-enabling the one holding the select. Whenever that class
+     is missing -- the drawer re-renders its innerHTML on every cart change, and
+     the class only gets applied on the pass that CREATES the select -- the click
+     falls straight through the select to the line's product link underneath.
+
+  (B) Build the same picker for lines pg-drawer skips.
+
+  vsel() is hard-coded to the console handle, so a Crystal PokeOrb line just
+  printed its variant as text ("13 Arceus") with no way to change it. Any line
+  whose product has more than one variant now gets a picker built here, in the
+  same place and the same style, so the two are indistinguishable to a shopper.
+
+  Lines are matched to cart items BY THE VARIANT NAME PRINTED ON THE LINE, and
+  never by position.
+
+  Position is what this used to do -- the Nth rendered line for a handle is the
+  Nth cart item for it -- and it is wrong the moment anything reorders the rows.
+  pg-chips' liftFree() does exactly that: it moves every free row above the
+  first paid one. So after an upsell that hands over free units, the rendered
+  order stops matching cart.items, each line is handed its neighbour's item,
+  titleP() cannot find a <p> holding THAT item's variant title, and build()
+  returns without a picker -- the design goes back to being plain text on every
+  affected line. That is the "list of variants is no longer interactive" bug.
+
+  Matching on the printed name fixes it because it is the same evidence build()
+  already needs: a line can only get a picker if its variant title is on screen
+  to be replaced. Quantity breaks ties when one product holds two lines of the
+  SAME variant (a free one and a paid one), and a claimed item is marked used so
+  two lines can never both take it.
+
+  The swap posts quantity 0 for the old line key, then adds the chosen variant
+  at the same quantity, then hands off to pg-drawer's refresh. Line properties
+  are carried over so a free-gift line cannot lose its marker, and single-variant
+  products are skipped entirely.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgCartVars) return; window.pgCartVars = 1;
+
+  var CHEVRON = "data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E";
+
+  var STYLE = {
+    '-webkit-appearance': 'none',
+    '-moz-appearance': 'none',
+    'appearance': 'none',
+    'position': 'relative',
+    'z-index': '6',
+    'pointer-events': 'auto',
+    'height': '32px',
+    'min-height': '32px',
+    'width': 'auto',
+    'max-width': '190px',
+    'padding': '2px 28px 2px 11px',
+    'font-size': '13.5px',
+    'font-weight': '700',
+    'color': '#4A1C66',
+    'background-color': '#fff',
+    'background-image': 'url("' + CHEVRON + '")',
+    'background-repeat': 'no-repeat',
+    'background-position': 'right 9px center',
+    'border': '1.5px solid rgba(122,47,162,.45)',
+    'border-radius': '9px',
+    'cursor': 'pointer',
+    'box-shadow': '0 2px 8px -4px rgba(74,28,102,.4)'
+  };
+
+  function arm(sel){
+    if (sel.dataset.pgVar) return;
+    sel.dataset.pgVar = '1';
+
+    for (var k in STYLE) sel.style.setProperty(k, STYLE[k], 'important');
+
+    /* the paragraph pg-drawer parks it in must be the clickable one */
+    var host = sel.parentElement;
+    if (host && host.tagName === 'P'){
+      host.classList.add('pg-varp');
+      host.style.setProperty('pointer-events', 'auto', 'important');
+      host.style.setProperty('position', 'relative', 'important');
+      host.style.setProperty('z-index', '6', 'important');
+    }
+
+    /* never let the line's product link claim the click */
+    ['click', 'mousedown', 'touchstart', 'pointerdown'].forEach(function(ev){
+      sel.addEventListener(ev, function(e){ e.stopPropagation(); }, true);
+    });
+    /* a click that still reached an ancestor anchor would navigate */
+    sel.addEventListener('click', function(e){ e.stopPropagation(); });
+  }
+
+  /* ---------- picker for the lines pg-drawer leaves as plain text ---------- */
+
+  var PROD = {};      /* handle -> variants, or null while in flight */
+  var busy = false;
+
+  /* Products whose variants are an ENTITLEMENT axis, not a style axis.
+
+     The R36S case carries "Free with console" at $0.00 and "Spare case" at
+     $13.99. Both are availableForSale and untracked, so nothing in the generic
+     build() drops either, and the picker happily offered a shopper holding the
+     paid spare a dropdown that swaps it to the free one -- a free case with no
+     console, no badge and no error. It bites the other way too: a console
+     buyer's earned gift could be switched to "Spare case" and silently charged
+     $13.99 for what was advertised as free.
+
+     pg-no-promo intercepts the rail's Add button precisely so that $0.00
+     variant is never handed out, and pg-giftguard strips it when unearned;
+     this picker was quietly re-opening that door. */
+  var NO_PICKER = {'r36s-protective-case-free-gift': 1};
+
+  function variantsFor(handle){
+    if (PROD.hasOwnProperty(handle)) return PROD[handle];
+    PROD[handle] = null;
+    fetch('/products/' + handle + '.js')
+      .then(function(r){ return r.json(); })
+      .then(function(p){ PROD[handle] = (p && p.variants) || []; })
+      .catch(function(){ PROD[handle] = []; });
+    return null;
+  }
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  /* the <p> printing the variant name, which the select replaces */
+  function titleP(li, title){
+    if (!title) return null;
+    var ps = li.querySelectorAll('section p, p');
+    for (var i = 0; i < ps.length; i++){
+      var t = (ps[i].textContent || '').replace(/\s*\/\s*$/, '').trim();
+      if (t === title) return ps[i];
+    }
+    return null;
+  }
+
+  function swap(oldKey, newId, qty, props){
+    if (busy) return;
+    busy = true;
+    var body = {id: oldKey, quantity: 0};
+    fetch('/cart/change.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    }).then(function(){
+      var line = {id: newId, quantity: qty};
+      if (props && Object.keys(props).length) line.properties = props;
+      return fetch('/cart/add.js', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({items: [line]})
+      });
+    }).then(function(){
+      busy = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+      window.location.reload();
+    }).catch(function(){
+      busy = false;
+      window.location.reload();
+    });
+  }
+
+  function build(li, item, variants){
+    var p = titleP(li, item.variant_title);
+    if (!p || p.querySelector('select')) return;
+
+    var sel = document.createElement('select');
+    sel.className = 'pg-vsel';
+    variants.forEach(function(v){
+      if (v.available === false && v.id !== item.variant_id) return;
+      var o = document.createElement('option');
+      o.value = v.id;
+      o.textContent = v.title;
+      if (v.id === item.variant_id) o.selected = true;
+      sel.appendChild(o);
+    });
+    if (sel.options.length < 2) return;
+
+    sel.addEventListener('change', function(){
+      var id = parseInt(sel.value, 10);
+      if (!id || id === item.variant_id) return;
+      sel.disabled = true;
+      swap(item.key, id, item.quantity, item.properties);
+    });
+
+    p.textContent = '';
+    p.appendChild(sel);
+    arm(sel);
+  }
+
+  /* A real cart line, not a recommendation row and not the panel's duplicate
+     copy of the items. `.l4ca.in-panel` is that duplicate -- every other
+     section here excludes it, and matching it put a stray picker in the middle
+     of the rail. The quantity stepper is the positive test: only a real line
+     has one. */
+  function isCartLine(li){
+    if (li.closest('.nc-recs, .nc-recs-panel, .pg-unlock')) return false;
+    return !!li.querySelector('.semantic-amount input, .input-amount input');
+  }
+
+  function qtyOf(li){
+    var i = li.querySelector('.semantic-amount input, .input-amount input, input[type=number]');
+    return i ? (parseInt(i.value, 10) || 0) : 0;
+  }
+
+  /* The cart item this line is actually showing, found by the variant name the
+     line prints rather than by where the line sits. `used` stops two lines
+     claiming one item, and quantity settles the case where a product holds two
+     lines of the same variant -- one free, one paid. */
+  function itemForLine(li, hits, used){
+    var q = qtyOf(li), fallback = null, i, it;
+    for (i = 0; i < hits.length; i++){
+      it = hits[i];
+      if (used[it.key]) continue;
+      if (!titleP(li, it.variant_title)) continue;
+      if (it.quantity === q) return it;
+      if (!fallback) fallback = it;
+    }
+    return fallback;
+  }
+
+  function grow(){
+    var all = document.querySelectorAll(
+      '#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+    var lines = Array.prototype.filter.call(all, isCartLine);
+    if (!lines.length) return;
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var used = {};
+      Array.prototype.forEach.call(lines, function(li){
+        if (li.querySelector('.pg-vsel')) return;
+        var handle = handleOf(li);
+        if (!handle || NO_PICKER[handle]) return;
+
+        var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
+        if (!hits.length) return;
+
+        var item = itemForLine(li, hits, used);
+        if (!item) return;                     /* nothing on this line names an item */
+        used[item.key] = 1;
+
+        var vs = variantsFor(handle);
+        if (!vs || vs.length < 2) return;      /* still loading, or nothing to pick */
+        build(li, item, vs);
+      });
+    }).catch(function(){});
+  }
+
+  function pass(){
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) .pg-vsel, body.template-cart .form-cart .pg-vsel').forEach(arm);
+    grow();
+  }
+
+  /* the drawer replaces its innerHTML on every cart change, so the selects are
+     new elements each time and have to be re-armed and rebuilt */
+  setInterval(pass, 400);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass); else pass();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Variants", "settings": []}
+{% endschema %}
