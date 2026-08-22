@@ -80,9 +80,42 @@
   Re-encoding the nine to 990x1080 with the footage centred would let `z` go
   back to 1 and cost nothing at all.
 
+  4. THE DESIGN NAME, ON EVERY VIDEO AND EVERY PHOTO. Same pill the orb page
+     carries (pg-gallery-tweaks), for the same reason: with ten designs sharing
+     one product page, nothing on screen said which one you were looking at.
+
+     The video's name is free -- the slideshow already knows which variant it is
+     showing, so the pill is written from VIDS[i].v at the swap.
+
+     The PHOTOS are the harder half, because the strip's own markup carries no
+     design: pg-landing renders every thumbnail with alt "Holo Legends Wall Art
+     view N". The names come from the product's MEDIA alt text instead, shipped
+     inline as JSON so the first paint has them rather than waiting on a
+     round trip.
+
+     MATCHED ON FILENAME, THEN ON KEYWORD. Each button's own <img> src filename
+     is matched against the media list -- never button i to media[i+1], which
+     works until the next upload and then labels every photo with its
+     neighbour's. The matched alt is then read for a character name and mapped
+     to the variant that sells it ("Gastly" -> Gengar Evolution). Order inside
+     DESIGNS matters: the EX rule has to be tested before the plain Blastoise
+     one, or "Blastoise EX" lands on Blastoise Evolution. A photo that matches
+     nothing gets NO label rather than a wrong one.
+
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
 {%- endcomment -%}
+{%- comment -%}
+  The media list, rendered rather than fetched, so the name is on the first
+  paint. The fetch fallback the orb page keeps is not repeated here: this
+  section only ever renders on the wall art product template, where `product` is
+  always in scope.
+{%- endcomment -%}
+{%- if product and product.media.size > 0 -%}
+<script type="application/json" id="pgw-media">
+[{%- for m in product.media -%}{%- unless forloop.first -%},{%- endunless -%}{"a":{{ m.alt | default: '' | json }},"s":{{ m.preview_image.src | split: '?' | first | split: '/' | last | json }}}{%- endfor -%}]
+</script>
+{%- endif -%}
 <style>
   /* the room shot -- see the note above */
   #pgx .pgx-hero{display:none !important}
@@ -136,8 +169,35 @@
     #pgx .pgx-vid .pgw-arrow{width:38px !important;height:38px !important;font-size:22px !important}
   }
 
+  /* the design name pill -- same look on the video and on the photos below it.
+     pointer-events:none so it is a label, not a control. */
+  #pgx .pgx-vid .pgw-name,
+  #pgx .pgx-thumbwrap .pgw-shot{
+    position:absolute;
+    bottom:10px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    max-width:calc(100% - 24px);
+    padding:6px 14px;
+    border-radius:999px;
+    background:rgba(11,7,16,.82);
+    border:1px solid rgba(190,140,235,.55);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+    color:#F1EDF7;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:12.5px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;
+    pointer-events:none;
+  }
+  @media (max-width:430px){
+    #pgx .pgx-vid .pgw-name,
+    #pgx .pgx-thumbwrap .pgw-shot{font-size:11.5px;padding:5px 12px}
+  }
+
+  /* the dots move up to clear the name pill rather than sit behind it */
   #pgx .pgx-vid .pgw-dots{
-    position:absolute;left:0;right:0;bottom:9px;z-index:5;
+    position:absolute;left:0;right:0;bottom:46px;z-index:5;
     display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;padding:0 12px;
   }
   #pgx .pgx-vid .pgw-dot{
@@ -163,6 +223,64 @@
      while it is hidden. */
   var hero = document.getElementById('pgx-hero-img');
   if (hero) hero.removeAttribute('src');
+
+  /* Character -> the variant that sells it. Tested in order, so the EX rule
+     must stay ABOVE the plain Blastoise one: "Blastoise EX" belongs to the EX
+     trio, not to Blastoise Evolution. The last rule is the catch-all for the
+     original trio's photos, whose alts name Charizard without an EX. */
+  var DESIGNS = [
+    /* an alt that names the variant outright wins over any character in it --
+       the trio's own alt reads "Charizard Squirtle and Bulbasaur", which would
+       otherwise be caught by the Squirtle rule below and labelled Blastoise
+       Evolution */
+    {re: /legendary poke trio/i,                     v: "Legendary Poke Trio"},
+    {re: /blue-?eyes|dark magician|red-?eyes/i,      v: "Blue Eyes, Dark Magician, Red Eyes"},
+    {re: /gengar|gastly|haunter/i,                   v: "Gengar Evolution"},
+    {re: /(charizard|venusaur|blastoise)\s*ex\b/i,   v: "EX Legendary Poke Trio"},
+    {re: /squirtle|wartortle|blastoise/i,            v: "Blastoise Evolution"},
+    {re: /eevee|vaporeon|flareon/i,                  v: "Eeveelutions"},
+    {re: /mewtwo/i,                                  v: "Mewtwo EX, V, V Star"},
+    {re: /one piece/i,                               v: "One Piece"},
+    {re: /dragon ball/i,                             v: "Dragon Ball"},
+    {re: /goku/i,                                    v: "Goku"},
+    {re: /heroic 3d wall art|charizard/i,            v: "Legendary Poke Trio"}
+  ];
+  function designOf(alt){
+    if (!alt) return '';
+    for (var i = 0; i < DESIGNS.length; i++){ if (DESIGNS[i].re.test(alt)) return DESIGNS[i].v; }
+    return '';
+  }
+
+  /* filename -> alt, from the JSON the page shipped with */
+  var MEDIA = null;
+  function media(){
+    if (MEDIA) return MEDIA;
+    var tag = document.getElementById('pgw-media');
+    if (!tag) return null;
+    var arr;
+    try { arr = JSON.parse(tag.textContent); } catch (e) { return null; }
+    if (!arr || !arr.length) return null;
+    MEDIA = {};
+    for (var i = 0; i < arr.length; i++){ if (arr[i] && arr[i].s) MEDIA[arr[i].s] = arr[i].a || ''; }
+    return MEDIA;
+  }
+
+  /* the strip requests a RESIZED copy, so the stored name is looked up by the
+     filename stem with Shopify's _700x style suffix stripped -- still a filename
+     match, never an index guess */
+  function designForImg(img){
+    var M = media();
+    if (!M || !img) return '';
+    var file = ((img.getAttribute('src') || '').split('/').pop() || '').split('?')[0];
+    if (M[file] != null) return designOf(M[file]);
+    var stem = file.replace(/\.(png|jpg|jpeg|webp|gif)$/i, '').replace(/_\d+x\d*$/, '');
+    if (!stem) return '';
+    for (var k in M){
+      var ks = k.replace(/\.[^.]+$/, '');
+      if (ks === stem || ks.indexOf(stem) === 0 || stem.indexOf(ks) === 0) return designOf(M[k]);
+    }
+    return '';
+  }
 
   /* One clip per variant, in the product's own option order so the dots read
      left-to-right the same way the dropdown does. `v` must stay character-exact
@@ -232,7 +350,11 @@
       return d;
     });
 
-    stage.appendChild(prev); stage.appendChild(next); stage.appendChild(dots);
+    var nameEl = document.createElement('div');
+    nameEl.className = 'pgw-name';
+    nameEl.setAttribute('aria-hidden', 'true');
+
+    stage.appendChild(prev); stage.appendChild(next); stage.appendChild(dots); stage.appendChild(nameEl);
 
     /* pg-landing's own <video> is replaced only now that the stage is built, so
        a failure above leaves the original single video untouched on screen. */
@@ -345,6 +467,7 @@
         }
 
         front = incoming; cur = i; paintDots();
+        nameEl.textContent = VIDS[i].v;
       }
 
       /* drop the previous attempt's listener -- once:true only removes it if it
@@ -402,6 +525,79 @@
     show(start >= 0 ? start : 0);
     return true;
   }
+
+  /* ---- the same name pill under the photo strip ----
+     Driven by whichever photo is centred in the strip. Cheap enough to run on
+     an animation frame: the button centres are measured once and cached, and
+     re-measured only when the strip node, its length or its width changes, so a
+     frame costs a handful of subtractions and no layout read. */
+  var MIDS = null;
+  function stripLabel(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+    var btns = strip.querySelectorAll('button');
+    if (!btns.length) return;
+
+    if (!MIDS || MIDS.strip !== strip || MIDS.n !== btns.length || MIDS.w !== strip.clientWidth){
+      var v = [];
+      for (var i = 0; i < btns.length; i++) v.push(btns[i].offsetLeft + btns[i].offsetWidth / 2);
+      MIDS = {strip: strip, n: btns.length, w: strip.clientWidth, v: v};
+    }
+
+    /* the photo whose centre is nearest the strip's */
+    var mids = MIDS.v, mid = strip.scrollLeft + strip.clientWidth / 2, best = -1, bestD = Infinity;
+    for (var j = 0; j < mids.length; j++){
+      var d = Math.abs(mids[j] - mid);
+      if (d < bestD){ bestD = d; best = j; }
+    }
+    if (best < 0) return;
+
+    var text = designForImg(btns[best].querySelector('img'));
+    var tag = wrap.querySelector('.pgw-shot');
+    if (!text){ if (tag && tag.parentNode) tag.parentNode.removeChild(tag); return; }
+    if (!tag){
+      tag = document.createElement('div');
+      tag.className = 'pgw-shot';
+      tag.setAttribute('aria-hidden', 'true');
+      wrap.appendChild(tag);
+    }
+    if (tag.textContent !== text) tag.textContent = text;
+  }
+
+  /* `scroll` does not bubble, but it DOES capture, so listening on the document
+     catches the strip's own scrolling and survives pg-landing throwing the
+     gallery away and rebuilding it -- a listener bound to the strip node would
+     go with it. Repainted per animation frame rather than on a debounce: a
+     debounce is cleared by every new scroll event, so through a continuous swipe
+     the label would sit on the previous design until the finger lifted. */
+  var sraf = 0;
+  document.addEventListener('scroll', function(e){
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains('pgx-thumbs')) return;
+    if (!sraf) sraf = requestAnimationFrame(function(){ sraf = 0; stripLabel(); });
+  }, {capture: true, passive: true});
+
+  window.addEventListener('resize', function(){ MIDS = null; stripLabel(); }, {passive: true});
+
+  /* pg-landing rebuilds the gallery after its own fetch, which throws the pill
+     away and moves every button, so the cache is dropped and the label redrawn.
+     Appending the pill is itself a childList mutation, so this would loop if it
+     wrote on every pass -- it settles because a second pass with the same text
+     writes nothing. */
+  var pgxRoot = document.getElementById('pgx');
+  if (pgxRoot && window.MutationObserver){
+    var queuedLbl = false;
+    new MutationObserver(function(){
+      if (queuedLbl) return;
+      queuedLbl = true;
+      MIDS = null;
+      setTimeout(function(){ queuedLbl = false; stripLabel(); }, 80);
+    }).observe(pgxRoot, {childList: true, subtree: true});
+  }
+  stripLabel();
+  [300, 900, 2000, 4000].forEach(function(ms){ setTimeout(stripLabel, ms); });
 
   /* pg-landing renders .pgx-vid server-side, so it is normally there already;
      the retry only covers this section being evaluated before it. */

@@ -1,3 +1,48 @@
+# Wall art: design name on every video and every photo
+
+Mirrors the pill the orb page already carries (`pg-gallery-tweaks`), for the
+same reason: ten designs share one product page and nothing on screen said
+which one you were looking at.
+
+## The video
+Free -- the slideshow already knows which variant it is showing, so the pill is
+written from `VIDS[i].v` at the swap. The dots moved from `bottom:9px` to
+`bottom:46px` so the two do not sit on top of each other (measured 8px clear in
+the harness).
+
+## The photos
+The strip's own markup carries no design: pg-landing renders every thumbnail as
+"Holo Legends Wall Art view N". The names come from the product's MEDIA alt text
+instead, shipped inline as JSON so the first paint has them rather than waiting
+on a round trip.
+
+Matched on FILENAME, then keyword. Each button's `<img>` src is matched against
+the media list -- never button i to media[i+1], which works until the next
+upload and then labels every photo with its neighbour's. Shopify's `_700x` size
+suffix is stripped before the stem comparison. The matched alt is then read for
+a character and mapped to the variant that sells it.
+
+## Two ordering traps in the keyword table
+- The EX rule must sit above the plain Blastoise rule, or "Blastoise EX" lands
+  on Blastoise Evolution.
+- A rule matching the variant name outright must sit ABOVE everything, because
+  the trio's alt reads "Charizard Squirtle and Bulbasaur" -- the Squirtle rule
+  claimed it and labelled the hero shots Blastoise Evolution. Caught by a table
+  test over all 25 real alts before deploy, not on the page.
+
+A photo matching nothing gets NO label rather than a wrong one.
+
+## Data fix
+Two media items had empty alt text (the two hero shots) and so could never be
+labelled. Rather than hardcode their filenames, their alts were filled in on the
+product: "Legendary Poke Trio holographic wall art, ...". Better for
+accessibility and SEO too.
+
+## Verified
+Playwright harness with a ten-photo strip and the real section JS: all ten
+photos label correctly as the strip scrolls, the video pill follows the variant
+dropdown, and the dots clear the pill.
+
 # Wall art slideshow: frozen slides now recover on their own
 
 Third report of the same bug, so this one was reproduced in a browser rather
