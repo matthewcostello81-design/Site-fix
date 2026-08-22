@@ -1,0 +1,409 @@
+{%- comment -%}
+  PG Cart Imglink: the cart drawer's tap/scroll/layout fixes. Named for the
+  first; the rest live here because overlay-group is at Shopify's hard limit of
+  25 sections and this is the drawer's interaction file.
+
+  1. TAPPING A LINE ITEM'S PICTURE OPENS THAT PRODUCT.
+     The theme renders the thumbnail as <figure><picture><img> with no anchor
+     above it -- the only link in the row is the small title. A DELEGATED
+     listener is used rather than an <a> wrapper: the drawer is re-rendered
+     wholesale on every cart change and pg-cart-smooth's morph re-uses surviving
+     nodes, so a wrapper would have to be re-applied after every pass, and
+     re-parenting under the morph is what produced the old upsell "spazzing".
+     The href comes from the row's own product link, so the picture can never
+     point somewhere the row does not. The R36S case is excluded by handle (both
+     variants): it is a free gift with the console, not something to shop for.
+     Bails on any existing control, on a text selection, and on anything but an
+     unmodified primary click. Mobile only (760px).
+
+  2. THE FREE-3rd-ORB CHOOSER OPENED WHERE NOBODY COULD SEE IT.
+     The drawer DOES open. Measured at 390x844 with two orbs: .pg-unlock-pick
+     becomes display:block, 137px tall, select inside. It is COVERED.
+     .sticky-in-panel is position:sticky, bottom:-34px, z-index:5, opaque white,
+     291px tall; the offer row spans y=535..799 and the pane starts at y=553.
+
+     THE FIRST FIX WAS A SILENT NO-OP: it scrolled by the overlap, but this
+     scroller IGNORES scrollTop (assigning it reads back 0 -- measured twice).
+     The check that passed it only passed because that run happened to be clear
+     already. A verification that cannot fail is not a verification.
+
+     So the row is RAISED, not scrolled: while .is-open it takes z-index 6, one
+     above the pane's 5. That depends on nothing but stacking order. It does put
+     the picker over CHECKOUT, and that is the right trade -- the alternative is
+     a shopper who cannot pick their free orb at all. It lasts only while the row
+     is open, and the select opens as a native OS sheet, not an in-page dropdown.
+
+  3. THE DEAD SCROLL, AND THE WHITE SPACE UNDER CHECKOUT.
+     FREEZE: the scroller reports scrollHeight 1392 vs clientHeight 844 and
+     ignores scrollTop, so with overscroll-behavior at its default `auto` a drag
+     past the dead end CHAINS to the page behind and iOS spends a beat
+     rubber-banding the wrong element. `contain` keeps the gesture inside.
+
+     WHITE SPACE -- two wrong guesses first, recorded so they are not retried:
+       - bottom:-34px is NOT the cause. Forcing it to 0 measured WORSE: the
+         pane's bottom moved from y=844 (flush) to y=810, opening a real 34px
+         gap. That offset cancels the drawer's own 34px bottom padding.
+       - Chrome is not broken at all. At viewport heights 620/660/900/1000 the
+         gap measured 0 every time. It was never findable on desktop.
+
+     WHAT IT IS: .m6pn is position:fixed with height:100%, which on iOS Safari
+     resolves against the LAYOUT viewport (full screen, including the strip
+     behind the toolbar) while the shopper sees the shorter VISUAL viewport. So
+     the drawer's bottom edge is off-screen behind the toolbar and the last
+     visible thing is empty white drawer. Fixed by sizing .m6pn from
+     window.visualViewport.height and keeping it in step, plus margin-top:auto on
+     .sticky-in-panel so the pane pins to the bottom of the flex column when the
+     content is short. In Chrome visualViewport.height == innerHeight, so the
+     desktop that already measured correct does not move.
+
+  4. THE FREE-SHIPPING BAR MATCHES THE WORDMARK BOX ABOVE IT.
+     Measured, they agreed on nothing:
+       .pg-cart-mark  x=32 w=329 radius 12px  padding 11px 10px 9px  #0B0710
+       .nc-dship      x=55 w=284 radius 100px padding 7px 20px       transparent
+     The bar now takes the same margins (so it tracks the wordmark box at any
+     drawer width rather than being pinned to 329px), corners, padding and fill.
+
+  5. STARS EITHER SIDE OF THE WORDMARK.
+     Five four-point sparkles per side at five sizes, spread apart, at different
+     heights and brightnesses, each with a purple halo and an offset twinkle.
+     Injected rather than written into the markup because .nc-drawer-top is
+     rendered by pg-drawer and rebuilt on every cart change; re-applied on each
+     rebuild and aria-hidden, so the shop name is still announced once.
+{%- endcomment -%}
+<style>
+  /* --- 3. see note above --- */
+  /* .m6pn is a SIBLING of #cart, not a descendant -- measured: a `#cart .m6pn`
+     rule matched nothing. Listed bare, and #cart kept for the drawer itself. */
+  /* GATED ON THE DRAWER BEING OPEN. These two declarations turn the drawer into
+     a scroll container that swallows overscroll, which is right while it is on
+     screen and wrong the rest of the time: #cart and .m6pn are position:fixed at
+     the full size of the viewport on EVERY page, so unscoped this left a
+     full-screen scrollable overlay sitting over the site permanently. Measured
+     on a closed drawer: fixed, 0..844, overflow-y auto -- invisible and
+     pointer-events:none, but still a scroller as far as the engine is concerned,
+     which is the sort of thing iOS gets strange about at the end of a page.
+     html.m6pn-open is the theme's own open-state class (confirmed: absent when
+     closed, present when open). Reported as the page sticking at the bottom on
+     mobile; not reproducible in headless Chromium, so this is the most likely
+     cause removed rather than a confirmed fix. */
+  html.m6pn-open #cart,
+  html.m6pn-open .m6pn,
+  html.m6pn-open #cart .l4ca{
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  /* --- 3. the pane sits at the bottom of the drawer column -- see note above --- */
+  #cart .sticky-in-panel{margin-top:auto}
+
+  /* --- 2. an OPEN chooser paints above the pinned pane -- see note above.
+     Only while .is-open, so nothing overlaps CHECKOUT in the normal state. --- */
+  #cart .pg-unlock.is-open{position:relative;z-index:6}
+  #cart .pg-unlock.is-open .pg-unlock-pick{position:relative;z-index:6}
+
+  /* --- 4. the free-shipping bar wears the wordmark box's shape --- */
+  #cart .nc-dship,
+  .nc-drawer-top .nc-dship{
+    display:flex !important;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    width:auto !important;
+    margin:0 0 8px !important;
+    padding:11px 10px 9px !important;
+    border-radius:12px !important;
+    background:#0B0710 !important;
+    /* was #E4D9F0 -- a lavender at 11.5px/800 on #0B0710, which is the darkest
+       surface in the drawer. It is the first thing in the cart and it was the
+       hardest to read; white, and the truck with it. */
+    color:#FFFFFF !important;
+  }
+  #cart .nc-dship svg,
+  .nc-drawer-top .nc-dship svg{stroke:#FFFFFF !important;stroke-width:2.2 !important}
+
+  /* --- 5. the stars ---
+     Not a row of identical glyphs. The reference is a little scatter of
+     four-point sparkles at five sizes, sitting at different heights and
+     brightnesses, each with a purple halo -- so they read as glints rather than
+     as punctuation. Sizes and offsets are per-star classes; the right-hand group
+     is the same markup mirrored, so the pair frames the wordmark evenly. */
+  #cart .pg-cart-star,
+  .nc-drawer-top .pg-cart-star{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    vertical-align:middle;
+    pointer-events:none;
+    line-height:1;
+  }
+  #cart .pg-cart-star i,
+  .nc-drawer-top .pg-cart-star i{
+    font-style:normal;
+    color:#C89BF0;
+    line-height:1;
+    /* the halo: a tight bright core and a wider soft bloom */
+    text-shadow:0 0 6px rgba(200,155,240,.95), 0 0 16px rgba(150,80,220,.7);
+  }
+  #cart .pg-cart-star .pg-st-a,
+  .nc-drawer-top .pg-cart-star .pg-st-a{font-size:21px;opacity:1;transform:translateY(-6px)}
+  #cart .pg-cart-star .pg-st-b,
+  .nc-drawer-top .pg-cart-star .pg-st-b{font-size:12px;opacity:.85;transform:translateY(6px)}
+  #cart .pg-cart-star .pg-st-c,
+  .nc-drawer-top .pg-cart-star .pg-st-c{font-size:16px;opacity:.95;transform:translateY(-2px)}
+  #cart .pg-cart-star .pg-st-d,
+  .nc-drawer-top .pg-cart-star .pg-st-d{font-size:9px;opacity:.7;transform:translateY(-8px)}
+  #cart .pg-cart-star .pg-st-e,
+  .nc-drawer-top .pg-cart-star .pg-st-e{font-size:14px;opacity:.8;transform:translateY(4px)}
+
+  #cart .pg-cart-star.pg-cs-l,
+  .nc-drawer-top .pg-cart-star.pg-cs-l{margin-right:11px}
+  #cart .pg-cart-star.pg-cs-r,
+  .nc-drawer-top .pg-cart-star.pg-cs-r{margin-left:11px;flex-direction:row-reverse}
+
+  @media (prefers-reduced-motion:no-preference){
+    #cart .pg-cart-star .pg-st-a,
+    .nc-drawer-top .pg-cart-star .pg-st-a{animation:pgStarTwinkle 3.4s ease-in-out infinite}
+    #cart .pg-cart-star .pg-st-b,
+    .nc-drawer-top .pg-cart-star .pg-st-b{animation:pgStarTwinkle 3.4s ease-in-out infinite .9s}
+    #cart .pg-cart-star .pg-st-c,
+    .nc-drawer-top .pg-cart-star .pg-st-c{animation:pgStarTwinkle 3.4s ease-in-out infinite 1.8s}
+    #cart .pg-cart-star .pg-st-d,
+    .nc-drawer-top .pg-cart-star .pg-st-d{animation:pgStarTwinkle 3.4s ease-in-out infinite 2.4s}
+    #cart .pg-cart-star .pg-st-e,
+    .nc-drawer-top .pg-cart-star .pg-st-e{animation:pgStarTwinkle 3.4s ease-in-out infinite 1.3s}
+  }
+  @keyframes pgStarTwinkle{
+    0%,100%{filter:brightness(1)}
+    50%    {filter:brightness(1.45)}
+  }
+
+  @media (max-width:760px){
+    /* make the picture read as tappable: a pointer, a suppressed grey iOS tap
+       flash (the row supplies its own feedback below), and no long-press image
+       callout, which otherwise offers "Save Image" instead of following it */
+    #cart .l4ca li figure{
+      cursor:pointer;
+      -webkit-tap-highlight-color:transparent;
+      -webkit-touch-callout:none;
+    }
+    #cart .l4ca li figure img{pointer-events:none}
+    /* a brief press state so the tap is acknowledged even before the page moves */
+    #cart .l4ca li figure:active{opacity:.72;transition:opacity .06s ease}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartImgLink) return; window.pgCartImgLink = 1;
+
+  /* Products whose picture is NOT a link. Matched on a handle FRAGMENT so the
+     rule survives the handle being renamed around it (the case's handle carries
+     a "-free-gift" suffix today). Both of the case's variants -- the free one
+     and the paid spare -- share this handle, so both are covered. */
+  var SKIP = ['r36s-protective-case'];
+
+  function excluded(href){
+    for (var i = 0; i < SKIP.length; i++){
+      if (href.indexOf(SKIP[i]) > -1) return true;
+    }
+    return false;
+  }
+
+  /* The row's own product link is the source of truth for where the picture
+     should go: it is what the theme itself rendered for this line, so the
+     picture can never point somewhere the row does not. */
+  function hrefFor(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    return a ? a.getAttribute('href') : '';
+  }
+
+  document.addEventListener('click', function(e){
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (!window.matchMedia('(max-width:760px)').matches) return;
+
+    var fig = e.target.closest && e.target.closest('#cart .l4ca li figure');
+    if (!fig) return;
+
+    /* never take a tap that belongs to a control that was already there */
+    if (e.target.closest('a, button, input, select, textarea, label, [role="button"]')) return;
+
+    /* a tap that ends a text selection is not a tap on the picture */
+    var sel = window.getSelection && window.getSelection();
+    if (sel && sel.type === 'Range' && String(sel).length) return;
+
+    var li = fig.closest('li');
+    if (!li) return;
+
+    var href = hrefFor(li);
+    if (!href || excluded(href)) return;
+
+    e.preventDefault();
+    window.location.href = href;
+  }, true);
+
+  /* ---- 2. bring the free-orb chooser out from behind the pinned pane ---- */
+  /* THE SCROLLER IS THE DRAWER, OR IT IS NOBODY.
+
+     This used to fall back to `document.querySelector('#cart .m6pn') ||
+     document.querySelector('.m6pn')` when the walk up from the item list found
+     nothing scrollable. The first of those can never match -- .m6pn IS #cart,
+     not a descendant of it -- so the fallback was always the second, which is
+     the FIRST PANEL IN THE DOCUMENT: on most pages the nav drawer, not the
+     cart. So whenever the cart drawer was not itself scrollable (which rule 2b
+     in pg-cart-mobile deliberately makes the common case) this scrolled an
+     unrelated, off-screen panel and reported success.
+
+     Bounded to the cart now, and only while it actually has somewhere to go. */
+  function scroller(){
+    var cart = document.getElementById('cart');
+    var el = document.querySelector('#cart .l4ca');
+    while (el && el !== document.body){
+      var s = getComputedStyle(el);
+      if (/auto|scroll/.test(s.overflowY) && el.scrollHeight > el.clientHeight + 4) return el;
+      if (el === cart) break;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  function reveal(){
+    try {
+      var pick = document.querySelector('#cart .pg-unlock.is-open .pg-unlock-pick');
+      if (!pick) return;
+      var pane = document.querySelector('#cart .sticky-in-panel');
+      if (!pane) return;
+      var pk = pick.getBoundingClientRect();
+      var pn = pane.getBoundingClientRect();
+      var over = pk.bottom - pn.top;          /* how far the picker runs under the pane */
+      if (over <= 0) return;                  /* already clear: never jump for nothing */
+
+      /* ONE SCROLL COMMAND, NOT TWO.
+
+         This fired scrollIntoView({behavior:'smooth'}) and then immediately
+         added to the same element's scrollTop. Two targets, issued in the same
+         task, against a container the theme gives `scroll-behavior: smooth`
+         (async-panels.css, .m6pn) -- so BOTH are animated, and the second
+         retargets an animation the first had just started, from wherever it had
+         got to rather than from where it began. reveal() is called twice per
+         selection (260ms and 900ms), so the drawer is left chasing up to four
+         overlapping animations, and a wheel or trackpad gesture arriving during
+         any of them is overridden by the next frame of the one in flight: the
+         cart slides on its own and refuses to be scrolled by hand.
+
+         scrollIntoView is also the wrong one to keep. `block:'center'` targets
+         a position the pinned pane can make unsatisfiable -- centre a picker
+         taller than half the scrollport and its bottom is still under the pane
+         -- and it scrolls EVERY scrollable ancestor, so on desktop it moves the
+         page behind the drawer as well.
+
+         What is actually wanted is one bounded nudge, by exactly the overlap
+         that was measured, inside the drawer only. That is the scrollTop line;
+         `behavior:'auto'` opts out of the theme's smooth default so the nudge
+         lands in one frame and nothing is left animating for a gesture to fight.
+         It is still best-effort: the z-index rule above is what makes the picker
+         usable, this only tidies its position. */
+      var sc = scroller();
+      if (!sc) return;
+      var want = Math.min(sc.scrollTop + over + 14, sc.scrollHeight - sc.clientHeight);
+      if (want - sc.scrollTop < 1) return;
+      if (sc.scrollTo) sc.scrollTo({top: want, behavior: 'auto'});
+      else sc.scrollTop = want;
+    } catch(e){ /* a failed scroll must never break the cart */ }
+  }
+
+  /* ---- 3. the drawer ends where the shopper's screen ends ----
+     see the note above: height:100% on a fixed element is the LAYOUT viewport on
+     iOS, which is taller than what is visible whenever the browser toolbar is
+     up. visualViewport reports the visible box, so the drawer is sized from it
+     and kept in step. Guarded on the API existing, and a no-op in browsers where
+     the two are already equal. */
+  function fitDrawer(){
+    try {
+      var vv = window.visualViewport;
+      if (!vv) return;
+      var aside = document.querySelector('.m6pn');
+      if (!aside) return;
+      /* only while the drawer is actually open, and only on a phone. This used
+         to stamp an inline height on the closed drawer on every mobile page --
+         a permanent inline size on a full-screen fixed overlay nobody was
+         looking at. Same reasoning as the CSS gate above. */
+      var open = document.documentElement.classList.contains('m6pn-open');
+      if (!open || !window.matchMedia('(max-width:760px)').matches){
+        aside.style.removeProperty('height');
+        aside.removeAttribute('data-pg-h');
+        return;
+      }
+      var h = Math.round(vv.height);
+      if (aside.getAttribute('data-pg-h') === String(h)) return;   /* settle */
+      aside.setAttribute('data-pg-h', String(h));
+      aside.style.setProperty('height', h + 'px', 'important');
+    } catch(e){}
+  }
+  fitDrawer();
+  if (window.visualViewport){
+    window.visualViewport.addEventListener('resize', fitDrawer);
+    window.visualViewport.addEventListener('scroll', fitDrawer);
+  }
+  window.addEventListener('resize', fitDrawer);
+  window.addEventListener('orientationchange', function(){ setTimeout(fitDrawer, 250); });
+  /* the gate above means the drawer must be measured as it OPENS, not only when
+     the viewport changes -- the open-state class lands on <html>, which the
+     #cart observer below does not watch */
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    if (!e.target.closest('[href="/cart"], .pgx-cart, .nc-cart-toggle, #pg-cartfab, [data-cart-toggle]')) return;
+    [120, 400, 900].forEach(function(ms){ setTimeout(fitDrawer, ms); });
+  }, true);
+
+  /* ---- 5. stars either side of the wordmark ---- */
+  function stars(){
+    try {
+      var mark = document.querySelector('.nc-drawer-top .pg-cart-mark');
+      if (!mark) return;
+      if (mark.querySelector('.pg-cart-star')) return;     /* already dressed */
+      var word = mark.querySelector('.pg-wordmark');
+      if (!word) return;
+      var l = document.createElement('span');
+      l.className = 'pg-cart-star pg-cs-l';
+      l.setAttribute('aria-hidden', 'true');
+      /* five per side, no two the same size -- the CSS above spaces them out */
+      l.innerHTML = '<i class="pg-st-d">✦</i>' +
+                    '<i class="pg-st-b">✦</i>' +
+                    '<i class="pg-st-a">✦</i>' +
+                    '<i class="pg-st-e">✦</i>' +
+                    '<i class="pg-st-c">✦</i>';
+      var r = l.cloneNode(true);
+      r.className = 'pg-cart-star pg-cs-r';
+      mark.insertBefore(l, word);
+      if (word.nextSibling) mark.insertBefore(r, word.nextSibling);
+      else mark.appendChild(r);
+    } catch(e){}
+  }
+  stars();
+
+  /* the drawer is rebuilt wholesale on every cart change, which throws both of
+     the above away -- re-apply on each rebuild */
+  if (window.MutationObserver){
+    var drawerEl = document.getElementById('cart') || document.querySelector('.m6pn');
+    if (drawerEl){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; fitDrawer(); stars(); }, 120);
+      }).observe(drawerEl, {childList: true, subtree: true});
+    }
+  }
+  [400, 1200, 2600].forEach(function(t){ setTimeout(function(){ fitDrawer(); stars(); }, t); });
+
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    if (!e.target.closest('.pg-unlock-add')) return;
+    /* the panel is built after a fetch, so look once it can exist, then again
+       in case the drawer re-rendered under it */
+    setTimeout(reveal, 260);
+    setTimeout(reveal, 900);
+  }, true);
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Imglink", "settings": [], "presets": [{"name": "PG Cart Imglink"}]}
+{% endschema %}
