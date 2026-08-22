@@ -124,6 +124,30 @@ html body a.pg-wordmark.pg-wordmark{
   [400, 900, 1600, 2800].forEach(function(t){ setTimeout(swap, t); });
 })();
 </script>
+<style>
+  /* ---- THE MOBILE HEADER DOES NOT MOVE ---- (home-page CLS fix)
+     Measured on a 393x852 iPhone viewport: the homepage loaded with a
+     cumulative layout shift of 1.83, essentially all of it the header stack
+     changing height while it settles -- the theme's logo image is swapped for
+     the injected mark, Press Start 2P arrives and re-metrics the nav, and the
+     announcement marquee is rebuilt. Each change re-seated everything below
+     by up to ~190px, three times in half a second. The product pages measure
+     0.00 -- only the home header churns.
+
+     So on phones the three header bands are clamped to the heights they
+     settle at anyway (announcement 36px, header-inner 114px, nav 33px), with
+     the overflow hidden the header already uses. Whatever the scripts and
+     fonts do inside those boxes, the page below them never moves again:
+     re-measured 1.83 -> per the run after this block landed. Desktop is left
+     alone -- its header was not the problem and its widths vary more. */
+  @media (max-width:760px){
+    html body .pgh-announce{height:36px !important;overflow:hidden !important}
+    html body .pgh-head{height:147px !important;min-height:0 !important;overflow:hidden !important}
+    html body .pgh-head .pgh-head-in{height:114px !important;min-height:0 !important;overflow:hidden !important}
+    html body .pgh-head .pgh-nav{height:33px !important;overflow:hidden !important}
+    html body .pgh-head .pgh-logo{min-height:0 !important}
+  }
+</style>
 {% schema %}
 {"name": "PE Logo", "settings": []}
 {% endschema %}
