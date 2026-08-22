@@ -212,7 +212,7 @@
       stage.appendChild(v);
       return v;
     }
-    var a = mk(), b = mk(), front = a, cur = -1, token = 0, inflight = null;
+    var a = mk(), b = mk(), front = a, cur = -1, want = -1, token = 0, inflight = null;
 
     var prev = document.createElement('button');
     prev.type = 'button'; prev.className = 'pgw-arrow prev';
@@ -240,29 +240,61 @@
     box.appendChild(stage);
 
     function paintDots(){
-      dotEls.forEach(function(d, i){ d.classList.toggle('on', i === cur); });
+      dotEls.forEach(function(d, i){ d.classList.toggle('on', i === want); });
     }
 
-    /* Ask a video to play and make sure it actually did. A single play() call is
-       not enough: it can be refused, or land while the element is still being
-       reset by load(), and a refusal leaves a frozen first frame with no error
-       anywhere. Re-asks a few times, and stops the moment the clip is running or
-       another slide has been requested. Also re-asserts this clip's playback
-       rate, which a load() in flight can have reset back to 1. */
-    function kick(v, mine, rate){
-      var n = 0;
-      (function again(){
-        if (mine !== token) return;
-        if (v.playbackRate !== rate) v.playbackRate = rate;
-        if (!v.paused) return;
+    /* THE SUPERVISOR -- a frozen slide fixes itself within a second.
+
+       This replaced a burst of retries fired once per swap, which looked right
+       and protected almost nothing: play() flips `paused` to false the moment it
+       is called, long before a frame is on screen, so the retry loop saw
+       "playing" on its first look and stopped. Anything that stopped playback
+       AFTER that -- a rejected play promise, a stall while the opening clip was
+       still hogging the connection, a decode hiccup, the tab being backgrounded
+       -- left a still frame with nothing watching it. That matches the report
+       exactly: the clip sat frozen, and paging away and back (a fresh load, by
+       then cached) played it.
+
+       So playback is judged on whether currentTime actually MOVES, not on the
+       paused flag, and it is judged forever rather than for one second after a
+       swap. Every clip loops, so a running slide always advances; a slide that
+       has not advanced between two ticks is wrong no matter how it got there,
+       and gets another play(). Calling play() on a video that is already playing
+       is a no-op, so the common path costs nothing. */
+    var lastT = -1, lastFront = null;
+    setInterval(function(){
+      var v = front;
+      if (!v || !v.getAttribute('src')) return;
+      if (v !== lastFront){ lastFront = v; lastT = -1; }   /* new slide: no history yet */
+
+      var rate = (cur >= 0 && VIDS[cur]) ? VIDS[cur].r : 1;
+      if (v.playbackRate !== rate) v.playbackRate = rate;
+
+      var t = v.currentTime;
+      var moved = (lastT >= 0) && (t > lastT + 0.01 || t < lastT);  /* t < lastT = looped */
+      var stuck = v.paused || (lastT >= 0 && !moved && v.readyState >= 2);
+      lastT = t;
+      if (stuck){
         var p = v.play();
         if (p && p.catch) p.catch(function(){});
-        if (++n < 5) setTimeout(again, 250);
-      })();
+      }
+    }, 700);
+
+    /* Last resort: if the browser refused to autoplay this element outright, the
+       first tap or key anywhere on the page is a user gesture and lifts that
+       block. Costs nothing when playback is already fine. */
+    function nudge(){
+      var v = front;
+      if (v && v.paused){ var p = v.play(); if (p && p.catch) p.catch(function(){}); }
     }
+    ['pointerdown','touchstart','keydown'].forEach(function(ev){
+      document.addEventListener(ev, nudge, true);
+    });
 
     function show(i){
-      if (i < 0 || i >= VIDS.length || i === cur) return;
+      if (i < 0 || i >= VIDS.length || i === want) return;
+      want = i;                            /* the slide ASKED for, updated now */
+      paintDots();
 
       /* WHICH ELEMENT THE CLIP LOADS INTO. Normally the one that is not on
          screen. But when a slide is ALREADY loading, that pending element is the
@@ -313,7 +345,6 @@
         }
 
         front = incoming; cur = i; paintDots();
-        kick(incoming, mine, VIDS[i].r);
       }
 
       /* drop the previous attempt's listener -- once:true only removes it if it
@@ -329,8 +360,14 @@
       setTimeout(swap, 1800);
     }
 
-    prev.addEventListener('click', function(){ show((cur - 1 + VIDS.length) % VIDS.length); });
-    next.addEventListener('click', function(){ show((cur + 1) % VIDS.length); });
+    /* Stepped from `want`, not `cur`. `cur` only moves once a clip has loaded, so
+       on a slow connection every click during the wait recomputed the SAME
+       neighbour and restarted the same download -- measured in a throttled
+       harness, six clicks advanced the slideshow by one slide and kept
+       cancelling the load that would have ended the wait. Stepping from what was
+       last requested makes each click count. */
+    prev.addEventListener('click', function(){ show((want - 1 + VIDS.length) % VIDS.length); });
+    next.addEventListener('click', function(){ show((want + 1) % VIDS.length); });
 
     function indexOf(s){
       if (!s) return -1;

@@ -1,3 +1,49 @@
+# Wall art slideshow: frozen slides now recover on their own
+
+Third report of the same bug, so this one was reproduced in a browser rather
+than reasoned about: a local harness (Chromium via Playwright) running this
+file's real JS against ten throttled test clips.
+
+## What the harness showed
+The A/B swap logic is sound -- every timing case tried (slow first byte, the
+1800ms fallback firing before any data, rapid variant changes) landed on the
+right clip, playing. What it did NOT do was recover. Forcing a stall on the
+front video, the deployed code left it frozen indefinitely; there was nothing
+watching playback after the swap.
+
+The old `kick()` retry looked like that watchdog and was not one: `play()` flips
+`paused` to false the moment it is called, well before a frame renders, so the
+loop saw "playing" on its first look and exited. Anything that stopped playback
+after that -- a rejected play promise, a stall while the opening clip still had
+the connection, a decode hiccup, a backgrounded tab -- was unprotected. That
+fits the report: frozen clip, fixed by paging away and back (a fresh load, by
+then cached).
+
+Why the two slides nearest the start: they are the ones requested while the
+opening clip is still downloading, so they are the ones that stall.
+
+## Fix
+A permanent supervisor on a 700ms tick judges playback by whether `currentTime`
+actually MOVES, not by the `paused` flag, and keeps judging for the life of the
+page rather than for one second after a swap. Every clip loops, so a running
+slide always advances; one that has not advanced between two ticks gets another
+`play()`. `play()` on an already-playing video is a no-op, so the common path
+costs nothing. It also re-asserts the clip's playback rate each tick.
+
+Backstop: a capture-phase `pointerdown`/`touchstart`/`keydown` listener nudges
+the front video if it is paused, so an outright autoplay refusal is cleared by
+the first interaction anywhere on the page.
+
+Measured in the harness: forced stall recovers in under 1.6s, where the previous
+build stayed frozen for as long as it was watched.
+
+## Also fixed, found while reproducing
+Arrows stepped from `cur`, which only moves once a clip has loaded. On a
+throttled connection six clicks advanced the slideshow by ONE slide, each click
+recomputing the same neighbour and cancelling the download that would have ended
+the wait. They now step from `want` -- the slide last requested -- so every
+click counts, and the dots light up on request rather than on arrival.
+
 # Wall art slideshow: playback speed is per clip
 
 ## Change
