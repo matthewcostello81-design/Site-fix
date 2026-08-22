@@ -1,3 +1,27 @@
+# Wall art slideshow: original video's shape, cropped to fill
+
+## Change
+The slideshow stage is now 990x1080 -- the natural size of the original gallery
+video, which is what set the height of that slot before there was a slideshow
+(pg-landing gives the video no aspect at all). Slides use `object-fit:cover`
+instead of `contain`.
+
+## Why contain was wrong
+The nine new clips are 1920x1080 files with portrait footage pillarboxed inside
+them: the black bars are baked into the frames, not letterboxing added by the
+layout. Reading them as genuine 16:9 content, the first version sized the stage
+to 16:9 and fitted each file inside it, which kept every one of those baked-in
+bars on screen and shrank the footage to boot.
+
+`cover` scales the file until it fills the box and crops whatever overflows --
+and against a portrait box, what overflows a pillarboxed file is exactly those
+bars. Do not switch this back to `contain` without re-encoding the clips to
+portrait first.
+
+## Mobile
+Unchanged in effect: still the 1:1 square. The per-breakpoint `object-fit`
+override is gone because `cover` is now the rule at every width.
+
 # Wall art: per-variant video slideshow
 
 ## Change

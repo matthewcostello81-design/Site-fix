@@ -42,11 +42,20 @@
   outgoing one is paused after the fade. Nothing but the first clip is fetched
   until a shopper actually asks for it.
 
-  ASPECT. Nine of the ten clips are 16:9; the original Legendary Poke Trio clip
-  is portrait (990x1080). The desktop stage is locked to 16:9 with object-fit
-  contain, so a variant change never changes the height of the gallery column --
-  the odd portrait clip letterboxes against the dark ground instead. Mobile
-  keeps pg-landing's existing 1:1 cover behaviour.
+  ASPECT. The stage is the shape of the ORIGINAL gallery video, 990x1080, which
+  is what the slot looked like before there was a slideshow -- pg-landing gave
+  the video no aspect at all, so its natural size set the height of the box.
+  Every slide is held to that one shape, so changing variant never moves the
+  page.
+
+  The nine newer clips are delivered as 1920x1080 files with the portrait
+  footage pillarboxed inside them -- the black bars are baked into the frames,
+  they are not letterboxing added by the layout. object-fit CONTAIN was the
+  first attempt and it was wrong twice over: it fits the whole 16:9 file into
+  the box, so the baked-in bars stay on screen AND the footage shrinks. COVER
+  scales the file until it fills the box and crops the overflow, and what
+  overflows a portrait box on a pillarboxed file is precisely those bars. Do not
+  switch this back to contain without re-encoding the clips to portrait first.
 
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
@@ -64,11 +73,11 @@
   }
 
   /* ---- the video slideshow ---- */
-  #pgx .pgx-vid .pgw-stage{position:relative;width:100%;aspect-ratio:16/9;background:#0d0d0d}
+  #pgx .pgx-vid .pgw-stage{position:relative;width:100%;aspect-ratio:990/1080;background:#0d0d0d}
   #pgx .pgx-vid .pgw-v{
     position:absolute !important;inset:0 !important;
     width:100% !important;height:100% !important;
-    object-fit:contain !important;display:block !important;
+    object-fit:cover !important;display:block !important;
     opacity:0;transition:opacity .28s ease;
   }
   #pgx .pgx-vid .pgw-v.on{opacity:1}
@@ -119,7 +128,6 @@
   /* mobile keeps pg-landing's square-crop behaviour for the gallery slot */
   @media (max-width:900px){
     #pgx .pgx-vid .pgw-stage{aspect-ratio:1/1}
-    #pgx .pgx-vid .pgw-v{object-fit:cover !important}
   }
 </style>
 <script>
