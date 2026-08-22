@@ -25,7 +25,8 @@
      variant, and selecting a design anywhere on the page -- the buy-box
      dropdowns or the variant picker inside the cart drawer -- moves the
      slideshow to that design's clip. Arrows and dots page through it by hand.
-     Every clip plays at 2.5x; see RATE in the script.
+     The nine newer clips play at 2.5x, the original at normal speed; the rate
+     is per clip, as `r` in the script.
 
   WHY THE SLIDESHOW IS BUILT IN JS RATHER THAN IN pg-landing. That section is
   shared by the homepage and five product templates and renders ONE video from
@@ -163,14 +164,6 @@
   var hero = document.getElementById('pgx-hero-img');
   if (hero) hero.removeAttribute('src');
 
-  /* Every clip plays at 2.5x. Set in three places on purpose: defaultPlaybackRate
-     so a load() cannot reset it (load() restores the element to its defaults, and
-     playbackRate alone is one of the things it resets), playbackRate again at the
-     swap for browsers that do not honour the default, and once more from the play
-     watchdog, which is the only code that runs after a retried play(). Anything
-     that sets the rate BEFORE the source is attached is not enough on its own. */
-  var RATE = 2.5;
-
   /* One clip per variant, in the product's own option order so the dots read
      left-to-right the same way the dropdown does. `v` must stay character-exact
      with the variant option value -- that string IS the key the buy-box selects
@@ -178,18 +171,27 @@
      slideshow at the right clip. Renaming a variant in Shopify without editing
      this list leaves that one design falling back to slide 0. `z` is how far
      that clip has to be zoomed to push its baked-in pillarbox off the edges of
-     the box; see the ASPECT note above before changing one. */
+     the box; see the ASPECT note above before changing one.
+
+     `r` is playback speed, per clip rather than one global rate: the nine newer
+     ones run at 2.5x and the original at its own pace. It is applied in three
+     places on purpose -- defaultPlaybackRate before the source is attached,
+     because load() resets an element to its defaults and playbackRate is one of
+     the things it clears; playbackRate at the swap, for browsers that do not
+     carry the default onto a newly attached source; and once more from the play
+     watchdog, the only code that runs after a retried play(). Setting it in any
+     one of those alone is not enough. */
   var VIDS = [
-    {z: 1, v: "Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/372c232efb264da688df7ddecba254c7/372c232efb264da688df7ddecba254c7.HD-720p-4.5Mbps-92098881.mp4"},
-    {z: 1.66, v: "Blue Eyes, Dark Magician, Red Eyes", u: "https://cdn.shopify.com/videos/c/vp/9d6a76bbc7504f589d013b52660475b2/9d6a76bbc7504f589d013b52660475b2.HD-720p-4.5Mbps-92296781.mp4"},
-    {z: 1.66, v: "Gengar Evolution", u: "https://cdn.shopify.com/videos/c/vp/34da042ae6e64494be9fdfcbfc58b43d/34da042ae6e64494be9fdfcbfc58b43d.HD-720p-3.0Mbps-92296780.mp4"},
-    {z: 1.66, v: "Blastoise Evolution", u: "https://cdn.shopify.com/videos/c/vp/d5d5246b3616411ca0ed05f1b982f44c/d5d5246b3616411ca0ed05f1b982f44c.HD-720p-3.0Mbps-92296779.mp4"},
-    {z: 1.66, v: "EX Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/8a2173f6b8ca40c2b5819534a0be89f9/8a2173f6b8ca40c2b5819534a0be89f9.HD-720p-4.5Mbps-92296778.mp4"},
-    {z: 1.66, v: "Eeveelutions", u: "https://cdn.shopify.com/videos/c/vp/74b84084bd414500a949f60c972172b0/74b84084bd414500a949f60c972172b0.HD-720p-3.0Mbps-92296777.mp4"},
-    {z: 1.66, v: "Mewtwo EX, V, V Star", u: "https://cdn.shopify.com/videos/c/vp/28bedf6bfa444dc68d3aa93170d0f0d8/28bedf6bfa444dc68d3aa93170d0f0d8.HD-720p-2.1Mbps-92296776.mp4"},
-    {z: 1.66, v: "One Piece", u: "https://cdn.shopify.com/videos/c/vp/79e22ac3490d404f80990b5e764ec531/79e22ac3490d404f80990b5e764ec531.HD-720p-3.0Mbps-92296775.mp4"},
-    {z: 1.66, v: "Dragon Ball", u: "https://cdn.shopify.com/videos/c/vp/8c2e1751c07744dd9846e44ad1050462/8c2e1751c07744dd9846e44ad1050462.HD-720p-3.0Mbps-92296774.mp4"},
-    {z: 1.66, v: "Goku", u: "https://cdn.shopify.com/videos/c/vp/1a5d4284598e442da8c01b753ee09909/1a5d4284598e442da8c01b753ee09909.HD-720p-2.1Mbps-92296773.mp4"}
+    {z: 1, r: 1, v: "Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/372c232efb264da688df7ddecba254c7/372c232efb264da688df7ddecba254c7.HD-720p-4.5Mbps-92098881.mp4"},
+    {z: 1.66, r: 2.5, v: "Blue Eyes, Dark Magician, Red Eyes", u: "https://cdn.shopify.com/videos/c/vp/9d6a76bbc7504f589d013b52660475b2/9d6a76bbc7504f589d013b52660475b2.HD-720p-4.5Mbps-92296781.mp4"},
+    {z: 1.66, r: 2.5, v: "Gengar Evolution", u: "https://cdn.shopify.com/videos/c/vp/34da042ae6e64494be9fdfcbfc58b43d/34da042ae6e64494be9fdfcbfc58b43d.HD-720p-3.0Mbps-92296780.mp4"},
+    {z: 1.66, r: 2.5, v: "Blastoise Evolution", u: "https://cdn.shopify.com/videos/c/vp/d5d5246b3616411ca0ed05f1b982f44c/d5d5246b3616411ca0ed05f1b982f44c.HD-720p-3.0Mbps-92296779.mp4"},
+    {z: 1.66, r: 2.5, v: "EX Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/8a2173f6b8ca40c2b5819534a0be89f9/8a2173f6b8ca40c2b5819534a0be89f9.HD-720p-4.5Mbps-92296778.mp4"},
+    {z: 1.66, r: 2.5, v: "Eeveelutions", u: "https://cdn.shopify.com/videos/c/vp/74b84084bd414500a949f60c972172b0/74b84084bd414500a949f60c972172b0.HD-720p-3.0Mbps-92296777.mp4"},
+    {z: 1.66, r: 2.5, v: "Mewtwo EX, V, V Star", u: "https://cdn.shopify.com/videos/c/vp/28bedf6bfa444dc68d3aa93170d0f0d8/28bedf6bfa444dc68d3aa93170d0f0d8.HD-720p-2.1Mbps-92296776.mp4"},
+    {z: 1.66, r: 2.5, v: "One Piece", u: "https://cdn.shopify.com/videos/c/vp/79e22ac3490d404f80990b5e764ec531/79e22ac3490d404f80990b5e764ec531.HD-720p-3.0Mbps-92296775.mp4"},
+    {z: 1.66, r: 2.5, v: "Dragon Ball", u: "https://cdn.shopify.com/videos/c/vp/8c2e1751c07744dd9846e44ad1050462/8c2e1751c07744dd9846e44ad1050462.HD-720p-3.0Mbps-92296774.mp4"},
+    {z: 1.66, r: 2.5, v: "Goku", u: "https://cdn.shopify.com/videos/c/vp/1a5d4284598e442da8c01b753ee09909/1a5d4284598e442da8c01b753ee09909.HD-720p-2.1Mbps-92296773.mp4"}
   ];
 
   function boot(){
@@ -207,7 +209,6 @@
       v.setAttribute('loop','');
       v.setAttribute('playsinline','');
       v.setAttribute('preload','none');     /* nothing is fetched until a slide is asked for */
-      v.defaultPlaybackRate = RATE; v.playbackRate = RATE;
       stage.appendChild(v);
       return v;
     }
@@ -246,13 +247,13 @@
        not enough: it can be refused, or land while the element is still being
        reset by load(), and a refusal leaves a frozen first frame with no error
        anywhere. Re-asks a few times, and stops the moment the clip is running or
-       another slide has been requested. Also re-asserts the playback rate, which
-       a load() in flight can have reset back to 1. */
-    function kick(v, mine){
+       another slide has been requested. Also re-asserts this clip's playback
+       rate, which a load() in flight can have reset back to 1. */
+    function kick(v, mine, rate){
       var n = 0;
       (function again(){
         if (mine !== token) return;
-        if (v.playbackRate !== RATE) v.playbackRate = RATE;
+        if (v.playbackRate !== rate) v.playbackRate = rate;
         if (!v.paused) return;
         var p = v.play();
         if (p && p.catch) p.catch(function(){});
@@ -294,7 +295,7 @@
         var outgoing = front;
 
         incoming.style.transform = 'scale(' + VIDS[i].z + ')';
-        incoming.playbackRate = RATE;
+        incoming.playbackRate = VIDS[i].r;
         incoming.classList.add('on');
         var p = incoming.play();
         if (p && p.catch) p.catch(function(){});
@@ -312,7 +313,7 @@
         }
 
         front = incoming; cur = i; paintDots();
-        kick(incoming, mine);
+        kick(incoming, mine, VIDS[i].r);
       }
 
       /* drop the previous attempt's listener -- once:true only removes it if it
@@ -320,6 +321,7 @@
       if (incoming.pgwOn) incoming.removeEventListener('loadeddata', incoming.pgwOn);
       incoming.pgwOn = swap;
       incoming.addEventListener('loadeddata', swap, {once: true});
+      incoming.defaultPlaybackRate = VIDS[i].r;   /* what load() will restore to */
       incoming.src = VIDS[i].u;
       try { incoming.load(); } catch(e){}
       /* loadeddata does not fire on every browser and network combination -- swap

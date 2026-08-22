@@ -1,3 +1,24 @@
+# Wall art slideshow: playback speed is per clip
+
+## Change
+The global 2.5x is now `r` on each `VIDS` entry. The original Legendary Poke
+Trio clip runs at 1 (normal speed); the nine newer clips stay at 2.5.
+
+## Where it is applied
+Same three points as before, now reading `VIDS[i].r` instead of one constant:
+- `defaultPlaybackRate`, set just before the source is attached, because
+  `load()` restores an element to its defaults and `playbackRate` is one of the
+  things it clears.
+- `playbackRate` at the swap, for browsers that do not carry the default onto a
+  newly attached source.
+- `playbackRate` again inside `kick()`, which now takes the rate as an argument
+  -- it is the only code that runs after a retried `play()`.
+
+The blanket `defaultPlaybackRate` that was set once per element at creation is
+gone: with two elements shared by ten clips of differing speeds, a rate baked
+into the element is wrong as soon as it is reused. It belongs to the clip, not
+the element.
+
 # Wall art slideshow: 2.5x playback
 
 ## Change
