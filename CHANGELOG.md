@@ -1,3 +1,70 @@
+# Wall art: per-variant video slideshow
+
+## Change
+The single gallery video at the top of the wall art PDP is now a ten-slide
+video slideshow, one clip per variant, with arrows and dots. Selecting a design
+anywhere on the page moves the slideshow to that design's clip.
+
+## Video mapping
+Nine clips were uploaded to Files, named after their variants. The tenth slide
+is the clip already on the page: it is the Legendary Poke Trio design, which is
+the one variant with no new upload, so the ten slides cover the ten variants
+exactly.
+
+| Variant | Clip |
+|---|---|
+| Legendary Poke Trio | the existing gallery video |
+| Blue Eyes, Dark Magician, Red Eyes | Blue EYES FINISHED |
+| Gengar Evolution | Gengar FINISHED |
+| Blastoise Evolution | Blastoise FINISHED |
+| EX Legendary Poke Trio | EX Legendary Poke Trio FINISHED |
+| Eeveelutions | Eeveelutions FINISHED |
+| Mewtwo EX, V, V Star | Mewtwo EX, V, V Star FINISHED |
+| One Piece | One Piece FINISHED |
+| Dragon Ball | Dragon Ball FINISHED |
+| Goku | Goku FINISHED |
+
+The 720p renditions are used, not the 1080p ones: the slot is at most half a
+desktop column wide and a square crop on a phone, so 1080p is bytes nobody sees.
+
+## Which selects drive it
+A delegated `change` listener on the document, matching any `<select>` whose
+value is one of the ten variant names. That covers the buy-box dropdowns and
+the variant picker inside the cart drawer in one rule. Delegation is required
+for the cart: that picker is rebuilt from scratch on every cart change, so a
+listener bound to the element would be discarded with it.
+
+## Why it lives in pg-wallart-gallery.liquid
+`pg-landing.liquid` renders the gallery, but it is shared by the homepage and
+five product templates and knows about exactly one video, from its
+`gallery_video_url` setting. Adding a per-variant video list there would push
+wall-art-only markup into every page using it. This file is scoped to the wall
+art template, so the feature is contained and pg-landing is untouched. The JS
+takes the `.pgx-vid` slot over at runtime; if it never runs, pg-landing's
+original single video is still what renders.
+
+## Two video elements, not ten
+Ten `<video>` tags would open ten connections for clips nobody asked for.
+Swapping `src` on one element blanks it to black the instant the source is set,
+which is a visible flash on every variant change. So there are two stacked
+elements: the incoming clip loads at opacity 0 and is faded in only once it has
+frames, and the outgoing one is paused after the fade. `preload="none"` means
+nothing past the first clip is fetched until it is asked for. A `token` counter
+makes a later request win, so fast clicking through the dots cannot land on a
+stale clip, and an 1800ms fallback swaps anyway if `loadeddata` never fires.
+
+## Aspect
+The nine new clips are 16:9; the original Legendary Poke Trio clip is portrait
+(990x1080). The desktop stage is locked to 16:9 with `object-fit:contain`, so
+changing variant never changes the height of the gallery column -- the odd
+portrait clip letterboxes against the dark ground instead of resizing the page.
+Mobile keeps pg-landing's existing 1:1 cover behaviour.
+
+## Scope
+Applied to theme 163115139300 ("Simpler cart + frame add-on (Claude)",
+unpublished). `gallery_video_url` was deliberately left set, as the no-JS
+fallback.
+
 # Cart: frame upsell was clipped by the pinned pane
 
 ## Cause

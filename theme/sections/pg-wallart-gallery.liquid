@@ -21,6 +21,33 @@
   card, the bundle tile and the cart line. The strip's buttons still set the
   hidden hero's src; they simply set it on something nobody sees.
 
+  3. The single gallery video is now a ten-slide video slideshow, one clip per
+     variant, and selecting a design anywhere on the page -- the buy-box
+     dropdowns or the variant picker inside the cart drawer -- moves the
+     slideshow to that design's clip. Arrows and dots page through it by hand.
+
+  WHY THE SLIDESHOW IS BUILT IN JS RATHER THAN IN pg-landing. That section is
+  shared by the homepage and five product templates and renders ONE video from
+  its `gallery_video_url` setting. Teaching it about a per-variant video list
+  would push wall-art-only markup into every page that uses it. This file is
+  scoped to this template, so the whole feature lives here and pg-landing is
+  untouched. If the JS never runs, pg-landing's original single <video> is what
+  stays on screen -- the takeover is the enhancement, not the baseline.
+
+  TWO VIDEO ELEMENTS, NOT TEN. Ten <video> tags would have the browser opening
+  ten connections for clips nobody asked for. Swapping `src` on ONE element
+  blanks it to black the instant the new source is set, which is a visible flash
+  on every variant change. So there are two stacked elements and the incoming
+  clip is loaded off-screen, faded in only once it has frames to show, and the
+  outgoing one is paused after the fade. Nothing but the first clip is fetched
+  until a shopper actually asks for it.
+
+  ASPECT. Nine of the ten clips are 16:9; the original Legendary Poke Trio clip
+  is portrait (990x1080). The desktop stage is locked to 16:9 with object-fit
+  contain, so a variant change never changes the height of the gallery column --
+  the odd portrait clip letterboxes against the dark ground instead. Mobile
+  keeps pg-landing's existing 1:1 cover behaviour.
+
   Rendered only from templates/product.pg-wallart.json, so removing it from
   that template's order puts the original gallery back in one edit.
 {%- endcomment -%}
@@ -35,6 +62,65 @@
   @media (min-width:901px){
     #pgx .pgx-thumbwrap .pgx-thumbs button{flex:0 0 100% !important}
   }
+
+  /* ---- the video slideshow ---- */
+  #pgx .pgx-vid .pgw-stage{position:relative;width:100%;aspect-ratio:16/9;background:#0d0d0d}
+  #pgx .pgx-vid .pgw-v{
+    position:absolute !important;inset:0 !important;
+    width:100% !important;height:100% !important;
+    object-fit:contain !important;display:block !important;
+    opacity:0;transition:opacity .28s ease;
+  }
+  #pgx .pgx-vid .pgw-v.on{opacity:1}
+
+  /* Same skin as pg-landing's .pgx-tharrow, and stamped just as hard for the
+     same reason: the base theme paints every button as a black bar with pseudo
+     overlays. Its own class, not .pgx-tharrow, because that one is display:none
+     under 900px -- on a phone these arrows and the dots are the only manual way
+     through the slideshow, so they stay visible at every width. */
+  #pgx .pgx-vid .pgw-arrow{
+    position:absolute !important;top:50% !important;bottom:auto !important;transform:translateY(-50%) !important;
+    z-index:5 !important;width:44px !important;height:44px !important;
+    min-width:0 !important;min-height:0 !important;max-width:none !important;
+    padding:0 0 4px !important;margin:0 !important;border:0 !important;border-radius:50% !important;
+    background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;
+    color:#fff !important;font-size:26px !important;line-height:1 !important;font-weight:400 !important;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
+    display:flex !important;align-items:center !important;justify-content:center !important;
+    text-transform:none !important;letter-spacing:0 !important;text-indent:0 !important;
+    overflow:hidden !important;isolation:isolate !important;cursor:pointer !important;
+    box-shadow:0 10px 24px -10px rgba(0,0,0,.75) !important;
+    animation:none !important;transition:background .15s ease !important;
+  }
+  #pgx .pgx-vid .pgw-arrow::before,
+  #pgx .pgx-vid .pgw-arrow::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important;border:0 !important}
+  #pgx .pgx-vid .pgw-arrow:hover{background:#8B44BE !important;background-color:#8B44BE !important}
+  #pgx .pgx-vid .pgw-arrow.prev{left:10px !important;right:auto !important}
+  #pgx .pgx-vid .pgw-arrow.next{right:10px !important;left:auto !important}
+  @media (max-width:600px){
+    #pgx .pgx-vid .pgw-arrow{width:38px !important;height:38px !important;font-size:22px !important}
+  }
+
+  #pgx .pgx-vid .pgw-dots{
+    position:absolute;left:0;right:0;bottom:9px;z-index:5;
+    display:flex;justify-content:center;align-items:center;gap:6px;flex-wrap:wrap;padding:0 12px;
+  }
+  #pgx .pgx-vid .pgw-dot{
+    width:7px !important;height:7px !important;min-width:0 !important;min-height:0 !important;
+    padding:0 !important;margin:0 !important;border:0 !important;border-radius:50% !important;
+    background:rgba(255,255,255,.42) !important;background-image:none !important;
+    box-shadow:0 1px 4px rgba(0,0,0,.6) !important;cursor:pointer !important;
+    animation:none !important;transition:background .15s ease,width .15s ease !important;
+  }
+  #pgx .pgx-vid .pgw-dot::before,
+  #pgx .pgx-vid .pgw-dot::after{display:none !important;content:none !important}
+  #pgx .pgx-vid .pgw-dot.on{background:#fff !important;width:18px !important;border-radius:999px !important}
+
+  /* mobile keeps pg-landing's square-crop behaviour for the gallery slot */
+  @media (max-width:900px){
+    #pgx .pgx-vid .pgw-stage{aspect-ratio:1/1}
+    #pgx .pgx-vid .pgw-v{object-fit:cover !important}
+  }
 </style>
 <script>
 (function(){
@@ -44,6 +130,145 @@
      while it is hidden. */
   var hero = document.getElementById('pgx-hero-img');
   if (hero) hero.removeAttribute('src');
+
+  /* One clip per variant, in the product's own option order so the dots read
+     left-to-right the same way the dropdown does. `v` must stay character-exact
+     with the variant option value -- that string IS the key the buy-box selects
+     and the cart's variant picker both report, and matching is what points the
+     slideshow at the right clip. Renaming a variant in Shopify without editing
+     this list leaves that one design falling back to slide 0. */
+  var VIDS = [
+    {v: "Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/372c232efb264da688df7ddecba254c7/372c232efb264da688df7ddecba254c7.HD-720p-4.5Mbps-92098881.mp4"},
+    {v: "Blue Eyes, Dark Magician, Red Eyes", u: "https://cdn.shopify.com/videos/c/vp/9d6a76bbc7504f589d013b52660475b2/9d6a76bbc7504f589d013b52660475b2.HD-720p-4.5Mbps-92296781.mp4"},
+    {v: "Gengar Evolution", u: "https://cdn.shopify.com/videos/c/vp/34da042ae6e64494be9fdfcbfc58b43d/34da042ae6e64494be9fdfcbfc58b43d.HD-720p-3.0Mbps-92296780.mp4"},
+    {v: "Blastoise Evolution", u: "https://cdn.shopify.com/videos/c/vp/d5d5246b3616411ca0ed05f1b982f44c/d5d5246b3616411ca0ed05f1b982f44c.HD-720p-3.0Mbps-92296779.mp4"},
+    {v: "EX Legendary Poke Trio", u: "https://cdn.shopify.com/videos/c/vp/8a2173f6b8ca40c2b5819534a0be89f9/8a2173f6b8ca40c2b5819534a0be89f9.HD-720p-4.5Mbps-92296778.mp4"},
+    {v: "Eeveelutions", u: "https://cdn.shopify.com/videos/c/vp/74b84084bd414500a949f60c972172b0/74b84084bd414500a949f60c972172b0.HD-720p-3.0Mbps-92296777.mp4"},
+    {v: "Mewtwo EX, V, V Star", u: "https://cdn.shopify.com/videos/c/vp/28bedf6bfa444dc68d3aa93170d0f0d8/28bedf6bfa444dc68d3aa93170d0f0d8.HD-720p-2.1Mbps-92296776.mp4"},
+    {v: "One Piece", u: "https://cdn.shopify.com/videos/c/vp/79e22ac3490d404f80990b5e764ec531/79e22ac3490d404f80990b5e764ec531.HD-720p-3.0Mbps-92296775.mp4"},
+    {v: "Dragon Ball", u: "https://cdn.shopify.com/videos/c/vp/8c2e1751c07744dd9846e44ad1050462/8c2e1751c07744dd9846e44ad1050462.HD-720p-3.0Mbps-92296774.mp4"},
+    {v: "Goku", u: "https://cdn.shopify.com/videos/c/vp/1a5d4284598e442da8c01b753ee09909/1a5d4284598e442da8c01b753ee09909.HD-720p-2.1Mbps-92296773.mp4"}
+  ];
+
+  function boot(){
+    var box = document.querySelector('#pgx .pgx-vid');
+    if (!box || box.querySelector('.pgw-stage')) return false;
+
+    var stage = document.createElement('div');
+    stage.className = 'pgw-stage';
+
+    function mk(){
+      var v = document.createElement('video');
+      v.className = 'pgw-v';
+      v.muted = true; v.loop = true; v.playsInline = true;
+      v.setAttribute('muted','');           /* iOS autoplays only with the attribute present */
+      v.setAttribute('loop','');
+      v.setAttribute('playsinline','');
+      v.setAttribute('preload','none');     /* nothing is fetched until a slide is asked for */
+      stage.appendChild(v);
+      return v;
+    }
+    var a = mk(), b = mk(), front = a, cur = -1, token = 0;
+
+    var prev = document.createElement('button');
+    prev.type = 'button'; prev.className = 'pgw-arrow prev';
+    prev.setAttribute('aria-label','Previous video'); prev.innerHTML = '&#8249;';
+    var next = document.createElement('button');
+    next.type = 'button'; next.className = 'pgw-arrow next';
+    next.setAttribute('aria-label','Next video'); next.innerHTML = '&#8250;';
+
+    var dots = document.createElement('div');
+    dots.className = 'pgw-dots';
+    var dotEls = VIDS.map(function(item, i){
+      var d = document.createElement('button');
+      d.type = 'button'; d.className = 'pgw-dot';
+      d.setAttribute('aria-label', item.v);
+      d.addEventListener('click', function(){ show(i); });
+      dots.appendChild(d);
+      return d;
+    });
+
+    stage.appendChild(prev); stage.appendChild(next); stage.appendChild(dots);
+
+    /* pg-landing's own <video> is replaced only now that the stage is built, so
+       a failure above leaves the original single video untouched on screen. */
+    box.innerHTML = '';
+    box.appendChild(stage);
+
+    function paintDots(){
+      dotEls.forEach(function(d, i){ d.classList.toggle('on', i === cur); });
+    }
+
+    function show(i){
+      if (i < 0 || i >= VIDS.length || i === cur) return;
+      var incoming = (front === a) ? b : a;
+      var outgoing = front;
+      var mine = ++token;                  /* a later request wins; this one goes quiet */
+      var swapped = false;
+
+      function swap(){
+        if (swapped || mine !== token) return;
+        swapped = true;
+        incoming.play().catch(function(){});
+        incoming.classList.add('on');
+        outgoing.classList.remove('on');
+        setTimeout(function(){ if (mine === token) { try { outgoing.pause(); } catch(e){} } }, 320);
+        front = incoming; cur = i; paintDots();
+      }
+
+      incoming.addEventListener('loadeddata', swap, {once: true});
+      incoming.src = VIDS[i].u;
+      try { incoming.load(); } catch(e){}
+      /* loadeddata does not fire on every browser and network combination -- swap
+         anyway rather than leaving the shopper on the previous design's clip. */
+      setTimeout(swap, 1800);
+    }
+
+    prev.addEventListener('click', function(){ show((cur - 1 + VIDS.length) % VIDS.length); });
+    next.addEventListener('click', function(){ show((cur + 1) % VIDS.length); });
+
+    function indexOf(s){
+      if (!s) return -1;
+      s = String(s).trim();
+      for (var i = 0; i < VIDS.length; i++){ if (VIDS[i].v === s) return i; }
+      return -1;
+    }
+
+    /* ANY select that reports a known design name moves the slideshow. Delegated
+       from the document on purpose: this has to cover the buy-box dropdowns
+       (pg-landing's [data-pgx-size] selects, which exist at load) AND the
+       variant picker inside the cart drawer, which is rebuilt from scratch every
+       time the cart changes -- a listener bound directly to that element would
+       be thrown away with it. Capture phase, so it still fires if a handler
+       downstream stops the event. A select on the page whose value happens to
+       equal a variant name would also drive it; nothing else on this template
+       carries those strings. */
+    document.addEventListener('change', function(e){
+      var t = e.target;
+      if (!t || t.tagName !== 'SELECT') return;
+      var i = indexOf(t.value);
+      if (i < 0 && t.options && t.selectedIndex >= 0){
+        var o = t.options[t.selectedIndex];
+        if (o) i = indexOf(o.textContent);
+      }
+      if (i >= 0) show(i);
+    }, true);
+
+    /* open on whatever the buy box is already showing */
+    var s1 = document.querySelector('#pgx [data-pgx-size="s1"]');
+    var start = s1 ? indexOf(s1.value) : -1;
+    show(start >= 0 ? start : 0);
+    return true;
+  }
+
+  /* pg-landing renders .pgx-vid server-side, so it is normally there already;
+     the retry only covers this section being evaluated before it. */
+  if (!boot()){
+    var tries = 0;
+    var t = setInterval(function(){
+      if (boot() || ++tries > 40) clearInterval(t);
+    }, 150);
+  }
 })();
 </script>
 
