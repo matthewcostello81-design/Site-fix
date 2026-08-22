@@ -25,6 +25,7 @@
      variant, and selecting a design anywhere on the page -- the buy-box
      dropdowns or the variant picker inside the cart drawer -- moves the
      slideshow to that design's clip. Arrows and dots page through it by hand.
+     Every clip plays at 2.5x; see RATE in the script.
 
   WHY THE SLIDESHOW IS BUILT IN JS RATHER THAN IN pg-landing. That section is
   shared by the homepage and five product templates and renders ONE video from
@@ -162,6 +163,14 @@
   var hero = document.getElementById('pgx-hero-img');
   if (hero) hero.removeAttribute('src');
 
+  /* Every clip plays at 2.5x. Set in three places on purpose: defaultPlaybackRate
+     so a load() cannot reset it (load() restores the element to its defaults, and
+     playbackRate alone is one of the things it resets), playbackRate again at the
+     swap for browsers that do not honour the default, and once more from the play
+     watchdog, which is the only code that runs after a retried play(). Anything
+     that sets the rate BEFORE the source is attached is not enough on its own. */
+  var RATE = 2.5;
+
   /* One clip per variant, in the product's own option order so the dots read
      left-to-right the same way the dropdown does. `v` must stay character-exact
      with the variant option value -- that string IS the key the buy-box selects
@@ -198,6 +207,7 @@
       v.setAttribute('loop','');
       v.setAttribute('playsinline','');
       v.setAttribute('preload','none');     /* nothing is fetched until a slide is asked for */
+      v.defaultPlaybackRate = RATE; v.playbackRate = RATE;
       stage.appendChild(v);
       return v;
     }
@@ -236,11 +246,14 @@
        not enough: it can be refused, or land while the element is still being
        reset by load(), and a refusal leaves a frozen first frame with no error
        anywhere. Re-asks a few times, and stops the moment the clip is running or
-       another slide has been requested. */
+       another slide has been requested. Also re-asserts the playback rate, which
+       a load() in flight can have reset back to 1. */
     function kick(v, mine){
       var n = 0;
       (function again(){
-        if (mine !== token || !v.paused) return;
+        if (mine !== token) return;
+        if (v.playbackRate !== RATE) v.playbackRate = RATE;
+        if (!v.paused) return;
         var p = v.play();
         if (p && p.catch) p.catch(function(){});
         if (++n < 5) setTimeout(again, 250);
@@ -281,6 +294,7 @@
         var outgoing = front;
 
         incoming.style.transform = 'scale(' + VIDS[i].z + ')';
+        incoming.playbackRate = RATE;
         incoming.classList.add('on');
         var p = incoming.play();
         if (p && p.catch) p.catch(function(){});

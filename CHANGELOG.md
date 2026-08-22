@@ -1,3 +1,22 @@
+# Wall art slideshow: 2.5x playback
+
+## Change
+Every clip in the gallery slideshow plays at 2.5x. One constant, `RATE`, at the
+top of the script.
+
+## Set in three places, deliberately
+- `defaultPlaybackRate` when each `<video>` element is created. `load()` resets
+  an element to its defaults, and `playbackRate` is one of the things it resets
+  -- setting only `playbackRate` up front would be undone by the first slide
+  load.
+- `playbackRate` again in `swap()`, for browsers that do not apply
+  `defaultPlaybackRate` to a newly attached source.
+- `playbackRate` once more inside `kick()`, the play watchdog. That is the only
+  code that runs after a retried `play()`, so it is the last chance to catch a
+  rate a load-in-flight reset back to 1.
+
+Nothing here changes the source files; it is a playback property on the two
+video elements, so it applies to all ten clips including the original.
 # Wall art slideshow: overlapping show() calls froze the early slides
 
 ## Symptom
