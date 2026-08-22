@@ -140,12 +140,24 @@ html body a.pg-wordmark.pg-wordmark{
      fonts do inside those boxes, the page below them never moves again:
      re-measured 1.83 -> per the run after this block landed. Desktop is left
      alone -- its header was not the problem and its widths vary more. */
+  /* The product pages' pgx header settles at the same numbers as pgh --
+     measured announce 35.8 / head 146.8 / head-in 114 / nav 31.8 -- and showed
+     the identical churn (pgx-main bouncing 139 -> 128 -> 350 -> 183 while the
+     header settled), so both families are clamped alike. The pgc/pgf headers
+     on the content templates are NOT clamped: they carry the big scaled
+     wordmark and were not measured, and clamping an unmeasured header risks
+     clipping it -- those pages are also not on the buying path. */
   @media (max-width:760px){
-    html body .pgh-announce{height:36px !important;overflow:hidden !important}
-    html body .pgh-head{height:147px !important;min-height:0 !important;overflow:hidden !important}
-    html body .pgh-head .pgh-head-in{height:114px !important;min-height:0 !important;overflow:hidden !important}
-    html body .pgh-head .pgh-nav{height:33px !important;overflow:hidden !important}
-    html body .pgh-head .pgh-logo{min-height:0 !important}
+    html body .pgh-announce,html body .pgx-announce{
+      height:36px !important;overflow:hidden !important}
+    html body .pgh-head,html body .pgx-head{
+      height:147px !important;min-height:0 !important;overflow:hidden !important}
+    html body .pgh-head-in,html body .pgx-head-in{
+      height:114px !important;min-height:0 !important;overflow:hidden !important}
+    html body .pgh-nav,html body .pgx-nav{
+      height:33px !important;overflow:hidden !important}
+    html body .pgh-logo,html body .pgx-logo{
+      min-height:0 !important}
   }
 </style>
 {% schema %}
