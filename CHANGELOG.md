@@ -1,64 +1,62 @@
-# Wall art: the video slideshow is swiped, not clicked
+# Cart: the order Total was hidden on every non-Max iPhone
 
-## What changed
-The two purple chevrons on the gallery video were removed and replaced with the
-same "< SWIPE - n/10 >" pill the photo strip below already carries.
+## Symptom
+The pinned cart pane showed "You saved (72%) $402.54", Shipping Protection, the
+trust row and CHECKOUT -- and no Total anywhere. Reported from a 393px iPhone.
 
-## Why this was not just a CSS swap
-The photo strip's pill only had to LABEL a gesture the browser already handled:
-`.pgx-thumbs` is a real `overflow-x` scroller. The video stage is not a scroller
--- it is two stacked, absolutely positioned `<video>` elements -- so nothing
-would have answered a finger there. Dropping the arrows and adding only the pill
-would have advertised a swipe that does nothing, and the arrows were the ONLY
-manual control at desktop widths too (the dots alone are poor for ten slides).
-So the drag handler is the substantive half of this change; the pill is the
-label on it.
+## Cause
+The "Small-iPhone cart polish" change added one <style> block to
+sections/pg-cart-timer.liquid. It is the ONLY file that differs between the
+theme that was live before it and the one live now -- 13,393 -> 16,871 bytes,
+everything else byte-identical. Inside its `@media (max-width:414px)` block:
 
-## How the gesture behaves
-  - Pointer events, so touch, pen and a desktop mouse drag take one path.
-  - The gesture stays undecided until it has moved 10px further sideways than
-    down, and only claims the drag (and starts calling preventDefault) at that
-    point -- a finger that lands on the video and pulls DOWN still scrolls the
-    page. The axis is LATCHED once decided so a curved drag cannot flip halfway.
-  - `touch-action:pan-y` on the stage says the same thing to the compositor,
-    which is what actually arbitrates the gesture; vertical panning stays on the
-    fast path instead of waiting on this handler.
-  - 40px of travel commits to a slide change; anything shorter is ignored.
-  - `setPointerCapture` keeps the moves coming when the finger leaves the short
-    stage and guarantees the matching up/cancel.
-  - A gesture starting on a dot is ignored, so the dots stay clickable.
-  - Arrow keys page it, and the stage took tabindex/role/aria-label, so the
-    slideshow keeps a keyboard route now that the buttons are gone.
+    #cart .sticky-in-panel .l4tt{display:none !important}
 
-The counter is painted from `paintDots()`, the one funnel every slide change
-already goes through -- swipe, dot, keyboard, or a variant chosen anywhere else
-on the page -- so it cannot drift out of step with what is on screen. It writes
-only on a change, because the pill sits inside `#pgx`, which carries a childList
-MutationObserver.
+`.l4tt` is not a taxes note, which is what the block's own comment assumed when
+it claimed "no element is removed except the taxes note". pg-cart-total already
+hides every row in that list except the Total:
 
-The photo strip's pill stays phones-only (desktop keeps pg-landing's real
-arrows there); the video pill shows at every width, since that stage now has no
-arrows at any width.
+    #cart .sticky-in-panel .l4tt:has(li.pg-tt) li:not(.pg-tt){display:none !important}
 
-## Verified in a Chromium harness running the real section over local fixtures
-At 390x844 and 1280x900, both green on every line:
+So by the time the compact rule applied, the only thing left in `.l4tt` was
+`li.pg-tt` -- "Total $402.54". Hiding the list hid the Total and nothing else.
 
-    arrow buttons present ......... 0
-    pill visible, counter ......... 1/10, tracks every change
-    swipe left / right ............ advances / goes back
-    real touch swipe (CDP) ........ advances / goes back
-    vertical drag ................. slide unchanged, defaultPrevented false
-    sub-threshold drag (25px) ..... ignored
-    dots still clickable .......... dot #5 -> 5/10, "EX Legendary Poke Trio"
-    keyboard ArrowRight ........... advances
-    variant <select> integration .. "Goku" -> 10/10
-    visible clip .................. advancing, playbackRate 2.5, not paused
-    page errors ................... none
+414px covers every non-Max iPhone (SE, mini, 15/16/17). The 430px Pro Max the
+layout was tuned on was the one device that still showed it, which is why it
+survived review.
 
-Uploaded checksum 730a34fbf560290c28b14f9144b3d25a matches the local file byte
-for byte. Deployed to the DRAFT theme "Copy of Small-iPhone cart polish (Claude)"
-(163138175204) -- the live theme rotated twice during this session and theme
-file writes against the published theme are blocked. Needs publishing.
+## Fix
+The rule is removed. Nothing replaces it: pg-cart-mobile already compacts that
+row at every width under 760px (`.l4tt{margin:1px 0 !important}` plus its own
+font sizing), so it returns tight rather than at desktop size. The rest of the
+compact block -- row padding, thumbnails, chips, the rush banner, the upsell
+rows, the frame offer, the trust row -- is untouched. The header comment's false
+"nothing removed except the taxes note" claim is corrected in place so the same
+mistake is not repeated.
+
+## Measured, before and after, in a Chromium harness running the real cart
+sections with the real compact block layered on:
+
+    LIVE   393px (15/16/17)   l4tt display=none    Total *** HIDDEN ***
+    LIVE   414px (Plus)       l4tt display=none    Total *** HIDDEN ***
+    LIVE   430px (Pro Max)    l4tt display=block   Total VISIBLE 'Total $105.07'
+
+    FIXED  393px              l4tt display=block   Total VISIBLE 'Total $105.07'
+    FIXED  414px              l4tt display=block   Total VISIBLE 'Total $105.07'
+    FIXED  430px              l4tt display=block   Total VISIBLE 'Total $105.07'
+
+Cost of restoring it, at 393x852 scrolled to the end:
+
+    live   pane 283px  item area 569px  CHECKOUT -6px vs drawer floor (inside)
+    fixed  pane 313px  item area 539px  CHECKOUT -6px vs drawer floor (inside)
+
+30px, and CHECKOUT stays inside the drawer's clip with the drawer still
+scrollable.
+
+Uploaded checksum 3af8bd32e4de073ac2658b5bf9b5ad2c matches the local file byte
+for byte. Deployed to the DRAFT theme "Copy of Copy of Small-iPhone cart polish
+(Claude)" (163138797796); writes against the published theme are blocked.
+Needs publishing.
 
 ---
 

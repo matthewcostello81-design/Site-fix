@@ -1,0 +1,360 @@
+{%- comment -%}
+  PG Cart Timer: a 10-minute "extra 10% off" window that starts when the shopper
+  first has something in the cart, shown at the bottom of the cart drawer and
+  applied to their order automatically.
+
+  THE OFFER IS REAL, AND SO IS THE CLOCK. The discount is a genuine Shopify
+  AUTOMATIC order discount (10% off all items, combining with product discounts
+  so it stacks on top of the Buy 2 Get 1 bundle rather than replacing it). Being
+  automatic is the point: Shopify applies it to the CART, so the total the
+  shopper reads already includes it. The deadline is stored in localStorage, so
+  it SURVIVES reloads and navigation -- a timer that restarted at 10:00 on every
+  page view would be telling the shopper something untrue.
+
+  WHEN IT STARTS AND RESTARTS. The window opens the first time the cart is seen
+  non-empty, and opens again on any genuine ADD -- whenever the item count goes
+  UP. It is cleared when the cart is emptied.
+
+  It deliberately does NOT restart on a page view. That distinction is the whole
+  point: reopening the offer because someone reloaded would make the countdown a
+  prop, while reopening it when they actually add something is true -- the ten
+  minutes really do start from that add. The previous count is kept in
+  localStorage so navigating between pages is not mistaken for an add.
+
+  The consequence is intended: if the window runs out and the shopper adds
+  nothing further, the offer is over and the block disappears rather than
+  quietly resurrecting itself.
+
+  WHERE IT SITS. As the first child of .sticky-in-panel -- the pinned pane that
+  carries Shipping Protection, the total and CHECKOUT -- so it is the last thing
+  read before the button, which is the point of it.
+
+  It is NOT inserted directly before that pane, even though that is nearer the
+  literal "bottom of the cart". Two things already compete for that exact slot:
+  pg-cart-mobile's placeUnlock (the upsell) and its placeSpacer (the flex spacer
+  that pins the pane down on a short cart), each of which re-inserts itself
+  immediately before the pane on every apply() pass. Adding a third element to
+  that fight is how rows start swapping places. Inside the pane there is no
+  contention at all.
+
+  HOW THE DISCOUNT IS APPLIED -- AND HOW IT USED TO BE. It was a discount CODE
+  (RUSH10), and a cart cannot hold a code, so clicking CHECKOUT was intercepted
+  and routed through /discount/RUSH10?redirect=/checkout to record it on the way
+  past. It worked at checkout and was invisible before it: measured with four
+  orbs, cart.total_price equalled items_subtotal_price exactly -- $104.97 and
+  $104.97 -- while the banner directly above read APPLIED. The shopper was being
+  promised a saving the numbers in front of them did not contain, and only found
+  it a page later.
+
+  It is now an automatic discount, so Shopify does the applying. Nothing is
+  intercepted, the cart total arrives already reduced, and checkout charges what
+  the cart said.
+
+  RUSH10 ITSELF IS LEFT ACTIVE, deliberately. It was deactivated first, and that
+  was wrong while an older theme was still published: that theme still routes
+  CHECKOUT through /discount/RUSH10, and a dead code there would have shown real
+  shoppers an invalid-code error on the way to paying. It is safe to leave on --
+  measured, walking a cart through /discount/RUSH10 with the automatic discount
+  live left the total unchanged at $62.99, because RUSH10 is set not to combine
+  with order discounts, so Shopify takes one or the other and never both. Once
+  this theme is the published one, RUSH10 can be retired.
+
+  THE CART ITSELF IS LEFT ALONE, by request. The block says APPLIED --
+  the shopper does not have to type a code or hunt for a field, the 10% is on
+  their order automatically -- but no line, total or saving figure in the drawer
+  is rewritten by this section. The only number that moves is the one Shopify
+  itself computes once the code is recorded.
+
+  window.pgRush is exposed so pg-cart-sticky can show the same countdown in the
+  product-page bar without a second clock that could drift out of step.
+
+  ================================================================
+  IT ALSO CARRIES THE RECOMMENDATION HIDE, for a platform reason rather than a
+  design one: Shopify caps a section group at 25 sections and overlay-group was
+  already full, so this could not ship as a 26th entry. The two rules below used
+  to be their own pg-cart-declutter section; they are cart-drawer styling like
+  everything else here, so this is where they went.
+
+  They hide nc-recs' two optional add-to-cart blocks -- .nc-recs ("You may also
+  like", under the item list) and .nc-recs-panel ("Add & save more", inside the
+  checkout panel) -- which pushed the order total down and made the cart read as
+  a catalogue. The pg-unlock offer rows are untouched. Only these two blocks are
+  hidden rather than the nc-recs section removed, because that same file supplies
+  most of the drawer's styling: the compact top, the 120px thumbnails, the
+  bundle-savings progress bar, the slim shipping bar and the quantity stepper.
+  CSS rather than deleting the nodes, since nc-recs.js re-injects them whenever
+  the cart changes.
+{%- endcomment -%}
+<style>
+  /* the optional "recommended purchase" rows -- see the note above */
+  #cart .nc-recs,
+  #cart .nc-recs-panel{display:none !important}
+
+  /* ================================================================
+     THE MOBILE CART SAID THE SAME THING TWICE, AND NAMED THE SHOP INSIDE THE
+     SHOP. Measured in the open drawer at 393px:
+
+       .pg-cart-top span    "Your Cart"   y=56          the real heading, with the count
+       #cart .l4ca::before  "Your Cart"                 a SECOND one -- a pseudo-element
+       #cart .pg-cart-mark  POCKET ERA    y=92, 43px    the wordmark block
+
+     Three rows of chrome above the first product: a heading the drawer had
+     already printed, and the name of the shop the shopper is standing in. Both
+     go on phones. The heading carrying the item count stays -- it is the only
+     one that says something the shopper does not already know -- and so does the
+     free-shipping bar, which is a reason to buy rather than decoration.
+
+     The duplicate is a pseudo-element, so it cannot be removed from the DOM;
+     content is the only handle on it, set to none rather than "" so the box is
+     not laid out at all.
+
+     This lives HERE, in the timer, for the same reason the recommendation hide
+     does: overlay-group is at Shopify's 25-section limit. It was written into
+     pg-cart-mobile-price first, which looked like the natural home -- that file
+     is four lines long and claims footer-group.json still references it. It does
+     not: measured on the rendered page, the section is absent from the DOM and
+     its CSS never shipped. The comment was stale. Verified this file renders by
+     finding its own section id in the page.
+
+     Mobile only; the desktop drawer is wider and nothing is crowded there. */
+  @media (max-width:760px){
+    #cart .pg-cart-mark{display:none !important}
+    #cart .l4ca::before{content:none !important;display:none !important}
+  }
+
+  #pg-rush{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin:0 0 6px;padding:7px 10px;
+    border-radius:10px;
+    background:linear-gradient(120deg,rgba(139,68,190,.16),rgba(199,155,234,.12));
+    border:1px solid rgba(168,120,214,.42);
+    flex-wrap:wrap;
+    font-size:14px;line-height:1.25;font-weight:800;
+    text-transform:uppercase;letter-spacing:.03em;
+    color:#3B2352;
+    text-align:center;
+  }
+  #pg-rush .pg-rush-c{
+    font-variant-numeric:tabular-nums;
+    font-weight:800;
+    background:#8B44BE;color:#fff;
+    padding:3px 7px;border-radius:6px;
+    letter-spacing:.02em;
+  }
+  /* the line was being truncated to "EXTRA 10% ..." on a phone. Nothing here
+     asked for an ellipsis, so it comes from the drawer's own styling; these
+     three declarations take it back and let the line WRAP instead, which is
+     what a two-line offer should do in a 366px pane. */
+  #pg-rush .pg-rush-x{
+    color:#6B3E93;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:clip;
+    min-width:0;
+  }
+  @media (max-width:760px){
+    /* bigger, by request -- it had been shrunk to 10px to dodge the truncation,
+       which was treating the symptom. With the line free to wrap it can be read
+       at a normal size again. */
+    #pg-rush{font-size:13px;padding:8px 10px;margin-bottom:6px;letter-spacing:.02em}
+    #pg-rush .pg-rush-c{font-size:13.5px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgRush) return;
+
+  var KEY = 'pgRushEnds', WINDOW_MS = 10 * 60 * 1000;
+
+  function read(){
+    try { return parseInt(localStorage.getItem(KEY), 10) || 0; } catch(e){ return 0; }
+  }
+  function write(v){ try { localStorage.setItem(KEY, String(v)); } catch(e){} }
+  function drop(){ try { localStorage.removeItem(KEY); } catch(e){} }
+
+  function left(){
+    var end = read();
+    if (!end) return 0;
+    return Math.max(0, end - Date.now());
+  }
+  function active(){ return left() > 0; }
+  function fmt(){
+    var s = Math.ceil(left() / 1000);
+    var m = Math.floor(s / 60);
+    var r = s % 60;
+    return m + ':' + (r < 10 ? '0' : '') + r;
+  }
+
+  window.pgRush = {left: left, active: active, fmt: fmt};
+
+  /* Start on the first non-empty cart; restart on a real ADD (count goes up);
+     clear when the cart empties. The previous count is persisted so that moving
+     between pages is not read as an add. */
+  var CKEY = 'pgRushCount';
+  function lastCount(){
+    try { var v = localStorage.getItem(CKEY); return v === null ? -1 : (parseInt(v, 10) || 0); }
+    catch(e){ return -1; }
+  }
+  function keepCount(n){ try { localStorage.setItem(CKEY, String(n)); } catch(e){} }
+
+  function onCount(n){
+    var prev = lastCount();
+    keepCount(n);
+    if (n === 0){ drop(); return; }
+    if (prev >= 0 && n > prev){ write(Date.now() + WINDOW_MS); return; }  /* a real add */
+    if (!read()) write(Date.now() + WINDOW_MS);                          /* first sighting */
+  }
+
+  var busy = false;
+  function poll(){
+    if (busy) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'Accept': 'application/json'}, credentials: 'same-origin'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if (j && typeof j.item_count === 'number') onCount(j.item_count);
+        busy = false; render();
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  function render(){
+    var pane = document.querySelector('#cart .sticky-in-panel');
+    var el = document.getElementById('pg-rush');
+    if (!active()){
+      if (el && el.parentNode) el.parentNode.removeChild(el);
+      return;
+    }
+    if (!pane) return;
+    if (!el){
+      el = document.createElement('div');
+      el.id = 'pg-rush';
+      el.innerHTML = '<span class="pg-rush-c">0:00</span>' +
+                     '<span class="pg-rush-x">EXTRA <b>10% OFF</b> ENTIRE ORDER &mdash; APPLIED</span>';
+    }
+    if (pane.firstChild !== el) pane.insertBefore(el, pane.firstChild);
+    var c = el.querySelector('.pg-rush-c');
+    var t = fmt();
+    if (c && c.textContent !== t) c.textContent = t;
+  }
+
+  /* CHECKOUT IS NO LONGER INTERCEPTED. The 10% used to be a discount CODE, which
+     a cart cannot hold -- so this hijacked the checkout button and sent the
+     shopper through /discount/RUSH10?redirect=/checkout to record it on the way.
+     That worked at checkout and was invisible in the cart: measured with four
+     orbs, cart.total_price equalled items_subtotal_price exactly ($104.97 for
+     both) while the banner directly above it read APPLIED. The shopper was told
+     they had a discount that the numbers in front of them did not include.
+
+     The 10% is now an AUTOMATIC order discount instead, so Shopify applies it to
+     the cart itself. total_price arrives already reduced, the drawer's own rows
+     show it, the banner is true when it says APPLIED, and checkout charges the
+     same figure the cart showed. Nothing needs to be intercepted. RUSH10 is left
+     active only so the previously published theme, which still redirects through
+     it, does not send shoppers to an invalid-code error; it cannot stack, since
+     it is set not to combine with order discounts. */
+
+  function boot(){
+    poll();
+    setInterval(render, 1000);
+
+    /* the drawer is rebuilt on every add, remove and quantity change */
+    if (window.MutationObserver){
+      var drawer = document.getElementById('cart');
+      if (drawer){
+        var queued = false;
+        new MutationObserver(function(){
+          if (queued) return;
+          queued = true;
+          setTimeout(function(){ queued = false; poll(); }, 250);
+        }).observe(drawer, {childList: true, subtree: true});
+      }
+    }
+    document.addEventListener('click', function(e){
+      if (!e.target.closest) return;
+      if (e.target.closest('[name="add"], .pgx-atc, #pg-sticky, .pg-unlock-go, form[action*="/cart/add"] button')){
+        setTimeout(poll, 600); setTimeout(poll, 1800);
+      }
+    }, true);
+    [900, 2600].forEach(function(t){ setTimeout(poll, t); });
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+<style>
+  /* ---- SMALL-PHONE COMPACT MODE (iPhone 15/16/17 non-Max and down) ----
+     The cart was laid out on a 430x932 Pro Max; on the 393x852 phones most
+     people carry, the pinned checkout pane measured 402px -- 47% of the screen
+     -- leaving 200px for the items themselves: barely one row. Everything the
+     pane and the rows spend on padding and display type is cut one step at
+     this width. Measured on a 393x852 viewport: pane 402px -> 344px, item area
+     200px -> 258px, rows ~170-200px -> ~150-170px.
+
+     414px, not 430: every non-Max iPhone (SE, mini, 15/16/17) is at most
+     414 CSS px wide, and the 430px Pro Max keeps the roomier layout it was
+     tuned on. Everything here is display-only and NOTHING is removed. It used
+     to claim that too while hiding `.l4tt`, believed to be a taxes note and
+     actually the order Total -- so the number a shopper checks before paying was
+     missing on every non-Max iPhone while the Pro Max this was tuned on still
+     showed it. See the note on that rule further down. The SAVED chips
+     are shrunk with transform because pg-chips stamps their geometry inline
+     with !important, which a stylesheet cannot outrank -- transform is the one
+     lever the stamp does not hold. */
+  @media (max-width:414px){
+    #cart .l4ca:not(.in-panel) > li{padding:7px 0 !important}
+    #cart .l4ca:not(.in-panel) > li figure{width:78px !important;min-width:78px !important;flex:none !important}
+    #cart .l4ca:not(.in-panel) > li figure img{width:78px !important;height:78px !important}
+    #cart .l4ca:not(.in-panel) > li section{row-gap:3px !important}
+    #cart .l4ca:not(.in-panel) > li h2,
+    #cart .l4ca:not(.in-panel) > li h2 a{font-size:14px !important;line-height:1.3 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-varp{margin:0 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-varp select,
+    #cart .l4ca:not(.in-panel) > li select.pg-vsel{padding:4px 24px 4px 8px !important;font-size:12px !important}
+    #cart .l4ca:not(.in-panel) > li .nc-lsave{font-size:11.5px !important;line-height:1.25 !important}
+    #cart .l4ca:not(.in-panel) > li .nc-lsave-now{font-size:15px !important}
+    #cart .l4ca:not(.in-panel) > li footer{margin:0 !important}
+    #cart .l4ca:not(.in-panel) > li .pg-qbtn{width:26px !important;height:26px !important}
+    #cart .l4ca:not(.in-panel) > li input[type=number]{height:26px !important;font-size:13px !important}
+    #cart .l4ca:not(.in-panel) > li .pg-save-chip{transform:scale(.82);transform-origin:left center}
+    #cart .l4ca:not(.in-panel) > li .pg-free-note{font-size:10.5px !important;padding:3px 6px !important;margin-top:3px !important}
+
+    /* the pinned pane, block by block */
+    #pg-rush{padding:7px 10px !important}
+    #pg-rush, #pg-rush *{font-size:12px !important;line-height:1.35 !important}
+    #cart #pg-unlock-slot{margin:6px 0 !important}
+    #cart #pg-unlock-slot .pg-unlock{padding:7px 10px !important;gap:8px !important;min-height:0 !important;margin:0 !important}
+    #cart #pg-unlock-slot .pg-unlock img{width:38px !important;height:38px !important}
+    #cart #pg-unlock-slot .pg-unlock,
+    #cart #pg-unlock-slot .pg-unlock *{font-size:12px !important;line-height:1.3 !important}
+    #cart #pg-unlock-slot .pg-unlock b{font-size:12.5px !important}
+    #cart .pg-frameoffer{padding:7px 10px !important;gap:8px !important;margin:6px 0 2px !important}
+    #cart .pg-frameoffer img{width:36px !important;height:36px !important}
+    #cart .pg-sp{padding:6px 10px !important}
+    /* THE TOTAL STAYS. This block used to carry
+         #cart .sticky-in-panel .l4tt{display:none !important}
+       which removed the "Total $402.54" row outright on every iPhone at or below
+       414px -- and 414px is EVERY non-Max iPhone, so this was the common case,
+       not an edge one. It is the single number a shopper most needs before
+       tapping CHECKOUT, and it is the one thing the note above says this block
+       does not do: "no element is removed except the taxes note".
+
+       .l4tt is not the taxes note. pg-cart-total hides every row in that list
+       except li.pg-tt --
+
+         #cart .sticky-in-panel .l4tt:has(li.pg-tt) li:not(.pg-tt){display:none}
+
+       -- so by the time this rule applied, the ONLY thing left in .l4tt was the
+       Total. Hiding the list hid the Total and nothing else.
+
+       Nothing replaces it: pg-cart-mobile already compacts the row at every
+       width under 760px (`.l4tt{margin:1px 0}` plus its own font sizing), so the
+       row comes back tight rather than at its desktop size, and the rest of this
+       block's savings are untouched. */
+    #cart .sticky-in-panel .nc-dtrust{transform:scale(.86);transform-origin:center top;margin-bottom:-6px !important}
+  }
+</style>
+{% schema %}
+{"name": "PG Cart Timer", "settings": [], "presets": [{"name": "PG Cart Timer"}]}
+{% endschema %}
