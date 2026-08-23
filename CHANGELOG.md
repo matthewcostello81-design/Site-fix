@@ -1,3 +1,41 @@
+# Cart: restore the orb upsell rail (Buy 2 Get 1 / Buy 4 Get 2 / Buy 5 Get 3)
+
+## Problem
+The orb (Crystal Legends Orb) upsell rows stopped showing in the cart drawer.
+The currently published theme is literally named "No orb cart upsell
+(Claude 8-23)": a prior session suppressed the orb's cart rail on request,
+and that theme went live. The wall art and console rails were unaffected.
+
+## Cause
+`sections/pg-unlock.liquid` (the cart's offer rail) gained a
+`NO_CART_RAIL = ['pokemon-crystal']` list plus a `railSuppressed()` filter in
+`offers()`, which skipped every orb line when computing which upsell rows to
+draw. The orb's ladder itself (`LADDERS`) and the product page tiles were left
+intact, so restoring is exactly what that code's own comment said it would be:
+deleting the suppression, not reconstructing the ladder.
+
+## Fix
+Removed the `NO_CART_RAIL` list, the `railSuppressed()` helper, and the filter
+line in `offers()`, restoring the file to its pre-removal behavior. Kept the
+one unrelated improvement added in the same edit, `#pg-unlock-slot:empty
+{display:none}` (hides the empty rail container so it doesn't leave a 12px gap
+on small phones), with its comment rewritten since it no longer describes a
+suppressed rail.
+
+Verified before shipping that the prices the rail promises are still honored
+at checkout: "PokeOrb - Buy 2 Get 1 Free" is ACTIVE with no per-order limit
+(so it also covers the Buy 4 Get 2 rung by applying twice) and "PokeOrb -
+Buy 5 Get 3 Free" is ACTIVE.
+
+## Applied to
+Shopify draft theme `163148890340` ("PDP quote no-jump (Claude 8-23)", the
+most recent unpublished theme) via the Admin API (themeFilesUpsert); re-read
+after the push and confirmed byte-identical, 54,404 bytes.
+
+Files changed: sections/pg-unlock.liquid (now tracked in this repo)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
