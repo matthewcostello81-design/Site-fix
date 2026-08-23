@@ -1,3 +1,53 @@
+# Cart upsells: top of the drawer on mobile too (like desktop)
+
+## Problem
+On phones the upsell rows were pinned inside the bottom checkout pane
+(.sticky-in-panel). Requested: put them at the top of the cart on mobile,
+exactly as on desktop, scrolling with the items.
+
+## How placement works (two cooperating writers)
+- sections/pg-unlock.liquid creates #pg-unlock-slot and used to birth it
+  INSIDE the pane on <=760px viewports.
+- sections/pg-cart-mobile.liquid's placeUnlock() (exported as
+  window.pgPlaceUnlock, also run on a 60ms observer) used to MOVE the slot
+  into the pane on mobile.
+Both files' comments warn the two writers must agree or the row visibly
+teleports on every drawer rebuild (the historic "glitching" bug), so both
+were changed together.
+
+## Fix
+- pg-unlock: the slot is now always created immediately above the item list
+  (.l4ca), at every width. The pinned-pane compact CSS is retained but marked
+  INERT (nothing is inside the pane any more); the max-width:414px geometry
+  (stretched thumbnail, 30px button) is slot-scoped and still applies at the
+  top position.
+- pg-cart-mobile: placeUnlock() rewritten to seat the slot above the item
+  list at every width; the pane-move branch and its unlockSeated helper are
+  retired; header rule 5 updated; pgCartFlush version bumped 2 -> 3.
+  window.pgPaneAnchor stays exported for stale-copy safety.
+
+## Merge with a parallel session (important)
+Between pushes, another Claude session working from a STALE base overwrote
+pg-unlock on theme 163148890340: it RE-APPLIED the orb rail suppression
+(NO_CART_RAIL) and reverted the approved sizing/copy polish, while adding a
+genuinely new feature, a chooser close button (.pg-unlock-close, X in the
+row corner, with label restore and a drawer-close reset). This change MERGES
+that close-button feature into the current file and drops the stale
+suppression and reverts, per the user's standing requests (orbs restored,
+polish approved).
+
+## Applied to
+Both drafts via themeFilesUpsert, each re-verified by checksum:
+- pg-unlock.liquid 742736c720ed6d05ccd325a10e75d096 (57,487 bytes)
+- pg-cart-mobile.liquid 9435b90aa5456ba508b58bfbf1363081 (29,506 bytes)
+on `163149316324` "PDP quote no-jump v2" and `163148890340` "PDP quote
+no-jump".
+
+Files changed: sections/pg-unlock.liquid, sections/pg-cart-mobile.liquid
+(now tracked in this repo)
+
+---
+
 # Cart orb upsell row: smaller ADD button, taller thumbnail, no ragged wrap
 
 ## Problem

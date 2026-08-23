@@ -153,8 +153,12 @@
     #cart .pg-unlock-t small{font-size:11.5px}
   }
 
-  /* ---------------- COMPACT INSIDE THE PINNED PANE ----------------
-     pg-cart-mobile moves #pg-unlock-slot INTO .sticky-in-panel under 760px, so
+  /* ---------------- COMPACT INSIDE THE PINNED PANE (INERT) ----------------
+     pg-cart-mobile USED TO move #pg-unlock-slot INTO .sticky-in-panel under
+     760px; by request the slot now stays above the item list at every width,
+     so nothing matches these .sticky-in-panel rules today. Kept because they
+     encode the measured compact geometry in case the pane placement returns.
+     The original reasoning, for that case:
      on a phone this row is not scroll content any more -- it is pinned, and
      every pixel it takes is a pixel the shopper cannot use to look at the cart.
      Measured before this rule existed: the row was 155px tall and the pane 312px,
@@ -237,6 +241,18 @@
   #cart .pg-unlock.is-open .pg-unlock-add{display:none !important}
   #cart .pg-unlock.is-open .pg-unlock-tag{display:none}
   #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}
+  /* the chooser can be CLOSED again - it used to trap the shopper open */
+  #cart .pg-unlock{position:relative}
+  #cart .pg-unlock-close{
+    display:none;position:absolute;top:8px;right:8px;z-index:3;
+    width:22px;height:22px;border-radius:50%;
+    align-items:center;justify-content:center;
+    background:rgba(122,47,162,.12);color:#7A2FA2;
+    font-size:12px;font-weight:800;line-height:1;cursor:pointer;
+    -webkit-user-select:none;user-select:none;
+  }
+  #cart .pg-unlock-close:hover{background:rgba(122,47,162,.24)}
+  #cart .pg-unlock.is-open .pg-unlock-close{display:inline-flex}
   #cart .pg-unlock-pick-r{display:flex;align-items:center;gap:8px;margin:0 0 7px}
   #cart .pg-unlock-pick-r span{
     flex:none;width:58px;
@@ -611,13 +627,57 @@
         }
       });
       rowEl.classList.add('is-open');
+      ensureClose(rowEl);
       var btn = rowEl.querySelector('.pg-unlock-add');
-      if (btn) btn.textContent = 'Choose designs below';
+      if (btn){
+        if (!btn.dataset.pgLbl) btn.dataset.pgLbl = btn.textContent;
+        btn.textContent = 'Choose designs below';
+      }
     }, function(){});
   }
   document.addEventListener('change', function(e){
     if (e.target && e.target.closest) snapPicks(e.target.closest('.pg-unlock.is-open'));
   }, true);
+  function ensureClose(rowEl){
+    if (!rowEl || rowEl.querySelector('.pg-unlock-close')) return;
+    var x = document.createElement('span');
+    x.className = 'pg-unlock-close';
+    x.setAttribute('role', 'button');
+    x.setAttribute('aria-label', 'Close');
+    x.innerHTML = '&#10005;';
+    rowEl.appendChild(x);
+  }
+  document.addEventListener('click', function(e){
+    var x = e.target && e.target.closest && e.target.closest('.pg-unlock-close');
+    if (!x) return;
+    e.preventDefault(); e.stopPropagation();
+    var rowEl = x.closest('.pg-unlock');
+    if (!rowEl) return;
+    rowEl.classList.remove('is-open');
+    delete PICKS[rowEl.getAttribute('data-pg-unlock')];
+    var btn = rowEl.querySelector('.pg-unlock-add');
+    if (btn && btn.dataset.pgLbl) btn.textContent = btn.dataset.pgLbl;
+  }, true);
+  /* Shutting the DRAWER also resets the chooser. The saved picks exist to
+     survive in-cart rebuilds mid-interaction, not to greet the shopper with a
+     fully expanded panel the next time they open the cart. */
+  (function(){
+    var wasOpen = false;
+    setInterval(function(){
+      var c = document.getElementById('cart');
+      if (!c) return;
+      var open = /(^|\s)toggle(\s|$)/.test(c.className);
+      if (wasOpen && !open){
+        for (var k in PICKS) delete PICKS[k];
+        c.querySelectorAll('.pg-unlock.is-open').forEach(function(r){
+          r.classList.remove('is-open');
+          var b = r.querySelector('.pg-unlock-add');
+          if (b && b.dataset.pgLbl) b.textContent = b.dataset.pgLbl;
+        });
+      }
+      wasOpen = open;
+    }, 400);
+  })();
   function heldVariants(handle){
     var held = {};
     (LASTCART.items || []).forEach(function(it){
@@ -827,44 +887,20 @@
       var want = {};
       offs.forEach(function(o){ want[o.handle] = o; });
 
-      /* THE SLOT IS BORN WHERE IT BELONGS. Created once, recreated when a
-         drawer rebuild destroys it -- and a rebuild destroys it on every add and
-         every quantity change.
-         It used to be re-created unconditionally above the item list, which is
-         its DESKTOP home. On a phone pg-cart-mobile then moved it down into the
-         pinned pane -- but only on its own 60ms observer tick, one whole frame
-         or more later. So every cart change played the same sequence: the offer
-         rows reappeared at the top of the drawer, at their un-pinned size, and
-         were then teleported to the bottom. Measured at ~81ms of visible wrong
-         position per rebuild in a zero-latency harness, longer on a real phone
-         where a /cart.js round trip precedes it. That teleport is the "glitching"
-         the shop owner reported.
-         Creating it in the pane directly, when a pane exists and we are at a
-         width where it belongs there, removes the intermediate position
-         entirely -- there is no first paint to correct. placeUnlock() still runs
-         and is still the authority; it now finds the slot already correct and
-         returns without touching anything. */
+      /* THE SLOT LIVES ABOVE THE ITEM LIST AT EVERY WIDTH. It used to be born
+         inside .sticky-in-panel on phones, pinned over the cart beside
+         CHECKOUT; by request the mobile drawer now matches desktop, with the
+         offer rows at the top of the cart scrolling with the items.
+         pg-cart-mobile's placeUnlock() seats it in exactly this position (its
+         pane-move branch was retired in the same change) -- the two writers
+         must stay in agreement, or every drawer rebuild replays a visible
+         teleport between their two answers, which is the historic "glitching"
+         bug both files' comments describe. Change both together. */
       var slot = c.querySelector('#pg-unlock-slot');
       if (!slot){
         slot = document.createElement('div');
         slot.id = 'pg-unlock-slot';
-        var pane = c.querySelector('.sticky-in-panel');
-        if (pane && window.matchMedia('(max-width:760px)').matches){
-          /* pg-cart-mobile owns where in the pane this goes -- the countdown
-             banner also claims the first slot, and the two used to fight over it
-             several times a second. Use its anchor so the row is born in the
-             position it will keep. */
-          /* Record the home placeUnlock would have recorded had it done the
-             move itself. Without it there is nothing for its restore branch to
-             put back when the viewport widens past 760px -- rotate to landscape,
-             or a desktop resize -- and the row stays pinned in the pane at a
-             width where it belongs above the list. */
-          slot.pgHome = {parent: list.parentNode, next: list};
-          var anchor = window.pgPaneAnchor ? window.pgPaneAnchor(pane) : pane.firstChild;
-          pane.insertBefore(slot, anchor);
-        } else {
-          list.parentNode.insertBefore(slot, list);
-        }
+        list.parentNode.insertBefore(slot, list);
       }
 
       /* adopt strays and kill duplicates: any row outside the slot (an older
@@ -1023,8 +1059,10 @@
     if (rowEl && !rowEl.classList.contains('is-open')){
       buildChooser(rowEl, oForPick).then(function(built){
         if (built){
+          if (!btn.dataset.pgLbl) btn.dataset.pgLbl = btn.textContent;
           rowEl.classList.add('is-open');
           btn.textContent = 'Choose designs below';
+          ensureClose(rowEl);
           snapPicks(rowEl);       /* seed with the defaults the chooser opens on */
         }
         else directAdd(btn);
