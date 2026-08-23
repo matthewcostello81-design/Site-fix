@@ -28,9 +28,16 @@ at checkout: "PokeOrb - Buy 2 Get 1 Free" is ACTIVE with no per-order limit
 Buy 5 Get 3 Free" is ACTIVE.
 
 ## Applied to
-Shopify draft theme `163148890340` ("PDP quote no-jump (Claude 8-23)", the
-most recent unpublished theme) via the Admin API (themeFilesUpsert); re-read
-after the push and confirmed byte-identical, 54,404 bytes.
+Shopify draft theme `163148890340` ("PDP quote no-jump (Claude 8-23)") via the
+Admin API (themeFilesUpsert); re-read after the push and confirmed
+byte-identical, 54,404 bytes.
+
+Follow-up: a parallel session created "PDP quote no-jump v2 (Claude 8-23)"
+(`163149316324`) seconds around the first push, and its copy captured the old
+suppressed pg-unlock (55,827 bytes) - which is why the rail was still missing
+on "the draft theme". Pushed the same restored file there too and confirmed
+the checksum matches the verified restore (3ad223756d3260c9e95bc20c5db8b6d7,
+54,404 bytes). Both current drafts now show the orb rail.
 
 Files changed: sections/pg-unlock.liquid (now tracked in this repo)
 
