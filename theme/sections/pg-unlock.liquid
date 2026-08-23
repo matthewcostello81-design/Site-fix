@@ -174,13 +174,20 @@
     gap:10px;padding:8px 10px;margin:0 0 6px;border-radius:11px;
     box-shadow:0 6px 16px -14px rgba(74,28,102,.45);
   }
-  #cart .sticky-in-panel .pg-unlock img{width:42px;height:42px;border-radius:9px}
+  /* the thumbnail fills the row's height instead of sitting as a small square
+     inside a taller row: the note wraps to two lines on most carts, and a 42px
+     square left dead space above and below it. stretch + min-height keeps it
+     a portrait sliver that tracks whatever height the copy sets. */
+  #cart .sticky-in-panel .pg-unlock img{width:46px;height:auto;min-height:54px;align-self:stretch;border-radius:9px}
   #cart .sticky-in-panel .pg-unlock-t b{font-size:13px;line-height:1.25}
   #cart .sticky-in-panel .pg-unlock-t small{font-size:11px;line-height:1.3;margin-top:1px}
   #cart .sticky-in-panel .pg-unlock-tag{display:none}
-  /* the button is already compact and beside the copy everywhere (base rule);
-     inside the pinned pane it only gives up 2px of side padding. */
-  #cart .sticky-in-panel .pg-unlock-add{padding:0 14px !important}
+  /* smaller than the base 40px inside the pinned pane, by request: the pane is
+     pinned over the cart, so every pixel the button spends is cart the shopper
+     cannot see, and at this size the copy keeps the line width instead of the
+     button. 32px is still a usable tap target; the desktop drawer list keeps
+     the base size. */
+  #cart .sticky-in-panel .pg-unlock-add{padding:0 12px !important;min-height:32px;font-size:12px}
   /* THE CHOOSER, PINNED. Tapping ADD on a multi-design product hides the button
      and opens this panel, whose own confirm button is full-width by design --
      it IS the CTA at that point. Uncompacted it took the pinned row to 210px
@@ -191,6 +198,25 @@
   #cart .sticky-in-panel .pg-unlock-pick{padding-top:8px;margin-top:0}
   #cart .sticky-in-panel .pg-unlock-pick select{padding:9px 9px;font-size:12.5px}
   #cart .sticky-in-panel .pg-unlock-pick-r{margin:0 0 5px}
+
+  /* ---- SMALL PHONES (max-width:414px) ----
+     pg-cart-timer's small-phone compact block stamps this row's geometry with
+     TWO-ID !important rules (#cart #pg-unlock-slot ... img at 38x38, every
+     text node at 12px), and that file loads after this one in overlay-group,
+     so at equal specificity it always wins. Beating it needs a heavier
+     selector, not a later one: #cart doubled makes three ids, which wins at
+     any load order. Same intent as the pinned-pane rules above -- thumbnail
+     stretched to the row's full height, button compact so the copy keeps the
+     line width -- restated at the strength this width requires. */
+  @media (max-width:414px){
+    #cart#cart #pg-unlock-slot .pg-unlock img{
+      width:46px !important;height:auto !important;min-height:52px !important;
+      align-self:stretch !important;
+    }
+    #cart#cart #pg-unlock-slot .pg-unlock .pg-unlock-add{
+      min-height:30px !important;padding:0 11px !important;
+    }
+  }
 
   /* ---------------- the design chooser ----------------
      The upsell used to add more of the variant already in the cart. On the orb
@@ -651,8 +677,10 @@
         /* they have already paid their way to this rung: everything on offer
            is free, however many units that is */
         title = 'Add your FREE ' + o.freeNth + ' ' + o.name + (o.freeAdded === 1 ? '' : 's');
-        note = 'You already qualify for Buy ' + o.tierPaid + ', Get ' + o.tierFree +
-               ' FREE - ' + (o.freeAdded === 1 ? 'this one costs' : 'these cost') + ' nothing';
+        /* the headline already says FREE, so the note only names the tier --
+           the old "- these cost nothing" tail pushed it to a third line on
+           phones without adding anything the row had not said twice. */
+        note = 'You already qualify for Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
       } else {
         /* They pay for N more and N+M arrive. That is the sentence -- not
            "add 3 more", which reads as though the offer moved further away the
@@ -664,8 +692,12 @@
            offer. The tier goes in the headline and the step stays in the note,
            so the row answers "what do I get" before "what does it cost". */
         title = 'Unlock Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
-        note = 'Add ' + o.paidAdded + ' more (' + (o.tierPaid + o.tierFree) + ' ' +
-               o.name.toLowerCase() + 's total) - ' + o.freeAdded + ' of them free';
+        /* the pack size stays but the product name comes out of the note:
+           "(6 crystal legends orbs total)" was most of a line by itself and
+           wrapped the note to three ragged lines on a 390px phone. The row's
+           image and headline already say which product this is. */
+        note = 'Add ' + o.paidAdded + ' more - ' + o.freeAdded + ' of them free (' +
+               (o.tierPaid + o.tierFree) + ' total)';
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;

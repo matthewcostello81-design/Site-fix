@@ -1,3 +1,43 @@
+# Cart orb upsell row: smaller ADD button, taller thumbnail, no ragged wrap
+
+## Problem
+On the phone cart (pinned pane), the orb offer row read badly: the ADD button
+was large relative to the row, the thumbnail sat as a small square inside a
+taller row, and the note "Add 2 more (6 crystal legends orbs total) - 1 of
+them free" wrapped to three ragged lines.
+
+## Cause
+- The note embeds the lowercased product name, which is most of a line by
+  itself on a 390px screen.
+- On phones at or below 414px, pg-cart-timer's small-phone compact block
+  stamps the row's geometry with TWO-ID !important rules (image locked to
+  38x38, all text 12px), and that section loads after pg-unlock in
+  overlay-group, so pg-unlock's own rules could not win at equal specificity.
+- The button's base min-height (40px) was never reduced inside the pinned
+  pane.
+
+## Fix (sections/pg-unlock.liquid only)
+- Note copy shortened in row(): "Add 2 more - 1 of them free (6 total)"; the
+  already-qualified variant drops its "- these cost nothing" tail (the
+  headline already says FREE). Pack size and free count remain truthful.
+- Pinned pane: thumbnail becomes a stretch-to-row-height portrait
+  (width 46px, height auto, min-height 54px, align-self stretch), button
+  drops to min-height 32px / 12px text / tighter padding.
+- New max-width:414px block using a doubled id (#cart#cart, three ids total)
+  to out-specify pg-cart-timer's stamps at any load order: image stretched to
+  the row height, button min-height 30px.
+- Desktop drawer list is untouched.
+
+## Applied to
+Both current drafts via themeFilesUpsert, each re-verified by checksum
+(43577254e3e365b37a4f3a116da4fb1f, 56,353 bytes):
+- `163149316324` "PDP quote no-jump v2 (Claude 8-23)"
+- `163148890340` "PDP quote no-jump (Claude 8-23)"
+
+Files changed: sections/pg-unlock.liquid
+
+---
+
 # Cart: restore the orb upsell rail (Buy 2 Get 1 / Buy 4 Get 2 / Buy 5 Get 3)
 
 ## Problem
