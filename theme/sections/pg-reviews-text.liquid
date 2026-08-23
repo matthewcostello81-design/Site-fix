@@ -1,0 +1,82 @@
+{%- comment -%}
+  PG Reviews Text: lift the review copy off the dark canvas.
+
+  pg-landing was written for a white page, so the review block carries light-page
+  colours: `.pgx-card-txt{color:#2f2f2f}`, `.pgx-rev-count{color:#333}`,
+  `.pgx-hist-n{color:#555}`. pg-dark repaints the card surfaces to #16101F but
+  never restates those, so near-black text ends up on a near-black card -- which
+  is why the reviews are the hardest thing on the page to read.
+
+  Review text goes white, names pure white, and the supporting figures (review
+  count, histogram counts) to the same muted lavender the rest of the dark skin
+  uses for secondary copy. The quote carousel above the buy box gets the same
+  treatment so both review surfaces match.
+
+  ---------------------------------------------------------------- THE LAYOUT
+
+  It also owns how many reviews sit in a row, for the same reason it owns their
+  colour: the rule that decides it is one line of a 40KB file that is otherwise
+  nothing to do with reviews, and this file is already the reviews' override
+  layer, already global, and small enough to redeploy without risking the rest.
+
+  pg-landing sets `.pgx-cards{columns:4 260px}` and then `columns:1` under
+  900px, so every review below that width ran the full width of the page and
+  the section became one tall column to scroll past. Now it steps: four across
+  on a wide screen (unchanged), three on a tablet, two on a phone.
+
+  `columns: <count> <min-width>` takes whichever gives FEWER columns, so the
+  count is a ceiling and the min-width is what actually decides at a given
+  width. Multi-column is kept rather than swapped for a grid so the cards stay
+  masonry -- a two-line review does not stretch itself to match a six-line one
+  beside it, which is what a grid row would force.
+
+  Specificity, not source order, is what makes this win: pg-landing's rules are
+  a bare class inside a media query, these are id-scoped, so they hold wherever
+  in the document this file happens to render.
+{%- endcomment -%}
+<style>
+/* review cards */
+html body #pgx .pgx-card-txt,
+html body #pgx .pgx-card-txt *{color:#F1EDF7 !important}
+html body #pgx .pgx-card-name{color:#FFFFFF !important}
+
+/* score block and histogram */
+html body #pgx .pgx-rev-num{color:#FFFFFF !important}
+html body #pgx .pgx-rev-count{color:#D3C9E4 !important}
+html body #pgx .pgx-hist-n{color:#C1B4D2 !important}
+html body #pgx .pgx-bar{background:rgba(255,255,255,.12) !important}
+
+/* "Write a review" */
+html body #pgx .pgx-write a{color:#C79BEA !important;border-color:#8B44BE !important}
+
+/* the quote carousel in the buy column */
+html body #pgx .pgx-quote-txt{color:#F1EDF7 !important}
+html body #pgx .pgx-quote-name{color:#FFFFFF !important}
+html body #pgx .pgx-quote-next{color:#C79BEA !important}
+
+/* the rating line under the title */
+html body #pgx .pgx-rating,
+html body #pgx .pgx-rating strong,
+html body #pgx .pgx-rating span:not(.pgx-stars){color:#F1EDF7 !important}
+
+/* ---------------- how many reviews sit in a row ---------------- */
+
+@media (max-width: 900px){
+  html body #pgx .pgx-cards{columns:3 200px;column-gap:14px}
+}
+
+@media (max-width: 600px){
+  /* two to a row on a phone. The card lands around 165px wide there, so the
+     type steps down with it -- at pg-landing's 15px the words break every three
+     or four to a line and each card reads as a column of fragments. */
+  html body #pgx .pgx-cards{columns:2 140px;column-gap:10px}
+  html body #pgx .pgx-card{padding:12px;margin-bottom:10px;border-radius:12px}
+  html body #pgx .pgx-card-name{font-size:14px;margin-bottom:4px}
+  html body #pgx .pgx-card .pgx-stars{font-size:12.5px}
+  html body #pgx .pgx-card-txt{font-size:13px;line-height:1.45;margin-top:6px}
+  html body #pgx .pgx-card-pics img{width:44px;height:44px}
+}
+</style>
+{% schema %}
+{"name": "PG Reviews Text", "settings": []}
+{% endschema %}

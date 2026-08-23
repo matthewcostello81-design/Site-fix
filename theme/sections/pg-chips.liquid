@@ -1,0 +1,667 @@
+{%- comment -%}
+  PG Chips: cart pill styling, and a SAVED % that tells the truth.
+
+  (A) CENTRING. The FREE GIFT pill (pg-drawer's giftTag) and the SAVED n% pill
+  (its pass()) are both stamped with INLINE `!important` styles the moment they
+  are created: font-size:12px, line-height:1.5, padding:4px 12px. An inline
+  !important declaration outranks every stylesheet rule, so this cannot be fixed
+  in CSS -- the properties have to be re-set on the elements themselves.
+
+  - display:inline-flex + centred alignment and line-height:1, so the glyphs sit
+    in the middle of the pill instead of riding on a 1.5 line box.
+  - text-indent matching the letter-spacing. Letter-spacing adds its gap AFTER
+    the final letter too, which pushes the visual centre left; indenting by the
+    same amount puts it back.
+  - 12px -> 13px text and 4px 12px -> 7px 15px padding.
+
+  (B) THE PERCENTAGE. pg-drawer works its SAVED n% out from compare-at against
+  the variant's list price, which ignores every bundle discount actually applied
+  to that line. A shopper who took the 3rd-orb-50%-off rung saw a line charged
+  $16.50 against a $79.99 compare-at -- a real saving of 79% -- still badged
+  SAVED 59%, the same as the undiscounted orb sitting above it. The badge was
+  understating the offer precisely on the line the offer applied to, and two
+  identical-looking lines carried identical badges at different prices.
+
+  So the pill is recomputed from what the line is genuinely charged:
+
+      saved% = 1 - line_price / (compare_at x quantity)
+
+  line_price is cart.js's fully-discounted figure, so any BXGY rung, any
+  combination of them now that the ladders stack, AND the automatic 10% order
+  discount are all reflected. It has to be line_price rather than
+  final_line_price: final_line_price counts line-level discounts only, so when
+  the 10% became an order discount it silently dropped out and the pill started
+  printing SAVED 50% beside a row reading $140.00 struck and $62.99 charged --
+  figures that are 55% apart. compare_at comes from /products.json, which
+  cart.js does not carry.
+
+  (C) THE STRUCK PRICE. Same root cause, other half of the line. pg-drawer
+  strikes through the variant's LIST price, so an undiscounted orb showed
+  $79.99 struck against $32.99 -- correct, that is MSRP -- while the
+  bundle-discounted orb beside it showed $32.99 struck against $16.50. Two
+  identical products, two different meanings for the same struck figure, and
+  the discounted line quietly hid the fact that it is $79.99 off MSRP.
+
+  Every line now strikes MSRP x quantity, so the struck number means the same
+  thing on every row and the pill's percentage is the arithmetic between the
+  two figures a shopper can actually see.
+
+  Lines are matched to cart items by handle and then by order within that handle
+  -- the same approach pg-cart-variants uses -- so a product on two lines still
+  lines up. The FREE GIFT pill is left alone: it is a label, not a percentage.
+
+  (D) ONE ROW PER PRODUCT, AND WHY THE QUANTITY USED TO SKIP.
+
+  Shopify's Buy 2 Get 1 does not discount a line, it SPLITS one: three orbs
+  become a line of 2 charged and a line of 1 free. The drawer rendered both as
+  ordinary rows, each with its own +/- stepper, and that is the whole bug.
+
+  Measured, three orbs in the cart, pressing MINUS on the row displaying 2:
+  the cart correctly went from 3 to 2 -- and that row still displayed 2, because
+  the unit Shopify took away was the free one on the OTHER row. The shopper
+  pressed minus and the number they were looking at did not move. Pressing PLUS
+  repeatedly walked the rows through 2 / 2+1 / 1+2+1 / 1+2+2: rows appearing,
+  disappearing and changing places under the finger, with the price on each one
+  changing every time the split was re-cut.
+
+  Nothing there is fixable by adjusting a stepper, because the premise is wrong:
+  two numbers were being shown for one product, and Shopify -- not the shopper --
+  decides how the total is divided between them.
+
+  So the rows for one variant are merged into one. The first row carries the
+  group: the real total quantity, the sum of the group's line prices, MSRP times
+  that total struck through, one honest percentage, and a note saying how many of
+  them are free. The rest are hidden. There is now one number per product, so it
+  cannot disagree with itself.
+
+  THE STEPPER IS INTERCEPTED ONLY ON MERGED ROWS. +/- sets the product's TOTAL
+  through a single /cart/update.js that puts the whole quantity on the first line
+  and zeroes the others; Shopify then re-cuts the split however it likes, which
+  is invisible because the display is rebuilt from the cart either way. A product
+  on a single line is not touched at all -- the theme's own stepper keeps working
+  exactly as before, so this can only affect the rows that were broken.
+
+  Everything shown is derived from cart.js on every pass, so if the drawer's own
+  markup is momentarily stale the figures still converge on the truth.
+{%- endcomment -%}
+<style>
+  /* Backstop for any pill rendered without the inline styles. */
+  #cart .pg-free-tag,#cart .pg-save-chip,
+  body.template-cart .pg-free-tag,body.template-cart .pg-save-chip{
+    display:inline-flex;align-items:center;justify-content:center;text-align:center;
+    /* same geometry as STYLE below, so a pill painted before the stamp lands is
+       already the right width instead of resizing under the shopper */
+    width:fit-content;max-width:100%;min-width:0;
+    padding:6px 7px 6px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
+  }
+
+  /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
+     bundle split creates are hidden rather than removed: the drawer rebuilds
+     itself constantly and re-adding removed nodes is the fight that made the
+     upsell rows swap places, while a class costs nothing and is re-applied on
+     every pass. */
+  #cart .l4ca > li.pg-merged-away,
+  body.template-cart .l4ca > li.pg-merged-away{display:none !important}
+
+  /* A LINE THAT COSTS NOTHING SAYS SO. The percent badge is hidden on it in the
+     JS as well; this is the backstop, and it also stops the struck compare-at
+     price sitting next to the word FREE looking like a contradiction -- struck
+     price, then FREE, reads as the saving rather than as two prices. */
+  #cart .l4ca > li.pg-line-free .pg-save-chip,
+  body.template-cart .l4ca > li.pg-line-free .pg-save-chip{display:none !important}
+  /* FREE is a price, so it wears the price's colour. It was briefly green, which
+     is the one colour in the cart that means nothing else -- every other figure
+     on these lines is #7A2FA2, so a green word read as a different kind of thing
+     rather than as this line's price. Same purple, same weight, same size as the
+     numbers beside it; being a word among figures is all the emphasis it needs. */
+  #cart .l4ca > li.pg-line-free .nc-lsave-now,
+  body.template-cart .l4ca > li.pg-line-free .nc-lsave-now{
+    color:#7A2FA2 !important;letter-spacing:.04em;
+  }
+
+  /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.
+     This note is inserted as a sibling of the SAVED chip, and the drawer makes
+     that parent a GRID (`#cart .l4ca > li section{display:grid;...}`) which gives
+     the chip an explicit grid-area and justify-self:start. The note got neither,
+     so it was auto-placed into an implicit row with justify-self:auto -- i.e.
+     stretch -- and a stretched grid item with width:auto fills its column. Its
+     inline-flex was blockified by grid layout, so inline shrink-wrapping never
+     applied either. Measured: 168.8px on a 390px phone and 229.3px on the wider
+     desktop drawer, for 111.5px of letters -- it got LONGER as the drawer got
+     wider, which is the giveaway that it was tracking the column and not the
+     text. Beside a SAVED chip that hugs at 81.8px it read as a long empty purple
+     bar across the line.
+     width/justify-self give it back its own width; grid-column puts it on a full
+     row of its own rather than an odd implicit cell; and the tracking and padding
+     now match the chip -- letter-spacing applies after the final glyph too, which
+     is the same trailing gap the chip was fixed for. 168.8px -> 118.9px. */
+  #cart .pg-free-note,
+  body.template-cart .pg-free-note{
+    display:inline-flex;align-items:center;
+    width:fit-content;max-width:100%;min-width:0;
+    justify-self:start;grid-column:1 / -1;
+    margin-top:4px;padding:4px 7px;border-radius:999px;
+    background:rgba(139,68,190,.14);
+    border:1px solid rgba(168,120,214,.4);
+    color:#6B3E93;
+    font-size:11.5px;font-weight:800;
+    letter-spacing:normal;word-spacing:normal;text-indent:0;
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+</style>
+<script>
+(function(){
+  if (window.pgChips) return; window.pgChips = 1;
+
+  /* .nc-lsave-off is the drawer's OWN saved-percent pill, in the price column of
+     the same cart line -- pg-unlock has a rule for it, so it is a distinct node.
+     It was never in this selector, so it kept the drawer's 12px-a-side padding
+     and .05em tracking while the chip three columns away was narrowed to 7px and
+     normal: the same words, "SAVED 74%", rendering at two different lengths on
+     one line. Adding it is free and idempotent -- if it ever turns out to be the
+     same node as .pg-save-chip the extra selector matches the same element and
+     changes nothing. */
+  var SEL = '.pg-free-tag, .pg-save-chip, .nc-lsave-off';
+  /* THE PILL HUGS ITS TEXT. It was `padding:7px 15px` with `letter-spacing:.05em`
+     and a matching `text-indent`, which is 30px of purple either side of a ~80px
+     word plus a tracked space trailing the % sign -- the badge read as a wide
+     slab with the number floating in the middle of it.
+
+     Measured in Chromium against the drawer's own grid: the pill hugs its glyphs
+     exactly -- 0px of slack on either side -- so nothing is stretching it and
+     there is no layout bug to find. It was simply BUILT wide: 18px of padding
+     and .05em of tracking around a 13px word, 96.7px of purple for 79.3px of
+     letters. The width therefore comes off the things that actually hold it.
+     Padding to a symmetric 7px, size back to the 12px the theme drew it at, and
+     tracking off altogether -- 81.8px for 67.8px of letters.
+
+     letter-spacing goes to `normal` rather than a smaller number because it
+     applies AFTER the final glyph as well, so any non-zero value leaves a gap
+     trailing the % sign. Earlier passes tried to balance that (indent by the
+     same amount, then trim padding-right by it) and both kept the gap while
+     adding arithmetic; removing the tracking removes the problem, and
+     text-indent goes with it. word-spacing and column-gap are pinned for the
+     same reason: neither was ever reset, so an inherited value on either could
+     widen the pill at the space in "SAVED 55%" without appearing in any rule
+     here. */
+  var STYLE = {
+    'display': 'inline-flex',
+    'align-items': 'center',
+    'justify-content': 'center',
+    'text-align': 'center',
+    'font-size': '12px',
+    'line-height': '1',
+    /* 6px, not 4px. Height is font-size x line-height plus this padding and
+       nothing else, so this is the only lever on the badge's aspect that does
+       not touch its width: 20px tall -> 24px tall, for free. */
+    'padding-top': '6px',
+    'padding-bottom': '6px',
+    'padding-left': '7px',
+    'padding-right': '7px',
+    'letter-spacing': 'normal',
+    'word-spacing': 'normal',
+    'column-gap': '0',
+    'text-indent': '0',
+    'border-radius': '999px',
+    'width': 'fit-content',
+    'max-width': '100%',
+    'min-width': '0',
+    'flex': 'none'
+  };
+
+  /* THE STAMP RE-ASSERTS, AND IT DOES NOT WAIT. Two faults, one fix.
+     pg-drawer builds every pill with its OWN inline !important geometry
+     (font-size:12px, line-height:1.5, padding:4px 12px), and inline !important
+     can only be beaten by inline !important -- this stamp. It used to mark each
+     element with dataset.pgChip and skip it forever after, so any pill the
+     drawer rebuilt in place kept the wide slab; and it only ran on a 300ms
+     interval, so even a fresh pill wore that slab for up to a third of a second
+     and visibly snapped narrower under the shopper. The guard is now the
+     rendered value rather than a one-shot flag, and an observer runs it in the
+     same task the pill is inserted in. setProperty with an unchanged value is
+     free, so re-checking costs nothing. */
+  /* THE GUARD MUST COVER WHAT IT IS GUARDING. It used to test two of the
+     nineteen properties the loop writes -- paddingLeft and letterSpacing -- which
+     meant any other writer landing a single inline !important declaration on one
+     of the other seventeen left both guarded values untouched, so every later
+     stamp returned immediately and the pill kept the foreign value for the life
+     of the page. Six of the seventeen change the width. Measured with the real
+     stamp running: `width:100%` -> 276px permanent, `min-width:140px` -> 140px
+     permanent, `font-size:13px` -> 87.5px permanent, `padding-right:12px` ->
+     86.8px permanent, none of them ever corrected. The guard now covers every
+     width-bearing property, so the only thing it can skip is a pill that is
+     already right. */
+  function isStamped(el){
+    var st = el.style;
+    return st.paddingLeft === '7px' && st.paddingRight === '7px'
+        && st.letterSpacing === 'normal' && st.wordSpacing === 'normal'
+        && st.textIndent === '0px' && st.fontSize === '12px'
+        && st.width === 'fit-content' && st.minWidth === '0px'
+        && st.maxWidth === '100%' && st.columnGap === '0px';
+  }
+  var stamping = false;
+  function stamp(){
+    if (stamping) return;
+    stamping = true;
+    try {
+      document.querySelectorAll(SEL).forEach(function(el){
+        /* a pill on a line that costs nothing is deliberately hidden by repct();
+           re-stamping display:inline-flex here would fight it back into view on
+           the next tick */
+        if (el.closest && el.closest('.pg-line-free')) return;
+        if (isStamped(el)) return;
+        for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
+      });
+    } finally { stamping = false; }
+  }
+
+  if (window.MutationObserver){
+    /* childList AND style attributes. It used to be childList only, on the
+       grounds that watching style would make the stamp re-trigger itself -- true,
+       but the cost of not watching was worse: pg-drawer restyles these pills
+       inline (padding:4px 12px, letter-spacing:.05em) after every drawer rebuild,
+       and that is an ATTRIBUTE change, invisible to a childList observer. So the
+       correction was left to the 300ms interval and the shopper watched the pill
+       sit wide and then snap narrower under their eyes on every cart change.
+       Self-triggering is handled properly instead: `stamping` blocks re-entry,
+       and the stamp is idempotent -- a second pass over an already-stamped pill
+       writes nothing, so the cascade is one extra callback that does no work. */
+    new MutationObserver(function(){ stamp(); })
+      .observe(document.body, {childList: true, subtree: true});
+
+    /* ATTRIBUTES, BUT ONLY WHERE PILLS LIVE. Watching style on the whole body
+       would fire for every unrelated inline write in the theme -- and there are
+       several a second, from four different sections' polling loops -- for a set
+       of about five pills that all live in one subtree. Scoped to the drawer and
+       the cart page's form, it fires for pg-drawer's pill restyle (the write
+       that actually matters) and almost nothing else. Attached lazily because
+       #cart may not exist yet, and re-checked until it does. */
+    var attrSeen = [];
+    (function watchAttrs(){
+      ['#cart', 'body.template-cart .form-cart'].forEach(function(sel){
+        var el = document.querySelector(sel);
+        if (!el || attrSeen.indexOf(el) > -1) return;
+        attrSeen.push(el);
+        try {
+          new MutationObserver(function(){ stamp(); })
+            .observe(el, {subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+        } catch(e){}
+      });
+      if (attrSeen.length < 2) setTimeout(watchAttrs, 500);
+    })();
+  }
+
+  /* ---------------- the honest percentage ---------------- */
+
+  var CAP = null;   /* variant id -> compare-at in cents (falls back to price) */
+
+  fetch('/products.json?limit=50').then(function(r){ return r.json(); }).then(function(j){
+    CAP = {};
+    (j.products || []).forEach(function(p){
+      (p.variants || []).forEach(function(v){
+        var price = Math.round(parseFloat(v.price || 0) * 100);
+        var cap = Math.round(parseFloat(v.compare_at_price || 0) * 100);
+        CAP[v.id] = cap > price ? cap : price;
+      });
+    });
+  }).catch(function(){});
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* WHAT THE LINE ACTUALLY COST, whichever field the discount lands in.
+     Shopify puts LINE-level discounts in final_line_price and ORDER-level ones
+     (the standing Extra 10% off entire order) in line_price -- and which of the
+     two is the smaller depends on which kind of discount is running, so reading
+     either one alone under-reports the saving the moment the other applies.
+     The lower of the two is the amount actually charged for the line. */
+  function paidOf(it){
+    var a = typeof it.line_price === 'number' ? it.line_price : null;
+    var b = typeof it.final_line_price === 'number' ? it.final_line_price : null;
+    if (a === null) return b;
+    if (b === null) return a;
+    return Math.min(a, b);
+  }
+
+  function lines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+
+  /* pair every rendered row with the cart line it came from, in cart order */
+  function pair(cart){
+    var out = [], seen = {};
+    Array.prototype.forEach.call(lines(), function(li){
+      var handle = handleOf(li);
+      if (!handle) return;
+      var n = seen[handle] || 0;
+      seen[handle] = n + 1;
+      var hits = (cart.items || []).filter(function(it){ return it.handle === handle; });
+      var item = hits[n];
+      if (!item) return;
+      out.push({li: li, item: item});
+    });
+    return out;
+  }
+
+  function setText(el, t){ if (el && el.textContent.trim() !== t) el.textContent = t; }
+
+  function repct(){
+    if (!CAP) return;
+    var els = lines();
+    if (!els.length) return;
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var rows = pair(cart);
+
+      /* ---- merge every row of one variant into the first of them ---- */
+      var groups = {}, order = [];
+      rows.forEach(function(r){
+        var k = String(r.item.variant_id);
+        if (!groups[k]){ groups[k] = []; order.push(k); }
+        groups[k].push(r);
+      });
+
+      var primary = {};      /* li -> the group it now represents */
+      order.forEach(function(k){
+        var g = groups[k];
+        g.forEach(function(r, i){
+          if (i === 0) r.li.classList.remove('pg-merged-away');
+          else r.li.classList.add('pg-merged-away');
+        });
+        var head = g[0];
+        /* HOW MANY CAME FREE, AND WHAT THE REST REALLY COST EACH.
+           NOTE: these totals are per VARIANT line. The deal is per PRODUCT, so
+           the free/paid split is worked out in the pass below this loop, across
+           every line of the same handle at once -- see WHY THAT MATTERS there.
+           `free` used to be counted as `line_price === 0`, i.e. only the lines
+           Shopify itself split off at zero. That works for a Buy-2-Get-1, which
+           is a BXGY and does split -- and not at all for the 6-pack, which is a
+           flat $72.74 off one line. Six orbs therefore showed no free units and
+           one blended figure, which a shopper divides by six and reads as
+           $22.87 an orb. It is not: it is four orbs and two free ones.
+
+           The line fields answer it for every deal shape at once.
+           original_line_price is the pre-discount total and final_line_price is
+           after LINE discounts only, so their difference is the product
+           discount alone -- immune to the standing Extra 10% off entire order,
+           which lands in line_price instead and would otherwise corrupt the
+           count. Divide that by the unit price and you have the number of free
+           units, whether Shopify split the line or not.
+
+           Checked against the live discounts at every quantity 1-12, with and
+           without the extra 10% stacked: q=3 -> 2 paid + 1 free, q=6 -> 4 + 2,
+           q=8 -> 5 + 3, q=12 -> 8 + 4, and paidUnits x perUnit reconstructs the
+           real charge to the cent every time. */
+        var total = 0, paid = 0, free = 0, orig = 0, fin = 0;
+        g.forEach(function(r){
+          total += r.item.quantity;
+          paid += (paidOf(r.item) || 0);
+          if (typeof r.item.original_line_price === 'number') orig += r.item.original_line_price;
+          if (typeof r.item.final_line_price === 'number') fin += r.item.final_line_price;
+        });
+        if (orig > 0 && total > 0 && fin >= 0 && fin <= orig){
+          var unit = orig / total;
+          if (unit > 0) free = Math.round((orig - fin) / unit);
+        }
+        if (free < 0) free = 0;
+        head.li.setAttribute('data-pg-keys', g.map(function(r){ return r.item.key; }).join('|'));
+        head.li.setAttribute('data-pg-total', String(total));
+        primary[k] = {row: head, total: total, paid: paid, free: free, n: g.length,
+                      handle: head.item.handle, orig: orig, fin: fin};
+
+        /* the one number the shopper steps up and down */
+        var q = head.li.querySelector('input[type=number]');
+        if (q && q.value !== String(total)) q.value = String(total);
+      });
+
+      /* ---- THE DEAL IS PER PRODUCT, NOT PER LINE ----
+         WHY THAT MATTERS. Buy 4 Get 2 is sold as two free orbs, but it is
+         implemented as "PokeOrb - 6 Pack $137.20": a DiscountAutomaticBasic
+         taking a FLAT $72.74 off the product once the cart holds six. Shopify
+         has no notion of a free unit there -- it prorates that lump across every
+         line it applies to. Six orbs picked as six different characters are six
+         cart lines, so each one came back at about $22.87 and not one of them
+         said FREE. The shopper is told they are getting two free and then shown
+         six identical part-prices.
+
+         Working the split out per line cannot fix that: no single line is free,
+         each is just 35% off. It has to be done across every line of the same
+         handle at once -- that is the unit the discount actually applies to.
+
+         The allocation runs from the END of the product's lines backwards,
+         because that is the order the offer is sold in and the order the chooser
+         lays out: the ones you pay for first, the free ones last.
+
+         This RE-PRESENTS the same money, it does not invent any. perUnit x
+         paidUnits equals what the product is actually charged, to the cent, so
+         the line figures still sum to the cart total -- they are just grouped
+         the way the deal was sold instead of the way Shopify's proration
+         happened to spread it. */
+      var byHandle = {};
+      order.forEach(function(k){
+        var gp = primary[k]; if (!gp || !gp.handle) return;
+        var h = byHandle[gp.handle] || (byHandle[gp.handle] = {keys: [], total: 0, paid: 0, orig: 0, fin: 0});
+        h.keys.push(k); h.total += gp.total; h.paid += gp.paid; h.orig += gp.orig; h.fin += gp.fin;
+      });
+
+      Object.keys(byHandle).forEach(function(h){
+        var P = byHandle[h];
+        var freeUnits = 0;
+        if (P.orig > 0 && P.total > 0 && P.fin >= 0 && P.fin <= P.orig){
+          var u = P.orig / P.total;
+          if (u > 0) freeUnits = Math.round((P.orig - P.fin) / u);
+        }
+        if (freeUnits < 0) freeUnits = 0;
+        if (freeUnits > P.total) freeUnits = P.total;
+        var paidUnits = P.total - freeUnits;
+        var perUnit = paidUnits > 0 ? Math.round(P.paid / paidUnits) : 0;
+
+        /* hand the free units out from the last line backwards */
+        var remaining = freeUnits;
+        var freeIn = {};
+        for (var i = P.keys.length - 1; i >= 0; i--){
+          var gk = P.keys[i], gt = primary[gk].total;
+          var take = Math.min(remaining, gt);
+          freeIn[gk] = take;
+          remaining -= take;
+        }
+
+        /* THE LAST PAID LINE ABSORBS THE ROUNDING. perUnit is P.paid divided by
+           the paid units and rounded to the cent, so writing perUnit x units on
+           every line can miss the real charge by a cent or two -- seven orbs
+           printed $154.95 against $154.97 charged. A shopper who adds the lines
+           up should get the cart total exactly, so every paid line but the last
+           shows perUnit x its units and the last one shows whatever is left. */
+        var lastPaid = -1, assigned = 0;
+        P.keys.forEach(function(gk, i){ if (primary[gk].total - (freeIn[gk] || 0) > 0) lastPaid = i; });
+
+        P.keys.forEach(function(gk, i){
+          var gp = primary[gk];
+          var f = freeIn[gk] || 0, pUnits = gp.total - f;
+          var li = gp.row.li;
+          gp.freeUnits = f; gp.paidUnits = pUnits; gp.perUnit = perUnit;
+
+          var cost = (i === lastPaid) ? (P.paid - assigned) : perUnit * pUnits;
+          if (pUnits > 0) assigned += cost;
+
+          /* the price cell: what THESE units cost, or the word when they cost
+             nothing. A bare $0.00 makes the shopper work out what happened. */
+          li.classList.toggle('pg-line-free', f > 0 && pUnits === 0);
+          setText(li.querySelector('.nc-lsave-now'), pUnits === 0 ? 'FREE' : money(cost));
+
+          /* and the sentence, only when one line genuinely holds both */
+          var note = li.querySelector('.pg-free-note');
+          if (f > 0 && pUnits > 0){
+            if (!note){
+              note = document.createElement('span');
+              note.className = 'pg-free-note';
+              var chipEl = li.querySelector('.pg-save-chip');
+              if (chipEl && chipEl.parentNode) chipEl.parentNode.insertBefore(note, chipEl.nextSibling);
+              else li.appendChild(note);
+            }
+            setText(note, pUnits + ' x ' + money(perUnit) + ' + ' + f + ' FREE');
+          } else if (note && note.parentNode){
+            note.parentNode.removeChild(note);
+          }
+        });
+      });
+
+      rows.forEach(function(r){
+        if (r.li.classList.contains('pg-merged-away')) return;
+        var li = r.li;
+        var item = r.item;
+        var grp = primary[String(item.variant_id)];
+
+        /* the free gift carries its own label, not a percentage */
+        if (item.properties && item.properties._free_gift) return;
+
+        var chip = li.querySelector('.pg-save-chip');
+        if (!chip) return;
+
+        /* A PERCENT BADGE ON A LINE THAT COSTS NOTHING IS NOISE -- the price cell
+           already says FREE and "-100%" beside it says it twice. Hidden inline
+           rather than by the stylesheet rule further up, because stamp() writes
+           `display:inline-flex` on these pills with inline !important, and only
+           another inline !important can beat that. The rule stays as a backstop
+           for a pill the stamp has not reached yet. */
+        if (grp && grp.paidUnits === 0 && grp.freeUnits > 0){
+          chip.style.setProperty('display', 'none', 'important');
+          return;
+        }
+        /* and put it back if this line stops being the free one */
+        if (chip.style.display === 'none') chip.style.setProperty('display', 'inline-flex', 'important');
+
+        var cap = CAP[item.variant_id];
+        if (!cap) return;
+        var qty = grp ? grp.total : item.quantity;
+        var base = cap * qty;
+        /* line_price, NOT final_line_price. final_line_price counts only the
+           LINE-level discounts, so once the extra 10% became an automatic ORDER
+           discount it stopped being included: measured on a two-orb line,
+           original_line_price 69.98, final_line_price 69.98, line_price 62.99 --
+           the order discount is in line_price alone. The chip was reading the
+           wrong one and printing SAVED 50% on a row whose own two figures,
+           $140.00 struck and $62.99 charged, are 55% apart. The shopper could
+           see the badge contradict the prices printed beside it. */
+        var paid = grp ? grp.paid : paidOf(item);
+        if (!base || typeof paid !== 'number') return;
+
+        var pct = Math.round((base - paid) / base * 100);
+        if (pct < 1) return;
+
+        /* "-55%", not "SAVED 55%". The pill's own geometry has been at zero
+           slack since the padding and tracking were fixed -- measured dead space
+           beyond glyphs+padding is 0.0px -- so its 4.1:1 stadium shape was the
+           STRING, not a layout fault, and no further CSS could round it. The
+           word is the only remaining lever: "SAVED 55%" is 81.8px of letters,
+           "-55%" is 42.0px, which with the taller box in STYLE above is a 1.75:1
+           badge instead of a 4.1:1 bar. pg-drawer's own pass() writes this same
+           element, so its string was changed to match -- two writers with
+           different text would fight at 300ms against 800ms and flicker. */
+        setText(chip, '-' + pct + '%');
+
+        /* and the struck figure beside it: MSRP for the whole line, so it means
+           the same thing on a discounted row as on a full-price one */
+        var was = money(base);
+        li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
+          if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
+          var t = (el.textContent || '').trim();
+          /* only touch nodes that are just a price -- never a sentence that
+             happens to contain one */
+          if (!/^\$[\d.,]+$/.test(t)) return;
+          if (t !== was) el.textContent = was;
+        });
+      });
+    }).catch(function(){});
+  }
+
+  /* ---- +/- on a merged row sets the product's TOTAL -- see (D) above ---- */
+  var stepping = false;
+  function rowOf(el){
+    return el.closest('#cart .l4ca > li, body.template-cart .l4ca > li');
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    var btn = e.target.closest('.pg-qbtn');
+    if (!btn) return;
+    var li = rowOf(btn);
+    if (!li) return;
+
+    var keys = (li.getAttribute('data-pg-keys') || '').split('|').filter(Boolean);
+    /* a product on ONE line is none of our business: the theme's own stepper
+       already handles it correctly, and intercepting it could only break it */
+    if (keys.length < 2) return;
+
+    var t = (btn.textContent || '').trim();
+    var delta = t === '+' ? 1 : (t === '-' || t === '−') ? -1 : 0;
+    if (!delta) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (stepping) return;
+    stepping = true;
+
+    var total = parseInt(li.getAttribute('data-pg-total'), 10) || 0;
+    var target = Math.max(0, total + delta);
+
+    /* the whole quantity onto the first line, nothing on the rest, in ONE call.
+       Shopify re-cuts the free/paid split afterwards however it wants; that is
+       invisible because the row is rebuilt from the cart either way. */
+    var updates = {};
+    keys.forEach(function(k, i){ updates[k] = i === 0 ? target : 0; });
+
+    fetch('/cart/update.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({updates: updates})
+    }).then(function(){
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).catch(function(){}).then(function(){
+      stepping = false;
+      repct();
+      [200, 700, 1600].forEach(function(ms){ setTimeout(repct, ms); });
+    });
+  }, true);
+
+  /* WHY THIS IS NOT A 700ms POLL ANY MORE. repct() fetches /cart.js, so polling
+     it every 700ms -- alongside pg-cart-total doing the same -- meant several
+     requests a second for a cart that changes a handful of times a visit.
+     Shopify throttles that endpoint: under test the responses started coming
+     back unparseable, and because repct() bails when the fetch fails the row
+     simply froze on its last good figures. A cart display that stops updating
+     because it asked too often is worse than one that asks less.
+
+     It now runs when the drawer actually changes, which is the only time the
+     numbers can move, with a slow interval left as a backstop. stamp() touches
+     no network -- it only re-applies inline styles to new pills -- so it stays
+     frequent. */
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; repct(); }, 80);
+  }
+  if (window.MutationObserver){
+    var drawer = document.getElementById('cart');
+    if (drawer) new MutationObserver(soon).observe(drawer, {childList: true, subtree: true});
+  }
+
+  setInterval(stamp, 300);
+  setInterval(repct, 2500);
+  stamp();
+  repct();
+})();
+</script>
+{% schema %}
+{"name": "PG Chips", "settings": []}
+{% endschema %}

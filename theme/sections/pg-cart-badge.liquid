@@ -1,0 +1,100 @@
+{%- comment -%}
+  PG Cart Badge: the drawer mark, and the rule that the old one only goes when
+  the new one is actually there.
+
+  WHAT WENT WRONG. The disc was hidden in CSS and replaced by JS in a different
+  file. Those are two independent deliveries, and when only the first arrived
+  the cart had no mark at all -- worse than the disc it was replacing. A hide
+  that depends on a replacement must not be able to ship without it.
+
+  So the hide happens in JS, on the line after the wordmark is inserted. If
+  this file does not load, or the drawer top is not found, or the insert throws,
+  the disc simply stays. There is no state where both are missing.
+
+  It is stamped inline rather than written as a rule because pe-logo, pg-drawer
+  and nc-recs all write this element with !important and up to three ids; an
+  inline !important outranks all of them without an id-doubling war.
+
+  THE MARK. Written as <a class="pg-wordmark"> so pg-wordmark kerns it --
+  that file splits the T into its own span, which is what stops it reading
+  POCKE T ERA. Inheriting the class also inherits pg-mobile's HEADER sizing
+  for it (clamp(40px,4.6vw,78px), scaleY(2.6), negative letter-spacing, all
+  !important), which is why every one of those properties is re-set here on a
+  doubled id. Without that it renders at header scale in a 400px drawer and
+  runs off the edge as POCKETER.
+
+  Rebuilt on a timer: pgDrawerRefresh replaces the drawer wholesale and drops
+  anything added to it.
+{%- endcomment -%}
+<style>
+  #cart .pg-cart-mark{
+    display:block;
+    background:#0B0710;
+    border-radius:12px;
+    padding:13px 14px 10px;
+    margin:0 0 8px;
+    text-align:center;
+    overflow:hidden;
+    box-shadow:0 8px 22px -18px rgba(0,0,0,.8);
+  }
+  html body #cart#cart a.pg-cart-word{
+    display:inline-block !important;
+    font-family:'Press Start 2P','Courier New',monospace !important;
+    font-weight:400 !important;
+    font-size:13px !important;
+    line-height:1 !important;
+    letter-spacing:0 !important;
+    white-space:nowrap !important;
+    max-width:100% !important;
+    margin:0 !important;
+    padding:0 !important;
+    color:#F6DBFF !important;
+    text-decoration:none !important;
+    transform:scaleY(1.5) !important;
+    transform-origin:center !important;
+    text-shadow:0 0 5px rgba(246,219,255,.45),
+                0 0 14px rgba(199,155,234,.32) !important;
+  }
+  @media(max-width:600px){
+    #cart .pg-cart-mark{padding:11px 10px 9px}
+    html body #cart#cart a.pg-cart-word{font-size:11px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartBadge) return; window.pgCartBadge = 1;
+
+  function mark(){
+    var top = document.querySelector('#cart .nc-drawer-top');
+    if (!top) return;                       /* no drawer top: leave the disc */
+    if (!top.querySelector('.pg-cart-mark')){
+      var box = document.createElement('div');
+      box.className = 'pg-cart-mark';
+      var a = document.createElement('a');
+      a.className = 'pg-wordmark pg-cart-word';
+      a.setAttribute('href', '/');
+      a.textContent = 'POCKET ERA';
+      box.appendChild(a);
+      top.insertBefore(box, top.firstChild);
+    }
+    /* ONLY NOW. The disc goes because something replaced it, never before. */
+    if (!top.querySelector('.pg-cart-mark')) return;
+    /* GUARDED. This ran unconditionally on the 500ms interval below, rewriting
+       the inline style attribute of every drawer logo twice a second for the
+       life of the page -- a steady stream of attribute mutations for no change
+       at all. Harmless while nothing in the cart observed attributes; pg-chips
+       now does, to catch the drawer restyling its pills, so an unguarded write
+       here would wake it twice a second forever. Write only on a real change. */
+    document.querySelectorAll('#cart img.nc-dlogo').forEach(function(img){
+      if (img.style.display !== 'none') img.style.setProperty('display', 'none', 'important');
+    });
+  }
+
+  setInterval(mark, 500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark);
+  else mark();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Badge", "settings": []}
+{% endschema %}
