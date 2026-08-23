@@ -11,16 +11,13 @@ a timer:
     if (quotes.length > 1) setInterval(nextQuote, 6000);
 
 `nextQuote()` only rewrites the text, so the box was sized by whatever review it
-happened to be showing. Measured at 390px against the wall art's own eight
-Judge.me reviews:
+happened to be showing. Measured against the wall art's own eight Judge.me
+reviews, with pg-theme-css's `.pgx-quote` rules in load order:
 
-    51 chars  ->  94px
-    71 chars  ->  94px
-    78 chars  -> 113px
-    117 chars -> 134px
-    183 chars -> 176px
+    390px: 94..214px  -> a 120px swing
+    430px: 94..176px  -> an 82px swing
 
-An 82px swing, every six seconds, with the shopper touching nothing.
+Every six seconds, with the shopper touching nothing.
 
 It lands in the worst possible place. pg-mobile's `quoteUp()` (1500ms interval)
 parks this box directly under `.pgx-rating` -- ABOVE the price, the variant
@@ -42,41 +39,70 @@ Ruled out along the way, so they are not re-investigated:
   - pgLadder's 3000ms build: guarded by `if (document.querySelector('.pgx-lad'))
     return`, so the interval is a retry, not a rebuild.
 
-Noted but not fixed here: pgDuo's 2500ms build guards on
-`first.dataset.pgSingled`, and pgLadder inserts its tiles BEFORE the native
-first tile -- so `first` becomes a `.pgx-lad` tile that lacks the flag and the
-build re-fetches `/products.json?limit=50` a couple of extra times before it
-settles. Wasteful, not the reported bug.
-
 ## Fix
-The space is reserved rather than the rotation slowed, in nc-pgx-style.liquid --
-whose own header is "PDP polish overrides for pg-landing", which is exactly what
-this is:
+The space is reserved rather than the rotation slowed:
 
-    html body #pgx .pgx-quote{height:113px;box-sizing:border-box;overflow:hidden}
-    html body #pgx .pgx-quote-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    html body #pgx .pgx-quote-txt{-webkit-line-clamp:3; ...}
+    #pgx .pgx-quote:not([data-pg-moved]){height:113px;box-sizing:border-box;overflow:hidden}
+    #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-txt{-webkit-line-clamp:3; ...}
 
 The text clamp alone was not enough: a long REVIEWER NAME wraps to a second line
-and still pushed the box to 130px on the 183-character review -- a 17px residual
-swing. The name is held to one line and the height is fixed rather than merely
-floored, so nothing inside the box can move the page whatever a future review
-contains.
+and still pushed the box past 113px -- a 17px residual swing. The name is held to
+one line and the height is fixed rather than merely floored, so nothing inside
+the box can move the page whatever a future review contains.
 
-## Measured, before and after, across all eight real reviews
-    BEFORE  390px: 94..176px  -> content below jumps up to 82px per rotation
+`:not([data-pg-moved])` scopes this to the rotating copy. `moveQuote()` drops a
+second, non-rotating copy further down the page carrying that attribute; it keeps
+its own sizing.
+
+### Correction to the first attempt
+This first went into `nc-pgx-style.liquid`, whose header reads "PDP polish
+overrides for pg-landing" and which looks like the obvious home. **That file is
+registered in no section group and in no product template, so it never renders**
+-- the rule was dead code and would never have applied. Caught before publishing
+by checking footer-group.json, header-group.json and all three product templates;
+that file is reverted to its original 57ad8441582059a9d2f69d375a920512 and the
+rule now lives in pg-theme-css, which IS in footer-group, loads on every page,
+and already styles `.pgx-quote` twenty lines above.
+
+## Also in this file: one catalogue read per page instead of three
+Two blocks in pg-theme-css each download `/products.json?limit=50` -- `yml()`
+for "You may also like" and pgDuo's `build()` for the Duo Pack prices -- and
+each can do it more than once. pgDuo's build runs on a 2500ms interval and
+guards on `first.dataset.pgSingled` where `first` is `#pgx .pgx-tile`; pgLadder
+inserts `.pgx-lad` tiles BEFORE the theme's first tile, so `first` becomes a
+ladder tile that never carried the flag and the guard misses on the pass right
+after the ladder builds. `yml()` runs at DOMContentLoaded and again at 1200ms,
+and its `.pgu-yml` guard is tested before its own fetch resolves.
+
+Measured on the orb page: three downloads of the same 50-product payload per
+product page view. Both call sites now share one in-flight promise via
+`window.pgCatalog()`; a failed read clears the cache so callers can retry.
+
+The pgDuo guard is deliberately NOT re-pointed at `#pgx .pgx-tile:not(.pgx-lad)`,
+which is the more correct reading of `first`: that would also move which tile
+loses its radio dot, a visible change nobody asked for.
+
+## Measured, before and after
+Quote box, across all eight real reviews:
+
+    BEFORE  390px: 94..214px  -> content below jumps up to 120px per rotation
     BEFORE  430px: 94..176px  -> up to 82px
     AFTER   390px: 113px flat -> 0px
     AFTER   430px: 113px flat -> 0px
 
-Verified with pg-landing's real CSS and the patched nc-pgx-style layered on top
-in load order, so the override is confirmed to win on specificity.
+Catalogue reads on the orb page:
 
-Uploaded checksum 3f54c3cd8691d33f334010fb8e34cdd5 matches the local file byte
-for byte. Deployed to "PDP quote no-jump (Claude 8-23)" (163148890340), a fresh
-duplicate of the live theme, verified byte-identical to live on pg-unlock,
-pg-landing, nc-pgx-style, layout/theme and config/settings_data.json before
-patching. Needs publishing.
+    BEFORE  /products.json x3 at t=[20, 22, 1018] ms
+    AFTER   /products.json x1 at t=[18] ms
+
+with `ladder=4 bs=1 yml=1 cards=1 singled="pgx-tile pgx-lad pgx-sel"` identical
+in both -- every DOM outcome unchanged.
+
+Deployed to "PDP quote no-jump v2 (Claude 8-23)" (163149316324), a fresh
+duplicate of the live theme, verified byte-identical to live on pg-theme-css,
+nc-pgx-style, pg-unlock and config/settings_data.json before patching. Needs
+publishing.
 
 ---
 

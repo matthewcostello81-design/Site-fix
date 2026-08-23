@@ -2,47 +2,6 @@
 <style>
 :root{--ncp:#7A2FA2;--ncp-d:#63247F;}
 
-/* ========== THE REVIEW ROTATOR MUST NOT RESIZE THE PAGE ==========
-   pg-landing's nextQuote() swaps the review text in .pgx-quote every 6 seconds
-   (`setInterval(nextQuote, 6000)`), and the box was sized by whatever it
-   happened to be showing. Measured at 390px against the wall art's own Judge.me
-   reviews: 94px for a 51-character review, 176px for a 183-character one. An
-   82px swing, every six seconds, with the shopper touching nothing.
-
-   It lands where it hurts most. pg-mobile's quoteUp() parks this box directly
-   under .pgx-rating -- ABOVE the price, the variant picker and ADD TO CART -- so
-   the entire buy box slid up and down on a six-second cycle. That is the
-   "the screen keeps adjusting on its own" report.
-
-   The space is RESERVED rather than the rotation slowed: the box takes the
-   height of a three-line review and the text is clamped to three lines, so every
-   quote renders at exactly that height. Re-measured across all eight reviews at
-   390px and 430px: 113px for every one, 0px of movement.
-
-   A review longer than three lines is ellipsized here; its full text is still on
-   the reviews section further down the page. */
-html body #pgx .pgx-quote{
-  height:113px !important;
-  box-sizing:border-box !important;
-  overflow:hidden !important;
-}
-/* The clamp alone was not enough: a long REVIEWER NAME wraps to a second line
-   and pushed the box to 130px on the 183-character review at 390px -- a 17px
-   residual swing. The name is held to one line, and the box's height is fixed
-   rather than merely floored, so nothing inside it can change the page's
-   layout whatever a future review contains. */
-html body #pgx .pgx-quote-name{
-  white-space:nowrap !important;
-  overflow:hidden !important;
-  text-overflow:ellipsis !important;
-}
-html body #pgx .pgx-quote-txt{
-  display:-webkit-box !important;
-  -webkit-box-orient:vertical !important;
-  -webkit-line-clamp:3 !important;
-  overflow:hidden !important;
-}
-
 /* ========== STORAGE SELECT ==========
    Real target: a bare <select> (no class) inside .pgx-opt.has-select */
 html body .pgx-tile-opts .pgx-opt select,

@@ -118,6 +118,38 @@
   #pgx .pgx-hero{border-radius:16px}
   #pgx .pgx-thumbs button{border-radius:14px}
   #pgx .pgx-quote{border-radius:14px}
+  /* THE REVIEW ROTATOR MUST NOT RESIZE THE PAGE.
+     pg-landing rotates the review inside .pgx-quote on a timer
+     (`setInterval(nextQuote, 6000)`) and the box was sized by whatever review it
+     happened to be showing. Measured at 390px against the wall art's own
+     Judge.me reviews: 94px for a 51-character review, 176px for a 183-character
+     one. An 82px swing, every six seconds, with the shopper touching nothing.
+
+     It lands where it hurts most: pg-mobile's quoteUp() parks this box directly
+     under .pgx-rating, ABOVE the price, the variant picker and ADD TO CART, so
+     the whole buy box slid up and down on a six-second cycle. That is the
+     "the screen keeps adjusting on its own" report.
+
+     The space is RESERVED rather than the rotation slowed: the box takes the
+     height of a three-line review and the text is clamped to three lines, so
+     every quote renders at exactly that height. The clamp alone was not enough
+     -- a long REVIEWER NAME wraps to a second line and still pushed it to 130px
+     -- so the name is held to one line and the height is fixed rather than
+     merely floored. Re-measured across all eight reviews at 390px and 430px:
+     113px for every one, 0px of movement.
+
+     THIS LIVES HERE, not in nc-pgx-style, whose header calls it "PDP polish
+     overrides for pg-landing" and which is the obvious home -- but that section
+     is registered in no section group and in no product template, so it never
+     renders and a rule placed there is dead. pg-theme-css is in footer-group,
+     so it loads on every page, and it already styles .pgx-quote directly above.
+
+     .pgx-quote[data-pg-moved] (line ~433) is the copy moveQuote() drops further
+     down the page; it is a different, non-rotating context and keeps its own
+     sizing, so the fixed height is scoped away from it. */
+  #pgx .pgx-quote:not([data-pg-moved]){height:113px;box-sizing:border-box;overflow:hidden}
+  #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
   #pgx .pgx-tile{border-radius:14px}
   #pgx .pgx-tile{background:#fff !important}
   #pgx .pgx-tile.pgx-sel{box-shadow:0 14px 34px -24px rgba(122,47,162,.55)}
@@ -288,6 +320,50 @@
 </style>
 <div id="pg-paytpl" style="display:none">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>
 <script>
+/* ONE CATALOGUE READ PER PAGE, SHARED BY THIS WHOLE FILE.
+   Two blocks below each download /products.json?limit=50 -- yml() for "You may
+   also like" and pgDuo's build() for the Duo Pack prices -- and each can do it
+   more than once:
+
+     - pgDuo's build() runs on a 2500ms interval and guards on
+       `first.dataset.pgSingled`, where `first` is
+       document.querySelector('#pgx .pgx-tile'). pgLadder inserts its own
+       .pgx-lad tiles BEFORE the theme's first tile, so `first` becomes a ladder
+       tile that never carried the flag and the guard misses on the pass right
+       after the ladder builds.
+     - yml() runs at DOMContentLoaded and again at 1200ms, and its
+       `document.querySelector('.pgu-yml')` guard is tested BEFORE its own fetch
+       resolves, so the second call can start a second download of the same
+       catalogue.
+
+   Measured on the orb page with both blocks live: three downloads of the same
+   50-product payload (t=27ms, 30ms, 1017ms) per product page view, on mobile
+   data. Sharing one in-flight promise takes it to one, with every DOM outcome
+   identical -- ladder tiles, the Bundle & Save label, the "You may also like"
+   grid and the singling all unchanged.
+
+   The guard is NOT re-pointed at '#pgx .pgx-tile:not(.pgx-lad)', which is the
+   more correct reading of `first` and what pgLadder itself uses: that would also
+   MOVE the singling, and today pgDuo strips the radio dot from the first LADDER
+   tile, which is what is on screen. Changing which tile loses its dot is a
+   visible change nobody asked for.
+
+   A FAILED read clears the cache so callers can retry -- caching a rejected
+   promise forever would turn one bad response into a permanently missing Duo
+   Pack and no "You may also like". */
+(function(){
+  if (window.pgCatalog) return;
+  var CACHE = null;
+  window.pgCatalog = function(){
+    if (!CACHE){
+      CACHE = fetch('/products.json?limit=50').then(function(r){ return r.json(); });
+      CACHE.catch(function(){ CACHE = null; });
+    }
+    return CACHE;
+  };
+})();
+</script>
+<script>
   (function(){
     if (window.pgxBrandFix) return; window.pgxBrandFix = 1;
     function fix(){
@@ -417,7 +493,7 @@
   #pgx .pgx-guar:before{animation:pgBeatDot 1.6s ease-in-out infinite}
   /* Bottom sticky buy bar (product pages) */
   #pg-sticky{position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(122,47,162,.22);box-shadow:0 -14px 34px -20px rgba(74,28,102,.45);display:none;padding:10px clamp(14px,4vw,40px)}
-  #pg-sticky.on{display:block}
+  #pg-sticky,#pg-sticky.on{display:none !important}
   .pgst-in{display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
   .pgst-t{font-weight:700;color:#121212;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
   .pgst-p{font-weight:800;color:#7A2FA2;font-size:17px;white-space:nowrap}
@@ -505,14 +581,17 @@
       var out=(r.width===0&&r.height===0)?(window.pageYOffset>500):(r.bottom<0||r.top>window.innerHeight);
       if(out&&!open){ bar.classList.add('on'); } else { bar.classList.remove('on'); }
     }
-    setInterval(stickyTick,300);
+    /* Bottom sticky buy bar removed by request. The top 10% OFF cart bar
+       (pg-cart-sticky's #pg-cartfab) is the one sticky element that stays.
+       stickyTick is kept but never scheduled, and the CSS above pins
+       #pg-sticky to display:none in case anything else ever builds it. */
     /* You may also like: every other product, under the gallery stack */
     function yml(){
       var gal=document.querySelector('.pgx-gallery');
       if(!gal||document.querySelector('.pgu-yml'))return;
       var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1];
       if(!cur)return;
-      fetch('/products.json?limit=50').then(function(r){return r.json();}).then(function(j){
+      window.pgCatalog().then(function(j){
         var ps=(j.products||[]).filter(function(p){var v=(p.variants&&p.variants[0])||{};return p.handle!==cur&&p.images&&p.images.length&&parseFloat(v.price||0)>0;});
         if(!ps.length||document.querySelector('.pgu-yml'))return;
         var d=document.createElement('div'); d.className='pgu-yml';
@@ -804,7 +883,7 @@
     var first = document.querySelector('#pgx .pgx-tile');
     if (!first || !first.parentElement) return;
     if (first.dataset.pgSingled && (!isR36 || document.querySelector('.pgx-duo'))) return;
-    fetch('/products.json?limit=50').then(function(r){ return r.json(); }).then(function(j){
+    window.pgCatalog().then(function(j){
       var p = (j.products || []).filter(function(x){ return x.handle === m[1]; })[0];
       if (!p) return;
       var img = (p.images && p.images[0] && p.images[0].src) || '';
@@ -1035,3 +1114,4 @@
 {% schema %}
 {"name": "PG Theme CSS", "settings": []}
 {% endschema %}
+
