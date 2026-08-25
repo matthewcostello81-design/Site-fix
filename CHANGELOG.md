@@ -1,3 +1,19 @@
+# About Us page: new origin-story copy
+
+Replaced the body of the store page "About Us" (gid://shopify/Page/134072926436,
+handle about-us) with the owner's new copy: the living-room origin story, What
+We Do, How We Operate (three bolded principles as a list), Where We Are Headed,
+and the "Stay Legendary..." sign-off. Wording kept verbatim; formatting only.
+
+Note: Shopify pages are store-wide content, not theme files, so this change is
+LIVE immediately, independent of which theme is published. The page uses the
+default page template (no templateSuffix); templates/page.about-us.json is an
+unused demo-content template and was left untouched.
+
+Applied via Admin API pageUpdate; re-read after saving to confirm.
+
+---
+
 # Cart upsells: top of the drawer on mobile too (like desktop)
 
 ## Problem
