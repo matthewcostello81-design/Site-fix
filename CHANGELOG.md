@@ -1,3 +1,44 @@
+# Cart upsell row: SAVE chip no longer collides with the ADD button
+
+## Problem
+On small phones the upsell row's price line ("$104.97 $69.99 SAVE 33%")
+ran underneath the ADD button (screenshot from the live site, iPhone via
+Instagram browser).
+
+## Context
+Since the last entry the parallel session's redesigned row shipped and was
+PUBLISHED (MAIN is now "Copy of PDP quote no-jump v2", 163216654564): filled
+gradient ADD button, a .pg-unlock-px price line with an inline SAVE chip, and
+a tickable accessory sub-row (.pg-uacc). The orb rail is correctly enabled
+there (NO_CART_RAIL = []) and the top-of-cart placement survived. This entry
+adopts that version as the repo baseline.
+
+## Cause
+.pg-unlock-px carried white-space:nowrap, making "was + now + SAVE chip" one
+unbreakable unit. The text column is min-width:0 flex, so the too-wide line
+did not shrink or wrap: it overflowed the column and painted under the
+button.
+
+## Fix (sections/pg-unlock.liquid)
+- .pg-unlock-px wraps now (nowrap removed, line-height 1.45); the struck
+  price keeps nowrap on its own element so "$104.97" never breaks internally;
+  the SAVE chip is an inline-block, so a narrow column drops it to its own
+  line instead of running it under the button.
+- In the max-width:414px doubled-id block: the SAVE chip gives up slack
+  first (padding 2px 5px, 10.5px font, 6px margin) so the line usually fits
+  on one line before wrapping is needed.
+
+## Applied to
+Draft `163217473764` "Copy of Copy of PDP quote no-jump v2" (the current
+working draft) via themeFilesUpsert; verified byte-identical
+(933a2656d50a1f57f0cd3b657312c6e4, 63,938 bytes). The MAIN theme is
+API-write-blocked, so the live site keeps the overlap until this draft is
+published.
+
+Files changed: sections/pg-unlock.liquid
+
+---
+
 # About Us page: new origin-story copy
 
 Replaced the body of the store page "About Us" (gid://shopify/Page/134072926436,

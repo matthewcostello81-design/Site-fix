@@ -92,8 +92,30 @@
   }
   #cart .pg-unlock img{width:54px;height:54px;border-radius:11px;object-fit:cover;flex:none;background:#efe4f8}
   #cart .pg-unlock-t{flex:1;min-width:0}
-  #cart .pg-unlock-t b{display:block;font-size:14.5px;line-height:1.27;color:#3B1553}
-  #cart .pg-unlock-t small{display:block;font-size:12px;line-height:1.33;color:#6E5C80;margin-top:2px}
+  #cart .pg-unlock-t b{display:block;font-size:13.5px;line-height:1.25;color:#3B1553}
+  #cart .pg-unlock-t small{display:block;font-size:12.5px;line-height:1.35;color:#6E5C80;margin-top:2px}
+  #cart .pg-uacc{
+    flex:1 1 100%;display:flex;align-items:center;gap:8px;
+    margin-top:2px;padding:7px 9px;border-radius:10px;cursor:pointer;
+    background:rgba(122,47,162,.07);border:1px solid rgba(122,47,162,.18);
+    -webkit-user-select:none;user-select:none;
+  }
+  #cart .pg-uacc.on{border-color:#8B44BE;background:rgba(139,68,190,.14)}
+  #cart .pg-uacc-ck{flex:none;width:16px;height:16px;border-radius:4px;border:2px solid #8B44BE;background:#fff;position:relative}
+  #cart .pg-uacc.on .pg-uacc-ck{background:linear-gradient(120deg,#9B4BC4,#7A2FA2)}
+  #cart .pg-uacc.on .pg-uacc-ck:after{content:"";position:absolute;left:50%;top:50%;width:3.5px;height:7px;border:solid #fff;border-width:0 2px 2px 0;transform:translate(-50%,-62%) rotate(45deg)}
+  #cart .pg-uacc-t{flex:1;min-width:0;font-size:11.5px;font-weight:700;color:#4A2F5E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #cart .pg-uacc-p{flex:none;font-size:12.5px;font-weight:800;color:#7A2FA2;white-space:nowrap}
+  #cart .pg-uacc-p s{color:#8a8a8a;font-weight:400;font-size:10.5px;margin-right:4px}
+  /* the price line WRAPS. nowrap made "was + now + SAVE chip" one unbreakable
+     unit; on a small phone it overflowed the text column and painted under the
+     ADD button (the reported overlap). Each piece stays whole -- the struck
+     price is nowrap on its own element and the chip is an inline-block -- but
+     the line can break BETWEEN them now, so a narrow column drops the SAVE
+     chip to its own line instead of running it under the button. */
+  #cart .pg-unlock-px{display:block;margin-top:3px;font-size:14.5px;font-weight:800;color:#7A2FA2;line-height:1.45}
+  #cart .pg-unlock-px s{color:#8a8a8a;font-weight:400;font-size:12px;margin-right:6px;white-space:nowrap}
+  #cart .pg-unlock-px .pg-unlock-tag{display:inline-block;margin:0 0 0 8px;vertical-align:1px}
   /* Same geometry the cart-line SAVED chip was narrowed to. This pill was built
      with 10px of padding a side and .04em of tracking for 52px of glyphs -- 38%
      more purple than text, the worst ratio of any pill in the cart, and sitting
@@ -127,11 +149,13 @@
   #cart .pg-unlock-add{
     flex:0 0 auto;order:0;
     display:inline-flex;align-items:center;justify-content:center;
-    min-height:40px;line-height:1;white-space:nowrap;
-    border:1.5px solid #7A2FA2 !important;background:#fff !important;
-    background-image:none !important;color:#7A2FA2 !important;
+    min-height:34px;line-height:1;white-space:nowrap;
+    border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;
+    box-shadow:0 10px 22px -12px rgba(139,68,190,.7) !important;
     border-radius:999px !important;padding:0 16px !important;
-    font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;
+    font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;
     animation:none !important;transition:background .15s ease,color .15s ease;
   }
   #cart .pg-unlock-add::before,#cart .pg-unlock-add::after{display:none !important;content:none !important}
@@ -220,6 +244,10 @@
     #cart#cart #pg-unlock-slot .pg-unlock .pg-unlock-add{
       min-height:30px !important;padding:0 11px !important;
     }
+    /* the SAVE chip gives up its slack before the line has to wrap */
+    #cart#cart #pg-unlock-slot .pg-unlock .pg-unlock-px .pg-unlock-tag{
+      padding:2px 5px !important;margin-left:6px !important;font-size:10.5px !important;
+    }
   }
 
   /* ---------------- the design chooser ----------------
@@ -240,7 +268,11 @@
      let the copy take the full first line. */
   #cart .pg-unlock.is-open .pg-unlock-add{display:none !important}
   #cart .pg-unlock.is-open .pg-unlock-tag{display:none}
-  #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 100%}
+  #cart .pg-unlock.is-open .pg-unlock-px .pg-unlock-tag{display:inline-block}
+  #cart .pg-unlock.is-open .pg-uacc{display:flex}
+  /* expanded keeps the copy BESIDE the image, per the owner - the old
+     flex:1 1 100% dropped it under the thumbnail */
+  #cart .pg-unlock.is-open .pg-unlock-t{flex:1 1 0%;min-width:0}
   /* the chooser can be CLOSED again - it used to trap the shopper open */
   #cart .pg-unlock{position:relative}
   #cart .pg-unlock-close{
@@ -260,17 +292,19 @@
   }
   #cart .pg-unlock-pick select{
     flex:1;min-width:0;-webkit-appearance:menulist;appearance:menulist;
-    padding:8px 10px;border:1.5px solid rgba(122,47,162,.35);border-radius:10px;
-    background:#fff;color:#3B1553;font-family:inherit;font-size:13px;font-weight:600;line-height:1.2;
+    height:40px !important;min-height:0 !important;
+    padding:6px 10px !important;border:1.5px solid rgba(122,47,162,.35) !important;border-radius:10px !important;
+    background:#fff;color:#3B1553;font-family:inherit;font-size:13px !important;font-weight:600;line-height:1.2 !important;
   }
   #cart .pg-unlock-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
   #cart .pg-unlock-go{
     width:100%;margin-top:3px;border:0 !important;border-radius:999px !important;
     display:flex;align-items:center;justify-content:center;
-    min-height:44px;line-height:1;padding:10px 16px !important;
-    background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
-    background-image:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;
-    color:#fff !important;font-family:inherit;font-weight:800;font-size:13.5px;cursor:pointer;animation:none !important;
+    height:40px !important;min-height:0 !important;max-height:40px !important;
+    line-height:1 !important;padding:0 16px !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    background-image:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;font-family:inherit;font-weight:800;font-size:13px !important;cursor:pointer;animation:none !important;
   }
   #cart .pg-unlock-go::before,#cart .pg-unlock-go::after{display:none !important;content:none !important}
   #cart .pg-unlock-go[disabled]{opacity:.6;cursor:default}
@@ -289,13 +323,13 @@
      whatever writes the rows, in whatever sequence, the screen shows wall art,
      then console, then orb. A swap is not suppressed; it is impossible. */
   #cart #pg-unlock-slot{display:flex;flex-direction:column}
-  /* A cart holding no ladder products leaves this container with no children at
-     all. It has no padding or min-height of its own, so it collapses to nothing
-     on its own at most widths -- but pg-cart-timer's small-phone block gives it
-     `margin:6px 0`, which is 12px of gap under 414px for a rail that is not
-     there. :empty matches only a node with no children AND no text, and the
-     slot is built purely by appendChild, so this can never hide a populated
-     rail. */
+  /* With the orb rail suppressed, a cart holding only orbs leaves this container
+     with no children at all. It has no padding or min-height of its own, so it
+     collapses to nothing on its own at most widths -- but pg-cart-timer's
+     small-phone block gives it `margin:6px 0`, which is 12px of gap under 414px
+     for a rail that is not there. :empty matches only a node with no children
+     AND no text, and the slot is built purely by appendChild, so this can never
+     hide a populated rail. */
   #cart #pg-unlock-slot:empty{display:none !important}
   #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="anime"]{order:0}
   #cart #pg-unlock-slot .pg-unlock[data-pg-unlock*="handheld"]{order:1}
@@ -392,6 +426,34 @@
       rungs: {1: {pct: 25, nth: '2nd', free: 0}}
     }
   };
+
+  /* ---- LADDERS THE CART RAIL DOES NOT PROMPT FOR ----
+     The orb keeps its ladder above and its product page is untouched: that page
+     still sells Buy 2 Get 1, Buy 4 Get 2 and Buy 5 Get 3 from its own tiles, and
+     nothing in this file can reach it -- every render path below writes into
+     #cart and bails when there is no drawer. What goes is the cart-side prompt
+     only, by request. The wall art and console rails are unaffected.
+
+     Matched on a handle FRAGMENT, the same way pg-cart-imglink's SKIP list
+     works, so renaming the product around it cannot quietly switch the rail back
+     on.
+
+     Filtered in offers() rather than deleted from LADDERS. Both would work --
+     LADDERS is read nowhere else in this file -- but the ladder is also the
+     record of what the product page sells, and a shopper can still be HOLDING
+     free orbs earned there, so it is worth keeping accurate. This way the
+     suppression is one named list that says what it is, and putting the rail
+     back is deleting a line rather than reconstructing a ladder. */
+  /* the orb rail is back by request - the rung ladder offers the next
+     bundle up from the quantity already in the cart */
+  var NO_CART_RAIL = [];
+  function railSuppressed(handle){
+    var h = String(handle || '');
+    for (var i = 0; i < NO_CART_RAIL.length; i++){
+      if (h.indexOf(NO_CART_RAIL[i]) > -1) return true;
+    }
+    return false;
+  }
 
   var busy = false;
   var lastKey = '';
@@ -498,6 +560,7 @@
     var byHandle = {};
     (cart.items || []).forEach(function(it){
       if (!LADDERS[it.handle]) return;
+      if (railSuppressed(it.handle)) return;        /* see NO_CART_RAIL above */
       if (it.properties && it.properties._free_gift) return;
       var h = byHandle[it.handle] || (byHandle[it.handle] = {qty: 0, item: it});
       h.qty += it.quantity;
@@ -731,37 +794,26 @@
     var after = free ? 'free' : money(Math.round(o.price * (100 - o.rung.pct) / 100));
     var img = o.image ? String(o.image).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : '';
 
-    var title, note;
+    /* ONE STRUCTURE FOR EVERY ROW, by request: bold title, then the old
+       price struck out beside what they pay and a SAVE % chip, then one short
+       line. The chip always states the DISCOUNT (never just "free"). */
+    var title, sub, wasC, nowC, savePct;
     if (free){
       if (o.paidAdded === 0){
-        /* they have already paid their way to this rung: everything on offer
-           is free, however many units that is */
         title = 'Add your FREE ' + o.freeNth + ' ' + o.name + (o.freeAdded === 1 ? '' : 's');
-        /* the headline already says FREE, so the note only names the tier --
-           the old "- these cost nothing" tail pushed it to a third line on
-           phones without adding anything the row had not said twice. */
-        note = 'You already qualify for Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
+        sub = 'You already qualify - costs nothing';
+        wasC = o.price * o.freeAdded; nowC = 0; savePct = 100;
       } else {
-        /* They pay for N more and N+M arrive. That is the sentence -- not
-           "add 3 more", which reads as though the offer moved further away the
-           moment they bought one. */
-        /* NAME THE BUNDLE. "Buy 1 more, get 1 FREE" is arithmetically right
-           but it never says WHICH deal it is walking them into, so a shopper
-           sitting on the 6-orb Buy 4 Get 2 could not tell the row was stepping
-           them up to the 8-orb Buy 5 Get 3 -- it read like a fourth, unrelated
-           offer. The tier goes in the headline and the step stays in the note,
-           so the row answers "what do I get" before "what does it cost". */
         title = 'Unlock Buy ' + o.tierPaid + ', Get ' + o.tierFree + ' FREE';
-        /* the pack size stays but the product name comes out of the note:
-           "(6 crystal legends orbs total)" was most of a line by itself and
-           wrapped the note to three ragged lines on a 390px phone. The row's
-           image and headline already say which product this is. */
-        note = 'Add ' + o.paidAdded + ' more - ' + o.freeAdded + ' of them free (' +
-               (o.tierPaid + o.tierFree) + ' total)';
+        sub = 'Add ' + o.paidAdded + ' more, ' + o.freeAdded + ' of them free';
+        wasC = o.price * o.need; nowC = o.price * o.paidAdded;
+        savePct = Math.round((wasC - nowC) / wasC * 100);
       }
     } else {
       title = 'Add a ' + o.rung.nth + ' ' + o.name;
-      note = 'Get it for ' + after + ' instead of ' + money(o.price) + ', applied at checkout';
+      sub = 'Discount applied at checkout';
+      wasC = o.price; nowC = Math.round(o.price * (100 - o.rung.pct) / 100);
+      savePct = o.rung.pct;
     }
 
     el.innerHTML =
@@ -774,17 +826,78 @@
       '<img alt="" width="54" height="54" decoding="sync" src="' + img + '">' +
       '<div class="pg-unlock-t">' +
         '<b>' + title + '</b>' +
-        '<small>' + note + '</small>' +
-        '<span class="pg-unlock-tag">' + (free ? 'Free' : o.rung.pct + '% off') + '</span>' +
+        '<span class="pg-unlock-px"><s>' + money(wasC) + '</s>' +
+          (nowC === 0 ? 'FREE' : money(nowC)) +
+          '<span class="pg-unlock-tag">SAVE ' + savePct + '%</span></span>' +
+        '<small>' + sub + '</small>' +
       '</div>' +
       '<button type="button" class="pg-unlock-add" data-v="' + o.variant +
         '" data-k="' + (o.key || '') + '" data-q="' + o.lineQty +
         '" data-t="' + o.totalQty + '" data-n="' + o.need +
         '" data-p="' + o.rung.pct +
         '" data-h="' + o.handle + '">Add</button>' +
+      accRow(o) +
       '<div class="pg-unlock-pick"></div>';
     return el;
   }
+
+  /* THE ACCESSORY IS A SUB-OPTION OF THE BUNDLE, by request: the frame rides
+     inside the poster's bundle row, the spare case inside the console's, as a
+     tickable line. Ticked, the ADD posts it along with the bundle units (one
+     accessory per unit the offer adds). Configs come from pg-frame-add via
+     window.pgAccFor. */
+  /* Local copy of pg-frame-add's accessory configs: the row can be built
+     before that section's script has evaluated (measured happening on mobile
+     loads), and a row built without its accessory never rebuilds - the cart
+     signature has not changed. Keep in sync with ACCS in pg-frame-add. */
+  var ACC_LOCAL = [
+    {withMark: 'lenticular-poster', ownMark: '30x40cm-frame', variant: 49688364613860,
+     title: 'Add the matching frame', each: 'Add a frame for each print', now: 1499, was: 2799},
+    {withMark: 'handheld-game-console', ownMark: 'r36s-protective-case', variant: 49640879063268,
+     title: 'Add a spare protective case', each: 'Add a spare case for each console', now: 1399, was: 2499}
+  ];
+  function accFor(handle){
+    if (window.pgAccFor){ var c = window.pgAccFor(handle); if (c) return c; }
+    var h = String(handle || '');
+    for (var i = 0; i < ACC_LOCAL.length; i++){ if (h.indexOf(ACC_LOCAL[i].withMark) > -1) return ACC_LOCAL[i]; }
+    return null;
+  }
+  function accRow(o){
+    var cfg = accFor(o.handle);
+    if (!cfg) return '';
+    var owned = 0;
+    ((LASTCART && LASTCART.items) || []).forEach(function(it){
+      if (String(it.handle || '').indexOf(cfg.ownMark) > -1 && it.price > 0) owned += it.quantity;
+    });
+    var q = ((o.totalQty || 0) + (o.need || 1)) - owned;
+    if (q < 1) return '';
+    return '<div class="pg-uacc" data-v="' + cfg.variant + '" data-q="' + q +
+      '" role="checkbox" aria-checked="false" tabindex="0">' +
+      '<span class="pg-uacc-ck" aria-hidden="true"></span>' +
+      '<span class="pg-uacc-t">' + (q > 1 ? cfg.each : cfg.title) + '</span>' +
+      '<span class="pg-uacc-p"><s>' + money(cfg.was * q) + '</s>' + money(cfg.now * q) + '</span>' +
+      '</div>';
+  }
+  function accPost(rowEl){
+    var acc = rowEl && rowEl.querySelector('.pg-uacc.on');
+    if (!acc) return Promise.resolve();
+    var v = parseInt(acc.getAttribute('data-v'), 10);
+    var q = parseInt(acc.getAttribute('data-q'), 10) || 1;
+    if (!v) return Promise.resolve();
+    return fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: v, quantity: q}]})
+    }).catch(function(){});
+  }
+  document.addEventListener('click', function(e){
+    var acc = e.target && e.target.closest && e.target.closest('#cart .pg-uacc');
+    if (!acc) return;
+    e.preventDefault(); e.stopPropagation();
+    var on = !acc.classList.contains('on');
+    acc.classList.toggle('on', on);
+    acc.setAttribute('aria-checked', on ? 'true' : 'false');
+  }, true);
 
   /* RECONCILE, AND ONLY WHEN THE CART ACTUALLY CHANGED.
      Two mobile-flicker fixes live here.
@@ -1025,7 +1138,8 @@
         rowEl.classList.remove('is-open');
         delete PICKS[rowEl.getAttribute('data-pg-unlock')];   /* bought: nothing to restore */
       }
-      afterAdd();
+      accPost(rowEl).then(function(){ afterAdd(); });
+      return;
     }).catch(function(){
       busy = false;
       go.disabled = false;
@@ -1117,6 +1231,8 @@
 
     req.then(function(r){
       if (!r || !r.ok) throw 0;
+      return accPost(btn.closest('.pg-unlock'));
+    }).then(function(){
       afterAdd();     /* unfreeze + rebuild now, refresh in the background */
     }).catch(function(){
       busy = false;
@@ -1199,3 +1315,4 @@
 {% schema %}
 {"name": "PG Unlock", "settings": []}
 {% endschema %}
+
