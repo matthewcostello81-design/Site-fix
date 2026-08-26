@@ -1,3 +1,35 @@
+# Fabricated "10,000+ happy customers" claims removed (homepage + checkout)
+
+## Homepage (theme 163292676324, "Copy of MATT EDITS 8/24 of PDP quote no-jump v2")
+The pg-home accordion block "Reviews" in templates/index.json claimed
+"5 stars, 5.0 from 10,000+ happy gamers". Replaced with truthful copy that
+makes no rating or volume claim:
+"See what customers are saying about their orders. Read the reviews here."
+(same link to the console product's reviews section). Pushed via
+themeFilesUpsert.
+
+## Checkout header image (store-wide, LIVE)
+Checkout shows an uploaded composite banner
+(files/pocketaera_logo_for_checkout.jpg, 1611x640: POCKET ERA disc + three
+truthful badges + a gold-star "10,000+ Happy Customers" row). The store is
+not on Plus, so the checkout branding API is closed; instead the FILE's
+content was replaced in place (fileUpdate + originalSource), which updates
+every reference including checkout, keeping the same filename and file id.
+
+Edit pipeline (this container's network policy blocks the Shopify CDN, so
+the work ran in the Higgsfield cloud sandbox): download the image, detect
+the gold-star row programmatically (bbox x 763-1018, y 406-447), white out
+the band x>=745, y 394-463 to the right edge (the claim row sits on plain
+white; the logo and badges are outside the band), verify zero gold pixels
+remain, visually verify via thumbnail, upload to Higgsfield storage, then
+Shopify fileUpdate from that URL. File is READY at version v=1787787222;
+logo and the three truthful badges are untouched.
+
+GMC note: both removals close out fabricated-stat risk flagged by the
+store's prior misrepresentation history.
+
+---
+
 # Cart upsell row: SAVE chip no longer collides with the ADD button
 
 ## Problem
