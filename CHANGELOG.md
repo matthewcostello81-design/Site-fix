@@ -1,3 +1,19 @@
+# "10,000+ happy gamers" removed again, on the GMC 8-27b theme
+
+The fabricated Reviews accordion line survived on the newer theme lineage:
+"GMC 8-27b (Claude) ship-origin fix" (163298410724, the current working
+draft; MAIN is now "GMC fixes 8-27 (Claude) delivery + email"). Replaced
+acc3 in templates/index.json with the same truthful copy used before:
+"See what customers are saying about their orders. Read the reviews here."
+All other blocks (including this lineage's newer Delivery Time and Customer
+Service copy) kept verbatim. Pushed via themeFilesUpsert and re-read to
+confirm the claim is gone.
+
+Note: each time a theme is copied from a pre-fix ancestor, this line comes
+back. If the claim reappears after another copy, re-apply the acc3 text.
+
+---
+
 # Fabricated "10,000+ happy customers" claims removed (homepage + checkout)
 
 ## Homepage (theme 163292676324, "Copy of MATT EDITS 8/24 of PDP quote no-jump v2")
