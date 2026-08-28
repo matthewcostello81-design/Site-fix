@@ -24,9 +24,11 @@ orb landing page:
    — which also lets pg-gallery-tweaks scroll the photo strip to that
    character, so photo, name pill and picker agree on load. Skipped if the
    shopper has already touched the strip or a picker.
-3. **Video removed, photos lead.** The gallery video node is dropped (src
-   cleared so phones stop downloading it; CSS backstop) — the page opens on
-   the swipeable character photos.
+3. **Video removed, photos lead (mobile ≤900px only).** The gallery video
+   node is dropped on phones (src cleared so they stop downloading it; CSS
+   backstop) — the page opens on the swipeable character photos. Desktop
+   keeps its video-led gallery, per the owner's "make sure changes are for
+   mobile".
 4. **Bundle right under the photos + ATC in the tile (mobile ≤900px).** The
    buy column becomes a flex column visually ordered title → rating →
    Bundle & Save → tiles → everything else, so the offer is one glance under

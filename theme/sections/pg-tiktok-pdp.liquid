@@ -21,11 +21,12 @@
      photo, name pill and picker all agree on load. If the shopper has already
      touched the strip or a picker, the pass is skipped: they are choosing.
 
-  3. VIDEO OUT, PICTURES FIRST. pg-gallery-tweaks made the video lead the
-     gallery. Removed (node + src dropped, CSS backstop), so the page opens on
-     the swipeable character photos.
+  3. VIDEO OUT, PICTURES FIRST — MOBILE ONLY. pg-gallery-tweaks made the video
+     lead the gallery. On phones it is removed (node + src dropped, CSS
+     backstop), so the page opens on the swipeable character photos. Desktop
+     keeps the video.
 
-  4. BUNDLE RIGHT UNDER THE PHOTOS + ATC IN THE TILE (mobile). The buy column
+  4. BUNDLE RIGHT UNDER THE PHOTOS + ATC IN THE TILE — MOBILE ONLY. The buy column
      becomes a flex column ordered: title, rating, Bundle & Save, the tiles,
      then everything else (quote, sellout, info, accordions) below the button.
      Every ladder tile gets its own ADD TO CART, shown only while the tile is
@@ -40,11 +41,15 @@
      without :has() simply keep both, which is harmless.
 {%- endcomment -%}
 <style>
+  /* Everything visual here is MOBILE ONLY (≤900px), per the owner: TikTok
+     traffic is phones. Desktop keeps the video-led gallery, its layout and
+     its bottom Add to Cart untouched. */
+  #pgx .pgx-tile .pg-tt-atc{display:none}
+  @media (max-width:900px){
   /* ---- 3. the video is gone; the swipeable strip IS the gallery ---- */
   #pgx .pgx-vid{display:none !important}
 
   /* ---- 4. the in-tile ADD TO CART ---- */
-  #pgx .pgx-tile .pg-tt-atc{display:none}
   #pgx .pgx-tile.pgx-sel .pg-tt-atc{
     display:flex;align-items:center;justify-content:center;gap:8px;
     margin-top:12px;padding:15px 12px;
@@ -62,11 +67,10 @@
   #pgx .pgx-tile.pgx-sel .pg-tt-atc.busy{opacity:.6;cursor:default}
   #pgx .pgx-tile.pgx-sel .pg-tt-atc:after{content:"\2192";font-size:17px;line-height:1}
 
-  /* ---- 4. mobile: photos first, bundle right under, everything else below.
+  /* ---- 4. photos first, bundle right under, everything else below.
      The buy column's DOM order is owned by half a dozen scripts, so the
      VISUAL order is set here with flex order instead of moving nodes:
      nothing that inserts relative to a sibling ever breaks. ---- */
-  @media (max-width:900px){
     #pgx .pgx-buy{display:flex;flex-direction:column}
     #pgx .pgx-buy > *{order:7}
     #pgx .pgx-buy > .pgx-title{order:1;font-size:23px !important;line-height:1.15 !important;margin:2px 0 4px !important}
@@ -103,8 +107,10 @@
   } catch(e){}
 
   /* ---- 3. drop the gallery video (the CSS above is the no-JS backstop);
-     src is cleared first so a phone stops downloading it ---- */
+     src is cleared first so a phone stops downloading it. Mobile only —
+     desktop keeps its video-led gallery. ---- */
   function dropVid(){
+    if (!window.matchMedia || !window.matchMedia('(max-width: 900px)').matches) return;
     document.querySelectorAll('#pgx .pgx-vid').forEach(function(w){
       var v = w.querySelector('video');
       if (v){
