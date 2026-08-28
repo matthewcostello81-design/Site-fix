@@ -1,0 +1,215 @@
+{%- comment -%}
+  PG TikTok PDP (Crystal Legends Orb): make the ad landing convert.
+
+  Registered ONLY in templates/product.pg-crystal.json, so everything here is
+  scoped to the orb page. Four jobs:
+
+  1. NEUTRALIZE ?variant=. TikTok's catalog links append ?variant=<id> (in
+     practice 13 Arceus, the product's first variant). Nothing on this custom
+     landing template reads the parameter today, but it is stripped on load via
+     history.replaceState so nothing ever does — the ad URL itself never has to
+     change, and every other query param (ttclid, utm_*) is kept for tracking.
+
+  2. THE WRONG DEFAULT CHARACTER. The real "lands on Arceus" mechanism is not
+     the URL: pgLadder (pg-theme-css) and pg-tile-copy build every bundle
+     picker defaulted to VOPTS[i % len], and variants[0] is "13 Arceus". Once
+     the full ladder is built, the FIRST picker of every tile is re-pointed at
+     the landing section's own "Default selected size" setting (01 Pikachu),
+     read from the hidden server-rendered select [data-pgx-size="s1"]. It is
+     done by clicking the picker's own row — pg-drop's only public API — which
+     also makes pg-gallery-tweaks scroll the photo strip to that character, so
+     photo, name pill and picker all agree on load. If the shopper has already
+     touched the strip or a picker, the pass is skipped: they are choosing.
+
+  3. VIDEO OUT, PICTURES FIRST. pg-gallery-tweaks made the video lead the
+     gallery. Removed (node + src dropped, CSS backstop), so the page opens on
+     the swipeable character photos.
+
+  4. BUNDLE RIGHT UNDER THE PHOTOS + ATC IN THE TILE (mobile). The buy column
+     becomes a flex column ordered: title, rating, Bundle & Save, the tiles,
+     then everything else (quote, sellout, info, accordions) below the button.
+     Every ladder tile gets its own ADD TO CART, shown only while the tile is
+     selected (same pattern as pg-theme-css's .pg-tadd row). It is a SPAN, not
+     a <button> (the base theme paints buttons with a dark ::before overlay),
+     and it does NOT carry the .pgx-atc class — pg-tile-copy's note() anchors
+     the deal note on the first .pgx-atc in the DOM, and pgLadder's capture
+     handler would double-fire. Instead a click on it clicks the page's real
+     #pgx-atc (the sticky bar's own pattern), so pgLadder's existing
+     add-to-cart path posts the selected tile unaided. With an in-tile button
+     present, the big bottom button is hidden on phones via :has() — browsers
+     without :has() simply keep both, which is harmless.
+{%- endcomment -%}
+<style>
+  /* ---- 3. the video is gone; the swipeable strip IS the gallery ---- */
+  #pgx .pgx-vid{display:none !important}
+
+  /* ---- 4. the in-tile ADD TO CART ---- */
+  #pgx .pgx-tile .pg-tt-atc{display:none}
+  #pgx .pgx-tile.pgx-sel .pg-tt-atc{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    margin-top:12px;padding:15px 12px;
+    border-radius:10px;
+    background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 55%,#5E2380 100%);
+    color:#FFFFFF;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:15.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    text-align:center;cursor:pointer;
+    box-shadow:0 14px 30px -12px rgba(139,68,190,.75);
+    -webkit-user-select:none;user-select:none;
+    transition:filter .15s ease,opacity .15s ease;
+  }
+  #pgx .pgx-tile.pgx-sel .pg-tt-atc:hover{filter:brightness(1.1)}
+  #pgx .pgx-tile.pgx-sel .pg-tt-atc.busy{opacity:.6;cursor:default}
+  #pgx .pgx-tile.pgx-sel .pg-tt-atc:after{content:"\2192";font-size:17px;line-height:1}
+
+  /* ---- 4. mobile: photos first, bundle right under, everything else below.
+     The buy column's DOM order is owned by half a dozen scripts, so the
+     VISUAL order is set here with flex order instead of moving nodes:
+     nothing that inserts relative to a sibling ever breaks. ---- */
+  @media (max-width:900px){
+    #pgx .pgx-buy{display:flex;flex-direction:column}
+    #pgx .pgx-buy > *{order:7}
+    #pgx .pgx-buy > .pgx-title{order:1;font-size:23px !important;line-height:1.15 !important;margin:2px 0 4px !important}
+    #pgx .pgx-buy > .pgx-rating{order:2;margin-bottom:8px !important;font-size:15px !important}
+    #pgx .pgx-buy > .pgx-bs{order:3}
+    #pgx .pgx-buy > .pgx-divider{order:3}
+    #pgx .pgx-buy > .pgx-tile{order:4}
+    #pgx .pgx-buy > .pgx-deal-note{order:5}
+    #pgx .pgx-buy > .pgx-atc{order:5}
+    #pgx .pgx-buy > .pgx-err{order:6}
+    #pgx .pgx-buy > .pgx-quote{order:8;margin-top:16px !important}
+    #pgx .pgx-buy > .pgx-sellout{order:9}
+    #pgx .pgx-buy > .pgx-info{order:10}
+    #pgx .pgx-buy > .pg-payrow{order:11}
+    #pgx .pgx-buy > .pgx-pay{order:11}
+    #pgx .pgx-buy > .pgx-guar{order:12}
+    #pgx .pgx-buy > .pgx-acc{order:13}
+    /* the bottom button duplicates the in-tile one on phones */
+    #pgx .pgx-buy:has(.pgx-lad .pg-tt-atc) > .pgx-atc{display:none !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgTiktokPdp) return; window.pgTiktokPdp = 1;
+
+  /* ---- 1. strip ?variant= but keep ttclid / utm_* ---- */
+  try {
+    if (history.replaceState && /[?&]variant=/.test(location.search)){
+      var u = new URL(location.href);
+      u.searchParams.delete('variant');
+      var qs = u.searchParams.toString();
+      history.replaceState(null, '', u.pathname + (qs ? '?' + qs : '') + u.hash);
+    }
+  } catch(e){}
+
+  /* ---- 3. drop the gallery video (the CSS above is the no-JS backstop);
+     src is cleared first so a phone stops downloading it ---- */
+  function dropVid(){
+    document.querySelectorAll('#pgx .pgx-vid').forEach(function(w){
+      var v = w.querySelector('video');
+      if (v){
+        try { v.pause(); } catch(e){}
+        v.removeAttribute('autoplay'); v.removeAttribute('src');
+        try { v.load(); } catch(e){}
+      }
+      if (w.parentNode) w.parentNode.removeChild(w);
+    });
+  }
+
+  /* ---- 4. an ADD TO CART inside every ladder tile ---- */
+  function buttons(){
+    document.querySelectorAll('#pgx .pgx-tile.pgx-lad').forEach(function(tile){
+      if (tile.querySelector('.pg-tt-atc')) return;
+      var b = document.createElement('span');
+      b.className = 'pg-tt-atc';
+      b.setAttribute('role', 'button');
+      b.setAttribute('tabindex', '0');
+      b.textContent = 'Add to cart';
+      b.addEventListener('click', function(e){
+        e.preventDefault();
+        if (b.classList.contains('busy')) return;
+        var atc = document.getElementById('pgx-atc');
+        if (!atc) return;
+        b.classList.add('busy');
+        b.textContent = 'Adding…';
+        /* the page's own button: pgLadder's capture handler intercepts the
+           click and posts the selected tile's picks — display:none does not
+           stop a programmatic .click() */
+        atc.click();
+        setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
+      });
+      b.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); b.click(); }
+      });
+      tile.appendChild(b);
+    });
+  }
+
+  /* ---- 2. default character = the landing section's default_size ---- */
+  var engaged = false;
+  function mark(e){
+    if (!e.target || !e.target.closest) return;
+    if (e.target.closest('#pgx .pgx-thumbs') || e.target.closest('#pgx .pg-drop')) engaged = true;
+  }
+  document.addEventListener('touchstart', mark, {capture: true, passive: true});
+  document.addEventListener('mousedown', mark, true);
+
+  var defDone = false, defStart = Date.now();
+  function setDrop(d, want){
+    var head = d.querySelector('.pg-drop-h span');
+    if (head && head.textContent.trim().toLowerCase() === want) return;
+    var rows = d.querySelectorAll('.pg-drop-r');
+    for (var i = 0; i < rows.length; i++){
+      var sp = rows[i].querySelector('span');
+      if (sp && sp.textContent.trim().toLowerCase() === want){
+        /* the row's own click handler is pg-drop's only setter; it also lets
+           pg-gallery-tweaks scroll the photo strip to this character */
+        rows[i].click();
+        return;
+      }
+    }
+  }
+  function defaults(){
+    if (defDone) return;
+    var late = Date.now() - defStart > 9000;
+    var sel = document.querySelector('#pgx select[data-pgx-size="s1"]');
+    var want = sel && sel.value ? sel.value.trim().toLowerCase() : '';
+    if (!want){ if (late) defDone = true; return; }
+    var tiles = document.querySelectorAll('#pgx .pgx-lad');
+    if (!tiles.length) return;
+    if (!late){
+      /* wait for the FULL ladder — the volume tiers and the pack tile's third
+         picker land on pg-tile-copy's interval — so this runs exactly once
+         and the strip is scrolled before the shopper is deep in the page */
+      if (!document.querySelector('#pgx .pgx-lad[data-pg-tier="5"]')) return;
+      var pack = document.querySelector('#pgx .pgx-lad[data-pg-tier="1"]');
+      if (pack && pack.querySelectorAll('.pg-drop').length < 3) return;
+    }
+    if (engaged){ defDone = true; return; }
+    tiles.forEach(function(tile){
+      var d = tile.querySelector('.pgx-lad-picks .pg-drop');   /* slot 1 only */
+      if (d) setDrop(d, want);
+    });
+    defDone = true;
+  }
+
+  function pass(){ dropVid(); buttons(); defaults(); }
+  function boot(){
+    pass();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; pass(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    setInterval(pass, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG TikTok PDP", "settings": [], "presets": [{"name": "PG TikTok PDP"}]}
+{% endschema %}

@@ -1,3 +1,52 @@
+# Crystal Legends Orb PDP: TikTok landing conversion pass
+
+## Problem
+TikTok ad traffic lands on the orb product page with the wrong character
+preselected ("13 Arceus") and has to scroll through a video and nine screens of
+page to buy: the ad URL appends `?variant=` (Arceus), and independently the
+bundle ladder's pickers (pgLadder / pg-tile-copy) default every slot to
+`variants[0]`, which IS "13 Arceus". The autoplay video led the gallery, the
+Buy 2 Get 1 Free tiles sat below title/review/sellout blocks, and the only Add
+to Cart was at the bottom of the buy column (the sticky buy bar was previously
+removed by request).
+
+## Fix — new section `sections/pg-tiktok-pdp.liquid`
+Registered only in `templates/product.pg-crystal.json`, so it is scoped to the
+orb landing page:
+
+1. **`?variant=` neutralized.** Stripped on load via `history.replaceState`
+   (nothing on this custom template reads it, and now nothing ever will);
+   `ttclid` / `utm_*` and every other param are kept, so TikTok tracking and
+   the ad URL itself are untouched.
+2. **Default character honored.** Once the full ladder is built, the first
+   picker of every tile is re-pointed at the landing section's
+   "Default selected size" setting (01 Pikachu) by clicking pg-drop's own row
+   — which also lets pg-gallery-tweaks scroll the photo strip to that
+   character, so photo, name pill and picker agree on load. Skipped if the
+   shopper has already touched the strip or a picker.
+3. **Video removed, photos lead.** The gallery video node is dropped (src
+   cleared so phones stop downloading it; CSS backstop) — the page opens on
+   the swipeable character photos.
+4. **Bundle right under the photos + ATC in the tile (mobile ≤900px).** The
+   buy column becomes a flex column visually ordered title → rating →
+   Bundle & Save → tiles → everything else, so the offer is one glance under
+   the pictures. Every ladder tile gets its own ADD TO CART (a span, shown
+   only while its tile is selected, same pattern as .pg-tadd) that clicks the
+   page's real `#pgx-atc`, so pgLadder's existing add-to-cart path posts the
+   selected pack unchanged. The bottom button is hidden on phones via `:has()`
+   once an in-tile button exists. Flex `order` is used instead of moving
+   nodes, so the half-dozen scripts that insert into the buy column keep
+   working.
+
+## Applied to
+Draft theme `163368206564` ("TikTok PDP orb (Claude 8-28)"), duplicated from
+the live theme `163321938148` — publish it to go live.
+Files changed:
+- sections/pg-tiktok-pdp.liquid (new)
+- templates/product.pg-crystal.json (registered the new section)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
