@@ -58,15 +58,17 @@
      the shared file is untouched, and pages with a visible header behave as
      before.
 
-  7. PHOTO LEFT, UPSELLS RIGHT — MOBILE ONLY, by the owner: everything
-     sellable is on screen the second the page loads. .pgx-main becomes a
-     two-column grid (photos ~44%, buy column beside them), the photo pills
-     and tile typography are compacted to fit the narrow columns, and the
-     below-the-fold blocks (sellout, info row, payment icons, guarantee,
-     accordions) are MOVED out of the narrow right column into a full-width
-     #pg-tt-below container after the grid, each leaving a hidden placeholder
-     so a rotation back past 900px restores the exact desktop DOM. The quote
-     card stays put — pg-mobile's quoteUp() re-seats it after the rating every
+  7. EVERYTHING SELLABLE ON THE FIRST SCREEN — MOBILE ONLY. A side-by-side
+     pass (photo 44% left, tiles right) put a ~165px photo over a tall empty
+     column and the owner called it: looks bad. The photo now spans the page
+     again but its HEIGHT is capped to ~42vh (slight top/bottom crop of the
+     square shot, orb stays centred), so photo, title, stars and the first
+     tile with its ADD TO CART all fit the first screen without the dead
+     space. The below-the-fold blocks (sellout, info row, payment icons,
+     guarantee, accordions) are still MOVED into a full-width #pg-tt-below
+     container after .pgx-main, each leaving a hidden placeholder so a
+     rotation back past 900px restores the exact desktop DOM. The quote card
+     stays put — pg-mobile's quoteUp() re-seats it after the rating every
      1.5s and would fight any move.
 {%- endcomment -%}
 <style>
@@ -84,43 +86,22 @@
      toggled by the script below); until then it must not cover the photo ---- */
   html:not(.pg-tt-scroll) #pg-cartfab{opacity:0 !important;transform:translateY(-8px) !important;pointer-events:none !important}
 
-  /* ---- 7. photo left, upsells right: the whole sell is on the first screen.
-     `html body` prefix: pg-gallery-mobile (footer-group, later in the DOM)
-     pins .pgx-main to one column with !important, so these need the higher
-     specificity to win. ---- */
-  html body #pgx .pgx-main{
-    display:grid !important;
-    grid-template-columns:minmax(0,44%) minmax(0,1fr) !important;
-    column-gap:10px !important;row-gap:0 !important;
-    gap:10px !important;
-    align-items:start !important;
-    padding:10px 10px 6px !important;
+  /* ---- 7. full-width photo, capped height, so photo + first tile + its
+     ADD TO CART all fit the first screen. `html body` prefix: pg-landing's
+     own mobile rules and pg-gallery-mobile (footer-group, later in the DOM)
+     carry !important, so these need the higher specificity to win. ---- */
+  html body #pgx .pgx-main{gap:12px !important;padding:10px 12px 6px !important}
+  html body #pgx .pgx-thumbwrap .pgx-thumbs button img{
+    aspect-ratio:auto !important;
+    height:min(92vw,42vh) !important;
+    width:100% !important;
+    object-fit:cover !important;
   }
-  html body #pgx .pgx-gallery,
-  html body #pgx .pgx-buy{min-width:0 !important}
-  /* the pills on a ~165px photo: same jobs, smaller type */
-  html body #pgx .pgx-thumbwrap .pg-gt-name{font-size:10px !important;padding:4px 10px !important;top:6px !important}
-  html body #pgx .pgx-thumbwrap .pg-gt-swipe{font-size:9.5px !important;padding:5px 9px !important;gap:5px !important;bottom:6px !important;letter-spacing:.05em !important}
-  html body #pgx .pg-gt-swipe span{font-size:14px !important}
-  html body #pgx .pg-gt-swipe b.pg-gt-n{min-width:3.6ch !important}
-  /* compact the right column so tiles read at ~210px wide */
-  html body #pgx .pgx-buy > .pgx-title{font-size:15px !important;margin:0 0 3px !important}
-  html body #pgx .pgx-buy > .pgx-rating{font-size:11.5px !important;gap:5px !important;margin-bottom:6px !important}
-  html body #pgx .pgx-buy > .pgx-rating .pgx-stars{font-size:12px !important;letter-spacing:1px !important}
-  html body #pgx .pgx-buy .pgx-tile{padding:10px !important;margin-bottom:9px !important}
-  html body #pgx .pgx-buy .pgx-tile.pgx-sel{padding:9px !important}
-  html body #pgx .pgx-lad-t b{font-size:12.5px !important}
-  html body #pgx .pgx-lad-t .pgx-lad-chip{font-size:9.5px !important;margin:3px 0 2px !important}
-  html body #pgx .pgx-lad-save{font-size:10px !important}
-  html body #pgx .pgx-lad-px b{font-size:13px !important}
-  html body #pgx .pgx-lad-px s{font-size:10.5px !important}
-  html body #pgx .pgx-lad-badge{font-size:9px !important}
-  html body #pgx .pgx-buy .pgx-lad-picks .lbl{font-size:10px !important}
-  html body #pgx .pgx-tile.pgx-sel .pg-tt-atc{padding:11px 8px !important;font-size:12.5px !important;margin-top:8px !important}
-  html body #pgx .pgx-buy > .pgx-deal-note{font-size:10.5px !important;margin:2px 0 8px !important}
-  html body #pgx .pgx-buy > .pgx-quote{margin-top:10px !important}
+  /* tighter title/stars so the tiles start higher */
+  html body #pgx .pgx-buy > .pgx-title{font-size:20px !important;margin:0 0 3px !important}
+  html body #pgx .pgx-buy > .pgx-rating{font-size:13px !important;margin-bottom:7px !important}
   /* the blocks the script moves below the grid get the page gutters back */
-  #pg-tt-below{padding:6px 10px 20px;max-width:1280px;margin:0 auto}
+  #pg-tt-below{padding:6px 12px 20px;max-width:1280px;margin:0 auto}
   #pg-tt-below:empty{display:none}
 
   /* ---- 3. the video is gone; the swipeable strip IS the gallery ---- */
