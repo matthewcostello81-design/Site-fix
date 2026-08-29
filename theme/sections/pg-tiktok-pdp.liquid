@@ -39,6 +39,14 @@
      add-to-cart path posts the selected tile unaided. With an in-tile button
      present, the big bottom button is hidden on phones via :has() — browsers
      without :has() simply keep both, which is harmless.
+
+  5. NO HEADER CHROME — MOBILE ONLY, by the owner: the Pocket Era logo
+     wordmark (pg-mobile injects it at 252px tall), the scrolling announcement
+     marquee, and the Home / Track your order / Contact nav are all hidden on
+     phones, so the ad landing opens directly on the photos with the bundle
+     tiles right under. A compact title + star line stays between them for
+     context. Cart access survives through the cart drawer that opens on add
+     and the sticky cart bar; desktop keeps the full header.
 {%- endcomment -%}
 <style>
   /* Everything visual here is MOBILE ONLY (≤900px), per the owner: TikTok
@@ -46,6 +54,12 @@
      its bottom Add to Cart untouched. */
   #pgx .pgx-tile .pg-tt-atc{display:none}
   @media (max-width:900px){
+  /* ---- 5. no header chrome: no marquee banner, no Pocket Era wordmark,
+     no Home / Track / Contact nav — the page opens on the photos ---- */
+  #pgx .pgx-announce{display:none !important}
+  #pgx .pgx-head{display:none !important}
+  #pgx .pgx-main{padding-top:12px !important}
+
   /* ---- 3. the video is gone; the swipeable strip IS the gallery ---- */
   #pgx .pgx-vid{display:none !important}
 
