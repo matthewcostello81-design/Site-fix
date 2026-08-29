@@ -314,7 +314,7 @@
       BELOW.forEach(function(s){
         buy.querySelectorAll(':scope > ' + s).forEach(function(el){
           /* a hidden placeholder marks the exact seat, so rotating back past
-             900px restores the desktop DOM byte for byte */
+             900px restores the exact desktop DOM */
           var ph = document.createElement('i');
           ph.className = 'pg-tt-ph';
           ph.hidden = true;
