@@ -1,3 +1,56 @@
+# Orb gallery: opens on photo 1, and the name pill drops the number prefixes
+
+## Why it opened on photo 18 of 35
+
+`sections/pg-tiktok-pdp.liquid` (job 2) re-points the bundle pickers at the
+landing section's "Default selected size" setting, and `pg-gallery-tweaks`
+scrolls the photo strip to whatever character is picked. That setting said
+`01 Pikachu`, and Pikachu's photo sat 18th in the strip — so the page opened
+mid-strip at 18/35, on a photo the counter said was nowhere near the start.
+
+Two things then drifted apart when the variants were renamed to plain names
+("01 Pikachu" -> "Pikachu"):
+
+- `default_size` still said `01 Pikachu`, which now matches no variant, so the
+  default quietly fell through to the first variant (Arceus).
+- `pg-gallery-tweaks` reads the character NAME from the media alt text
+  ("Crystal PokeOrb – 01 Pikachu" -> "01 Pikachu"), which still carried the
+  numbers. That is why the pill read "01 PIKACHU", and it also broke
+  `gotoTitle()`: picking a character in the bundle picker compares the picker's
+  label (the variant title, "Pikachu") against that alt-derived name, so the
+  strip stopped following the picker.
+
+## Fix
+
+1. **Media alt text (Shopify data, all 35 character photos)**: number prefixes
+   removed — "Crystal PokeOrb – 01 Pikachu" -> "Crystal PokeOrb – Pikachu". The
+   pill now reads "PIKACHU", and picker -> strip matching works again because the
+   alt-derived name equals the variant title. One typo fixed while there:
+   "12 Lacario" -> "Lucario" (the variant is spelled Lucario, so that one photo
+   could never be matched).
+2. **Media order**: Pikachu's photo moved to position 2 in the product media,
+   i.e. the FIRST photo of the strip (position 1 is the hero group shot, which
+   `pg-gallery-tweaks` hides and which is still the collection-card image). The
+   gallery now opens at 1/35 on Pikachu, per the owner.
+3. **`templates/product.pg-crystal.json`**: `default_size` `01 Pikachu` ->
+   `Pikachu`, so the setting matches the renamed variant again and the pickers
+   preselect Pikachu deterministically instead of falling through to Arceus.
+   Photo, name pill and picker now all agree on load.
+
+Nothing in `pg-tiktok-pdp.liquid` needed to change — its mechanism was right,
+only the value it pointed at was stale. Its comments still quote the old
+"13 Arceus" / "01 Pikachu" names as examples.
+
+## Applied to
+- Alt text and media order: the live product (Shopify data, effective immediately).
+- Template: theme `163618390244` ("Copy of Matt Copy of TikTok PDP v2 no-header"),
+  an unpublished copy of the current live theme — the connector blocks writes to
+  the live theme, so this draft needs previewing and publishing from admin.
+
+Files changed: templates/product.pg-crystal.json
+
+---
+
 # Orb PDP: logo + banner back, and "496 verified reviews" links to the reviews
 
 ## 1. Logo and announcement banner returned to the Crystal Legends Orb page
