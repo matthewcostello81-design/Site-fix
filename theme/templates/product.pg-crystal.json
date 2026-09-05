@@ -41,7 +41,8 @@
     "pg_picksize": {"type": "pg-pick-size", "settings": {}},
     "pg_galtweaks": {"type": "pg-gallery-tweaks", "settings": {}},
     "pg_tiktok": {"type": "pg-tiktok-pdp", "settings": {}},
-    "pg_revlink": {"type": "pg-rev-link", "settings": {}}
+    "pg_revlink": {"type": "pg-rev-link", "settings": {}},
+    "pg_orbtitle": {"type": "pg-orb-title", "settings": {}}
   },
-  "order": ["pg_landing", "pg_picksize", "pg_galtweaks", "pg_tiktok", "pg_revlink"]
+  "order": ["pg_landing", "pg_picksize", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_orbtitle"]
 }

@@ -1,3 +1,33 @@
+# Orb PDP: product title bold, matching the R36S
+
+The orb's title read smaller and lighter than the R36S's. Both pages get the
+same rule from pg-landing (`.pgx-title`, 46px desktop / 34px mobile, weight
+600), so the weight was never the difference — pg-tiktok-pdp shrinks the orb
+title to 20-23px on phones as part of fitting the photo, stars and first bundle
+tile onto one screen.
+
+New section `sections/pg-orb-title.liquid`, registered in
+`templates/product.pg-crystal.json` only:
+
+- weight 700 at every width — the bold that was asked for, and the heaviest
+  Roboto Slab cut pg-landing actually loads (400;500;600;700), so it is a real
+  weight rather than a synthesised one;
+- 34px again on phones, matching the R36S.
+
+Kept out of pg-tiktok-pdp: that file owns the ad landing's layout logic, this is
+one typographic override. It renders after pg-tiktok-pdp at equal selector
+specificity, so it wins on source order.
+
+## Applied to
+Theme `163618390244` ("Copy of Matt Copy of TikTok PDP v2 no-header"),
+unpublished — needs preview and publish from Shopify admin.
+
+Files changed:
+- sections/pg-orb-title.liquid (new)
+- templates/product.pg-crystal.json (registered pg-orb-title)
+
+---
+
 # Orb gallery: opens on photo 1, and the name pill drops the number prefixes
 
 ## Why it opened on photo 18 of 35
