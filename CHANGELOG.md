@@ -1,3 +1,30 @@
+# Orb PDP: "Keep exploring" moved above the reviews
+
+`yml()` in pg-theme-css seats the "Keep exploring / You may also like" block at
+`main.nextSibling`, immediately after `.pgx-main`. pg-tiktok-pdp then builds
+`#pg-tt-below` (the sellout card, info row, payment icons, guarantee and
+accordions, moved out of the buy column on phones) and seats that before
+`.pgu-yml` when it can find it, else at the same `main.nextSibling`.
+
+Which lands first is a race: `yml()` waits on a catalog fetch, so when
+`#pg-tt-below` is built first the later insert goes in front of it and the block
+appears mid-page, above the accordions, instead of at the end.
+
+New section `sections/pg-yml-last.liquid` (crystal template only) re-seats it
+immediately before `#pg-reviews` on a repeating, idempotent pass — it touches
+the DOM only when the block is not already the reviews' previous sibling, so it
+settles rather than fights. Neither pg-theme-css nor pg-tiktok-pdp changes;
+both of their inserts still happen exactly once.
+
+## Applied to
+Theme `163621044452`, unpublished — needs preview and publish.
+
+Files changed:
+- sections/pg-yml-last.liquid (new)
+- templates/product.pg-crystal.json (registered it)
+
+---
+
 # R36S PDP: swipe gallery with every photo + the video, and a button on every tile
 
 ## The Duo Pack had no Add to cart — why

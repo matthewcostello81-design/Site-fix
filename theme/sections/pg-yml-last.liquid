@@ -1,0 +1,60 @@
+{%- comment -%}
+  PG YML Last: keep "Keep exploring / You may also like" directly above the
+  review section at the bottom of the orb page.
+
+  WHERE IT ENDS UP TODAY, AND WHY IT MOVES AROUND. The block is built by yml()
+  in pg-theme-css, which seats it at `main.nextSibling` — immediately after
+  .pgx-main. pg-tiktok-pdp then builds #pg-tt-below (the sellout card, info row,
+  payment icons, guarantee and accordions, moved out of the buy column on
+  phones) and seats THAT before .pgu-yml when it can find it, else at the same
+  main.nextSibling.
+
+  So which of the two ends up first is a race: yml() waits on a catalog fetch,
+  and if #pg-tt-below is built first, the later yml() insert lands in front of
+  it and "You may also like" appears in the middle of the page, above the
+  accordions, instead of at the end. Per the owner it belongs last, right above
+  the reviews.
+
+  Rather than re-time either file, the block is simply re-seated immediately
+  before the review section (#pg-reviews, the id pg-landing puts on
+  <section class="pgx-rev">) on a repeating, idempotent pass — it touches the
+  DOM only when the block is not already the reviews' previous sibling, so it
+  settles instead of fighting. Nothing else about either file changes:
+  pg-theme-css still builds the block, pg-tiktok-pdp still owns #pg-tt-below,
+  and both of their inserts happen only once.
+
+  Registered in templates/product.pg-crystal.json only, per the owner: this is
+  an orb-page change.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgYmlLast) return; window.pgYmlLast = 1;
+
+  function place(){
+    var yml = document.querySelector('#pgx .pgu-yml');
+    if (!yml) return;                                   /* not built yet */
+    var rev = document.getElementById('pg-reviews') || document.querySelector('#pgx .pgx-rev');
+    if (!rev || !rev.parentNode) return;
+    if (yml.parentNode === rev.parentNode && yml.nextElementSibling === rev) return;
+    rev.parentNode.insertBefore(yml, rev);
+  }
+
+  function boot(){
+    place();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; place(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    setInterval(place, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG YML Last", "settings": [], "presets": [{"name": "PG YML Last"}]}
+{% endschema %}

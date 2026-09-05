@@ -43,7 +43,8 @@
     "pg_tiktok": {"type": "pg-tiktok-pdp", "settings": {}},
     "pg_revlink": {"type": "pg-rev-link", "settings": {}},
     "pg_orbtitle": {"type": "pg-orb-title", "settings": {}},
-    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}}
+    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}},
+    "pg_ymllast": {"type": "pg-yml-last", "settings": {}}
   },
-  "order": ["pg_landing", "pg_picksize", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_orbtitle", "pg_selloutlast"]
+  "order": ["pg_landing", "pg_picksize", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_orbtitle", "pg_selloutlast", "pg_ymllast"]
 }
