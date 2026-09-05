@@ -1,3 +1,49 @@
+# Orb PDP: sellout card under the last bundle tile, centred title and rating
+
+## Sellout risk card moved to the end of the ladder
+
+pg-landing renders "Sellout risk: HIGH" between the review quote and the
+BUNDLE & SAVE divider, so it read as a preamble to the tiles; on phones
+pg-tiktok-pdp then moved it further off, into #pg-tt-below under the whole
+photo/tiles grid. Per the owner it belongs directly under the last tile —
+"Buy 5, Get 3 FREE" — as the closing line of the upsell.
+
+New section `sections/pg-sellout-last.liquid` (crystal template only) seats the
+card in a `.pg-sell-slot` wrapper inserted right after the last `.pgx-lad`
+tile. The wrapper does the real work:
+
+- pg-tiktok-pdp's `relocate()` collects `:scope > .pgx-sellout` — a DIRECT child
+  of `.pgx-buy` — every 900ms. One level down, the card no longer matches, so
+  the two never fight over it.
+- its mobile flex ordering also targets direct children, so the wrapper takes
+  that seat at `order:6`: after the tiles (4) and the add-to-cart row (5),
+  before the quote (8). Desktop has no ordering there, so the DOM position gives
+  the same result.
+
+The anchor is the LAST `.pgx-lad` in the DOM, not a fixed tier: pgLadder builds
+Single / Buy 2 Get 1 and pg-tile-copy appends Buy 4 Get 2 and Buy 5 Get 3, both
+rebuilding on their own intervals. The pass re-runs, is idempotent (it touches
+the DOM only when the slot is not already seated after the last tile), and waits
+when no tile is on screen yet.
+
+## Title and rating centred (phones)
+
+Added to `sections/pg-orb-title.liquid`: the title gets `text-align:center` and
+the star / "496 verified reviews" line `justify-content:center` (it is a flex
+row, not a text block) under 900px. Desktop is left alone — there the buy column
+sits beside the gallery, where a centred heading lines up with nothing below it.
+
+## Applied to
+Theme `163621044452` ("Copy of Copy of Matt Copy of TikTok PDP v2 no-header"),
+unpublished — needs preview and publish from Shopify admin.
+
+Files changed:
+- sections/pg-sellout-last.liquid (new)
+- sections/pg-orb-title.liquid (centring)
+- templates/product.pg-crystal.json (registered pg-sellout-last)
+
+---
+
 # Orb PDP: product title bold, matching the R36S
 
 The orb's title read smaller and lighter than the R36S's. Both pages get the

@@ -1,28 +1,34 @@
 {%- comment -%}
-  PG Orb Title: give the Crystal Legends Orb page the same product title as the
-  R36S page, per the owner.
+  PG Orb Title: the Crystal Legends Orb page's product title and rating line —
+  same weight and size as the R36S page, and both centred on phones.
 
-  pg-landing styles the title once for every landing page:
+  BOLD, LIKE THE R36S. pg-landing styles the title once for every landing page:
 
       .pgx-title{font-family:'Roboto Slab';font-size:46px;font-weight:600}
       @media (max-width:900px){ .pgx-title{font-size:34px} }
 
   so the R36S and the wall art both show a 34px semibold title on a phone. The
-  orb page does not, because pg-tiktok-pdp shrinks it as part of fitting the
+  orb page did not, because pg-tiktok-pdp shrinks it as part of fitting the
   photo, the stars and the first bundle tile onto one screen:
 
       html body #pgx .pgx-buy > .pgx-title{font-size:20px !important}
       #pgx .pgx-buy > .pgx-title{order:1;font-size:23px !important}
 
-  That is the whole visible difference — the weight was already the same on both
-  pages — so "make it bold like the R36S" is really two things: the size back to
+  That was the whole visible difference — the weight was already the same on
+  both pages — so "make it bold like the R36S" is two things: the size back to
   34px, and 700 rather than 600 for the bold that was asked for. 700 is the
   heaviest Roboto Slab weight pg-landing loads (400;500;600;700), so it renders
   as a real cut of the typeface instead of a browser-synthesised fake bold.
 
+  CENTRED, PHONES ONLY. The title and the star / "496 verified reviews" line
+  are centred under the photo, per the owner. .pgx-rating is a flex row, so it
+  is centred with justify-content rather than text-align. Desktop is left alone:
+  there the buy column sits beside the gallery in a two-column grid, where a
+  centred heading would not line up with anything below it.
+
   Its own section rather than an edit inside pg-tiktok-pdp: that file is the ad
-  landing's layout logic and this is one typographic override, so it stays
-  separate and is registered in templates/product.pg-crystal.json only.
+  landing's layout logic and this is typography, so it stays separate and is
+  registered in templates/product.pg-crystal.json only.
   `html body #pgx .pgx-buy > .pgx-title` matches pg-tiktok-pdp's own selector
   specificity and this section renders after it, so it wins on order.
 {%- endcomment -%}
@@ -33,6 +39,11 @@
       font-size:34px !important;
       line-height:1.08 !important;
       margin:2px 0 6px !important;
+      text-align:center !important;
+    }
+    html body #pgx .pgx-buy > .pgx-rating{
+      justify-content:center !important;
+      text-align:center !important;
     }
   }
 </style>

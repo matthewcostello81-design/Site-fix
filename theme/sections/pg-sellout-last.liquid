@@ -1,0 +1,81 @@
+{%- comment -%}
+  PG Sellout Last: move the "Sellout risk: HIGH" card to sit directly under the
+  last bundle tile — "Buy 5, Get 3 FREE" — per the owner: it is the closing
+  line of the upsell ladder, not an intro to it.
+
+  WHERE IT WAS. pg-landing renders the card between the review quote and the
+  BUNDLE & SAVE divider, so it read as a preamble to the tiles. On phones
+  pg-tiktok-pdp then moves it further away again, into the full-width
+  #pg-tt-below container under the photo/tiles grid, alongside the info row and
+  the accordions.
+
+  HOW IT MOVES. The card is put inside a wrapper, .pg-sell-slot, inserted right
+  after the last .pgx-lad tile. The wrapper is the point, not decoration:
+
+    - pg-tiktok-pdp's relocate() collects `:scope > .pgx-sellout` — a DIRECT
+      child of .pgx-buy — every 900ms and on every mutation. Nested one level
+      down, the card no longer matches, so the two do not fight over it. Any
+      placeholder relocate() may already have left behind is an empty hidden
+      <i> and harmless.
+    - pg-tiktok-pdp's mobile flex ordering works on direct children too
+      (`#pgx .pgx-buy > .pgx-sellout{order:9}` put it after the quote). The
+      wrapper takes that seat instead, at order 6: after the tiles (4) and the
+      add-to-cart row (5), before the quote (8).
+
+  The anchor is the LAST .pgx-lad in the DOM, whatever that is: pgLadder builds
+  Single / Buy 2 Get 1, then pg-tile-copy appends Buy 4 Get 2 and Buy 5 Get 3,
+  and both rebuild the ladder from scratch on their own intervals. So the pass
+  re-runs, is idempotent (it only touches the DOM when the slot is not already
+  seated after the last tile), and simply waits when no tile is on screen yet.
+
+  Desktop has no flex ordering on that column, so the DOM position does the
+  work there and the result is the same: the card lands under the final tile.
+{%- endcomment -%}
+<style>
+  #pgx .pgx-buy > .pg-sell-slot{order:6;margin:14px 0 0}
+  #pgx .pg-sell-slot .pgx-sellout{margin-bottom:0}
+</style>
+<script>
+(function(){
+  if (window.pgSelloutLast) return; window.pgSelloutLast = 1;
+
+  function place(){
+    var sell = document.querySelector('#pgx .pgx-sellout');
+    if (!sell) return;
+    var tiles = document.querySelectorAll('#pgx .pgx-lad');
+    if (!tiles.length) return;                       /* ladder not built yet */
+    var last = tiles[tiles.length - 1];
+    if (!last.parentNode) return;
+
+    var slot = document.querySelector('#pgx .pg-sell-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.className = 'pg-sell-slot';
+    }
+    /* only touch the DOM when it is not already where it belongs */
+    if (slot.parentNode !== last.parentNode || slot.previousElementSibling !== last){
+      last.parentNode.insertBefore(slot, last.nextSibling);
+    }
+    if (sell.parentNode !== slot) slot.appendChild(sell);
+  }
+
+  function boot(){
+    place();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      /* pgLadder and pg-tile-copy both rebuild the tiles from scratch */
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; place(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    setInterval(place, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Sellout Last", "settings": [], "presets": [{"name": "PG Sellout Last"}]}
+{% endschema %}
