@@ -40,6 +40,24 @@
 
   pg-sellout-last (also registered on this template) is what puts the sellout
   card under the last bundle tile; this file only gives its wrapper the seat.
+
+  AN ADD TO CART IN EVERY TILE, like the orb. pg-tiktok-pdp puts one inside each
+  ladder tile on the orb, shown only while that tile is selected, and hides the
+  big bottom button on phones so there is exactly one button on screen and it
+  belongs to the offer being looked at. The R36S has no ladder — its tiles are
+  pg-landing's own Single Item and Bundle Deal 2x — so the same treatment is
+  rebuilt here against those, with pg-tiktok-pdp's styling restated because that
+  file does not render on this template.
+
+  It is a SPAN with role=button, not a <button>: the base theme paints buttons
+  with a dark ::before overlay. It does not carry .pgx-atc either, since
+  pg-landing binds its add-to-cart to #pgx-atc by id and a second element with
+  that class would only confuse anything looking for "the" button. A click
+  clicks #pgx-atc instead, so pg-landing's own handler posts the selected tile's
+  variants unaided — a programmatic .click() works on a display:none element,
+  which is what lets the bottom button be hidden while still doing the work. The
+  click also bubbles to the tile, whose own handler selects it, so the tile a
+  shopper buys from is always the tile they pressed.
 {%- endcomment -%}
 <style>
   @media (max-width:900px){
@@ -67,8 +85,77 @@
     #pgx .pgx-buy > .pgx-pay{order:11}
     #pgx .pgx-buy > .pgx-guar{order:12}
     #pgx .pgx-buy > .pgx-acc{order:13}
+
+    /* ---- an ADD TO CART inside the selected tile ---- */
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      margin-top:12px;padding:15px 12px;
+      border-radius:10px;
+      background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 55%,#5E2380 100%);
+      color:#FFFFFF;
+      font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+      font-size:15.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      text-align:center;cursor:pointer;
+      box-shadow:0 14px 30px -12px rgba(139,68,190,.75);
+      -webkit-user-select:none;user-select:none;
+      transition:filter .15s ease,opacity .15s ease;
+    }
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc:hover{filter:brightness(1.1)}
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc.busy{opacity:.6;cursor:default}
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc:after{content:"\2192";font-size:17px;line-height:1}
+    /* the bottom button would duplicate the in-tile one on phones. Browsers
+       without :has() simply keep both, which is harmless. */
+    #pgx .pgx-buy:has(.pgx-tile .pg-r36-atc) > .pgx-atc{display:none !important}
   }
+  /* hidden by default and at every width, so an unselected tile never shows one
+     and desktop never shows any */
+  #pgx .pgx-tile .pg-r36-atc{display:none}
 </style>
+<script>
+(function(){
+  if (window.pgR36Atc) return; window.pgR36Atc = 1;
+
+  function buttons(){
+    document.querySelectorAll('#pgx .pgx-buy > .pgx-tile[data-pgx-tile]').forEach(function(tile){
+      if (tile.querySelector('.pg-r36-atc')) return;
+      var b = document.createElement('span');
+      b.className = 'pg-r36-atc';
+      b.setAttribute('role', 'button');
+      b.setAttribute('tabindex', '0');
+      b.textContent = 'Add to cart';
+      b.addEventListener('click', function(){
+        if (b.classList.contains('busy')) return;
+        var atc = document.getElementById('pgx-atc');
+        if (!atc) return;
+        b.classList.add('busy');
+        b.textContent = 'Adding…';
+        /* pg-landing's own handler reads the selected tile and posts it */
+        atc.click();
+        setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
+      });
+      b.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); b.click(); }
+      });
+      tile.appendChild(b);
+    });
+  }
+
+  function boot(){
+    buttons();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; buttons(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    setInterval(buttons, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
 {% schema %}
 {"name": "PG R36S Mobile", "settings": [], "presets": [{"name": "PG R36S Mobile"}]}
 {% endschema %}

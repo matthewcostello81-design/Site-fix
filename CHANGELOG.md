@@ -1,3 +1,38 @@
+# R36S PDP: add-to-cart inside every bundle tile
+
+Same treatment the orb page gets from pg-tiktok-pdp, rebuilt in
+`sections/pg-r36s-mobile.liquid` against pg-landing's own tiles (Single Item,
+Bundle Deal 2x) because the R36S has no ladder and pg-tiktok-pdp does not render
+on this template:
+
+- a button inside each tile, visible only while that tile is selected;
+- the big bottom Add to cart hidden on phones via `:has()`, so exactly one
+  button is on screen and it belongs to the offer being looked at;
+- a SPAN with role=button, not a `<button>` (the base theme paints buttons with
+  a dark ::before overlay), and without the .pgx-atc class, since pg-landing
+  binds its handler to `#pgx-atc` by id;
+- the click clicks `#pgx-atc`, so pg-landing's own handler posts the selected
+  tile's variants — a programmatic click works on a display:none element, which
+  is what lets the bottom button be hidden while still doing the work. The click
+  also bubbles to the tile, whose handler selects it.
+
+Styling is pg-tiktok-pdp's in-tile button restated verbatim (purple gradient,
+uppercase, trailing arrow), so the two pages match.
+
+## Still open
+The photo still showing on the R36S mobile page is the product's first media
+(`hf_20260812_213641…`), which the owner says is the backside shot. The
+Pokémon-screen photo is elsewhere in the media list and cannot be identified
+from here — the CDN is not reachable from this environment, so the images
+cannot be inspected. Waiting on which position to move to the front.
+
+## Applied to
+Theme `163621044452`, unpublished — needs preview and publish.
+
+Files changed: sections/pg-r36s-mobile.liquid
+
+---
+
 # R36S PDP: one photo on phones, and the orb page's running order
 
 ## One picture
