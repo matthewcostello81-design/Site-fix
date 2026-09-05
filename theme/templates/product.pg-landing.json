@@ -95,7 +95,9 @@
         "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
       }
     },
-    "pg_revlink": {"type": "pg-rev-link", "settings": {}}
+    "pg_revlink": {"type": "pg-rev-link", "settings": {}},
+    "pg_r36smobile": {"type": "pg-r36s-mobile", "settings": {}},
+    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}}
   },
-  "order": ["pg_landing", "pg_revlink"]
+  "order": ["pg_landing", "pg_revlink", "pg_r36smobile", "pg_selloutlast"]
 }

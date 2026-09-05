@@ -28,6 +28,14 @@
   re-runs, is idempotent (it only touches the DOM when the slot is not already
   seated after the last tile), and simply waits when no tile is on screen yet.
 
+  ON A PAGE WITH NO LADDER it falls back to pg-landing's own tiles. The R36S is
+  in pgLadder's NO_LADDER list (its volume pricing needs BXGY discounts that do
+  not exist for it), so there the last tile is the "Bundle Deal: 2x" one that
+  pg-landing renders itself. The fallback is only consulted when no .pgx-lad is
+  on the page at all, so on the orb it never fires once the ladder is up — and
+  while the ladder is still being built, a first placement after the native tile
+  is corrected by the next pass.
+
   Desktop has no flex ordering on that column, so the DOM position does the
   work there and the result is the same: the card lands under the final tile.
 {%- endcomment -%}
@@ -43,7 +51,9 @@
     var sell = document.querySelector('#pgx .pgx-sellout');
     if (!sell) return;
     var tiles = document.querySelectorAll('#pgx .pgx-lad');
-    if (!tiles.length) return;                       /* ladder not built yet */
+    /* no ladder on this product (R36S): use pg-landing's own tiles */
+    if (!tiles.length) tiles = document.querySelectorAll('#pgx .pgx-buy > .pgx-tile');
+    if (!tiles.length) return;                       /* nothing to sit under yet */
     var last = tiles[tiles.length - 1];
     if (!last.parentNode) return;
 

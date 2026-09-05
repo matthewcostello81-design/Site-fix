@@ -1,3 +1,51 @@
+# R36S PDP: one photo on phones, and the orb page's running order
+
+## One picture
+
+pg-landing's gallery column renders `.pgx-hero` (media[0] — the Pokémon R36S
+shot), `.pgx-vid` (the clip from the section's "Gallery video URL" setting) and
+`.pgx-thumbwrap` (every other image). On phones the clip and the strip are now
+hidden, leaving the hero alone. Nothing is deleted: the images stay on the
+product and desktop keeps the full carousel.
+
+The strip is hidden twice on purpose. pg-landing sets
+`.pgx-thumbwrap{display:contents}` under 900px, which dissolves the wrapper and
+promotes `.pgx-thumbs` to be the gallery's child — so hiding the wrapper alone
+does nothing in that state — while pg-gallery-mobile re-asserts the wrapper as a
+real block. Hiding both covers either.
+
+## Same structure as the orb page
+
+The orb's phone layout comes from pg-tiktok-pdp, which makes `.pgx-buy` a flex
+column and gives each child an explicit order. The R36S had pg-landing's plain
+DOM order: the review carousel sat directly under the stars, above the bundle,
+with the sellout card above that. New section `sections/pg-r36s-mobile.liquid`
+restates the same order values, so both pages now read:
+
+    title | stars | BUNDLE & SAVE | tiles | add to cart | sellout risk
+    | review carousel | info row | payment | guarantee | accordions
+
+Order, not DOM moves — pg-mobile's `quoteUp()` re-seats the review card after
+the rating every 1.5s and would fight any relocation.
+
+`sections/pg-sellout-last.liquid` (the orb's sellout mover) is registered on
+this template too and gained a fallback: with no `.pgx-lad` on the page it
+anchors to pg-landing's own tiles. The R36S is in pgLadder's NO_LADDER list, so
+its last tile is the "Bundle Deal: 2x" one. The fallback is consulted only when
+no ladder tile exists at all, so the orb is unaffected.
+
+## Applied to
+Theme `163621044452` ("Copy of Copy of Matt Copy of TikTok PDP v2 no-header"),
+unpublished — needs preview and publish from Shopify admin. It also still
+carries the orb changes from the previous entry.
+
+Files changed:
+- sections/pg-r36s-mobile.liquid (new)
+- sections/pg-sellout-last.liquid (no-ladder fallback)
+- templates/product.pg-landing.json (registered both sections)
+
+---
+
 # Orb PDP: sellout card under the last bundle tile, centred title and rating
 
 ## Sellout risk card moved to the end of the ladder

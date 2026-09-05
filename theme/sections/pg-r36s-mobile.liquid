@@ -1,0 +1,74 @@
+{%- comment -%}
+  PG R36S Mobile: on phones, one photo and the orb page's running order.
+
+  Registered in templates/product.pg-landing.json only (the R36S), and every
+  rule is ≤900px — desktop keeps the full gallery and the column it has today.
+
+  ONE PICTURE. pg-landing's gallery column renders .pgx-hero (the first image),
+  .pgx-vid (the clip from the section's "Gallery video URL" setting) and
+  .pgx-thumbwrap (every other image). Per the owner the phone should open on the
+  Pokémon R36S shot alone, so the clip and the strip are hidden and the hero —
+  which IS that shot, media[0] on the product — is what is left.
+
+  The strip is hidden in two places on purpose. pg-landing sets
+  `.pgx-thumbwrap{display:contents}` under 900px, which makes the wrapper vanish
+  as a box and promotes .pgx-thumbs to be the gallery's own child, so hiding the
+  wrapper alone does nothing there; pg-gallery-mobile then re-asserts the
+  wrapper as a real block. Hiding the wrapper AND the strip covers both states.
+  Nothing is deleted — the images stay on the product and desktop still shows
+  the carousel.
+
+  THE SAME RUNNING ORDER AS THE ORB. The orb page gets its phone layout from
+  pg-tiktok-pdp, which turns .pgx-buy into a flex column and sets an explicit
+  order on each child, so the page reads: title, stars, BUNDLE & SAVE, the
+  tiles, add to cart, the sellout-risk card, then the review carousel, then the
+  info row, payment icons, guarantee and accordions.
+
+  The R36S had pg-landing's plain DOM order instead — the review carousel sat
+  directly under the stars, above the bundle, and the sellout card above that.
+  The same order values are restated here so the two pages read identically:
+
+      title 1 | rating 2 | divider 3 | tiles 4 | deal note + ATC 5
+      sellout slot 6 (from pg-sellout-last) | err 6 | quote 8
+      sellout 9 (only if the slot has not claimed it yet) | info 10
+      payment 11 | guarantee 12 | accordions 13
+
+  Order is set rather than nodes moved for the same reason pg-tiktok-pdp does
+  it: pg-mobile's quoteUp() re-seats the review card after the rating every
+  1.5s, and several other scripts insert relative to their siblings, so any DOM
+  move would be fought. Nothing here moves a node.
+
+  pg-sellout-last (also registered on this template) is what puts the sellout
+  card under the last bundle tile; this file only gives its wrapper the seat.
+{%- endcomment -%}
+<style>
+  @media (max-width:900px){
+    /* ---- one picture: no clip, no filmstrip ---- */
+    #pgx .pgx-vid{display:none !important}
+    #pgx .pgx-thumbwrap{display:none !important}
+    #pgx .pgx-thumbs{display:none !important}
+    #pgx .pgx-tharrow{display:none !important}
+
+    /* ---- the orb page's running order ---- */
+    #pgx .pgx-buy{display:flex;flex-direction:column}
+    #pgx .pgx-buy > *{order:7}
+    #pgx .pgx-buy > .pgx-title{order:1}
+    #pgx .pgx-buy > .pgx-rating{order:2}
+    #pgx .pgx-buy > .pgx-bs{order:3}
+    #pgx .pgx-buy > .pgx-divider{order:3}
+    #pgx .pgx-buy > .pgx-tile{order:4}
+    #pgx .pgx-buy > .pgx-deal-note{order:5}
+    #pgx .pgx-buy > .pgx-atc{order:5}
+    #pgx .pgx-buy > .pgx-err{order:6}
+    #pgx .pgx-buy > .pgx-quote{order:8;margin-top:16px}
+    #pgx .pgx-buy > .pgx-sellout{order:9}
+    #pgx .pgx-buy > .pgx-info{order:10}
+    #pgx .pgx-buy > .pg-payrow{order:11}
+    #pgx .pgx-buy > .pgx-pay{order:11}
+    #pgx .pgx-buy > .pgx-guar{order:12}
+    #pgx .pgx-buy > .pgx-acc{order:13}
+  }
+</style>
+{% schema %}
+{"name": "PG R36S Mobile", "settings": [], "presets": [{"name": "PG R36S Mobile"}]}
+{% endschema %}
