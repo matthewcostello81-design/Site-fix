@@ -1,3 +1,48 @@
+# R36S PDP: swipe gallery with every photo + the video, and a button on every tile
+
+## The Duo Pack had no Add to cart — why
+
+The R36S has two tiles from two different owners, sharing only `.pgx-tile`:
+the Single Item tile is pg-landing's own (`[data-pgx-tile]`), and the **Duo
+Pack is built by pgDuo in pg-theme-css** as `.pgx-tile.pgx-duo`. The previous
+pass keyed on pg-landing's attribute, so it skipped the Duo Pack entirely. The
+selector is now every `.pgx-tile` in the buy column.
+
+The click still goes through `#pgx-atc`, and each tile's owner takes it from
+there: pgDuo listens for a `.pgx-atc` click in the CAPTURE phase and, while its
+tile is selected, posts the two chosen versions and stops the event so
+pg-landing's handler does not also fire; with the single tile selected pgDuo
+bows out and pg-landing posts the single variant. The in-tile button is
+deliberately NOT given the `.pgx-atc` class — pgDuo's handler would fire from
+the button itself and double-post.
+
+## One swipeable gallery instead of a stack
+
+Replaces the previous "hide the clip and the strip" approach, per the owner:
+keep every photo, one at a time, with the orb's swipe pill, and the video in
+the slideshow too.
+
+- the hero photo is COPIED in as the first slide. Not moved: pg-landing's
+  thumbnail clicks write to `#pgx-hero-img`, so a moved node would be a slide
+  whose picture changes under the shopper. The copy takes the src once. The
+  hero container is hidden only once the copy exists (`html.pg-r36-gal`), so a
+  failure leaves today's page rather than no photo at all;
+- the video is MOVED in as the second slide (a second `<video>` would download
+  the clip twice) and leaves a placeholder, so rotating past 900px restores
+  pg-landing's desktop DOM exactly;
+- the strip is one-per-view with scroll snapping, and the `‹ SWIPE · n/N ›`
+  pill is pg-gallery-tweaks' markup and styling restated — that file is
+  orb-only, so the class names cannot collide, and repeating them is what makes
+  the two pages look identical. The counter repaints per animation frame, not
+  on a debounce, so it counts up under the finger.
+
+## Applied to
+Theme `163621044452`, unpublished — needs preview and publish.
+
+Files changed: sections/pg-r36s-mobile.liquid
+
+---
+
 # R36S PDP: add-to-cart inside every bundle tile
 
 Same treatment the orb page gets from pg-tiktok-pdp, rebuilt in

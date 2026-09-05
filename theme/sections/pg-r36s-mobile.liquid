@@ -1,71 +1,132 @@
 {%- comment -%}
-  PG R36S Mobile: on phones, one photo and the orb page's running order.
+  PG R36S Mobile: one swipeable gallery, the orb page's running order, and an
+  ADD TO CART inside every offer tile.
 
-  Registered in templates/product.pg-landing.json only (the R36S), and every
-  rule is ≤900px — desktop keeps the full gallery and the column it has today.
+  Registered in templates/product.pg-landing.json only (the R36S). Every visual
+  rule is ≤900px — desktop keeps the gallery and the column it has today.
 
-  ONE PICTURE. pg-landing's gallery column renders .pgx-hero (the first image),
+  ---------------------------------------------------------------- THE GALLERY
+
+  pg-landing renders three separate things: .pgx-hero (the first image),
   .pgx-vid (the clip from the section's "Gallery video URL" setting) and
-  .pgx-thumbwrap (every other image). Per the owner the phone should open on the
-  Pokémon R36S shot alone, so the clip and the strip are hidden and the hero —
-  which IS that shot, media[0] on the product — is what is left.
+  .pgx-thumbwrap (every other image). On a phone that reads as one big photo,
+  then a video, then a wall of pictures.
 
-  The strip is hidden in two places on purpose. pg-landing sets
-  `.pgx-thumbwrap{display:contents}` under 900px, which makes the wrapper vanish
-  as a box and promotes .pgx-thumbs to be the gallery's own child, so hiding the
-  wrapper alone does nothing there; pg-gallery-mobile then re-asserts the
-  wrapper as a real block. Hiding the wrapper AND the strip covers both states.
-  Nothing is deleted — the images stay on the product and desktop still shows
-  the carousel.
+  On phones they are now ONE carousel, like the orb: the strip is the gallery,
+  one item fills the view, and a "‹ SWIPE · n/N ›" pill on the photo says how
+  far along you are. Nothing is dropped — the hero photo is copied in as the
+  first slide, the video is MOVED in as the second, and the rest follow in
+  their product order.
 
-  THE SAME RUNNING ORDER AS THE ORB. The orb page gets its phone layout from
-  pg-tiktok-pdp, which turns .pgx-buy into a flex column and sets an explicit
-  order on each child, so the page reads: title, stars, BUNDLE & SAVE, the
-  tiles, add to cart, the sellout-risk card, then the review carousel, then the
-  info row, payment icons, guarantee and accordions.
+  Copied, not moved, for the hero: pg-landing's own thumbnail clicks write to
+  #pgx-hero-img, so moving that node into the strip would give the shopper a
+  slide whose picture changes under them. A copy takes the hero's src once, at
+  build time, and then stands still. The hero container is hidden only once the
+  copy is in place (the html.pg-r36-gal class), so a failure leaves the page
+  looking exactly as it does today rather than with no photo at all.
 
-  The R36S had pg-landing's plain DOM order instead — the review carousel sat
-  directly under the stars, above the bundle, and the sellout card above that.
-  The same order values are restated here so the two pages read identically:
+  The video IS moved, since a second <video> would download the clip twice, and
+  it leaves a placeholder behind so rotating past 900px puts it back where
+  pg-landing had it. The desktop DOM is restored on that same pass.
 
-      title 1 | rating 2 | divider 3 | tiles 4 | deal note + ATC 5
-      sellout slot 6 (from pg-sellout-last) | err 6 | quote 8
-      sellout 9 (only if the slot has not claimed it yet) | info 10
-      payment 11 | guarantee 12 | accordions 13
+  The pill is pg-gallery-tweaks' markup and styling restated: that file is
+  registered on the orb template only, so the class names cannot collide here,
+  and repeating them is what makes the two pages look identical. The counter
+  repaints on every animation frame while the strip scrolls, not on a debounce,
+  so it counts up under the finger instead of jumping when the strip settles.
 
-  Order is set rather than nodes moved for the same reason pg-tiktok-pdp does
-  it: pg-mobile's quoteUp() re-seats the review card after the rating every
-  1.5s, and several other scripts insert relative to their siblings, so any DOM
-  move would be fought. Nothing here moves a node.
+  ------------------------------------------------------------ THE BUY COLUMN
 
-  pg-sellout-last (also registered on this template) is what puts the sellout
-  card under the last bundle tile; this file only gives its wrapper the seat.
+  The orb's phone layout comes from pg-tiktok-pdp, which turns .pgx-buy into a
+  flex column and gives each child an explicit order. The R36S had pg-landing's
+  plain DOM order — the review carousel directly under the stars, above the
+  bundle. The same order values are restated so both pages read:
 
-  AN ADD TO CART IN EVERY TILE, like the orb. pg-tiktok-pdp puts one inside each
-  ladder tile on the orb, shown only while that tile is selected, and hides the
-  big bottom button on phones so there is exactly one button on screen and it
-  belongs to the offer being looked at. The R36S has no ladder — its tiles are
-  pg-landing's own Single Item and Bundle Deal 2x — so the same treatment is
-  rebuilt here against those, with pg-tiktok-pdp's styling restated because that
-  file does not render on this template.
+      title | stars | BUNDLE & SAVE | tiles | add to cart | sellout risk
+      | review carousel | info row | payment | guarantee | accordions
 
-  It is a SPAN with role=button, not a <button>: the base theme paints buttons
-  with a dark ::before overlay. It does not carry .pgx-atc either, since
-  pg-landing binds its add-to-cart to #pgx-atc by id and a second element with
-  that class would only confuse anything looking for "the" button. A click
-  clicks #pgx-atc instead, so pg-landing's own handler posts the selected tile's
-  variants unaided — a programmatic .click() works on a display:none element,
-  which is what lets the bottom button be hidden while still doing the work. The
-  click also bubbles to the tile, whose own handler selects it, so the tile a
-  shopper buys from is always the tile they pressed.
+  Order, not DOM moves: pg-mobile's quoteUp() re-seats the review card after the
+  rating every 1.5s and would fight a relocation. pg-sellout-last (also on this
+  template) is what puts the sellout card under the last tile; this file only
+  gives its wrapper the seat.
+
+  --------------------------------------------------- AN ADD TO CART PER TILE
+
+  Like the orb, where pg-tiktok-pdp puts one in every ladder tile: visible only
+  in the selected tile, with the big bottom button hidden on phones so exactly
+  one button is on screen and it belongs to the offer being looked at.
+
+  It must cover BOTH of this page's tiles, which come from different places and
+  share only .pgx-tile: the Single Item tile is pg-landing's own, and the Duo
+  Pack is built by pgDuo (pg-theme-css) as `.pgx-tile.pgx-duo`. An earlier pass
+  keyed on pg-landing's [data-pgx-tile] attribute and so skipped the Duo Pack
+  entirely — the selector here is every .pgx-tile in the buy column.
+
+  A click clicks #pgx-atc, and each tile's own owner takes it from there:
+  pgDuo listens for a .pgx-atc click in the CAPTURE phase and, while its tile is
+  selected, posts the two chosen versions and stops the event, so pg-landing's
+  handler does not also fire; with the single tile selected pgDuo bows out and
+  pg-landing's handler posts the single variant. A programmatic .click() reaches
+  both even though the bottom button is display:none, which is what lets it be
+  hidden while still doing the work. The button is a SPAN with role=button (the
+  base theme paints real buttons with a dark ::before overlay) and deliberately
+  does NOT carry .pgx-atc, or pgDuo's handler would fire from the in-tile button
+  itself and double-post. It only appears in the selected tile, so by the time
+  it can be pressed the tile it belongs to is already the one that will be sold.
 {%- endcomment -%}
 <style>
+  /* off at every width except phones, where the rules below turn them on */
+  #pgx .pg-gt-swipe{display:none}
+  #pgx .pgx-tile .pg-r36-atc{display:none}
+
   @media (max-width:900px){
-    /* ---- one picture: no clip, no filmstrip ---- */
-    #pgx .pgx-vid{display:none !important}
-    #pgx .pgx-thumbwrap{display:none !important}
-    #pgx .pgx-thumbs{display:none !important}
+    /* ---- one carousel: hero copy, then the clip, then every other photo ---- */
+    html.pg-r36-gal #pgx .pgx-hero{display:none !important}
+    #pgx .pgx-thumbwrap{display:block !important;position:relative !important;margin-top:0 !important}
+    #pgx .pgx-thumbwrap .pgx-thumbs{
+      display:flex !important;flex-wrap:nowrap !important;
+      overflow-x:auto !important;scroll-behavior:smooth;
+      scroll-snap-type:x mandatory;
+      gap:10px !important;margin-top:0 !important;
+      scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+    }
+    #pgx .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
+    #pgx .pgx-thumbwrap .pgx-thumbs > *{flex:0 0 100% !important;scroll-snap-align:center}
+    #pgx .pgx-thumbwrap .pgx-thumbs button{padding:0;border:0;background:#0D0714;border-radius:10px;overflow:hidden;cursor:pointer}
+    #pgx .pgx-thumbwrap .pgx-thumbs button img{aspect-ratio:1/1 !important;object-fit:cover !important;width:100% !important;height:auto !important}
+    #pgx .pgx-thumbwrap .pgx-thumbs .pgx-vid{margin:0 !important;border-radius:10px;overflow:hidden;background:#0d0d0d}
+    #pgx .pgx-thumbwrap .pgx-thumbs .pgx-vid video{
+      width:100% !important;display:block;
+      aspect-ratio:1/1 !important;object-fit:cover !important;
+      height:auto !important;max-height:none !important;
+    }
+    /* phones swipe; the arrows sat on top of the picture */
     #pgx .pgx-tharrow{display:none !important}
+
+    /* ---- the swipe pill, as on the orb ---- */
+    #pgx .pgx-thumbwrap .pg-gt-swipe{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      position:absolute;bottom:10px;top:auto;left:50%;transform:translateX(-50%);
+      z-index:4;margin:0;padding:11px 20px;
+      width:max-content;max-width:100%;
+      border-radius:999px;
+      background:rgba(11,7,16,.82);
+      border:1px solid rgba(190,140,235,.55);
+      box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+      color:#EEE1FB;
+      font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+      font-size:15px;font-weight:800;
+      letter-spacing:.10em;text-transform:uppercase;
+      white-space:nowrap;pointer-events:none;
+    }
+    #pgx .pg-gt-swipe span{display:inline-block;font-size:23px;line-height:.7;color:#F6ECFF;animation:pgGtNudge 1.5s ease-in-out infinite}
+    #pgx .pg-gt-swipe .pg-gt-l{animation-direction:reverse}
+    /* fixed width, so the centred pill does not shimmy as the digits change */
+    #pgx .pg-gt-swipe b.pg-gt-n{
+      display:inline-block;min-width:4.8ch;text-align:center;
+      font-weight:800;color:#FFFFFF;letter-spacing:.04em;
+      font-variant-numeric:tabular-nums;
+    }
 
     /* ---- the orb page's running order ---- */
     #pgx .pgx-buy{display:flex;flex-direction:column}
@@ -103,20 +164,117 @@
     #pgx .pgx-tile.pgx-sel .pg-r36-atc:hover{filter:brightness(1.1)}
     #pgx .pgx-tile.pgx-sel .pg-r36-atc.busy{opacity:.6;cursor:default}
     #pgx .pgx-tile.pgx-sel .pg-r36-atc:after{content:"\2192";font-size:17px;line-height:1}
-    /* the bottom button would duplicate the in-tile one on phones. Browsers
-       without :has() simply keep both, which is harmless. */
+    /* the bottom button duplicates the in-tile one on phones. Browsers without
+       :has() simply keep both, which is harmless. */
     #pgx .pgx-buy:has(.pgx-tile .pg-r36-atc) > .pgx-atc{display:none !important}
   }
-  /* hidden by default and at every width, so an unselected tile never shows one
-     and desktop never shows any */
-  #pgx .pgx-tile .pg-r36-atc{display:none}
+
+  @keyframes pgGtNudge{
+    0%,100%{transform:translateX(0);opacity:.55}
+    50%    {transform:translateX(4px);opacity:1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #pgx .pg-gt-swipe span{animation:none}
+  }
 </style>
 <script>
 (function(){
-  if (window.pgR36Atc) return; window.pgR36Atc = 1;
+  if (window.pgR36Mobile) return; window.pgR36Mobile = 1;
+
+  function mobile(){ return !window.matchMedia || window.matchMedia('(max-width: 900px)').matches; }
+
+  /* ---------------- the carousel ---------------- */
+
+  var HEROSRC = '';   /* read once: thumbnail clicks rewrite #pgx-hero-img */
+
+  function gallery(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+
+    if (mobile()){
+      var hero = document.getElementById('pgx-hero-img');
+      if (hero && !HEROSRC) HEROSRC = hero.getAttribute('src') || '';
+      if (HEROSRC && !strip.querySelector('.pg-r36-slide')){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pg-r36-slide';
+        var im = document.createElement('img');
+        im.src = HEROSRC;
+        im.alt = (hero && hero.getAttribute('alt')) || '';
+        b.appendChild(im);
+        strip.insertBefore(b, strip.firstChild);
+      }
+      /* the clip becomes the second slide, leaving a marker in its old seat */
+      var vid = document.querySelector('#pgx .pgx-vid');
+      if (vid && vid.parentNode !== strip){
+        if (!vid.pgR36Ph){
+          var ph = document.createElement('i');
+          ph.className = 'pg-r36-ph';
+          ph.hidden = true;
+          vid.parentNode.insertBefore(ph, vid);
+          vid.pgR36Ph = ph;
+        }
+        var lead = strip.querySelector('.pg-r36-slide');
+        strip.insertBefore(vid, lead ? lead.nextSibling : strip.firstChild);
+      }
+      if (strip.querySelector('.pg-r36-slide')) document.documentElement.classList.add('pg-r36-gal');
+      pill(wrap, strip);
+    } else {
+      /* rotated back to desktop: put pg-landing's gallery back as it was */
+      var v2 = strip.querySelector('.pgx-vid');
+      if (v2 && v2.pgR36Ph && v2.pgR36Ph.parentNode){
+        v2.pgR36Ph.parentNode.insertBefore(v2, v2.pgR36Ph);
+        v2.pgR36Ph.parentNode.removeChild(v2.pgR36Ph);
+        v2.pgR36Ph = null;
+      }
+      var s2 = strip.querySelector('.pg-r36-slide');
+      if (s2 && s2.parentNode) s2.parentNode.removeChild(s2);
+      document.documentElement.classList.remove('pg-r36-gal');
+    }
+  }
+
+  function pill(wrap, strip){
+    var el = wrap.querySelector('.pg-gt-swipe');
+    if (!el){
+      if (strip.children.length < 2) return;      /* nothing to swipe to */
+      el = document.createElement('div');
+      el.className = 'pg-gt-swipe';
+      el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<span class="pg-gt-l">&lsaquo;</span> Swipe &middot; <b class="pg-gt-n"></b> <span>&rsaquo;</span>';
+      wrap.appendChild(el);
+    }
+    paint();
+  }
+
+  /* which slide is in view. Synchronous and allocation-light: safe to call once
+     per animation frame while the strip is being swiped. */
+  function paint(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    var cnt = wrap.querySelector('.pg-gt-swipe .pg-gt-n');
+    if (!strip || !cnt) return;
+    var kids = strip.children;
+    if (!kids.length) return;
+    var mid = strip.scrollLeft + strip.clientWidth / 2;
+    var best = 0, bestD = Infinity;
+    for (var i = 0; i < kids.length; i++){
+      var k = kids[i];
+      var d = Math.abs((k.offsetLeft + k.offsetWidth / 2) - mid);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    var pos = (best + 1) + '/' + kids.length;
+    if (cnt.textContent !== pos) cnt.textContent = pos;
+  }
+
+  /* ---------------- an ADD TO CART in every tile ---------------- */
 
   function buttons(){
-    document.querySelectorAll('#pgx .pgx-buy > .pgx-tile[data-pgx-tile]').forEach(function(tile){
+    /* every tile in the buy column: pg-landing's Single Item AND pgDuo's
+       Duo Pack, which share only .pgx-tile */
+    document.querySelectorAll('#pgx .pgx-buy > .pgx-tile').forEach(function(tile){
       if (tile.querySelector('.pg-r36-atc')) return;
       var b = document.createElement('span');
       b.className = 'pg-r36-atc';
@@ -129,7 +287,9 @@
         if (!atc) return;
         b.classList.add('busy');
         b.textContent = 'Adding…';
-        /* pg-landing's own handler reads the selected tile and posts it */
+        /* whichever tile is selected owns the click: pgDuo intercepts it in the
+           capture phase for the Duo Pack, pg-landing's own handler posts the
+           single variant otherwise */
         atc.click();
         setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
       });
@@ -140,18 +300,33 @@
     });
   }
 
+  function pass(){ gallery(); buttons(); }
+
   function boot(){
-    buttons();
+    pass();
+    /* the strip's own scrolling: `scroll` does not bubble but it does capture,
+       and listening on the document survives the gallery being rebuilt */
+    var raf = 0;
+    document.addEventListener('scroll', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('pgx-thumbs')) return;
+      if (!raf) raf = requestAnimationFrame(function(){ raf = 0; paint(); });
+    }, {capture: true, passive: true});
+
     var root = document.getElementById('pgx');
     if (root && window.MutationObserver){
       var q = false;
+      /* pgDuo rebuilds its tile on an interval, and the gallery can be
+         re-rendered under us; every pass is idempotent */
       new MutationObserver(function(){
         if (q) return;
         q = true;
-        setTimeout(function(){ q = false; buttons(); }, 80);
+        setTimeout(function(){ q = false; pass(); }, 80);
       }).observe(root, {childList: true, subtree: true});
     }
-    setInterval(buttons, 900);
+    window.addEventListener('resize', function(){ pass(); paint(); }, {passive: true});
+    setInterval(pass, 900);
+    [300, 900, 2000, 4000].forEach(function(t){ setTimeout(function(){ pass(); paint(); }, t); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
