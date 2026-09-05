@@ -97,7 +97,8 @@
     },
     "pg_revlink": {"type": "pg-rev-link", "settings": {}},
     "pg_r36smobile": {"type": "pg-r36s-mobile", "settings": {}},
-    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}}
+    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}},
+    "pg_r36stitle": {"type": "pg-r36s-title", "settings": {}}
   },
-  "order": ["pg_landing", "pg_revlink", "pg_r36smobile", "pg_selloutlast"]
+  "order": ["pg_landing", "pg_revlink", "pg_r36smobile", "pg_selloutlast", "pg_r36stitle"]
 }

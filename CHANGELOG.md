@@ -1,3 +1,27 @@
+# R36S PDP: title and rating line centred on phones
+
+New section `sections/pg-r36s-title.liquid` (R36S template only) centres the
+product title and the star / "421 verified reviews" line under 900px, matching
+the orb page. `.pgx-rating` is a flex row, so it is centred with
+justify-content rather than text-align.
+
+Only alignment: the R36S already carries pg-landing's own 34px / 600 there, so
+unlike the orb (which pg-tiktok-pdp shrinks to 23px) no size or weight change
+is needed. Desktop is untouched, as on the orb — the buy column sits beside the
+gallery there and a centred heading would line up with nothing below it.
+
+Kept out of pg-r36s-mobile for the same reason pg-orb-title is kept out of
+pg-tiktok-pdp: those files own layout and gallery behaviour, this is typography.
+
+## Applied to
+Theme `163621044452`, unpublished — needs preview and publish.
+
+Files changed:
+- sections/pg-r36s-title.liquid (new)
+- templates/product.pg-landing.json (registered it)
+
+---
+
 # Orb PDP: "Keep exploring" moved above the reviews
 
 `yml()` in pg-theme-css seats the "Keep exploring / You may also like" block at

@@ -1,0 +1,29 @@
+{%- comment -%}
+  PG R36S Title: centre the product title and the rating line on phones, so the
+  R36S page reads like the orb page.
+
+  pg-orb-title does this for the orb; the same two rules are all the R36S needs,
+  because it already has pg-landing's own size and weight there (34px / 600) —
+  only the alignment differed. .pgx-rating is a flex row, so it is centred with
+  justify-content rather than text-align.
+
+  Phones only, matching the orb: on desktop the buy column sits beside the
+  gallery in a two-column grid, where a centred heading lines up with nothing
+  below it.
+
+  Kept out of pg-r36s-mobile for the same reason pg-orb-title is kept out of
+  pg-tiktok-pdp: that file owns the page's layout and gallery behaviour, this is
+  typography. Registered in templates/product.pg-landing.json only.
+{%- endcomment -%}
+<style>
+  @media (max-width:900px){
+    html body #pgx .pgx-buy > .pgx-title{text-align:center !important}
+    html body #pgx .pgx-buy > .pgx-rating{
+      justify-content:center !important;
+      text-align:center !important;
+    }
+  }
+</style>
+{% schema %}
+{"name": "PG R36S Title", "settings": [], "presets": [{"name": "PG R36S Title"}]}
+{% endschema %}
