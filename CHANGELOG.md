@@ -1,3 +1,55 @@
+# Orb PDP: logo + banner back, and "496 verified reviews" links to the reviews
+
+## 1. Logo and announcement banner returned to the Crystal Legends Orb page
+
+`sections/pg-tiktok-pdp.liquid` (registered only in `templates/product.pg-crystal.json`)
+hid the whole header on phones for the TikTok ad landing:
+
+    @media (max-width:900px){
+      #pgx .pgx-announce{display:none !important}   /* scrolling banner */
+      #pgx .pgx-head{display:none !important}       /* logo + Home/Track/Contact nav */
+    }
+
+Both rules were removed, so the orb page now opens with the same Pocket Era
+wordmark, marquee banner and nav as the R36S and wall art pages. Nothing else
+about the mobile layout changed — the photo-first gallery, the in-tile ADD TO
+CART, the capped photo height and the below-the-fold reflow all stay. The
+"cart bar waits for a 160px scroll" gate stays too: it now simply reinforces
+what a visible header already does.
+
+## 2. "496 reviews" -> "496 verified reviews", clickable
+
+New section `sections/pg-rev-link.liquid`, registered in all three pg-landing
+product templates (`product.pg-landing.json` R36S, `product.pg-crystal.json`
+orb, `product.pg-wallart.json` wall art).
+
+`pg-landing` renders the rating line as a plain span whose count comes from the
+Judge.me metafield (R36S 421, orb 496, wall art 77), and several scripts on the
+page rewrite parts of the buy column on an interval. So the upgrade runs as a
+repeated, idempotent pass rather than a one-shot markup edit: the "<n> reviews"
+node becomes `<a class="pgx-revlink" href="#pg-reviews">n verified reviews</a>`,
+and the click smooth-scrolls to `#pg-reviews` (the id `pg-landing` puts on the
+review section at the bottom), offset by the sticky cart bar height so the
+score heading is not hidden under it.
+
+The fallback rating label used by products with no Judge.me reviews yet
+("Trusted by over 10,000 customers") is left alone — it is not a count.
+
+## Applied to
+Shopify theme `163617112292` ("Copy of TikTok PDP v2 no-header (Claude 8-29)"),
+an unpublished, byte-identical copy of the live theme — the Shopify connector
+blocks writes to the live theme, so this draft must be previewed and published
+from Shopify admin to go live.
+
+Files changed:
+- sections/pg-tiktok-pdp.liquid
+- sections/pg-rev-link.liquid (new)
+- templates/product.pg-landing.json (registered pg-rev-link)
+- templates/product.pg-crystal.json (registered pg-rev-link)
+- templates/product.pg-wallart.json (registered pg-rev-link)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem

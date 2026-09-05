@@ -1,0 +1,113 @@
+{%- comment -%}
+  PG Review Link: "496 reviews" becomes "496 verified reviews", and clicking it
+  jumps to the review section at the bottom of the page.
+
+  Registered in the three pg-landing product templates (product.pg-landing.json
+  for the R36S, product.pg-crystal.json for the orb, product.pg-wallart.json for
+  the wall art), so all three PDPs behave the same.
+
+  WHY A SEPARATE SECTION. pg-landing renders the line as a plain span:
+
+      <div class="pgx-rating">… <strong>4.7</strong> <span>•</span>
+        <span>496 reviews</span></div>
+
+  and the count comes from Judge.me (metafield judgeme.review_widget_data), so
+  it changes as reviews sync. Half a dozen scripts on this page (pg-mobile,
+  pg-tile-copy, pg-chips) rewrite parts of the buy column on an interval, so the
+  upgrade is applied as a repeated, idempotent pass rather than a one-shot edit
+  — the same pattern the rest of the pg-* override layer uses. Editing the 40KB
+  pg-landing file itself would fix the markup once and lose it the next time a
+  script re-rendered the line.
+
+  WHAT IT DOES
+  - Finds the count node inside every #pgx .pgx-rating (the one reading
+    "<n> reviews"), rewrites it as "<n> verified reviews" and turns it into a
+    real <a href="#pg-reviews"> so it is keyboard reachable and shows a link
+    cursor. Already-upgraded lines are skipped, so the pass is free to re-run.
+  - The click scrolls smoothly to the reviews block — #pg-reviews is the id
+    pg-landing puts on <section class="pgx-rev">, with .pgx-rev as the fallback
+    — and offsets for the sticky cart bar so the "4.7 / 496 Reviews" heading is
+    not hidden under it.
+  - The fallback rating label (products with no Judge.me reviews yet, e.g.
+    "Trusted by over 10,000 customers") is left alone: it is not a count.
+
+  Colours match pg-reviews-text's dark-skin treatment of the rating line, which
+  targets spans only and so does not reach the new anchor.
+{%- endcomment -%}
+<style>
+  html body #pgx .pgx-rating a.pgx-revlink{
+    color:#F1EDF7 !important;
+    text-decoration:underline !important;
+    text-decoration-style:dotted !important;
+    text-decoration-thickness:1px !important;
+    text-underline-offset:3px !important;
+    cursor:pointer !important;
+    transition:color .15s ease !important;
+  }
+  html body #pgx .pgx-rating a.pgx-revlink:hover,
+  html body #pgx .pgx-rating a.pgx-revlink:focus{color:#C79BEA !important}
+</style>
+<script>
+(function(){
+  if (window.pgRevLink) return; window.pgRevLink = 1;
+
+  var COUNT = /^\s*([\d.,]+)\s+reviews?\s*$/i;
+
+  function target(){
+    return document.getElementById('pg-reviews') || document.querySelector('#pgx .pgx-rev');
+  }
+
+  function jump(e){
+    var box = target();
+    if (!box) return;                     /* no reviews block: let the href do whatever it can */
+    e.preventDefault();
+    /* the sticky cart bar sits at the top on phones, so stop short of it */
+    var fab = document.getElementById('pg-cartfab');
+    var pad = (fab && fab.offsetHeight ? fab.offsetHeight : 0) + 14;
+    var y = box.getBoundingClientRect().top + (window.pageYOffset || document.documentElement.scrollTop || 0) - pad;
+    try { window.scrollTo({top: y, behavior: 'smooth'}); }
+    catch(err){ window.scrollTo(0, y); }
+  }
+
+  function upgrade(){
+    document.querySelectorAll('#pgx .pgx-rating').forEach(function(line){
+      if (line.querySelector('a.pgx-revlink')) return;      /* already done */
+      var nodes = line.querySelectorAll('span,strong,em,b');
+      for (var i = 0; i < nodes.length; i++){
+        var n = nodes[i];
+        if (n.classList.contains('pgx-stars')) continue;
+        if (n.querySelector && n.querySelector('*')) continue;   /* leaf nodes only */
+        var m = COUNT.exec(n.textContent || '');
+        if (!m) continue;
+        var a = document.createElement('a');
+        a.className = 'pgx-revlink';
+        a.href = '#pg-reviews';
+        a.textContent = m[1] + ' verified reviews';
+        a.setAttribute('aria-label', 'Read all ' + m[1] + ' verified reviews');
+        a.addEventListener('click', jump);
+        n.parentNode.replaceChild(a, n);
+        return;
+      }
+    });
+  }
+
+  function boot(){
+    upgrade();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; upgrade(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    /* backstop for the interval-driven rewrites in pg-mobile / pg-tile-copy */
+    setInterval(upgrade, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Review Link", "settings": [], "presets": [{"name": "PG Review Link"}]}
+{% endschema %}

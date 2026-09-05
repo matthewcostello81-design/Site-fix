@@ -1,0 +1,47 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {"type": "review", "settings": {"name": "Tyler", "stars": 5, "text": "The glow is unreal at night, got Gengar and it looks insane on my shelf"}},
+        "rev2": {"type": "review", "settings": {"name": "Maddie", "stars": 5, "text": "Bought Pikachu for my son's birthday, he loves the color changing base"}},
+        "rev3": {"type": "review", "settings": {"name": "Chris", "stars": 5, "text": "Way heavier and better quality glass than I expected"}},
+        "rev4": {"type": "review", "settings": {"name": "Elena", "stars": 5, "text": "The engraving detail is crazy, you can see every line on Charizard"}},
+        "rev5": {"type": "review", "settings": {"name": "Jordan", "stars": 5, "text": "Arrived fast and packed really well, base and ball both perfect"}},
+        "rev6": {"type": "review", "settings": {"name": "Sam", "stars": 5, "text": "Getting a second one, the night light mode is so calming"}}
+      },
+      "block_order": ["rev1", "rev2", "rev3", "rev4", "rev5", "rev6"],
+      "settings": {
+        "product": "pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift",
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 10,000 customers",
+        "review_total": 6,
+        "default_size": "01 Pikachu",
+        "gallery_video_url": "https://cdn.shopify.com/videos/c/vp/e7fe92020071489ea102b0e1761aa96f/e7fe92020071489ea102b0e1761aa96f.HD-1080p-7.2Mbps-91441042.mp4",
+        "show_bundle": true,
+        "bundle_title": "Bundle Deal: 2x Crystal Legends Orbs",
+        "bundle_pct": 10,
+        "features_text": "<p>3D laser-engraved character inside a 50mm glass crystal ball<br>LED lamp base included, with a multi-color automatic gradient glow<br>36 characters to collect, all options include the base<br>Button battery included, simple switch operation<br>Ships protected in a foam box so ball and base arrive intact</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+      }
+    },
+    "pg_picksize": {"type": "pg-pick-size", "settings": {}},
+    "pg_galtweaks": {"type": "pg-gallery-tweaks", "settings": {}},
+    "pg_tiktok": {"type": "pg-tiktok-pdp", "settings": {}},
+    "pg_revlink": {"type": "pg-rev-link", "settings": {}}
+  },
+  "order": ["pg_landing", "pg_picksize", "pg_galtweaks", "pg_tiktok", "pg_revlink"]
+}
