@@ -1,3 +1,70 @@
+# The upsell chip's wrap (my bug), the gift line's price cell, and four sizing fixes
+
+## The SAVE % on the Game Boy upsell was wrapping — I caused it
+
+Last round put the chip "beside the price" with
+`#cart .nc-rec-price{display:inline-block}`. That was written on the assumption
+that `.nc-rec-price` was a *sibling* of `.nc-rec-off`. Reading `nc-cro`, it is
+not — it is the flex **row that contains it**:
+
+    .nc-rec-off{align-self:center !important;flex:0 0 auto !important;width:fit-content !important}
+    .nc-rec-price{align-items:center !important;flex-wrap:wrap !important;row-gap:3px !important}
+
+Setting that row to `inline-block` destroyed the flex context: its children
+became inline-level and broke across lines like words, which is the SAVE % on a
+row of its own. `nc-cro` also sets `flex-wrap:nowrap` on it early in the file and
+then `flex-wrap:wrap !important` later, so it was free to break in any case.
+
+It is a flex row again, `flex-wrap:nowrap`, with `flex:0 0 auto` and
+`white-space:nowrap` on every child. Both `nc-cro` rules are plain class
+selectors, so `#cart .nc-rec-price` outranks them on specificity whatever the
+source order. The chip's left margin drops to 3px (2px under 400px) so nowrap
+cannot overflow the row and push the ADD button.
+
+## The free case now reads like every other line
+
+Struck old price, `$0.00`, and the percentage stacked under them in the
+bottom-right corner. That corner is `.nc-lsave` — `pg-drawer` gives it
+`grid-area:pr`, `flex-direction:column`, `align-items:flex-end`, and styles
+`.nc-lsave-was` (grey, struck) and `.nc-lsave-now` (purple, 800, 18px) inside it.
+So rather than invent a cell, the gift line is given one built from those same
+class names and inherits the format every other line already uses.
+
+It is built only when the line has no `.nc-lsave` of its own and torn down the
+moment a real one appears, so the line never carries two. `pg-chips`' `repct()`
+then keeps the figures honest by itself — it treats the `$0.00` line as a free
+row and writes `money(0)` into `.nc-lsave-now` and compare-at × qty into the
+struck element, the same values, so there is nothing to race over.
+
+The struck default comes from Liquid (`all_products['r36s-protective-case-free-gift']`),
+not a constant in the script, so it follows the variant's compare-at if it is
+ever repriced.
+
+## The words inside the FREE GIFT pill
+
+`pg-drawer`'s `ftFix()` measures where the glyphs actually paint and pulls them
+over with a negative `text-indent`, written **inline and `!important`** — which
+is why the padding rule in this section never moved them, and never could. When
+that measurement is taken before the webfont settles, the correction lands the
+wrong way and the words sit right of centre.
+
+`ftFix` runs at creation, again at 400/1500/3500ms, and on `fonts.ready` — then
+stops; it is not on an interval. So the indent is zeroed here only once a pill is
+older than four seconds, after `ftFix`'s last scheduled run. No two writers
+alternating, no flicker while the font loads, and the correction sticks because
+nothing writes it again.
+
+## Two sizing requests
+
+- **Shipping protection** is genuinely bigger now, not just re-balanced.
+  `pg-drawer` shrinks all five parts inside the sticky panel (icon 42→28px, its
+  svg 22→16, title 14.5→12.5px, sub 12→10.5px, price 14.5→12.5px); each is
+  stepped back up — words, icon and price together. Padding stays trimmed
+  because the panel is sticky and height added there pushes checkout down.
+- **The spare case line** steps from the drawer's 16.5px/700 to 17.5px/800,
+  scoped to that product's rows and excluding the gift line, which is the
+  deliberately thinner module.
+
 # The gift line's SAVE %, and the white band at the top of the drawer
 
 ## Two things the last round could not have fixed, and why
