@@ -8,11 +8,20 @@
 
   On a near-black tile on a near-black page that is a dark pill on a dark card —
   the number a shopper is meant to see first is the quietest thing in the tile.
-  What makes it read now is the CONTRAST, not the size: it carries the same
-  purple gradient as the add-to-cart buttons, and the type is only a step up
-  from the original (12.5px vs 11.5px). A first pass at 14px/900 with the
-  padding to match was called out as far too big — the pill sits half over the
-  tile's top edge, so it grows into the tile above it rather than into empty space.
+  What makes it read now is the CONTRAST, not the size: it is filled rather than
+  hollow, and the type is only a step up from the original (12.5px vs 11.5px). A
+  first pass at 14px/900 with the padding to match was called out as far too big
+  — the pill sits half over the tile's top edge, so it grows into the tile above
+  it rather than into empty space.
+
+  IT BELONGS TO THE TILE'S FRAME. A second pass used the add-to-cart buttons'
+  bright gradient (#B478E0 -> #7A2FA2) with a white hairline and a coloured
+  glow, and read as a sticker dropped on the card rather than part of it. The
+  fill is now the deep end of the same purple family — the tile border's own
+  #7A2FA2 into #4A1C66 — the hairline is that border's colour instead of white,
+  and the glow is a plain soft shadow. The gradient stays, so the pill still has
+  depth and still separates from the flat tile behind it; it just sits in the
+  frame the tile already draws.
 
   One rule covers every tile on every product: pgLadder's ladder tiles, pgDuo's
   Duo Pack ([data-pg-duosave]) and pg-landing's single tile
@@ -24,16 +33,16 @@
 {%- endcomment -%}
 <style>
   html body #pgx .pgx-lad-badge{
-    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 40%,#7A2FA2 100%) !important;
-    color:#FFFFFF !important;
+    background:linear-gradient(120deg,#8B44BE 0%,#7A2FA2 45%,#4A1C66 100%) !important;
+    color:#F7EDFF !important;
     font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
     font-size:12.5px !important;
     font-weight:800 !important;
     letter-spacing:.04em !important;
     padding:5px 13px !important;
-    border:1px solid rgba(255,255,255,.38) !important;
-    box-shadow:0 10px 20px -12px rgba(139,68,190,.85) !important;
-    text-shadow:0 1px 2px rgba(0,0,0,.35) !important;
+    border:1px solid rgba(139,68,190,.85) !important;
+    box-shadow:0 6px 14px -10px rgba(0,0,0,.85) !important;
+    text-shadow:none !important;
     text-transform:uppercase !important;
     white-space:nowrap !important;
   }

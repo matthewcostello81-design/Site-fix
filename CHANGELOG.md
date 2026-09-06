@@ -1,3 +1,27 @@
+# SAVE % badge: same purple family as the tile border
+
+The badge read as a sticker dropped on the card: the add-to-cart buttons' bright
+gradient (#B478E0 -> #7A2FA2), a white hairline and a coloured glow, none of
+which appear anywhere else on the tile.
+
+Keeping the gradient (the owner liked the depth), it is retoned to the deep end
+of the tile's own purple:
+
+- fill `#8B44BE -> #7A2FA2 -> #4A1C66`, ending on the border colour the tiles
+  and pickers already use;
+- hairline `rgba(139,68,190,.85)` — the tile's border colour — instead of white;
+- a plain soft black shadow instead of a purple glow, and no text shadow;
+- text `#F7EDFF` rather than pure white.
+
+Size and weight are unchanged from the previous entry (12.5px / 800).
+
+## Applied to
+Theme `163657089252` ("R36S + cart fixes (Claude 9-6)"), unpublished.
+
+Files changed: sections/pg-save-badge.liquid
+
+---
+
 # Reviews: a VERIFIED chip on some of the review cards
 
 New section `sections/pg-verified.liquid` (global via header-group) adds a small
