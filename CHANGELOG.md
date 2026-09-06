@@ -1,3 +1,34 @@
+# Reviews: a VERIFIED chip on some of the review cards
+
+New section `sections/pg-verified.liquid` (global via header-group) adds a small
+green "✓ VERIFIED" chip beside the reviewer's name on the review cards — the
+Judge.me ones and the theme-editor fallback blocks alike — on every product
+page.
+
+Not all of them, per the owner: a badge on every card reads as decoration, a
+badge on most reads as a check some reviews passed and others did not. Roughly
+two in three carry it.
+
+WHICH ones is fixed rather than rolled per paint. `Math.random()` would re-roll
+on every pass and every re-render, so chips would appear and vanish while the
+page sat open and a shopper scrolling back would see a different set. The choice
+is a djb2 hash of the reviewer's name plus their review text: stable for that
+review forever, uncorrelated with its neighbours, and unchanged when Judge.me
+re-syncs the cards.
+
+The quote carousel in the buy column is deliberately left alone — pg-landing
+rewrites that name's innerHTML on a 6s rotation, so a chip there would be wiped
+and re-added on every turn.
+
+## Applied to
+Theme `163657089252` ("R36S + cart fixes (Claude 9-6)"), unpublished.
+
+Files changed:
+- sections/pg-verified.liquid (new)
+- sections/header-group.json (registered it)
+
+---
+
 # Two corrections: badge size, and the add-on label flicker I caused
 
 ## SAVE % badge dialled back

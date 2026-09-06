@@ -1,0 +1,83 @@
+{%- comment -%}
+  PG Verified: a VERIFIED chip beside some of the review names.
+
+  Per the owner, not every review carries it — a badge on all of them reads as
+  decoration, a badge on most of them reads as a check that some reviews passed
+  and others did not.
+
+  WHICH ONES IS FIXED, NOT RANDOM PER PAINT. Math.random() would re-roll on
+  every pass and on every re-render, so chips would appear and vanish while the
+  page sat open, and a shopper scrolling back up would see a different set. The
+  choice is a hash of the reviewer's name and their review text instead: stable
+  for that review forever, different from its neighbours, and it survives
+  Judge.me re-syncing the cards. Roughly two in three land on a chip.
+
+  It marks the review CARDS only (.pgx-card, both the Judge.me ones and the
+  theme-editor fallback blocks). The quote carousel in the buy column is left
+  alone: pg-landing rewrites that name's innerHTML on a 6s rotation, so a chip
+  added there would be wiped and re-added on every turn.
+
+  Nothing else writes .pgx-card-name, so one pass plus an observer settles: the
+  chip is added once per card and the pass then finds it already there.
+{%- endcomment -%}
+<style>
+  #pgx .pgx-card-name .pg-vfy{
+    display:inline-flex;align-items:center;gap:4px;
+    margin-left:8px;padding:3px 8px;
+    border-radius:999px;
+    background:rgba(60,190,120,.14);
+    border:1px solid rgba(124,224,168,.45);
+    color:#7CE0A8;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+    line-height:1;vertical-align:middle;white-space:nowrap;
+  }
+  #pgx .pgx-card-name .pg-vfy:before{content:"\2713";font-size:10.5px;font-weight:900}
+  @media (max-width:600px){
+    #pgx .pgx-card-name .pg-vfy{font-size:9px;padding:2px 6px;margin-left:6px;gap:3px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgVerified) return; window.pgVerified = 1;
+
+  /* djb2: same review, same answer, every load */
+  function hash(s){
+    var h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return Math.abs(h);
+  }
+
+  function tag(){
+    document.querySelectorAll('#pgx .pgx-card').forEach(function(card){
+      var name = card.querySelector('.pgx-card-name');
+      if (!name || name.querySelector('.pg-vfy')) return;
+      var body = card.querySelector('.pgx-card-txt');
+      var key = (name.textContent || '') + '|' + (body ? body.textContent : '');
+      if (hash(key) % 3 === 0) return;            /* about one in three stays plain */
+      var chip = document.createElement('span');
+      chip.className = 'pg-vfy';
+      chip.textContent = 'Verified';
+      name.appendChild(chip);
+    });
+  }
+
+  function boot(){
+    tag();
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; tag(); }, 120);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    [500, 1500, 4000].forEach(function(t){ setTimeout(tag, t); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Verified", "settings": [], "presets": [{"name": "PG Verified"}]}
+{% endschema %}
