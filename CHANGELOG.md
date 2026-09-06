@@ -1,3 +1,47 @@
+# Cart: revert the global patching that broke the drawer
+
+## What broke it
+
+The previous version of pg-gift-fix wrapped `window.fetch` to notice cart
+writes, and wrapped `window.pgDrawerRefresh` to coalesce refreshes. The fetch
+wrapper is the regression: the theme's own code calls `fetch` unbound in places,
+and native fetch invoked with the wrong `this` throws Illegal invocation — so
+cart requests failed and the drawer rendered half empty.
+
+Both wrappers are removed. Nothing global is patched any more. The pass is
+triggered by the drawer's own DOM changing and by add-to-cart / quantity /
+remove clicks, rate limited to one /cart.js read per 1.5s.
+
+## The gift, stated exhaustively
+
+The pass reads /cart.js and settles the cart into exactly one of:
+
+    consoles = 0, no gift line          -> nothing
+    consoles = 0, gift line present     -> remove it
+    consoles >= 1, no gift line         -> add ONE, quantity 1
+    consoles >= 1, gift line quantity 1 -> nothing
+    consoles >= 1, gift line quantity>1 -> set it back to 1
+
+- Only the $0 "Free with console" variant (49640846426340) is ever added. The
+  $13.99 spare variant is not referenced in the file at all, so nothing here can
+  ever auto-add a paid case.
+- One free case per CART, not per console: two consoles still get one.
+- A spare case the shopper adds themselves has no `_free_gift` property, so it
+  is never counted, touched or removed — with or without a console in the cart.
+
+## Still open
+The blank white space and faint purple lines at the top of the drawer are still
+untouched — that band holds the drawer's logo header, the free-shipping card and
+two 1px rules, and the storefront cannot be loaded from this environment to tell
+which is which.
+
+## Applied to
+Theme `163657089252`, unpublished.
+
+Files changed: sections/pg-gift-fix.liquid
+
+---
+
 # VERIFIED chip: beside the name, left-aligned
 
 As a plain inline-block after the text the chip inherited the card's alignment,

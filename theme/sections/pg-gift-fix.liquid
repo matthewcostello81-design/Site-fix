@@ -1,6 +1,5 @@
 {%- comment -%}
-  PG Gift Fix: the free R36S case, the drawer churn it caused, and the FREE GIFT
-  pill's overhang.
+  PG Gift Fix: the free R36S case, and nothing else.
 
   ------------------------------------------------------- THE DEAD GIFT VARIANT
 
@@ -8,55 +7,46 @@
 
       var GIFT_ID = 49623692247268, GIFT_HANDLE = 'r36s-protective-case-free-gift';
 
-  That variant no longer exists. pg-case-add already documented why — the case
-  product's "Default Title" variant was replaced by two named ones, and a
-  variant id cannot be reassigned — but it only repaired its own ADD button. The
-  drawer's copy was left pointing at the dead id, so:
-
-    - the free case never appears, while both R36S tiles promise "+ FREE Case";
-    - giftSync() re-runs on EVERY cart mutation, sees a console and no gift line,
-      and fires /cart/add.js with the dead id. Each one 422s, the gift never
-      lands, and the next mutation tries again — a failed request per cart
-      change, on top of pg-drawer replacing the whole drawer's innerHTML each
-      time it refreshes. That churn is what reads as the drawer glitching when
-      the spare case is added.
+  That variant no longer exists — pg-case-add documented why: the case product's
+  "Default Title" variant was replaced by two named ones, and a variant id
+  cannot be reassigned. So the free case never lands, and giftSync() re-fires a
+  422ing /cart/add.js on every cart mutation.
 
   The live variants are 49640846426340 ($0.00, "Free with console") and
-  49640879063268 ($13.99, "Spare case"). The gift is added here with the $0 one
-  and the same `_free_gift: yes` property pg-drawer looks for — so pg-drawer's
-  own giftSync() finds a gift line, stops retrying, and its removal and
-  de-duplication paths (which key on the line, not the id) keep working
-  untouched. The 52KB drawer file is not edited at all.
+  49640879063268 ($13.99, "Spare case"). Only the $0 one is ever added here, and
+  only as the gift, carrying the `_free_gift: yes` property pg-drawer looks for
+  so its own giftSync() finds a gift line and stops retrying.
 
-  $0 by variant price, not by discount: the "Free R36S Case with Console" BXGY
-  is EXPIRED, so nothing else is making a case free right now. A spare case a
-  shopper adds themselves has no _free_gift property and stays at $13.99.
+  ------------------------------------------------------------- EVERY CASE, ONCE
 
-  The cart is only re-read after a real cart write. window.fetch is wrapped
-  pass-through and a sync is scheduled when a /cart/add|change|update|clear call
-  resolves, rather than polling: the drawer's own 800ms interval mutates #cart
-  constantly, so a MutationObserver here would have hit /cart.js every second
-  for nothing.
+  The pass reads /cart.js and settles the cart into exactly one of these:
 
-  --------------------------------------------------------- REFRESH COALESCING
+    consoles = 0, no gift line          -> nothing
+    consoles = 0, gift line present     -> remove it
+    consoles >= 1, no gift line         -> add ONE, quantity 1
+    consoles >= 1, gift line quantity 1 -> nothing
+    consoles >= 1, gift line quantity>1 -> set it back to 1
 
-  pg-drawer's refresh fetches a whole page and replaces #cart's innerHTML.
-  Several files call it, and on one cart change they can stack, each swap
-  throwing away the DOM the previous one just painted — visible flicker. The
-  function is wrapped so overlapping calls collapse: a call while one is in
-  flight sets a flag and one further refresh runs when it lands, however many
-  callers asked.
+  One free case per cart, never per console: two consoles still get one. A case
+  the shopper adds themselves is the $13.99 variant with no _free_gift property
+  and is never touched, counted or removed — someone can buy spare cases with or
+  without a console. Nothing else is ever added: the paid variant is not
+  referenced anywhere in this file.
 
-  ------------------------------------------------------------ THE FREE GIFT PILL
+  ------------------------------------------------- WHAT THIS FILE NO LONGER DOES
 
-  pg-drawer's ftFix() measures the pill's text and writes inline `text-indent`
-  and `width` with !important to balance its padding. When that measurement is
-  taken before the webfont settles, the correction lands wrong and the pill
-  carries a band of purple past the text — the "extends too far to the left"
-  the owner reported. Inline !important cannot be beaten by a stylesheet, so
-  the two properties are cleared here instead, which returns the pill to its own
-  CSS box: padding on both sides, width hugging the words. ftFix only re-runs on
-  its own timers after a cart change, so this settles rather than fights.
+  A previous version wrapped window.fetch to notice cart writes, and wrapped
+  window.pgDrawerRefresh to coalesce overlapping refreshes. The fetch wrapper
+  broke the cart: the theme's own code calls fetch unbound in places, and a
+  native fetch invoked with the wrong `this` throws Illegal invocation, so cart
+  requests failed and the drawer rendered half empty. Both wrappers are gone —
+  nothing global is patched here any more. The pass is triggered by the drawer's
+  own DOM changing and by add-to-cart clicks, and is rate limited so it cannot
+  hammer /cart.js.
+
+  The FREE GIFT pill's inline text-indent/width (written by pg-drawer's ftFix
+  from a pre-webfont measurement, which is what made the purple band overhang)
+  are still cleared, since that is DOM-local and cannot affect anything else.
 {%- endcomment -%}
 <style>
   /* once the inline overrides are cleared, this is the pill's box */
@@ -76,79 +66,55 @@
   var CASE_HANDLE  = 'r36s-protective-case-free-gift';
   var CONSOLE      = 'handheld-game-console';
 
-  /* ---------------- the free case ---------------- */
-
   var busy = false, lastRun = 0;
+
+  function post(url, body){
+    return fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+  }
+
+  function done(r){
+    if (r && r.ok && window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch (e){} }
+  }
 
   function sync(){
     if (busy) return;
     var now = Date.now();
-    if (now - lastRun < 900) return;
+    if (now - lastRun < 1500) return;                   /* never hammer the cart */
     lastRun = now; busy = true;
+
     fetch('/cart.js', {headers: {'Accept': 'application/json'}})
       .then(function(r){ return r.json(); })
       .then(function(c){
         var consoles = 0, gift = null;
         (c.items || []).forEach(function(it){
           if (it.handle === CONSOLE) consoles += it.quantity;
-          if (it.handle === CASE_HANDLE && it.properties && it.properties._free_gift) gift = it;
+          /* only the line THIS adds carries the property: a case the shopper
+             paid for is never counted here and never touched */
+          if (it.handle === CASE_HANDLE && it.properties && it.properties._free_gift && !gift) gift = it;
         });
+
         if (consoles > 0 && !gift){
-          return fetch('/cart/add.js', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({items: [{id: GIFT_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]})
-          }).then(function(r){
-            /* pg-drawer removes the gift again when the last console goes, so
-               only the add is owned here */
-            if (r.ok && window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch(e){} }
-          });
+          return post('/cart/add.js', {items: [{id: GIFT_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]}).then(done);
+        }
+        if (consoles > 0 && gift && gift.quantity > 1){
+          /* one free case per cart, whatever the console count */
+          return post('/cart/change.js', {id: gift.key, quantity: 1}).then(done);
+        }
+        if (consoles === 0 && gift){
+          return post('/cart/change.js', {id: gift.key, quantity: 0}).then(done);
         }
       })
       .catch(function(){})
       .then(function(){ busy = false; });
   }
 
-  /* a real cart write is the only thing worth re-reading the cart for */
-  var _fetch = window.fetch;
-  if (typeof _fetch === 'function' && !_fetch.pgGiftWrapped){
-    var wrapped = function(input, init){
-      var p = _fetch.apply(this, arguments);
-      try {
-        var url = (typeof input === 'string') ? input : (input && input.url) || '';
-        if (/\/cart\/(add|change|update|clear)/.test(url)){
-          p.then(function(){ setTimeout(sync, 300); }, function(){});
-        }
-      } catch (e){}
-      return p;                                   /* pass-through, untouched */
-    };
-    wrapped.pgGiftWrapped = 1;
-    window.fetch = wrapped;
-  }
+  function later(){ setTimeout(sync, 900); }
 
-  /* ---------------- one refresh at a time ---------------- */
-
-  function coalesce(){
-    var fn = window.pgDrawerRefresh;
-    if (typeof fn !== 'function' || fn.pgCoalesced) return;
-    var inflight = null, queued = false;
-    function run(){
-      inflight = Promise.resolve(fn()).then(function(){
-        inflight = null;
-        if (queued){ queued = false; return run(); }
-      }, function(){ inflight = null; });
-      return inflight;
-    }
-    var w = function(){
-      if (inflight){ queued = true; return inflight; }
-      return run();
-    };
-    w.pgCoalesced = 1;
-    window.pgDrawerRefresh = w;
-  }
-
-  /* ---------------- the FREE GIFT pill ---------------- */
-
+  /* the FREE GIFT pill: clear ftFix's inline measurement */
   function pill(){
     document.querySelectorAll('.pg-free-tag').forEach(function(el){
       if (el.style.textIndent) el.style.removeProperty('text-indent');
@@ -157,21 +123,26 @@
   }
 
   function boot(){
-    coalesce();
     pill();
     sync();
+
+    /* anything that can change the cart, without patching anything global */
+    document.addEventListener('click', function(e){
+      var t = e.target;
+      if (!t || !t.closest) return;
+      if (t.closest('.pgx-atc, .pg-r36-atc, .pg-tt-atc, .pg-tadd, .pg-case-add2, .pgx-case-add, #cart .l4ca a.remove, #cart .input-amount, .pg-qbtn')) later();
+    }, true);
+
     var c = document.getElementById('cart');
     if (c && window.MutationObserver){
       var q = false;
-      /* cheap, DOM-only work on drawer repaints; the cart itself is only
-         re-read after a real write */
       new MutationObserver(function(){
         if (q) return;
         q = true;
-        setTimeout(function(){ q = false; pill(); coalesce(); }, 120);
+        setTimeout(function(){ q = false; pill(); sync(); }, 400);
       }).observe(c, {childList: true, subtree: true});
     }
-    [600, 1500, 3000, 6000].forEach(function(t){ setTimeout(function(){ coalesce(); pill(); sync(); }, t); });
+    [800, 2500, 6000].forEach(function(t){ setTimeout(function(){ pill(); sync(); }, t); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
