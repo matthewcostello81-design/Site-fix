@@ -1,3 +1,47 @@
+# Cart round: gift line, upsell row, phone sizes — and a reverted price change
+
+## Shipped
+- **Drawer refresh coalesced again.** window.pgDrawerRefresh is pg-drawer's own
+  plain function, not a native bound method, so wrapping it cannot throw the way
+  patching fetch did. Several files call it on one cart change and the
+  whole-page fetch + innerHTML swaps stacked; they collapse into one now, with a
+  single trailing refresh if anyone asked mid-flight. This is aimed at the
+  flicker when a spare case is added.
+- **FREE GIFT pill pulled to the left edge** of its line, under the product
+  title, instead of wherever the grid cell placed it.
+- **In-cart upsell rows compacted**: product name on one line with an ellipsis,
+  SAVE % chip inline beside the price, less row padding, and two phone classes —
+  ≤400px (iPhone 13/14/16/17 report 390–393) and 401–480px (Pro Max, 430–440).
+- **.nc-drawer-top's 14px bottom pad trimmed** — the one identifiable piece of
+  the reported white space at the top of the drawer.
+
+## Reverted
+The $0 "Free with console" variant was briefly given a $13.99 compare-at price
+so the gift line would show a struck full price and SAVED 100% like the other
+lines. The owner then reported a PAID case in the cart, and a $13.99 rendered
+beside a gift line is exactly what that would look like, so the compare-at is
+back to null while the real cause is identified. The chip-unhide CSS is
+harmless without it and stays.
+
+## Not diagnosed
+Switching the storage option on the R36S is reported to make the whole cart
+glitch, a paid case appears, and the Duo Pack "tweaks the cart" too. What is
+certain from the code: pg-gift-fix only ever posts variant 49640846426340, the
+$0 one — the $13.99 variant is not referenced in it. Two other places DO post
+the paid variant: pg-case-add's ADD button, and pg-theme-css's in-tile add-on
+row, which rides along with add-to-cart whenever its checkbox is on. Which of
+those fired needs the cart line's variant title ("Free with console" vs "Spare
+case") to tell apart, and the storefront cannot be loaded from this environment.
+
+## Applied to
+Theme `163657089252`, unpublished. Product data: compare-at price reverted.
+
+Files changed:
+- sections/pg-gift-fix.liquid
+- sections/pg-cart-tune.liquid
+
+---
+
 # Cart: revert the global patching that broke the drawer
 
 ## What broke it

@@ -15,6 +15,23 @@
   heights and paddings are tightened by the same amount, so the box occupies
   the same space it does today: the panel is sticky and every pixel added there
   pushes the checkout button down.
+
+  THE UPSELL ROW STOPS EATING THE DRAWER. nc-cro's recommendation rows put the
+  product name on as many lines as it wants and drop the SAVE % chip onto a line
+  of its own, so one upsell ran several lines deep in a drawer that has to show
+  the cart as well. The name is now one line with an ellipsis, and the chip is
+  inline beside the price where it belongs. The row's own padding is trimmed a
+  couple of pixels with it.
+
+  The title's element is not the same on every row (the markup comes from
+  nc-cro), so the nowrap rule lists the candidates it can be rather than
+  guessing one — anything not present simply matches nothing.
+
+  A NOTE ON THE DRAWER TOP. nc-cartfix builds .nc-drawer-top with a 14px bottom
+  pad above the items; that pad is trimmed here, which is the one piece of the
+  reported white space that can be identified without seeing the screen. If the
+  gap is something else in that band (the logo block, or the theme's own hidden
+  header) this will not be it, and the rest is left alone rather than guessed at.
 {%- endcomment -%}
 <style>
   /* the saved-percent row in the drawer's total block */
@@ -31,6 +48,56 @@
   #cart .pg-sp-t b{font-size:14px}
   #cart .pg-sp-t small{font-size:12px;line-height:1.25}
   #cart .pg-sp-price{font-size:14px}
+
+  /* the in-cart upsell rows: one-line name, chip beside the price, less height */
+  #cart .nc-rec{padding-top:7px !important;padding-bottom:7px !important}
+  #cart .nc-rec-info{min-width:0 !important}
+  #cart .nc-rec-info > h3,
+  #cart .nc-rec-info > h4,
+  #cart .nc-rec-info > b,
+  #cart .nc-rec-info > a,
+  #cart .nc-rec-info > .nc-rec-t,
+  #cart .nc-rec-info > .nc-rec-title,
+  #cart .nc-rec-t,
+  #cart .nc-rec-title{
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    max-width:100% !important;
+  }
+  #cart .nc-rec-price,
+  #cart .nc-rec-was,
+  #cart .nc-rec-off{display:inline-block !important;vertical-align:middle !important}
+  #cart .nc-rec-off{margin-left:8px !important;padding:2px 8px !important;line-height:1.4 !important}
+
+  /* the drawer's top block carries a 14px pad above the items */
+  #cart .nc-drawer-top{padding-bottom:6px !important}
+
+  /* --- the upsell row on the two phones that matter ---
+     iPhone 13/14/16/17 report a 390-393px viewport, the Pro Max models 430-440.
+     The row has to fit picture + one-line name + price + chip + ADD in both, so
+     the small class steps everything down a point and shrinks the thumbnail,
+     and the large class takes the middle size rather than the desktop one. */
+  @media (max-width:400px){
+    #cart .nc-rec{gap:8px !important}
+    #cart .nc-rec img{width:52px !important;height:52px !important;flex:0 0 52px !important}
+    #cart .nc-rec-t,
+    #cart .nc-rec-title{font-size:13px !important}
+    #cart .nc-rec-price{font-size:13.5px !important}
+    #cart .nc-rec-was{font-size:11.5px !important}
+    #cart .nc-rec-off{font-size:10.5px !important;margin-left:6px !important;padding:2px 6px !important}
+    #cart .nc-rec-add{padding:7px 12px !important;font-size:11.5px !important}
+  }
+  @media (min-width:401px) and (max-width:480px){
+    #cart .nc-rec img{width:58px !important;height:58px !important;flex:0 0 58px !important}
+    #cart .nc-rec-t,
+    #cart .nc-rec-title{font-size:13.5px !important}
+    #cart .nc-rec-price{font-size:14px !important}
+    #cart .nc-rec-was{font-size:12px !important}
+    #cart .nc-rec-off{font-size:11px !important;margin-left:7px !important}
+    #cart .nc-rec-add{padding:8px 14px !important;font-size:12px !important}
+  }
 </style>
 {% schema %}
 {"name": "PG Cart Tune", "settings": [], "presets": [{"name": "PG Cart Tune"}]}

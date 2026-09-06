@@ -47,16 +47,46 @@
   The FREE GIFT pill's inline text-indent/width (written by pg-drawer's ftFix
   from a pre-webfont measurement, which is what made the purple band overhang)
   are still cleared, since that is DOM-local and cannot affect anything else.
+
+  The drawer refresh IS coalesced again, which the fetch wrapper's removal does
+  not affect: window.pgDrawerRefresh is pg-drawer's own plain function, not a
+  native bound method, so wrapping it cannot throw the way patching fetch did.
+  Several files call it on one cart change and the whole-page fetch + innerHTML
+  swaps stacked, each discarding the paint before it — the flicker when a spare
+  case is added. Overlapping calls now collapse into one, with a single trailing
+  refresh if anyone asked while one was in flight.
+
+  ------------------------------------------------------- THE GIFT LINE'S PRICE
+
+  The gift now reads like every other discounted line: $13.99 struck through,
+  $0.00 beside it, and the SAVED 100% chip. Two parts to that:
+
+    - the $0 variant carries a compare-at price of $13.99 (set on the product,
+      not here), so Shopify itself reports the line as fully discounted and the
+      theme's own save maths lands on 100%;
+    - pg-drawer hides the chip on the gift line on purpose ("FREE GIFT already
+      says it"). Per the owner it comes back, so that rule is overridden.
+
+  The FREE GIFT pill is also pulled to the left edge of the line, under the
+  product title, rather than sitting wherever the grid cell placed it.
 {%- endcomment -%}
 <style>
-  /* once the inline overrides are cleared, this is the pill's box */
+  /* once the inline overrides are cleared, this is the pill's box, pulled to
+     the left edge of the line so it sits under the product title */
   #cart .pg-free-tag,
   body.template-cart .pg-free-tag{
     width:max-content !important;
     text-indent:0 !important;
     padding:6px 12px !important;
-    text-align:center !important;
+    text-align:left !important;
+    justify-self:start !important;
+    align-self:start !important;
+    margin-left:0 !important;
+    margin-right:auto !important;
   }
+  /* the gift line prices like the others: struck full price, $0.00, SAVED 100% */
+  #cart .l4ca > li:has(.pg-free-tag) .pg-save-chip,
+  body.template-cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:inline-block !important}
 </style>
 <script>
 (function(){
@@ -78,6 +108,30 @@
 
   function done(r){
     if (r && r.ok && window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch (e){} }
+  }
+
+  /* one drawer refresh at a time. pg-drawer's refresh fetches a whole page and
+     replaces #cart's innerHTML; several files call it on a single cart change
+     and the swaps stacked, each throwing away the paint before it. This wraps a
+     plain theme function — unlike the fetch wrapper that broke the cart, there
+     is no native binding involved. */
+  function coalesce(){
+    var fn = window.pgDrawerRefresh;
+    if (typeof fn !== 'function' || fn.pgCoalesced) return;
+    var inflight = null, queued = false;
+    function run(){
+      inflight = Promise.resolve(fn()).then(function(){
+        inflight = null;
+        if (queued){ queued = false; return run(); }
+      }, function(){ inflight = null; });
+      return inflight;
+    }
+    var w = function(){
+      if (inflight){ queued = true; return inflight; }
+      return run();
+    };
+    w.pgCoalesced = 1;
+    window.pgDrawerRefresh = w;
   }
 
   function sync(){
@@ -123,6 +177,7 @@
   }
 
   function boot(){
+    coalesce();
     pill();
     sync();
 
@@ -139,10 +194,10 @@
       new MutationObserver(function(){
         if (q) return;
         q = true;
-        setTimeout(function(){ q = false; pill(); sync(); }, 400);
+        setTimeout(function(){ q = false; coalesce(); pill(); sync(); }, 400);
       }).observe(c, {childList: true, subtree: true});
     }
-    [800, 2500, 6000].forEach(function(t){ setTimeout(function(){ pill(); sync(); }, t); });
+    [800, 2500, 6000].forEach(function(t){ setTimeout(function(){ coalesce(); pill(); sync(); }, t); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();
