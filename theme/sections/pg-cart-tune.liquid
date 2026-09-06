@@ -1,0 +1,37 @@
+{%- comment -%}
+  PG Cart Tune: two small corrections to the drawer's bottom panel.
+
+  NO "YOU SAVED (57%)" ROW. pg-cart-total renders the summary block as
+  Subtotal / Extra 10% Off / You saved (n%), and the theme's own Total sits
+  right beneath it. Per the owner the saved line comes out: the discount rows
+  above it already say what came off, and repeating it as a percentage next to
+  the real total is noise at the moment of paying. Only that row is hidden —
+  Subtotal and Extra 10% Off stay, and pg-cart-total keeps computing the block,
+  so nothing downstream of it changes.
+
+  A BIGGER SHIPPING PROTECTION ROW, THE SAME HEIGHT. In the sticky panel the
+  row is shrunk hard (title 12.5px, sub 10.5px, price 12.5px) and reads as fine
+  print next to the checkout button. Each is stepped up ~1px and the line
+  heights and paddings are tightened by the same amount, so the box occupies
+  the same space it does today: the panel is sticky and every pixel added there
+  pushes the checkout button down.
+{%- endcomment -%}
+<style>
+  /* the saved-percent row in the drawer's total block */
+  #cart .pg-tot-r.pg-tot-saved,
+  body.template-cart .pg-tot-r.pg-tot-saved{display:none !important}
+
+  /* shipping protection: larger type, same box */
+  #cart .sticky-in-panel .pg-sp{padding:6px 10px !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:13.5px !important;line-height:1.2 !important}
+  #cart .sticky-in-panel .pg-sp-t small{font-size:11.5px !important;line-height:1.2 !important;margin-top:0 !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:13.5px !important}
+  /* outside the sticky panel (cart page, drawer body) it is already roomier —
+     nudge the same amount without touching the padding */
+  #cart .pg-sp-t b{font-size:14px}
+  #cart .pg-sp-t small{font-size:12px;line-height:1.25}
+  #cart .pg-sp-price{font-size:14px}
+</style>
+{% schema %}
+{"name": "PG Cart Tune", "settings": [], "presets": [{"name": "PG Cart Tune"}]}
+{% endschema %}

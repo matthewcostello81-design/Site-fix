@@ -1,3 +1,33 @@
+# Cart drawer: no saved-percent row, larger shipping protection type
+
+New section `sections/pg-cart-tune.liquid` (registered in header-group.json):
+
+- **"You saved (57%)" is gone.** pg-cart-total renders the block as
+  Subtotal / Extra 10% Off / You saved (n%), with the theme's own Total right
+  beneath. Only that last row is hidden — the discount rows above already say
+  what came off, and a percentage next to the real total is noise at the moment
+  of paying. pg-cart-total still computes the block, so nothing downstream of it
+  changes.
+- **Shipping protection reads a step larger in the same box.** In the sticky
+  panel it was 12.5 / 10.5 / 12.5px. Each is up ~1px with line-heights and the
+  row padding tightened by the same amount, so the box keeps its height — the
+  panel is sticky, and any pixel added there pushes the checkout button down.
+
+## Open
+"Faint purple lines at the top of the cart by the free shipping line" — not
+actioned. Several 1px rules live in that band (the .pg-bar card border
+#e0cdee, .pg-cart-top's bottom border, and the theme's own shipping notice), so
+which to remove needs a screenshot rather than a guess.
+
+## Applied to
+Theme `163657089252` ("R36S + cart fixes (Claude 9-6)"), unpublished.
+
+Files changed:
+- sections/pg-cart-tune.liquid (new)
+- sections/header-group.json (registered it)
+
+---
+
 # Cart: the dead free-gift variant, drawer churn, offer copy and SAVE badges
 
 ## Why adding a case made the drawer glitch
