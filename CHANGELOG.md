@@ -1,3 +1,44 @@
+# Case lines priced like every other item; my writes bounded
+
+## The case lines now carry old price, new price and a save chip
+
+Both variants of the case got a compare-at price, so Shopify itself reports the
+lines as discounted and the theme's existing line rendering does the rest — the
+struck price, the current price and the SAVE % chip in the corner, in the same
+format as the console and orb lines:
+
+    Free with console   $13.99 struck  ->  $0.00    SAVE 100%
+    Spare case          $24.99 struck  ->  $13.99   SAVE 44%
+
+$24.99 is the same "was" pg-theme-css's in-tile add-on row already advertises
+for the spare (cap: 2499), so the cart and the product page agree.
+
+## pg-gift-fix can no longer contribute to a repaint loop
+
+With the drawer still reported flickering, every path in this file that can
+cause a repaint is now capped rather than relying on a guard being right:
+
+- at most ONE gift add per page load. If the line lands and something else
+  removes it, it is not re-added and re-refreshed in a loop; the next page view
+  starts fresh;
+- the drawer is refreshed only after that first add — never after the quantity
+  or removal corrections, which the drawer repaints on its own;
+- everything else in the file is DOM-local (the pill) or read-only.
+
+## Note on debugging
+Chromium is available in this environment but the storefront is blocked by the
+sandbox's egress proxy (403 on CONNECT), so the cart cannot be loaded, clicked
+or watched from here. Every cart change in this session has been reasoned from
+the theme source alone.
+
+## Applied to
+Theme `163657089252`, unpublished. Product data: compare-at prices on both case
+variants.
+
+Files changed: sections/pg-gift-fix.liquid
+
+---
+
 # Cart round: gift line, upsell row, phone sizes — and a reverted price change
 
 ## Shipped

@@ -35,26 +35,36 @@
 
   ------------------------------------------------- WHAT THIS FILE NO LONGER DOES
 
-  A previous version wrapped window.fetch to notice cart writes, and wrapped
-  window.pgDrawerRefresh to coalesce overlapping refreshes. The fetch wrapper
-  broke the cart: the theme's own code calls fetch unbound in places, and a
-  native fetch invoked with the wrong `this` throws Illegal invocation, so cart
-  requests failed and the drawer rendered half empty. Both wrappers are gone —
-  nothing global is patched here any more. The pass is triggered by the drawer's
-  own DOM changing and by add-to-cart clicks, and is rate limited so it cannot
-  hammer /cart.js.
+  A previous version wrapped window.fetch to notice cart writes. That broke the
+  cart: the theme's own code calls fetch unbound in places, and a native fetch
+  invoked with the wrong `this` throws Illegal invocation, so cart requests
+  failed and the drawer rendered half empty. It is gone — nothing native is
+  patched here. The pass is triggered by the drawer's own DOM changing and by
+  add-to-cart clicks, and is rate limited so it cannot hammer /cart.js.
 
   The FREE GIFT pill's inline text-indent/width (written by pg-drawer's ftFix
   from a pre-webfont measurement, which is what made the purple band overhang)
   are still cleared, since that is DOM-local and cannot affect anything else.
 
-  The drawer refresh IS coalesced again, which the fetch wrapper's removal does
-  not affect: window.pgDrawerRefresh is pg-drawer's own plain function, not a
-  native bound method, so wrapping it cannot throw the way patching fetch did.
-  Several files call it on one cart change and the whole-page fetch + innerHTML
-  swaps stacked, each discarding the paint before it — the flicker when a spare
-  case is added. Overlapping calls now collapse into one, with a single trailing
-  refresh if anyone asked while one was in flight.
+  The drawer refresh IS coalesced, which the fetch wrapper's removal does not
+  affect: window.pgDrawerRefresh is pg-drawer's own plain function, not a native
+  bound method, so wrapping it cannot throw the way patching fetch did. Several
+  files call it on one cart change and the whole-page fetch + innerHTML swaps
+  stacked, each discarding the paint before it. Overlapping calls now collapse
+  into one, with a single trailing refresh if anyone asked while one was in
+  flight.
+
+  THIS FILE'S OWN WRITES ARE BOUNDED. With the drawer still reported as
+  flickering, everything here that can cause a repaint is capped rather than
+  left to a guard that is only as good as the state it reads:
+
+    - at most ONE gift add per page load. If the add lands and something else
+      removes the line again, this does not re-add it and re-refresh in a loop —
+      it stops, and the next page view starts fresh;
+    - the drawer is refreshed only after that FIRST add, never after the
+      quantity or removal corrections, which the drawer repaints itself;
+    - the whole pass is skipped once the cart is in the shape it should be in,
+      so an idle drawer sees no /cart.js traffic beyond the rate-limited checks.
 
   ------------------------------------------------------- THE GIFT LINE'S PRICE
 
@@ -106,8 +116,10 @@
     });
   }
 
-  function done(r){
-    if (r && r.ok && window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch (e){} }
+  var added = false;          /* one gift add per page load, no matter what */
+
+  function refresh(){
+    if (window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch (e){} }
   }
 
   /* one drawer refresh at a time. pg-drawer's refresh fetches a whole page and
@@ -152,14 +164,18 @@
         });
 
         if (consoles > 0 && !gift){
-          return post('/cart/add.js', {items: [{id: GIFT_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]}).then(done);
+          if (added) return;                        /* already tried once this page */
+          added = true;
+          return post('/cart/add.js', {items: [{id: GIFT_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]})
+            .then(function(r){ if (r && r.ok) refresh(); });
         }
+        /* the corrections below never refresh: the drawer repaints itself, and
+           a refresh here is what turns a correction into a visible churn */
         if (consoles > 0 && gift && gift.quantity > 1){
-          /* one free case per cart, whatever the console count */
-          return post('/cart/change.js', {id: gift.key, quantity: 1}).then(done);
+          return post('/cart/change.js', {id: gift.key, quantity: 1});
         }
         if (consoles === 0 && gift){
-          return post('/cart/change.js', {id: gift.key, quantity: 0}).then(done);
+          return post('/cart/change.js', {id: gift.key, quantity: 0});
         }
       })
       .catch(function(){})
