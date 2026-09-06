@@ -1,3 +1,44 @@
+# Two corrections: badge size, and the add-on label flicker I caused
+
+## SAVE % badge dialled back
+
+14px / weight 900 / 7px 17px padding was too big — the badge sits half over the
+tile's top edge, so it grows into the tile above rather than into empty space.
+It is 12.5px / 800 / 5px 13px now, one step up from pg-theme-css's 11.5px. The
+legibility comes from the purple gradient replacing the near-black pill, not
+from size.
+
+## The add-on label was flickering — my bug
+
+The shortener added in the previous entry rewrote "Add a spare case for each
+console" to "Add a spare case each" in the DOM. pg-theme-css rewrites that same
+label on every one of its passes, guarded only by
+
+    if (t.textContent !== txt) t.textContent = txt;
+
+so it restored the long string, the override restored the short one, and the two
+flipped back and forth for as long as the page was open — the glitching reported
+on the Duo Pack's spare-case row. The rewrite is removed. Wrapping the label
+(the other half of that fix, kept) is what stops the truncation; shortening the
+copy for real means editing pg-theme-css's ADDONS map, not overwriting its
+output.
+
+## Open
+"Faint purple lines and blank white space at the top of the cart drawer" — still
+unactioned. Three separate hairlines sit in that band (the .pg-bar card border
+#e0cdee, .pg-cart-top's bottom border, the theme's own shipping notice) plus the
+theme's own header block, and the storefront cannot be loaded from this
+environment to tell them apart. Needs a screenshot.
+
+## Applied to
+Theme `163657089252` ("R36S + cart fixes (Claude 9-6)"), unpublished.
+
+Files changed:
+- sections/pg-save-badge.liquid
+- sections/pg-offer-copy.liquid
+
+---
+
 # Cart drawer: no saved-percent row, larger shipping protection type
 
 New section `sections/pg-cart-tune.liquid` (registered in header-group.json):

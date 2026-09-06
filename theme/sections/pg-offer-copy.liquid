@@ -31,15 +31,18 @@
 
   pg-theme-css gives the in-tile add-on row `white-space:nowrap` with an
   ellipsis, so inside the Duo Pack "Add a spare case for each console" was cut
-  to "Add a spare case for each c…". The label is allowed to wrap now, and the
-  copy is shortened so it fits on one line at the sizes that matter:
+  to "Add a spare case for each c…". Letting the label wrap is the whole fix.
 
-      Add a spare case for each console  ->  Add a spare case each
-      Add a frame per print              ->  Add a frame each
+  IT IS NOT REWRITTEN. A first pass also shortened the copy to "Add a spare
+  case each" in the DOM, which flickered on the Duo Pack: pg-theme-css rewrites
+  that label on every one of its passes, guarded only by
 
-  The text is rewritten in the DOM rather than in pg-theme-css's ADDONS map so
-  that 89KB file is left alone; the pass is idempotent and repeats, because the
-  row is re-rendered whenever the tiles are.
+      if (t.textContent !== txt) t.textContent = txt;
+
+  so it restored the long string, this restored the short one, and the two
+  flipped the text back and forth for as long as the page was open. Shortening
+  it for real means editing that file's ADDONS map, not overwriting its output;
+  wrapping already keeps every word on screen, so the text is left alone.
 {%- endcomment -%}
 <style>
   /* nothing in the add-on row is truncated any more */
@@ -56,18 +59,6 @@
 
   var EXTRA = 'plus an extra <b>10% off</b> at checkout.';
   var LAST  = 'An extra <b>10% off</b> is applied automatically at checkout.';
-
-  /* ---------------- the add-on row label ---------------- */
-
-  function addon(){
-    document.querySelectorAll('#pgx .pg-tadd-t').forEach(function(el){
-      var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-      var short = '';
-      if (/spare case/i.test(t)) short = /each|per /i.test(t) ? 'Add a spare case each' : 'Add a spare case';
-      else if (/frame/i.test(t)) short = /each|per /i.test(t) ? 'Add a frame each' : 'Add the matching frame';
-      if (short && t !== short) el.textContent = short;
-    });
-  }
 
   /* ---------------- the deal note ---------------- */
 
@@ -110,7 +101,7 @@
     if (p.innerHTML !== html) p.innerHTML = html;
   }
 
-  function pass(){ addon(); note(); }
+  function pass(){ note(); }
 
   function boot(){
     pass();
