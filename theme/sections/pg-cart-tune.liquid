@@ -27,21 +27,51 @@
   nc-cro), so the nowrap rule lists the candidates it can be rather than
   guessing one — anything not present simply matches nothing.
 
-  A NOTE ON THE DRAWER TOP. nc-cartfix builds .nc-drawer-top with a 14px bottom
-  pad above the items; that pad is trimmed here, along with the upsell block's
-  heading and note, which together were the tallest thing above the cart lines.
+  THE TOP OF THE DRAWER: THE WHITE BAND AND THE FAINT RULES. Three things stack
+  above the first cart line, and two of them are hairlines the owner could see
+  and not name. Read off the sections that draw them:
 
-  THE FREE GIFT LINE. Two rules moved here when pg-gift-fix was deleted:
+    - pg-drawer's .pg-cart-top is the sticky "Your Cart" header, and it carries
+      `border-bottom:1px solid rgba(122,47,162,.16)` -- a faint PURPLE rule;
+    - nc-cartfix's .nc-drawer-top is the logo + "Free shipping on every order"
+      block, `padding:2px 0 14px`, `margin:0 0 8px`, and its own
+      `border-bottom:1px solid rgba(15,42,51,.08)` sitting directly under that
+      pill -- the second rule, and the band of empty white between them.
 
-    - the FREE GIFT pill is pulled to the left edge of its line, under the
-      product title. pg-drawer's ftFix() writes an inline text-indent and width
-      on it from a measurement taken before the webfont settles, and inline
-      !important cannot be beaten from a stylesheet — but with the pill's own
-      box restated here it lands correctly as soon as ftFix is not fighting it;
-    - the SAVED chip is un-hidden on that line. pg-drawer hides it on purpose
-      ("FREE GIFT already says it"); per the owner the gift line should read
-      like every other one, so it comes back. The struck $13.99 beside it comes
-      from the variant's compare-at price, set on the product.
+  Both borders come off and the block is compressed: 14px of bottom pad to 6px,
+  8px of margin to 4px, and the logo's own 12px bottom margin to 7px. Roughly
+  25px comes back at the top of the drawer with nothing removed from it. The
+  upsell block's heading and note are trimmed with them, being the next tallest
+  thing above the cart itself. .pg-bar's border stays: that one outlines the
+  free-shipping progress card, so it reads as a box rather than a stray line.
+
+  THE FREE GIFT LINE'S SAVE %. By request the gift reads like every other line:
+  $13.99 struck, $0.00 charged, and the percentage in the price corner beneath
+  them. The struck pair is already there -- .nc-lsave renders it from the
+  variant's compare-at, which is set on the product -- but the percentage was
+  not, and could not be:
+
+    - pg-drawer's pgDeals, which builds .pg-save-chip, returns early on any row
+      whose link contains 'free-gift', so no chip is ever created on that line;
+    - pg-drawer then hides .pg-save-chip on it as well, so un-hiding an element
+      that does not exist changes nothing (that rule is dropped here);
+    - pg-chips DOES reach the row, but writes the word FREE into a chip it finds
+      rather than creating one.
+
+  So a chip of its own is added: .pg-gift-off, mounted inside .nc-lsave so it
+  lands in the price column under the two figures. Its own class is the point --
+  nothing else in the theme writes it, so there is no second writer to race, and
+  the ping-pong that made the add-on label flicker cannot repeat here. It is
+  mounted only when it is missing or not already last in its host, so a settled
+  line is left untouched; when .nc-lsave has not rendered it falls back inside
+  the title's h2, which is a cell the grid already owns, rather than becoming a
+  loose grid item that lands in someone else's column.
+
+  THE FREE GIFT PILL, LEFT. It is pulled to the left edge of its line, under
+  the product title. pg-drawer's ftFix() writes an inline text-indent and width
+  on it from a measurement taken before the webfont settles, and inline
+  !important cannot be beaten from a stylesheet — but with the pill's own box
+  restated here it lands correctly as soon as ftFix is not fighting it.
 
   WHY pg-gift-fix IS GONE. It added the free case itself. So does pg-giftguard,
   which already owned that job — pg-drawer's own giftSync was disabled in favour
@@ -90,9 +120,11 @@
   #cart .nc-rec-off{display:inline-block !important;vertical-align:middle !important}
   #cart .nc-rec-off{margin-left:8px !important;padding:2px 8px !important;line-height:1.4 !important}
 
-  /* the drawer's top block carries a 14px pad above the items, and the upsell
-     block's heading + note are the tallest thing above the cart itself */
-  #cart .nc-drawer-top{padding-bottom:6px !important}
+  /* no hairline above or below the free-shipping pill, and less air with it;
+     the upsell block's heading + note are the next tallest thing above the cart */
+  #cart .nc-drawer-top{padding:0 0 6px !important;margin:0 0 4px !important;border-bottom:0 !important}
+  #cart .nc-dlogo,#cart .nc-dlogo-txt{margin-bottom:7px !important}
+  #cart .pg-cart-top{border-bottom:0 !important;padding-top:9px !important;padding-bottom:9px !important}
   #cart .cart-upsell h3{font-size:14px !important;margin:0 0 2px !important}
   #cart .nc-upsell-note{font-size:11px !important;padding:4px 10px !important;margin:2px 0 7px !important}
   #cart .nc-recs,
@@ -110,9 +142,21 @@
     margin-left:0 !important;
     margin-right:auto !important;
   }
-  /* and the gift line keeps its SAVED chip, like every other discounted line */
-  #cart .l4ca > li:has(.pg-free-tag) .pg-save-chip,
-  body.template-cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:inline-block !important}
+  /* and the gift line gets its own percentage, in the price corner under the
+     struck $13.99 and the $0.00 -- geometry and colour matched to .pg-save-chip
+     so the two read as the same badge on different rows */
+  #cart .pg-gift-off,
+  body.template-cart .pg-gift-off{
+    display:inline-flex !important;align-items:center !important;justify-content:center !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
+    background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;
+    color:#fff !important;-webkit-text-fill-color:#fff !important;
+    font-size:12px !important;font-weight:700 !important;line-height:1 !important;
+    letter-spacing:normal !important;word-spacing:normal !important;text-indent:0 !important;
+    padding:6px 7px !important;border-radius:999px !important;
+    width:fit-content !important;max-width:100% !important;min-width:0 !important;flex:none !important;
+    margin:2px 0 0 !important;
+  }
 
   /* --- the upsell row on the two phones that matter ---
      iPhone 13/14/16/17 report a 390-393px viewport, the Pro Max models 430-440.
@@ -139,6 +183,53 @@
     #cart .nc-rec-add{padding:8px 14px !important;font-size:12px !important}
   }
 </style>
+<script>
+(function(){
+  if (window.pgGiftOff) return; window.pgGiftOff = 1;
+
+  function giftRows(){
+    var out = [];
+    document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li')
+      .forEach(function(li){ if (li.querySelector('.pg-free-tag')) out.push(li); });
+    return out;
+  }
+
+  function pass(){
+    giftRows().forEach(function(li){
+      /* the price column when it has rendered, the title's own cell otherwise --
+         never a loose grid item, see the note above */
+      var host = li.querySelector('.nc-lsave') || li.querySelector('h2');
+      if (!host) return;
+      var chip = li.querySelector('.pg-gift-off');
+      if (!chip){
+        chip = document.createElement('span');
+        chip.className = 'pg-gift-off';
+        chip.textContent = '-100%';
+      }
+      /* settle, do not fight: a chip already sitting last in its host is left
+         alone, so this writes nothing on the passes after the first */
+      if (chip.parentNode !== host || chip !== host.lastElementChild) host.appendChild(chip);
+    });
+  }
+
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; pass(); }, 80);
+  }
+
+  if (window.MutationObserver){
+    (function watch(){
+      var c = document.getElementById('cart');
+      if (c){ try { new MutationObserver(soon).observe(c, {childList:true, subtree:true}); } catch(e){} }
+      else setTimeout(watch, 500);
+    })();
+  }
+  setInterval(pass, 1200);
+  pass();
+})();
+</script>
 {% schema %}
 {"name": "PG Cart Tune", "settings": [], "presets": [{"name": "PG Cart Tune"}]}
 {% endschema %}

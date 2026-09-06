@@ -1,3 +1,66 @@
+# The gift line's SAVE %, and the white band at the top of the drawer
+
+## Two things the last round could not have fixed, and why
+
+**The free case had no percentage, and no rule was going to give it one.**
+`pg-cart-tune` un-hid `.pg-save-chip` on the gift line. Reading the sections
+that build that element, un-hiding it was always a no-op:
+
+- `pg-drawer`'s `pgDeals()` — the pass that creates `.pg-save-chip` and the
+  struck price — begins each row with
+  `if (href.indexOf('free-gift') > -1) return;`, so the chip is never created
+  on that line in the first place;
+- `pg-drawer` then hides `.pg-save-chip` on `:has(.pg-free-tag)` as well, on the
+  grounds that "FREE GIFT already says it";
+- `pg-chips`' `repct()` *does* reach the row (it groups by variant and calls the
+  $0.00 line free), but it only `setText`s a chip it finds — `if (fchip)`. It
+  does not create one, and what it would write is the word `FREE`, not a
+  percentage.
+
+So the chip is now the section's own element, `.pg-gift-off`, reading `-100%`,
+mounted inside `.nc-lsave` — the price column — so it lands under the struck
+`$13.99` and the `$0.00`, which is the format the owner asked the cases to copy.
+Giving it its own class is deliberate: nothing else in the theme writes
+`.pg-gift-off`, so there is no second writer to race. That is the same mistake
+that made the Duo Pack's add-on label flicker, and it is not repeated here. The
+mount is conditional (`chip.parentNode !== host || chip !== host.lastElementChild`),
+so a settled line is left alone and the drawer's observer is not re-triggered.
+Where `.nc-lsave` has not rendered it falls back inside the title's `h2`, a cell
+the grid already owns, rather than becoming a loose grid item — `pg-chips`'
+notes record what happens when one of these lands in someone else's column.
+
+The struck `$13.99` itself is product data, not theme code: the free variant
+(`49640846426340`) carries `price 0.00 / compareAtPrice 13.99`, and the spare
+(`49640879063268`) `13.99 / 24.99`. That is why the paid case already showed the
+crossed-out price on the live theme while the free one did not.
+
+**The white band and the faint purple lines at the top of the cart.** Named at
+last, off the CSS rather than off a screenshot. Three things stack above the
+first cart line:
+
+- `pg-drawer`'s `.pg-cart-top` — the sticky "Your Cart" header — carries
+  `border-bottom:1px solid rgba(122,47,162,.16)`. That is the faint **purple**
+  rule;
+- `nc-cartfix`'s `.nc-drawer-top` — the logo and the "Free shipping on every
+  order" pill — is `padding:2px 0 14px` with `margin:0 0 8px` and its own
+  `border-bottom:1px solid rgba(15,42,51,.08)`, sitting directly under that
+  pill. That is the second line, and the empty white between the two.
+
+Both borders come off; the block is compressed (14px bottom pad → 6px, 8px
+margin → 4px, the logo's own 12px bottom margin → 7px). Roughly 25px comes back
+at the top of the drawer without removing anything from it. `.pg-bar`'s
+`1px solid #e0cdee` stays — that one outlines the free-shipping progress card,
+so it reads as a box and not a stray line.
+
+## Still true, and still the reason nothing looks different yet
+
+Every theme change in this session lives in the unpublished draft
+**"R36S + cart fixes (Claude 9-6)"**. The live theme is untouched, and the
+connector cannot publish or write to it. Until that draft is published the only
+changes visible on the storefront are the ones that are product data — which is
+exactly the split the owner reported: the paid case's crossed-out price
+appeared, everything CSS-side did not.
+
 # pg-gift-fix deleted: it was a second owner of the free gift
 
 ## The glitching and the duplicate case
