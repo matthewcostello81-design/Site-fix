@@ -1,0 +1,43 @@
+{%- comment -%}
+  PG Save Badge: make the SAVE % badge on every offer tile the first thing read.
+
+  pg-theme-css draws it small and dark:
+
+      .pgx-lad-badge{font-size:11.5px;font-weight:800;padding:5px 14px;
+                     background:#0D0714;color:#fff;border:1px solid rgba(139,68,190,.6)}
+
+  On a near-black tile on a near-black page that is a dark pill on a dark card —
+  the number a shopper is meant to see first is the quietest thing in the tile.
+  It now carries the same purple gradient as the add-to-cart buttons, at a
+  larger size and heavier weight, so the saving reads before the price does.
+
+  One rule covers every tile on every product: pgLadder's ladder tiles, pgDuo's
+  Duo Pack ([data-pg-duosave]) and pg-landing's single tile
+  ([data-pg-singlesave]) all render the badge with this class.
+
+  Registered in sections/header-group.json, which renders before pg-theme-css in
+  the footer group — so these are stamped !important and id-scoped to outrank it
+  on specificity rather than on source order.
+{%- endcomment -%}
+<style>
+  html body #pgx .pgx-lad-badge{
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 40%,#7A2FA2 100%) !important;
+    color:#FFFFFF !important;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+    letter-spacing:.05em !important;
+    padding:7px 17px !important;
+    border:1px solid rgba(255,255,255,.38) !important;
+    box-shadow:0 12px 26px -12px rgba(139,68,190,.95) !important;
+    text-shadow:0 1px 2px rgba(0,0,0,.35) !important;
+    text-transform:uppercase !important;
+    white-space:nowrap !important;
+  }
+  @media (max-width:600px){
+    html body #pgx .pgx-lad-badge{font-size:13px !important;padding:6px 14px !important}
+  }
+</style>
+{% schema %}
+{"name": "PG Save Badge", "settings": [], "presets": [{"name": "PG Save Badge"}]}
+{% endschema %}

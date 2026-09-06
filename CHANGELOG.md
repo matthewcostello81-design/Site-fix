@@ -1,3 +1,86 @@
+# Cart: the dead free-gift variant, drawer churn, offer copy and SAVE badges
+
+## Why adding a case made the drawer glitch
+
+pg-drawer auto-adds a free case whenever the cart holds a console, using
+
+    var GIFT_ID = 49623692247268
+
+which **no longer exists**. pg-case-add had already diagnosed the cause — the
+case product's "Default Title" variant was replaced by two named ones, and a
+variant id cannot be reassigned — but it only repaired its own ADD button and
+left the drawer's copy pointing at the dead id. So `giftSync()` re-ran on every
+cart mutation, saw a console and no gift line, and fired a `/cart/add.js` that
+422s; the gift never landed, so the next mutation tried again. A failed request
+per cart change, on top of pg-drawer replacing the whole drawer's innerHTML on
+each refresh, is the churn that reads as glitching. It is also why the free case
+stopped appearing while both R36S tiles promise "+ FREE Case".
+
+`sections/pg-gift-fix.liquid` (new, global via header-group):
+
+- adds the gift with the LIVE $0 variant `49640846426340` ("Free with console")
+  carrying the same `_free_gift: yes` property pg-drawer looks for, so its own
+  giftSync() finds a gift line and stops retrying, and its removal and
+  de-duplication paths (which key on the line, not the id) keep working. The
+  52KB drawer file is not edited. $0 by variant price, not by discount: the
+  "Free R36S Case with Console" BXGY is expired, and a spare case the shopper
+  adds has no property and stays $13.99;
+- re-reads the cart only after a real cart write — window.fetch is wrapped
+  pass-through and schedules a sync when /cart/add|change|update|clear resolves,
+  rather than polling, because the drawer mutates #cart on its own 800ms beat;
+- coalesces `pgDrawerRefresh`: several files call it and their whole-page
+  fetch + innerHTML swaps stacked, each discarding the paint before it;
+- clears the inline `text-indent` / `width` that pg-drawer's ftFix() writes on
+  the FREE GIFT pill from a pre-webfont measurement, which is the purple band
+  running past the text. Inline !important cannot be beaten by a stylesheet, so
+  the properties are removed rather than overridden.
+
+## The offer copy
+
+`sections/pg-offer-copy.liquid` (new, global):
+
+- the line under Add to Cart now sells the NEXT tier instead of restating the
+  selected one ("Bundle pricing shown. Your best available discount…"). It
+  quotes the next tile's own heading — pgLadder, pgDuo and pg-tile-copy all
+  build tiles and any hardcoded sentence would go stale — and adds the store's
+  extra 10%. On the last and best tile there is nothing to climb to, so it just
+  states the 10% off at checkout;
+- the in-tile add-on row no longer truncates. pg-theme-css gives it
+  `white-space:nowrap` + ellipsis, which cut "Add a spare case for each console"
+  to "…for each c…". It wraps now, and the copy is shortened to "Add a spare
+  case each" / "Add a frame each" in the DOM, leaving the 89KB file alone.
+
+## SAVE % badges
+
+`sections/pg-save-badge.liquid` (new, global): the badge was 11.5px on #0D0714,
+a dark pill on a dark tile. It now carries the buttons' purple gradient at 14px
+/ weight 900, so the saving reads before the price.
+
+## Still broken, needs a decision (not theme code)
+
+Several advertised bundle discounts are EXPIRED in Shopify, so the tiles promise
+prices checkout will not honour:
+
+- **PokeOrb — Buy 4, Get 2 Free**: EXPIRED, tile still shown.
+- **Wall Art — 2nd Print 25% Off** and **3rd Print 50% Off**: EXPIRED, both
+  tiles still shown.
+- Free R36S Case with Console: EXPIRED (now covered by the $0 variant instead).
+
+Active and honoured: PokeOrb Buy 2 Get 1, PokeOrb Buy 5 Get 3, R36S 2nd Console
+25%, Wall Art Buy 2 Get 1, and Extra 10% off entire order.
+
+## Applied to
+Theme `163657089252` ("R36S + cart fixes (Claude 9-6)"), unpublished.
+
+Files changed:
+- sections/pg-gift-fix.liquid (new)
+- sections/pg-offer-copy.liquid (new)
+- sections/pg-save-badge.liquid (new)
+- sections/header-group.json (registered all three; the footer group is at
+  Shopify's 25-section limit)
+
+---
+
 # R36S PDP: title and rating line centred on phones
 
 New section `sections/pg-r36s-title.liquid` (R36S template only) centres the

@@ -1,0 +1,138 @@
+{%- comment -%}
+  PG Offer Copy: the line under Add to Cart sells the NEXT tier, and the add-on
+  row stops being cut off.
+
+  --------------------------------------------------------------- THE DEAL NOTE
+
+  pg-tile-copy writes .pgx-deal-note from the SELECTED tile: on the orb it
+  restates what that rung gives, and on any product it has no PACK entry for
+  (the R36S) it prints one fixed line — "Bundle pricing shown. Your best
+  available discount is applied automatically at checkout." Either way the line
+  describes what the shopper already picked, which sells nothing.
+
+  Per the owner it now points UP: while there is a better tile below the
+  selected one, the line names it and adds the store-wide extra 10%; on the last
+  and best tile there is nothing left to climb to, so it just states the 10% off
+  at checkout.
+
+  The next tile's own heading is what gets quoted, rather than a table of
+  sentences kept here: pgLadder, pgDuo and pg-tile-copy each build their tiles
+  and can change what they offer, and a hardcoded line would go stale the moment
+  a rung was retitled, repriced or dropped. Quoting the tile keeps the note
+  true by construction on both pages.
+
+  pg-tile-copy still owns the element and rewrites it when the selection
+  changes; this restores the upgrade line straight after. The two do not fight:
+  pg-tile-copy compares against its own record of what IT last wrote, so a
+  foreign value in the node does not make it rewrite, and it only writes again
+  when the selected tier actually changes.
+
+  ------------------------------------------------------------- THE ADD-ON ROW
+
+  pg-theme-css gives the in-tile add-on row `white-space:nowrap` with an
+  ellipsis, so inside the Duo Pack "Add a spare case for each console" was cut
+  to "Add a spare case for each c…". The label is allowed to wrap now, and the
+  copy is shortened so it fits on one line at the sizes that matter:
+
+      Add a spare case for each console  ->  Add a spare case each
+      Add a frame per print              ->  Add a frame each
+
+  The text is rewritten in the DOM rather than in pg-theme-css's ADDONS map so
+  that 89KB file is left alone; the pass is idempotent and repeats, because the
+  row is re-rendered whenever the tiles are.
+{%- endcomment -%}
+<style>
+  /* nothing in the add-on row is truncated any more */
+  html body #pgx .pg-tadd-t{
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    line-height:1.3 !important;
+  }
+</style>
+<script>
+(function(){
+  if (window.pgOfferCopy) return; window.pgOfferCopy = 1;
+
+  var EXTRA = 'plus an extra <b>10% off</b> at checkout.';
+  var LAST  = 'An extra <b>10% off</b> is applied automatically at checkout.';
+
+  /* ---------------- the add-on row label ---------------- */
+
+  function addon(){
+    document.querySelectorAll('#pgx .pg-tadd-t').forEach(function(el){
+      var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+      var short = '';
+      if (/spare case/i.test(t)) short = /each|per /i.test(t) ? 'Add a spare case each' : 'Add a spare case';
+      else if (/frame/i.test(t)) short = /each|per /i.test(t) ? 'Add a frame each' : 'Add the matching frame';
+      if (short && t !== short) el.textContent = short;
+    });
+  }
+
+  /* ---------------- the deal note ---------------- */
+
+  /* the offer tiles a shopper can actually see, in the order they read */
+  function tiles(){
+    var buy = document.querySelector('#pgx .pgx-buy');
+    if (!buy) return [];
+    var out = [];
+    buy.querySelectorAll(':scope > .pgx-tile').forEach(function(t){
+      if (t.offsetWidth > 0 || t.offsetHeight > 0) out.push(t);   /* skip the hidden natives */
+    });
+    return out;
+  }
+
+  function titleOf(tile){
+    var h = tile.querySelector('.pgx-lad-t b, .pgx-duo-t b, .pgx-tile-name');
+    var t = (h ? h.textContent : '').replace(/\s+/g, ' ').trim();
+    return t.replace(/[<>&]/g, '');
+  }
+
+  function note(){
+    var p = document.querySelector('#pgx .pgx-deal-note');
+    if (!p) return;
+    var ts = tiles();
+    if (ts.length < 2) return;
+    var i = -1;
+    for (var k = 0; k < ts.length; k++){ if (ts[k].classList.contains('pgx-sel')) i = k; }
+    if (i < 0) return;
+
+    var html;
+    if (i >= ts.length - 1){
+      html = LAST;
+    } else {
+      var next = titleOf(ts[i + 1]);
+      if (!next) return;
+      html = 'Upgrade to <b>' + next + '</b> — ' + EXTRA;
+    }
+    /* compared against the node, and written with a literal em dash rather than
+       an entity, so the read-back matches what was written and this settles */
+    if (p.innerHTML !== html) p.innerHTML = html;
+  }
+
+  function pass(){ addon(); note(); }
+
+  function boot(){
+    pass();
+    /* selection is a class on the tile, so attributes are watched too */
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; pass(); }, 80);
+      }).observe(root, {childList: true, subtree: true, attributes: true, attributeFilter: ['class']});
+    }
+    /* a tap on a tile repaints the line immediately rather than on the next tick */
+    document.addEventListener('click', function(e){
+      if (e.target && e.target.closest && e.target.closest('#pgx .pgx-tile')) setTimeout(pass, 60);
+    }, true);
+    setInterval(pass, 900);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Offer Copy", "settings": [], "presets": [{"name": "PG Offer Copy"}]}
+{% endschema %}
