@@ -1,3 +1,81 @@
+# Why the upsell never changed: every rule was losing the specificity fight
+
+## The finding
+
+The owner said three times that the in-cart upsell was unchanged. They were
+right, and it was not a publishing problem — the rules were being applied and
+then overruled.
+
+Every upsell rule in `pg-cart-tune` was written `#cart .nc-rec-*` — **one id,
+one class**. `nc-cro` styles the same elements as `#cart .nc-recs-panel .nc-rec-*`
+— **one id, two classes** — and `nc-cro` loads last, in `footer-group`. It won on
+specificity *and* on source order, on exactly the properties that mattered:
+
+    #cart .nc-recs-panel .nc-rec-imgw{width:92px !important;height:92px !important}
+    #cart .nc-recs-panel .nc-rec-off {font-size:15px !important;padding:5px 12px !important}
+    #cart .nc-recs-panel .nc-rec-add {padding:9px 17px !important;font-size:13px !important}
+
+A 92px thumbnail **is** the row's height, and a 15px chip with 12px of side
+padding is what made "Save 38%" too wide to sit beside a price. Not one of the
+rules written to fix those was ever applied.
+
+The whole block is re-written at `#cart#cart#cart` — the same trick `nc-cartfix`
+already uses against `nc-cro` — so it outranks three classes and does not depend
+on which section loads last. Thumbnail 92 → 64px (54px under 400px, 60px to
+480px), chip 15 → 11.5px (10.5/11px on phones), ADD button 9×17/13px →
+7×12/11.5px, row padding and list gap trimmed with them.
+
+## Verified in Chromium, not asserted
+
+The storefront is unreachable from this environment (the network policy answers
+403 to `CONNECT www.thepocketera.com:443`), so the live page cannot be loaded
+here. What *can* be verified is the part that was actually wrong — the cascade.
+`nc-cro`'s and `pg-drawer`'s real `<style>` blocks were extracted from the theme
+and loaded in true section order (`pg-cart-tune` from header-group first,
+`nc-cro` from footer-group last) around a reconstructed `.nc-rec` row, and
+measured headless at four phone widths:
+
+    390px  oneLine:true  centres:[109]  thumb:54px  chip:10.5px  content 98/372px
+    393px  oneLine:true  centres:[109]  thumb:54px  chip:10.5px  content 98/375px
+    430px  oneLine:true  centres:[117]  thumb:60px  chip:11px    content 103/410px
+    440px  oneLine:true  centres:[117]  thumb:60px  chip:11px    content 103/420px
+
+One distinct vertical centre means the price, the struck price and the SAVE %
+share a line; `scrollWidth - clientWidth` was 0 at every width, so nothing
+overflows into the ADD button. The thumbnail and chip figures confirm the new
+selectors now win.
+
+The markup in that harness is a reconstruction, so this proves the cascade and
+the geometry, not the live page.
+
+## The FREE GIFT pill: agree with ftFix instead of fighting it
+
+`pg-drawer` builds the pill as `inline-flex` with `justify-content:center`, then
+`ftFix()` measures where the glyphs actually painted and corrects with an inline
+`text-indent` — inline `!important`, which no stylesheet can beat. The previous
+attempt here waited out `ftFix`'s schedule (400/1500/3500ms + `fonts.ready`) and
+overwrote it after four seconds, which leaves the pill wrong for the four seconds
+someone is looking at it.
+
+`ftFix` computes `lead = (glyphLeft - pillLeft) - 7` and only writes an indent
+when that is off by more than a pixel. Setting the pill to
+`justify-content:flex-start` with its 7px of left padding makes the glyphs start
+exactly 7px in — `lead` is 0, and `ftFix` writes `text-indent:0` itself. The two
+agree, so the correction applies immediately and neither re-triggers the other.
+Width is deliberately not touched: `ftFix` pins it in px from the glyph run every
+pass, and that is the one property they would alternate on.
+
+## The gift line's two figures
+
+A real `.nc-lsave` is not a guarantee of a struck price *inside* it: `nc-cro`
+builds the cell, and `pg-chips`' `setWas()` only rewrites a struck element it
+finds — it never creates one. So the gift line could carry a price cell with
+nothing above the `$0.00`, which is what the owner reported. Both figures are now
+guaranteed, in order (struck, charged, chip), for a borrowed cell as well as a
+built one, and each is only written when the element does not already hold a
+money value — so `pg-chips` stays the authority once it has run. The chip reads
+`SAVE 100%` per the owner's wording.
+
 # The upsell chip's wrap (my bug), the gift line's price cell, and four sizing fixes
 
 ## The SAVE % on the Game Boy upsell was wrapping — I caused it
