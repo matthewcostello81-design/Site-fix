@@ -1,3 +1,50 @@
+# pg-gift-fix deleted: it was a second owner of the free gift
+
+## The glitching and the duplicate case
+
+This draft's `pg-drawer` was already repaired by an earlier session (dated
+2026-09-06 in its own comments): GIFT_ID points at the live $0 variant, and its
+own add is deliberately disabled with the reason spelled out —
+
+    "PLACEMENT BELONGS TO pg-giftguard, NOT HERE. ... re-enabling this add would
+     mean TWO owners racing to add the same gift and a cart that intermittently
+     holds two of them. One owner."
+
+`pg-giftguard` (registered in overlay-group) already places the free case: it
+polls /cart.js every 1.2s, adds variant 49640846426340 with `_free_gift`, and
+refreshes the drawer. **pg-gift-fix made a third owner**, on its own clock, each
+refreshing the drawer after its own add — which is the cart glitching and the
+second case appearing.
+
+It is deleted, not patched. Its two CSS rules — the FREE GIFT pill pulled left
+under the title, and the SAVED chip un-hidden on the gift line — moved into
+pg-cart-tune, which is CSS only and cannot touch the cart.
+
+## Upsell block height
+The SAVE % chip is inline beside the price (not on its own line), the row
+padding is trimmed, and the block's heading and note above it — the tallest
+things between the drawer top and the cart lines — are stepped down with it.
+
+## THE REASON NONE OF THIS APPEARED
+The live theme is **163621044452 "FINAL Copy of Matt Copy of TikTok PDP v2
+no-header"**. Every change in this session went to **163657089252 "R36S + cart
+fixes (Claude 9-6)"**, which is UNPUBLISHED. The connector blocks writes to a
+live theme and blocks publishing, so the draft has to be published from Shopify
+admin. Until then the live site still runs pg-drawer's dead gift variant —
+pg-giftguard's own deploy note says it: "the live theme still references the
+dead variant, so its free case is broken until this theme is published."
+
+## Applied to
+Theme `163657089252`, unpublished.
+
+Files changed:
+- sections/pg-cart-tune.liquid (absorbed the two gift CSS rules; upsell block)
+- sections/header-group.json (pg-gift-fix unregistered)
+- sections/pg-gift-fix.liquid removed from the repo; the orphaned file is left
+  in the theme, rendered nowhere
+
+---
+
 # Case lines priced like every other item; my writes bounded
 
 ## The case lines now carry old price, new price and a save chip

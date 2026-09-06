@@ -1,5 +1,5 @@
 {%- comment -%}
-  PG Cart Tune: two small corrections to the drawer's bottom panel.
+  PG Cart Tune: the drawer's small corrections.
 
   NO "YOU SAVED (57%)" ROW. pg-cart-total renders the summary block as
   Subtotal / Extra 10% Off / You saved (n%), and the theme's own Total sits
@@ -28,10 +28,29 @@
   guessing one — anything not present simply matches nothing.
 
   A NOTE ON THE DRAWER TOP. nc-cartfix builds .nc-drawer-top with a 14px bottom
-  pad above the items; that pad is trimmed here, which is the one piece of the
-  reported white space that can be identified without seeing the screen. If the
-  gap is something else in that band (the logo block, or the theme's own hidden
-  header) this will not be it, and the rest is left alone rather than guessed at.
+  pad above the items; that pad is trimmed here, along with the upsell block's
+  heading and note, which together were the tallest thing above the cart lines.
+
+  THE FREE GIFT LINE. Two rules moved here when pg-gift-fix was deleted:
+
+    - the FREE GIFT pill is pulled to the left edge of its line, under the
+      product title. pg-drawer's ftFix() writes an inline text-indent and width
+      on it from a measurement taken before the webfont settles, and inline
+      !important cannot be beaten from a stylesheet — but with the pill's own
+      box restated here it lands correctly as soon as ftFix is not fighting it;
+    - the SAVED chip is un-hidden on that line. pg-drawer hides it on purpose
+      ("FREE GIFT already says it"); per the owner the gift line should read
+      like every other one, so it comes back. The struck $13.99 beside it comes
+      from the variant's compare-at price, set on the product.
+
+  WHY pg-gift-fix IS GONE. It added the free case itself. So does pg-giftguard,
+  which already owned that job — pg-drawer's own giftSync was disabled in favour
+  of it, with a comment saying exactly why: "re-enabling this add would mean TWO
+  owners racing to add the same gift and a cart that intermittently holds two of
+  them. One owner." pg-gift-fix made a third owner, on its own clock, each
+  refreshing the drawer after its own add. That is the cart glitching, and the
+  second case. Deleted, not patched — the gift needs one owner and it already
+  has one.
 {%- endcomment -%}
 <style>
   /* the saved-percent row in the drawer's total block */
@@ -71,8 +90,29 @@
   #cart .nc-rec-off{display:inline-block !important;vertical-align:middle !important}
   #cart .nc-rec-off{margin-left:8px !important;padding:2px 8px !important;line-height:1.4 !important}
 
-  /* the drawer's top block carries a 14px pad above the items */
+  /* the drawer's top block carries a 14px pad above the items, and the upsell
+     block's heading + note are the tallest thing above the cart itself */
   #cart .nc-drawer-top{padding-bottom:6px !important}
+  #cart .cart-upsell h3{font-size:14px !important;margin:0 0 2px !important}
+  #cart .nc-upsell-note{font-size:11px !important;padding:4px 10px !important;margin:2px 0 7px !important}
+  #cart .nc-recs,
+  #cart .nc-recs-panel{margin-top:2px !important}
+
+  /* the FREE GIFT pill sits at the left edge of its line, under the title */
+  #cart .pg-free-tag,
+  body.template-cart .pg-free-tag{
+    width:max-content !important;
+    text-indent:0 !important;
+    padding:6px 12px !important;
+    text-align:left !important;
+    justify-self:start !important;
+    align-self:start !important;
+    margin-left:0 !important;
+    margin-right:auto !important;
+  }
+  /* and the gift line keeps its SAVED chip, like every other discounted line */
+  #cart .l4ca > li:has(.pg-free-tag) .pg-save-chip,
+  body.template-cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:inline-block !important}
 
   /* --- the upsell row on the two phones that matter ---
      iPhone 13/14/16/17 report a 390-393px viewport, the Pro Max models 430-440.
