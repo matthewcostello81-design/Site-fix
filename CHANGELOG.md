@@ -1,3 +1,18 @@
+# VERIFIED chip: beside the name, left-aligned
+
+As a plain inline-block after the text the chip inherited the card's alignment,
+so on the narrow two-up review cards it dropped to its own line and centred
+under the name. `.pgx-card-name` is a left-aligned flex line now and the chip is
+a non-shrinking item next to it: on the name's baseline where there is room,
+tucked under it and still left-aligned where there is not.
+
+## Applied to
+Theme `163657089252`, unpublished.
+
+Files changed: sections/pg-verified.liquid
+
+---
+
 # SAVE % badge: same purple family as the tile border
 
 The badge read as a sticker dropped on the card: the add-to-cart buttons' bright

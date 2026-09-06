@@ -19,11 +19,27 @@
 
   Nothing else writes .pgx-card-name, so one pass plus an observer settles: the
   chip is added once per card and the pass then finds it already there.
+
+  IT SITS BESIDE THE NAME. As a plain inline-block after the text it inherited
+  the card's alignment, so on the narrow two-up cards it dropped to its own line
+  and centred under the name. The name row is a left-aligned flex line now, with
+  the chip a non-shrinking item next to it: it stays on the name's baseline where
+  there is room, and tucks in under the name still left-aligned where there is
+  not.
 {%- endcomment -%}
 <style>
+  /* the name and the chip on one left-aligned line */
+  #pgx .pgx-card-name{
+    display:flex !important;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:flex-start !important;
+    gap:8px;
+    text-align:left !important;
+  }
   #pgx .pgx-card-name .pg-vfy{
-    display:inline-flex;align-items:center;gap:4px;
-    margin-left:8px;padding:3px 8px;
+    display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;
+    margin-left:0;padding:3px 8px;
     border-radius:999px;
     background:rgba(60,190,120,.14);
     border:1px solid rgba(124,224,168,.45);
@@ -34,7 +50,8 @@
   }
   #pgx .pgx-card-name .pg-vfy:before{content:"\2713";font-size:10.5px;font-weight:900}
   @media (max-width:600px){
-    #pgx .pgx-card-name .pg-vfy{font-size:9px;padding:2px 6px;margin-left:6px;gap:3px}
+    #pgx .pgx-card-name{gap:6px}
+    #pgx .pgx-card-name .pg-vfy{font-size:9px;padding:2px 6px;gap:3px}
   }
 </style>
 <script>
