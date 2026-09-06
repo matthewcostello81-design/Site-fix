@@ -1,3 +1,80 @@
+# The upsell tile is pg-unlock, not nc-cro — and the gift cell now has one owner
+
+## What the screenshot showed
+
+The tile the owner has been pointing at all along — "Add a 2nd PocketBoy R36",
+`$64.99 / $48.74`, `SAVE 25%` on a line of its own, "Discount applied at
+checkout", with the "Add a spare case for each console" tickbox under it — is
+**not** one of `nc-cro`'s `.nc-rec` rows. It is built by `pg-unlock`, under
+entirely different class names:
+
+    <img width=54 height=54>
+    <div class="pg-unlock-t">
+      <b>Add a 2nd PocketBoy R36</b>
+      <span class="pg-unlock-px"><s>$64.99</s>$48.74<span class="pg-unlock-tag">SAVE 25%</span></span>
+      <small>Discount applied at checkout</small>
+    </div>
+    <button class="pg-unlock-add">Add</button>
+    <div class="pg-uacc">…</div>
+
+Several rounds of "fix the upsell" went into the wrong component. That is the
+whole reason it never changed.
+
+**Why SAVE % sat on its own line.** `pg-unlock` sets `.pg-unlock-px{display:block}`
+deliberately — a note in that file records that `nowrap` once made was + now +
+chip an unbreakable unit which overflowed the copy column and painted *under*
+the ADD button. As a block its three children are inline, so a narrow column
+simply drops the chip to the next line.
+
+It is a flex row with `flex-wrap:nowrap` now, which fixes the wrap without
+bringing back the overflow: `min-width:0` on the copy column and a chip allowed
+to shrink (`flex:0 1 auto`) mean the line can no longer push past its column.
+The ADD button gives back width it does not need on a phone, and the title takes
+one line, so the copy column has the room the flex row needs.
+
+**Specificity, again.** `pg-unlock`'s own small-phone block already uses *three*
+ids (`#cart#cart #pg-unlock-slot …`) because `pg-cart-timer` stamps the same row
+with two. Four ids here, so it wins at any load order against both.
+
+## The gift line's price corner, owned outright
+
+Two attempts failed for the same reason: they borrowed the theme's machinery.
+`pg-drawer`'s `pgDeals` returns early on any row linking to `free-gift`, so it
+never creates the chip or the struck price. `pg-chips` reaches the row but only
+*rewrites* elements it finds. And borrowing `.nc-lsave` meant depending on
+`nc-cro` to build the cell, `pg-chips` to fill it, and `pg-drawer`'s `:has()`
+rules to agree about it — three owners for one corner, and the struck price
+never appeared.
+
+The cell is now built here under classes nothing else writes or hides —
+`.pg-gift-cell` / `.pg-gift-was` / `.pg-gift-now` / `.pg-gift-off` — and the
+theme's own price node and any `.nc-lsave` on that line are hidden, so the corner
+can never show two. One owner, nothing to negotiate.
+
+## Measured, against the deployed CSS
+
+`pg-unlock`'s, `pg-drawer`'s and `nc-cro`'s real `<style>` blocks loaded in true
+section order around `pg-unlock`'s real markup, headless at three phone widths:
+
+    390px  upsell: 1 title line, not truncated, price one line, row 109px, overflow 0
+           gift:   $13.99 line-through visible, stacked y 284/301/324, all right-aligned to 261, theme price hidden
+    414px  upsell: same;  gift: right-aligned to 285
+    430px  upsell: row 115px;  gift: right-aligned to 301
+
+The storefront itself is unreachable from this environment — the network policy
+answers 403 to `CONNECT www.thepocketera.com:443` — so this proves the cascade
+and the geometry, not the live page.
+
+## Open
+
+The spare-case tickbox quantity. `pg-unlock`'s `accRow()` already computes
+`q = consoles in cart + consoles this offer adds − paid cases owned`, which is
+the rule the owner asked for, and it reads a cart fetched moments earlier. The
+screenshot shows `q = 2` on a cart holding one console and one paid spare case,
+where that formula gives 1 — so something in `o.totalQty` / `o.need` or the
+ownership scan is off. Not changed yet: it needs a read of `offers()` rather
+than a guess, and a wrong guess there is a cart bug, not a layout one.
+
 # Why the upsell never changed: every rule was losing the specificity fight
 
 ## The finding

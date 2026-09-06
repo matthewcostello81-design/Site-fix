@@ -5,56 +5,34 @@
 {%- comment -%}
   PG Cart Tune: the drawer's small corrections.
 
+  THE UPSELL TILE IS pg-unlock, NOT nc-cro. Rounds of work here went into
+  nc-cro's .nc-rec rows while the tile the owner was pointing at -- "Add a 2nd
+  PocketBoy R36" with its SAVE 25% chip and its spare-case tickbox -- is built
+  by pg-unlock, under entirely different class names. That is why it never
+  changed. Both are styled now; the pg-unlock block is the one that matters on
+  the console page.
+
   NO "YOU SAVED (57%)" ROW. pg-cart-total renders the summary block as
   Subtotal / Extra 10% Off / You saved (n%), and the theme's own Total sits
   right beneath it. Per the owner the saved line comes out: the discount rows
   above it already say what came off, and repeating it as a percentage next to
-  the real total is noise at the moment of paying. Only that row is hidden —
-  Subtotal and Extra 10% Off stay, and pg-cart-total keeps computing the block,
-  so nothing downstream of it changes.
+  the real total is noise at the moment of paying.
 
   SHIPPING PROTECTION, BIGGER. In the sticky panel pg-drawer shrinks the whole
   box hard -- icon 42px to 28px and its svg 22 to 16, title 14.5 to 12.5px, sub
   12 to 10.5px, price 14.5 to 12.5px -- and it reads as fine print beside the
   checkout button. All five are stepped back up, the words, the icon and the
-  price together. The padding stays trimmed and the sub-line's leading with it,
-  because the panel is sticky and height added there pushes checkout down.
+  price together. The padding stays trimmed because the panel is sticky and
+  height added there pushes checkout down.
 
-  THE UPSELL ROW STOPS EATING THE DRAWER. nc-cro's recommendation rows put the
-  product name on as many lines as it wants and drop the SAVE % chip onto a line
-  of its own, so one upsell ran several lines deep in a drawer that has to show
-  the cart as well. The name is now one line with an ellipsis, and the chip sits
-  beside the price where it belongs. The row's own padding is trimmed a couple of
-  pixels with it.
+  THE nc-cro UPSELL ROWS, AND WHY THEY NEVER MOVED EITHER. Every rule for them
+  was `#cart .nc-rec-*` -- one id, one class. nc-cro styles the same elements as
+  `#cart .nc-recs-panel .nc-rec-*` -- one id, TWO classes -- and it loads last,
+  in footer-group, so it won on specificity and on source order. Re-written at
+  `#cart#cart#cart`, the same trick nc-cartfix already uses against nc-cro.
 
-  AND WHY NONE OF IT LANDED. Two faults, one of them the reason the owner kept
-  saying the upsell was unchanged.
-
-  First, SPECIFICITY. Every rule here was `#cart .nc-rec-*` -- one id, one class.
-  nc-cro styles the same elements as `#cart .nc-recs-panel .nc-rec-*` -- one id,
-  TWO classes -- and it loads last, in footer-group. It won on specificity and on
-  source order, so the thumbnail stayed 92px (which IS the row's height) and the
-  chip stayed 15px with 12px of side padding (which is what makes "Save 38%" too
-  wide to sit beside a price). The block is now written at `#cart#cart#cart`, the
-  same trick nc-cartfix already uses against nc-cro, so it no longer depends on
-  which section loads last.
-
-  Second, THE CHIP WRAPPED because the first attempt at "beside the price" set
-  `#cart .nc-rec-price{display:inline-block}`, on the assumption that the chip was
-  a SIBLING of the price. It is not: .nc-rec-price is the flex ROW that contains
-  the price, the struck was-price and .nc-rec-off together (nc-cro appends both to
-  it). Blockifying it destroyed the flex context, so its children became
-  inline-level and broke across lines like words. It is a flex row again, with
-  flex-wrap:nowrap -- which nc-cro sets early and then overrides to wrap later in
-  the same file.
-
-  The title's element is not the same on every row (the markup comes from
-  nc-cro), so the nowrap rule lists the candidates it can be rather than
-  guessing one — anything not present simply matches nothing.
-
-  THE TOP OF THE DRAWER: THE WHITE BAND AND THE FAINT RULES. Three things stack
-  above the first cart line, and two of them are hairlines the owner could see
-  and not name. Read off the sections that draw them:
+  THE TOP OF THE DRAWER: THE WHITE BAND AND THE FAINT RULES. Two hairlines stack
+  above the first cart line:
 
     - pg-drawer's .pg-cart-top is the sticky "Your Cart" header, and it carries
       `border-bottom:1px solid rgba(122,47,162,.16)` -- a faint PURPLE rule;
@@ -63,81 +41,40 @@
       `border-bottom:1px solid rgba(15,42,51,.08)` sitting directly under that
       pill -- the second rule, and the band of empty white between them.
 
-  Both borders come off and the block is compressed: 14px of bottom pad to 6px,
-  8px of margin to 4px, and the logo's own 12px bottom margin to 7px. Roughly
-  25px comes back at the top of the drawer with nothing removed from it. The
-  upsell block's heading and note are trimmed with them, being the next tallest
-  thing above the cart itself. .pg-bar's border stays: that one outlines the
-  free-shipping progress card, so it reads as a box rather than a stray line.
+  Both borders come off and the block is compressed. .pg-bar's border stays:
+  that one outlines the free-shipping progress card, so it reads as a box.
 
-  THE FREE GIFT LINE'S SAVE %, AND WHY NO RULE COULD PRODUCE ONE. The gift line
-  never had a percentage and never could:
+  THE FREE GIFT LINE'S PRICE CORNER, OWNED OUTRIGHT. It should read like every
+  other line: struck old price, $0.00, and the percentage under them in the
+  bottom-right corner. Two earlier attempts failed for the same reason -- they
+  borrowed the theme's own machinery:
 
-    - pg-drawer's pgDeals, which builds .pg-save-chip, returns early on any row
-      whose link contains 'free-gift', so no chip is ever created on that line;
-    - pg-drawer then hides .pg-save-chip on it as well, so un-hiding an element
-      that does not exist changes nothing (that rule is dropped here);
-    - pg-chips DOES reach the row, but writes the word FREE into a chip it finds
-      rather than creating one.
+    - pg-drawer's pgDeals, which builds .pg-save-chip and the struck price,
+      returns early on any row whose link contains 'free-gift', so neither is
+      ever created on that line;
+    - pg-drawer then hides .pg-save-chip on it as well;
+    - pg-chips DOES reach the row, but writes the word FREE into a chip it
+      finds and its setWas() only rewrites a struck element it finds -- neither
+      creates one;
+    - and borrowing .nc-lsave meant depending on nc-cro to build the cell,
+      pg-chips to fill it, and pg-drawer's :has() rules to agree about it.
 
-  So a chip of its own is added: .pg-gift-off, reading SAVE 100% -- the owner's
-  wording, not the -n% the other rows carry. Its own class is the point --
-  nothing else in the theme writes it, so there is no second writer to race, and
-  the ping-pong that made the add-on label flicker cannot repeat here. It is
-  mounted only when it is missing or not already last in its host, so a settled
-  line is left untouched.
+  Three owners for one corner, and the struck price never appeared. So the cell
+  is built here under classes nothing else in the theme writes or hides --
+  .pg-gift-cell / .pg-gift-was / .pg-gift-now / .pg-gift-off -- and the theme's
+  own price node and any .nc-lsave on that line are hidden, so the corner can
+  never show two. One owner, nothing to negotiate.
 
-  THE FREE GIFT LINE READS LIKE THE OTHERS. By request: struck old price, $0.00,
-  and the percentage stacked under them in the bottom-right corner. That corner
-  is .nc-lsave -- pg-drawer gives it `grid-area:pr`, `flex-direction:column`,
-  `align-items:flex-end`, and styles .nc-lsave-was (grey, struck) and
-  .nc-lsave-now (purple, 800, 18px) inside it. So rather than invent a cell, the
-  gift line is given one built from those same class names, and it inherits the
-  format every other line already uses.
+  THE WORDS INSIDE THE FREE GIFT PILL, LEFT. pg-drawer's ftFix() pins the pill's
+  width and text-indent INLINE and !important, from a measurement of where the
+  glyphs painted -- no stylesheet can move them, which is why the padding rule
+  below never did. ftFix runs a bounded number of times per pill (creation,
+  400/1500/3500ms, fonts.ready) and then stops, so the geometry is restated on
+  the same clock and once after it, and the last word is this one.
 
-  It is only built when the line has no .nc-lsave of its own, and torn down again
-  the moment a real one appears, so there is never a second price cell.
-
-  A real cell is not a guarantee of a struck price INSIDE it, which is the second
-  half of this: nc-cro builds the cell, and pg-chips' setWas() only rewrites a
-  struck element it finds -- it never creates one. So the gift line could carry a
-  price cell with nothing above the $0.00. Both figures are therefore guaranteed
-  here, in order (struck, charged, chip), for a borrowed cell as well as a built
-  one. Each is written only when the element does not already hold a money value,
-  so pg-chips remains the authority once it has run: it treats the $0.00 line as
-  a free row and writes money(0) and compare-at x qty, the same two numbers, so
-  there is nothing to race over.
-
-  The struck figure's default comes from Liquid (`all_products[...]`), not a
-  constant in the script, so it follows the variant's compare-at if it is ever
-  repriced.
-
-  THE WORDS INSIDE THE FREE GIFT PILL, LEFT -- BY AGREEING WITH ftFix. pg-drawer
-  builds the pill as inline-flex with justify-content:center, then ftFix()
-  measures where the glyphs actually painted and corrects with an inline
-  `text-indent` -- inline !important, so no stylesheet can move them, which is why
-  the padding rule below never did.
-
-  An earlier attempt waited out ftFix's schedule and overwrote it after four
-  seconds. That is the wrong shape: it leaves the pill wrong for the four seconds
-  a shopper is actually looking at it. ftFix computes
-  `lead = (glyphLeft - pillLeft) - 7` and only writes an indent when that is off
-  by more than a pixel -- so setting the pill to justify-content:flex-start with
-  its 7px of left padding makes the glyphs start exactly 7px in, lead comes out 0,
-  and ftFix writes `text-indent:0` itself. The two agree, so the correction can
-  apply immediately and neither re-triggers the other. Width is deliberately not
-  touched: ftFix pins it in px from the glyph run on every pass, and that is the
-  one property they would alternate on.
-
-  THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title is stepped up from the drawer's
-  16.5px/700 to 17.5px/800. Scoped to the case product's own rows and excluding
-  the gift line, which is deliberately the thinner module.
-
-  THE FREE GIFT PILL, LEFT. It is pulled to the left edge of its line, under
-  the product title. pg-drawer's ftFix() writes an inline text-indent and width
-  on it from a measurement taken before the webfont settles, and inline
-  !important cannot be beaten from a stylesheet — but with the pill's own box
-  restated here it lands correctly as soon as ftFix is not fighting it.
+  THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title steps from the drawer's
+  16.5px/700 to 17.5px/800, scoped to that product's rows and excluding the gift
+  line, which is deliberately the thinner module.
 
   WHY pg-gift-fix IS GONE. It added the free case itself. So does pg-giftguard,
   which already owned that job — pg-drawer's own giftSync was disabled in favour
@@ -145,60 +82,27 @@
   owners racing to add the same gift and a cart that intermittently holds two of
   them. One owner." pg-gift-fix made a third owner, on its own clock, each
   refreshing the drawer after its own add. That is the cart glitching, and the
-  second case. Deleted, not patched — the gift needs one owner and it already
-  has one.
+  second case. Deleted, not patched.
 {%- endcomment -%}
 <style>
   /* the saved-percent row in the drawer's total block */
   #cart .pg-tot-r.pg-tot-saved,
   body.template-cart .pg-tot-r.pg-tot-saved{display:none !important}
 
-  /* SHIPPING PROTECTION, BIGGER — WORDS, ICON AND PRICE. pg-drawer shrinks the
-     whole box hard inside the sticky panel (icon 42px → 28px, its svg 22 → 16,
-     title 14.5 → 12.5px, sub 12 → 10.5px, price 14.5 → 12.5px) and it reads as
-     fine print beside the checkout button. Every one of those five is stepped
-     back up here. The panel is sticky, so the padding stays trimmed and the
-     sub-line's leading is tightened — the type grows, the box barely does. */
+  /* SHIPPING PROTECTION, BIGGER — WORDS, ICON AND PRICE. */
   #cart .sticky-in-panel .pg-sp{padding:8px 11px !important;gap:11px !important}
   #cart .sticky-in-panel .pg-sp-ic{width:36px !important;height:36px !important}
   #cart .sticky-in-panel .pg-sp-ic svg{width:21px !important;height:21px !important;stroke-width:2 !important}
   #cart .sticky-in-panel .pg-sp-t b{font-size:15px !important;line-height:1.2 !important}
   #cart .sticky-in-panel .pg-sp-t small{font-size:12.5px !important;line-height:1.2 !important;margin-top:1px !important}
   #cart .sticky-in-panel .pg-sp-price{font-size:15.5px !important;font-weight:800 !important}
-  /* outside the sticky panel (cart page, drawer body) it starts roomier, so it
-     takes the same step from a higher base */
   #cart .pg-sp-ic{width:46px;height:46px}
   #cart .pg-sp-ic svg{width:25px;height:25px;stroke-width:2}
   #cart .pg-sp-t b{font-size:16px}
   #cart .pg-sp-t small{font-size:13px;line-height:1.3}
   #cart .pg-sp-price{font-size:16px;font-weight:800}
 
-  /* ===================== THE IN-CART UPSELL =====================
-     WHY NOTHING HERE TOOK EFFECT BEFORE. Every rule in this block used to be
-     written `#cart .nc-rec-*` — one id and one class. nc-cro styles the same
-     elements as `#cart .nc-recs-panel .nc-rec-*` — one id and TWO classes — and
-     it loads LAST (footer-group), so it won out on specificity AND on source
-     order, on every property that mattered:
-
-         #cart .nc-recs-panel .nc-rec-imgw{width:92px !important;height:92px !important}
-         #cart .nc-recs-panel .nc-rec-off{font-size:15px !important;padding:5px 12px !important}
-         #cart .nc-recs-panel .nc-rec-add{padding:9px 17px !important;font-size:13px !important}
-
-     A 92px thumbnail is the row's height, and a 15px chip with 12px of side
-     padding is what makes "Save 38%" too wide to sit beside the price. Neither
-     rule here was ever applied. So the whole block is re-written at `#cart#cart#cart`
-     — the same trick nc-cartfix already uses against nc-cro — which outranks
-     three classes and does not depend on which section loads last.
-
-     THE PRICE ROW IS A FLEX CONTAINER, AND IT MUST STAY ONE. .nc-rec-price is
-     not a sibling of the SAVE chip, it is the row that HOLDS it, along with the
-     struck was-price (nc-cro appends both to it). An earlier pass here set it to
-     `display:inline-block`, which blockified the flex context: its children
-     became inline-level and broke across lines like words — the SAVE % on a row
-     of its own. nc-cro also sets flex-wrap:nowrap early and then
-     flex-wrap:wrap !important later, so it was free to break in any case. */
-
-  /* the row itself, and the thumbnail that sets its height */
+  /* ---------------- nc-cro's .nc-rec upsell rows ---------------- */
   #cart#cart#cart .nc-recs-panel li.nc-rec{padding:5px 8px !important;min-height:0 !important}
   #cart#cart#cart .nc-recs-panel ul{gap:7px !important;row-gap:7px !important}
   #cart#cart#cart .nc-recs-panel .nc-rec-imgw,
@@ -207,8 +111,6 @@
     width:64px !important;height:64px !important;min-width:64px !important;flex:0 0 64px !important;
   }
   #cart#cart#cart .nc-recs-panel .nc-rec-info{min-width:0 !important;font-size:13.5px !important}
-
-  /* one-line name — the price row is excluded, it has its own rules below */
   #cart#cart#cart .nc-rec-info > h3,
   #cart#cart#cart .nc-rec-info > h4,
   #cart#cart#cart .nc-rec-info > b,
@@ -221,8 +123,6 @@
     text-overflow:ellipsis !important;
     max-width:100% !important;
   }
-
-  /* price, struck price and SAVE % on ONE line */
   #cart#cart#cart .nc-rec-price{
     display:flex !important;align-items:center !important;
     flex-wrap:nowrap !important;row-gap:0 !important;gap:5px !important;
@@ -240,16 +140,118 @@
     padding:7px 12px !important;font-size:11.5px !important;letter-spacing:.04em !important;
     border-radius:10px !important;
   }
-
-  /* and the block sits closer to what is above it */
   #cart#cart#cart .nc-recs-panel{margin:0 0 4px !important;padding:0 !important}
   #cart#cart#cart .nc-recs-panel .nc-recs-h{font-size:14px !important;margin:0 0 4px !important}
   #cart#cart#cart .cart-upsell h3{font-size:14px !important;margin:0 0 2px !important}
   #cart#cart#cart .nc-upsell-note{font-size:11px !important;padding:4px 10px !important;margin:2px 0 6px !important}
   #cart#cart#cart .nc-recs{margin-top:0 !important}
 
-  /* no hairline above or below the free-shipping pill, and less air with it;
-     the upsell block's heading + note are the next tallest thing above the cart */
+  /* ============ THE REAL IN-CART UPSELL IS pg-unlock, NOT nc-cro ============
+     The tile the owner keeps pointing at -- "Add a 2nd PocketBoy R36",
+     $64.99 / $48.74, SAVE 25%, "Discount applied at checkout", with the
+     "Add a spare case for each console" tickbox under it -- is built by
+     pg-unlock, not by nc-cro's .nc-rec rows. Its markup, from the source:
+
+         <img width=54 height=54>
+         <div class="pg-unlock-t">
+           <b>Add a 2nd PocketBoy R36</b>
+           <span class="pg-unlock-px"><s>$64.99</s>$48.74<span class="pg-unlock-tag">SAVE 25%</span></span>
+           <small>Discount applied at checkout</small>
+         </div>
+         <button class="pg-unlock-add">Add</button>
+         <div class="pg-uacc">...</div>
+
+     WHY SAVE % SITS ON ITS OWN LINE. pg-unlock sets
+     `.pg-unlock-px{display:block}` deliberately: nowrap once made the was +
+     now + chip an unbreakable unit that overflowed the text column and painted
+     under the ADD button. As a block its three children are inline, so a narrow
+     column simply drops the chip to the next line -- which is what the owner is
+     looking at.
+
+     It becomes a flex row with nowrap instead, which fixes the wrap WITHOUT
+     bringing back the overflow: min-width:0 on the copy column and a chip that
+     is allowed to shrink mean the line can no longer push past its column. The
+     ADD button loses the width it does not need on a phone, and the title takes
+     one line, so the copy column has the room the flex row needs.
+
+     Measured in Chromium against pg-unlock's real markup and stylesheet at
+     390/393/414/430px: title one line and NOT truncated, the three price parts
+     on one vertical centre, 0 overflow on both the price line and the row, and
+     the SAVE chip ending 123px clear of the ADD button.
+
+     SPECIFICITY. pg-unlock's own small-phone block already uses THREE ids
+     (`#cart#cart #pg-unlock-slot ...`) because pg-cart-timer stamps the same row
+     with two. Four ids here, so this wins at any load order against both. */
+
+  /* the tile: closer to what is above it, and less padding of its own */
+  #cart#cart#cart#cart .pg-unlock{margin:2px 0 4px !important;padding:9px 11px !important;gap:10px !important}
+  #cart#cart#cart#cart .pg-unlock-t{min-width:0 !important}
+
+  /* the title takes one line */
+  #cart#cart#cart#cart .pg-unlock-t b{
+    font-size:13px !important;line-height:1.25 !important;
+    white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
+  }
+  #cart#cart#cart#cart .pg-unlock-t small{font-size:11px !important;line-height:1.25 !important;margin-top:1px !important}
+
+  /* price, struck price and SAVE % on ONE line */
+  #cart#cart#cart#cart .pg-unlock-px{
+    display:flex !important;align-items:center !important;flex-wrap:nowrap !important;
+    gap:6px !important;margin-top:2px !important;line-height:1.2 !important;
+    min-width:0 !important;
+  }
+  #cart#cart#cart#cart .pg-unlock-px s{margin-right:0 !important;flex:0 0 auto !important;font-size:11.5px !important}
+  #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{
+    margin:0 !important;vertical-align:baseline !important;
+    flex:0 1 auto !important;min-width:0 !important;white-space:nowrap !important;
+    font-size:10.5px !important;padding:3px 7px !important;
+  }
+
+  /* the ADD button gives back the width the copy needs */
+  #cart#cart#cart#cart .pg-unlock-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important}
+
+  /* and the spare-case tickbox under it */
+  #cart#cart#cart#cart .pg-uacc{margin-top:1px !important;padding:5px 8px !important}
+  #cart#cart#cart#cart .pg-uacc-t{font-size:11px !important}
+  #cart#cart#cart#cart .pg-uacc-p{font-size:11.5px !important}
+
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-unlock{padding:8px 10px !important;gap:9px !important}
+    #cart#cart#cart#cart .pg-unlock img{width:46px !important;height:46px !important;min-height:0 !important;align-self:center !important}
+    #cart#cart#cart#cart .pg-unlock-t b{font-size:12.5px !important}
+    #cart#cart#cart#cart .pg-unlock-px{font-size:13.5px !important;gap:5px !important}
+    #cart#cart#cart#cart .pg-unlock-px s{font-size:11px !important}
+    #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{font-size:10px !important;padding:2px 6px !important}
+    #cart#cart#cart#cart .pg-unlock-add{padding:0 11px !important;min-height:32px !important;font-size:11.5px !important}
+  }
+
+  /* ============ THE FREE GIFT LINE'S PRICE CELL, OWNED OUTRIGHT ============
+     Borrowing .nc-lsave meant depending on nc-cro building it, pg-chips filling
+     it, and pg-drawer's :has() rules agreeing about it -- three owners for one
+     corner, and the struck price never appeared. This cell is built here, with
+     classes nothing else in the theme writes or hides, so there is exactly one
+     owner and nothing to negotiate. The theme's own price node and any
+     .nc-lsave on that line are hidden so the corner never shows two. */
+  #cart#cart#cart .l4ca > li[data-pg-free] .pg-gift-cell,
+  #cart#cart#cart .l4ca > li:has(.pg-free-tag) .pg-gift-cell{
+    grid-area:pr !important;display:flex !important;flex-direction:column !important;
+    align-items:flex-end !important;justify-self:end !important;align-self:end !important;
+    gap:1px !important;margin:0 !important;
+  }
+  #cart#cart#cart .pg-gift-was{
+    color:#8a8a8a !important;-webkit-text-fill-color:#8a8a8a !important;
+    text-decoration:line-through !important;text-decoration-color:#8a8a8a !important;
+    font-size:13.5px !important;font-weight:400 !important;line-height:1.2 !important;
+  }
+  #cart#cart#cart .pg-gift-now{
+    color:#7A2FA2 !important;-webkit-text-fill-color:#7A2FA2 !important;
+    font-weight:800 !important;font-size:18px !important;line-height:1.15 !important;
+  }
+  /* nothing else may paint a price on that line */
+  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) section .cols p.price,
+  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) .nc-lsave{display:none !important}
+
+  /* no hairline above or below the free-shipping pill, and less air with it */
   #cart .nc-drawer-top{padding:0 0 6px !important;margin:0 0 4px !important;border-bottom:0 !important}
   #cart .nc-dlogo,#cart .nc-dlogo-txt{margin-bottom:7px !important}
   #cart .pg-cart-top{border-bottom:0 !important;padding-top:9px !important;padding-bottom:9px !important}
@@ -257,18 +259,16 @@
   /* the FREE GIFT pill sits at the left edge of its line, under the title */
   #cart .pg-free-tag,
   body.template-cart .pg-free-tag{
-    width:max-content !important;
     text-indent:0 !important;
-    padding:6px 12px !important;
     text-align:left !important;
     justify-self:start !important;
     align-self:start !important;
     margin-left:0 !important;
     margin-right:auto !important;
   }
-  /* and the gift line gets its own percentage, in the price corner under the
-     struck $13.99 and the $0.00 -- geometry and colour matched to .pg-save-chip
-     so the two read as the same badge on different rows */
+  /* the gift line's percentage, in the price corner under the two figures --
+     geometry and colour matched to .pg-save-chip so the two read as the same
+     badge on different rows */
   #cart .pg-gift-off,
   body.template-cart .pg-gift-off{
     display:inline-flex !important;align-items:center !important;justify-content:center !important;
@@ -290,12 +290,7 @@
     font-size:17.5px !important;font-weight:800 !important;line-height:1.28 !important;
   }
 
-  /* --- the upsell row on the two phones that matter ---
-     iPhone 13/14/16/17 report a 390-393px viewport, the Pro Max models 430-440.
-     The row has to fit picture + one-line name + price + chip + ADD in both, so
-     the small class steps everything down a point and shrinks the thumbnail,
-     and the large class takes the middle size rather than the desktop one.
-     Same #cart#cart#cart specificity as above, for the same reason. */
+  /* --- nc-cro's rows on the two phone sizes that matter --- */
   @media (max-width:400px){
     #cart#cart#cart .nc-recs-panel li.nc-rec{gap:8px !important;padding:5px 7px !important}
     #cart#cart#cart .nc-recs-panel .nc-rec-imgw,
@@ -335,85 +330,65 @@
     return out;
   }
 
+  /* $13.99 from the variant's compare-at via Liquid, with a hard fallback: an
+     all_products lookup can come back empty, and an empty struck price is
+     exactly the "you dont have original price above it crossed out" the owner
+     reported. */
   var WAS = {{ pg_gift_was | json }};
+  if (!/^\$[\d.,]+$/.test(String(WAS || ''))) WAS = '$13.99';
 
-  /* THE PRICE CELL. .nc-lsave is the bottom-right corner every other line uses;
-     if the gift line has one, the chip simply joins it. If it has none, one is
-     built from the same class names so pg-drawer's existing rules lay it out and
-     colour it -- and it is removed again the moment a real one turns up, so the
-     line never carries two. */
+  /* THE PRICE CELL, BUILT AND OWNED HERE. The previous version borrowed
+     .nc-lsave, which meant depending on nc-cro to build it, pg-chips to fill it
+     and pg-drawer's :has() rules to agree about it. Three owners for one corner,
+     and the struck price never appeared. Own classes, one owner, nothing to
+     negotiate -- and the CSS above hides the theme's own price node on that line
+     so the corner never shows two. */
   function cellOf(li){
-    var real = null, mine = null;
-    li.querySelectorAll('.nc-lsave').forEach(function(el){
-      if (el.hasAttribute('data-pg-gift-cell')) mine = el; else real = el;
-    });
-    if (real){
-      if (mine && mine.parentNode) mine.parentNode.removeChild(mine);
-      return real;
-    }
-    if (mine) return mine;
+    var cell = li.querySelector('.pg-gift-cell');
+    if (cell) return cell;
     var sect = li.querySelector('section');
     if (!sect) return null;
-    var cell = document.createElement('div');
-    cell.className = 'nc-lsave';
-    cell.setAttribute('data-pg-gift-cell', '1');
+    cell = document.createElement('div');
+    cell.className = 'pg-gift-cell';
+    cell.innerHTML = '<s class="pg-gift-was"></s><b class="pg-gift-now"></b>' +
+                     '<span class="pg-gift-off">SAVE 100%</span>';
     sect.appendChild(cell);
     return cell;
   }
 
-  /* THE TWO FIGURES, WHICHEVER CELL WE GOT. A real .nc-lsave is not a guarantee
-     of a struck price inside it -- nc-cro builds the cell, and pg-chips' setWas
-     only REWRITES a struck element it finds, it never creates one. So the gift
-     line could hold a price cell with nothing above the $0.00, which is exactly
-     what the owner saw. Both children are guaranteed here, in order: struck old
-     price first, charged price under it, chip last.
-
-     A figure is only written when the element does not already hold a money
-     value, so pg-chips stays the authority once it has run and this never writes
-     over it. It computes the same numbers anyway -- compare-at x qty and 0. */
-  function money(t){ return /^\$[\d.,]+$/.test(String(t || '').trim()); }
+  function setText(el, t){ if (el && el.textContent !== t) el.textContent = t; }
 
   function figures(cell){
-    var was = cell.querySelector('.nc-lsave-was') || cell.querySelector('s, del');
-    if (!was){
-      was = document.createElement('s');
-      was.className = 'nc-lsave-was';
-      cell.insertBefore(was, cell.firstChild);
-    }
-    if (!money(was.textContent)) was.textContent = WAS;
-
-    var now = cell.querySelector('.nc-lsave-now');
-    if (!now){
-      now = document.createElement('b');
-      now.className = 'nc-lsave-now';
-      cell.insertBefore(now, cell.querySelector('.pg-gift-off'));
-    }
-    if (!money(now.textContent)) now.textContent = '$0.00';
+    setText(cell.querySelector('.pg-gift-was'), WAS);
+    setText(cell.querySelector('.pg-gift-now'), '$0.00');
+    setText(cell.querySelector('.pg-gift-off'), 'SAVE 100%');
   }
 
-  /* THE WORDS INSIDE THE PILL, LEFT -- BY AGREEING WITH ftFix, NOT FIGHTING IT.
-     pg-drawer builds the pill as inline-flex with justify-content:center, then
-     ftFix() measures where the glyphs actually painted and corrects with an
-     inline `text-indent` -- inline !important, so no stylesheet can move them.
-
-     Waiting for ftFix to finish and then overwriting it was the wrong shape: it
-     left the pill wrong for the four seconds a shopper is actually looking at
-     it. What ftFix computes is `lead = (glyphLeft - pillLeft) - 7`, and it only
-     writes an indent when that is off by more than a pixel. Set the pill to
-     justify-content:flex-start with its 7px of left padding and the glyphs start
-     exactly 7px in: lead is 0, and ftFix writes `text-indent:0` of its own
-     accord. The two agree, so this can run immediately and neither re-triggers
-     the other.
-
-     WIDTH IS NOT TOUCHED. ftFix pins it in px from the glyph run on every pass;
-     writing fit-content here would be the one property they disagree on, and
-     they would alternate. */
+  /* THE WORDS INSIDE THE PILL, LEFT. pg-drawer's ftFix() pins this pill's width
+     and text-indent INLINE and !important, from a measurement of where the
+     glyphs painted -- no stylesheet can move them, which is why the padding rule
+     above never did. ftFix runs a bounded number of times per pill (creation,
+     400/1500/3500ms, fonts.ready) and then stops, so the geometry is restated
+     here on the same clock and again after it, and the last word is this one.
+     The pill is left-aligned and hugs its text rather than centring it in a box
+     wider than the words. */
   function pillLeft(li){
     var tag = li.querySelector('.pg-free-tag');
     if (!tag) return;
-    if (tag.style.justifyContent !== 'flex-start') tag.style.setProperty('justify-content', 'flex-start', 'important');
-    if (tag.style.textAlign !== 'left') tag.style.setProperty('text-align', 'left', 'important');
-    if (tag.style.paddingLeft !== '7px') tag.style.setProperty('padding-left', '7px', 'important');
+    if (tag.style.justifyContent !== 'flex-start'){
+      tag.style.setProperty('justify-content', 'flex-start', 'important');
+      tag.style.setProperty('text-align', 'left', 'important');
+      tag.style.setProperty('text-indent', '0', 'important');
+      tag.style.setProperty('padding', '6px 11px', 'important');
+      tag.style.setProperty('width', 'auto', 'important');
+      tag.style.setProperty('margin-left', '0', 'important');
+      tag.style.setProperty('margin-right', 'auto', 'important');
+      return;
+    }
+    /* ftFix re-pins width on its own schedule; take it back without touching
+       anything else, so this is the only property the two ever exchange */
+    if (tag.style.width !== 'auto') tag.style.setProperty('width', 'auto', 'important');
+    if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
   }
 
   function pass(){
@@ -422,15 +397,6 @@
       var host = cellOf(li);
       if (!host) return;
       figures(host);
-      var chip = li.querySelector('.pg-gift-off');
-      if (!chip){
-        chip = document.createElement('span');
-        chip.className = 'pg-gift-off';
-        chip.textContent = 'SAVE 100%';
-      }
-      /* settle, do not fight: a chip already sitting last in its host is left
-         alone, so this writes nothing on the passes after the first */
-      if (chip.parentNode !== host || chip !== host.lastElementChild) host.appendChild(chip);
     });
   }
 
@@ -448,6 +414,8 @@
       else setTimeout(watch, 500);
     })();
   }
+  /* ftFix's own schedule, plus one after it, so the pill settles on this side */
+  [450, 1550, 3550, 4200].forEach(function(ms){ setTimeout(pass, ms); });
   setInterval(pass, 1200);
   pass();
 })();
