@@ -1,3 +1,61 @@
+# Duo Pack spare-case upsell: same row as every other upsell on a phone
+
+## Problem
+With the DUO PACK in the cart the spare-case upsell was bulky and cut off on a
+390-402px phone — the title wrapped to two lines and the ADD button painted over
+the SAVE chip. With a single console the same pitch looked right.
+
+## Cause
+They are two different components, and only one had been fixed.
+
+With ONE console the offer is pg-unlock's ladder row (rung 1, "Add a 2nd R36S")
+— the row whose phone geometry was measured and corrected. With the DUO PACK
+that rung is already taken (1 paid + 1 discounted = the 2 in the cart), so
+pg-unlock renders nothing for the console, and pg-frame-add's `offer()` — which
+shows its row only when no `.pg-unlock[data-pg-unlock*="handheld-game-console"]`
+exists — puts up `.pg-frameoffer` instead. Same pitch, same slot, different
+stylesheet, carrying both faults pg-unlock had already had removed:
+
+1. `.pg-frameoffer-px` was `white-space:nowrap`, making "was + now + SAVE chip"
+   one unbreakable unit. On a 390px phone that is wider than the copy column, so
+   it overflowed and painted under the ADD button. pg-unlock's note on its own
+   `-px` rule describes the identical failure.
+2. No small-phone geometry at all. Its only media block was `max-width:480px`,
+   and the one thing it sized — `.pg-frameoffer-p` — is a class the markup does
+   not contain (the price element is `-px`), so the block only recoloured the
+   subtitle. Meanwhile the row sits in `#pg-unlock-slot`, where pg-cart-timer
+   stamps geometry with two-ID `!important` rules and nothing here answered them.
+
+## Fix
+`sections/pg-frame-add.liquid` — the row now carries pg-unlock's geometry:
+
+- The price line wraps: nowrap moved onto the struck price alone, the chip is an
+  inline-block, so a narrow column drops the chip rather than running it under
+  the button. Row gets `flex-wrap:wrap`.
+- Card, thumbnail, type and button restated from `.pg-unlock`: 11px/13px padding,
+  14px radius, same gradient, border and shadow, 54px thumb, 13.5px title,
+  12.5px sub, and ONE button definition (`flex:0 0 auto`, `min-height:34px`,
+  `padding:0 16px`) replacing the two that disagreed about padding and size.
+- `max-width:600px`: gap 11, 48px thumb, 14px title, 11.5px sub — pg-unlock's
+  mobile-parity block.
+- `max-width:414px` (iPhone 13/16/17 land at 390-402px): 46px thumb stretched to
+  the row height, 30px button, chip shrunk to 10.5px. Written with `#cart#cart`
+  — three ids — so it beats pg-cart-timer's two-ID `!important` rules whatever
+  the load order, the same answer pg-unlock's own 414px block gives.
+
+Measured in Chromium at 390/393/402/414/430px, both rows side by side with their
+real CSS: row heights 82-85px and within 1px of each other, title on one line, no
+overlap between the price line and the button, no overflow past the card.
+
+## Applied to
+Theme "Duo Pack fix (Claude 9-7)" (unpublished, 163721380068),
+`sections/pg-frame-add.liquid`, verified byte-identical
+(md5 f11ae73eae854afe07393ae10978395a).
+
+Files changed: sections/pg-frame-add.liquid
+
+---
+
 # Cart: stop the free case looping and billing spare cases
 
 ## Problem
