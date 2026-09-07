@@ -1,3 +1,73 @@
+# Cart: stop the free case looping and billing spare cases
+
+## Problem
+A few seconds after the Duo Pack went in, the cart drawer started rebuilding
+itself repeatedly, the case line's text and price jumped up and down, and more
+cases kept arriving — chargeable $13.99 "Spare case" units the shopper never
+chose.
+
+## Cause
+`pg-giftguard.ensureGift()` asked "does any line carry the `_free_gift`
+property?" and added a gift when the answer was no. That is not the same
+question as "is the gift already in the cart", and it was answered from a
+`/cart.js` read that can be stale: pg-drawer, pg-cart-total, pg-cart-variants
+(every 400ms), pg-chips and pg-giftguard all poll that endpoint, and Shopify
+throttles it under that load — pg-chips already documents responses coming
+back unparseable for exactly this reason.
+
+One stale read and giftguard added a SECOND gift. The add merged into the same
+line, so the gift line's quantity became 2. Two other sections watch for
+precisely that and both answer it the same way:
+
+    pg-drawer      giftSync()  : gift.quantity > 1 -> set it to 1, then ADD
+                                 the surplus as 49640879063268 ($13.99)
+    pg-case-mobile normalise() : the same rule, on its own 2s beat
+
+So a stale read became a billable spare case; each write refreshed the drawer;
+each refresh put more load on the same endpoint, and the next stale read did it
+again. That loop is both the extra cases and the churn — the line text and
+price move because four sections re-badge and re-price the case rows on
+250ms/300ms/800ms beats while the drawer is being rebuilt underneath them.
+
+The 1.2s poll added to pg-r36s-mobile in the previous commit was making the
+throttling worse, on the same page the drawer opens over.
+
+## Fix
+`sections/pg-giftguard.liquid` — three changes, all in the one file, so the two
+downstream sections need no edit:
+
+1. The gift is detected BY VARIANT (49640846426340), not by a property. A
+   question that cannot go stale into a false "no".
+2. An add is followed by an 8s cooldown AND re-checked against a fresh read
+   taken at the moment of the decision, so a slow endpoint can no longer be
+   answered with a second gift.
+3. The gift line is capped at one unit here, by REMOVAL. pg-drawer and
+   pg-case-mobile cap it too, but by moving the surplus onto the paid variant —
+   i.e. by charging for it. Removing it first leaves their branch nothing to
+   sell. A unit that arrived by accident is not an upsell.
+
+Its cart read also drops from 1.2s to 2s. The badge pass stays at 250ms: it is
+DOM-only and never touches the network.
+
+`sections/pg-r36s-mobile.liquid` — the duo baseline poll drops from 1.2s to 5s,
+pauses while the cart drawer is open or the tab is hidden, and refreshes
+immediately when the drawer closes so an edit made in there is still picked up
+before the next tap. The post-add reconcile drops from five checks to three
+(1200/2500/4000ms), which still clears every late writer in the theme.
+
+## Applied to
+Theme "Duo Pack fix (Claude 9-7)" (unpublished, 163721380068), both files
+uploaded and verified byte-identical
+(pg-giftguard 5c970a1a3cf4e1809ee0b2808e2aecb7,
+pg-r36s-mobile ee133a9869aee280e1e37db3b284d79e).
+
+Note: spare cases already added to a cart by the old loop are real cart lines
+and are not removed by this — remove them once, and they will not come back.
+
+Files changed: sections/pg-giftguard.liquid, sections/pg-r36s-mobile.liquid
+
+---
+
 # R36S Duo Pack: add exactly two consoles, not three
 
 ## Problem

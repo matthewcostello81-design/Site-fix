@@ -387,8 +387,8 @@
        So the promise is enforced: the count the cart held BEFORE this tap, plus
        two. The cart is then re-read on a short schedule that outlasts every
        late writer in the theme (pg-theme-css's 900ms add-on rider,
-       pg-giftguard's 1200ms beat, a drawer refresh), and any surplus console is
-       taken back off.
+       pg-giftguard's beat, a drawer refresh), and any surplus console is taken
+       back off.
 
        THE BASELINE IS READ BEFORE THE CLICK, NOT DURING IT. A /cart.js issued
        alongside the add is not a baseline: a stray write from this same tap can
@@ -414,7 +414,10 @@
       duoBusy = false;
       if (!r.ok) return;
       if (window.pgOpenCart) window.pgOpenCart();
-      [900, 1800, 3000, 4500, 6000].forEach(function(t){
+      /* three checks, not five: each is a read on an endpoint five other
+         sections are already polling, and the last one is well past every
+         late writer in the theme */
+      [1200, 2500, 4000].forEach(function(t){
         setTimeout(function(){ if (target !== null) trimConsoles(target); }, t);
       });
     }).catch(function(){ duoBusy = false; });
@@ -428,17 +431,40 @@
     return n;
   }
 
-  /* The console count as it stood BEFORE the current tap. Polled on the console
-     page only -- one small GET every 1.2s there, and nothing anywhere else,
-     since this section is registered on that one template. */
+  /* The console count as it stood BEFORE the current tap.
+
+     ON A LONG BEAT, AND NOT WHILE THE DRAWER IS OPEN. /cart.js is shared with
+     pg-drawer, pg-cart-total, pg-cart-variants, pg-chips and pg-giftguard, and
+     Shopify throttles it under their combined load -- pg-chips documents
+     responses coming back unparseable, and a stale read there is what let
+     pg-giftguard add duplicate cases. A baseline for a button the shopper has
+     not pressed yet does not need to be a second old, so this asks every 5s,
+     and not at all while the cart drawer is open (the tile cannot be tapped
+     from behind it). Closing the drawer refreshes it immediately, so an edit
+     made in there is picked up before the next tap rather than 5s later. */
   var lastN = null;
   function watch(){
     if (!/\/products\/handheld-game-console/.test(location.pathname)) return;
     if (duoBusy) return;                    /* mid-add: not a baseline any more */
+    if (document.hidden) return;
+    var cart = document.getElementById('cart');
+    if (cart && /(^|\s)toggle(\s|$)/.test(cart.className)) return;   /* drawer open */
     fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
       .then(function(r){ return r.json(); })
       .then(function(c){ if (!duoBusy) lastN = consolesIn(c); })
       .catch(function(){});
+  }
+
+  /* the drawer closing is the one moment the baseline is most likely stale */
+  function watchDrawer(){
+    var cart = document.getElementById('cart');
+    if (!cart || !window.MutationObserver) return;
+    var was = /(^|\s)toggle(\s|$)/.test(cart.className);
+    new MutationObserver(function(){
+      var now = /(^|\s)toggle(\s|$)/.test(cart.className);
+      if (was && !now) watch();
+      was = now;
+    }).observe(cart, {attributes: true, attributeFilter: ['class']});
   }
 
   /* Take the surplus off the last console line. Never adds, never touches
@@ -499,7 +525,8 @@
     }
     window.addEventListener('resize', function(){ pass(); paint(); }, {passive: true});
     watch();
-    setInterval(watch, 1200);
+    watchDrawer();
+    setInterval(watch, 5000);
     setInterval(pass, 900);
     [300, 900, 2000, 4000].forEach(function(t){ setTimeout(function(){ pass(); paint(); }, t); });
   }

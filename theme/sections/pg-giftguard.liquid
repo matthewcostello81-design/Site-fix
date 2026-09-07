@@ -1,0 +1,225 @@
+{%- comment -%}
+  PG Gift Guard: owns the free case, and badges it only when a console earns it.
+
+  ---------------------------------------------------------------- background
+  The case product used to have one "Default Title" variant at $13.99
+  (49623692247268), zeroed by the "Free R36S Case with Console" BXGY. Two
+  problems with that: the BXGY consumed the single automatic-discount slot
+  Shopify allows per order, so no per-product bundle ladder could apply
+  alongside it; and the ID was hardcoded in pg-drawer's giftSync.
+
+  The product now carries two real variants:
+
+      49640846426340  $0.00   "Free with console"   -> the gift
+      49640879063268  $13.99  "Spare case"          -> the paid upsell
+
+  Adding the named variant replaced the old default one, so 49623692247268 is
+  gone and giftSync's add now 422s -- it can no longer place the gift. This
+  section takes that job over. The gift is free because it is priced at zero,
+  which also leaves the discount slot free for a bundle ladder.
+
+  giftSync's OTHER behaviours still work and are deliberately left alone: it
+  finds the gift line by product handle (both variants share it), so it still
+  removes the gift when the cart empties of consoles, and still moves surplus
+  units off the badged line.
+
+  ================================================================
+  THE CART FILLING UP WITH CASES
+
+  Reported: a few seconds after the Duo Pack goes in, the drawer starts
+  rebuilding itself over and over and more cases keep arriving. This file was
+  the source, and the chain is worth writing down because two other sections
+  are downstream of it.
+
+  ensureGift() used to ask "does any line carry the _free_gift property?" and
+  add a gift when the answer was no. That question is not the same as "is the
+  gift already in the cart", and it is answered from a /cart.js read that can
+  be stale: the drawer, pg-cart-variants, pg-cart-total, pg-chips and this
+  file all poll that endpoint, and under that load Shopify starts throttling
+  it -- pg-chips documents responses coming back unparseable for exactly this
+  reason. One stale answer and this file adds a SECOND gift. The add merges
+  into the same line, so the gift line's quantity becomes 2.
+
+  Downstream, two separate sections watch for precisely that:
+
+      pg-drawer     giftSync()  : gift.quantity > 1 -> set it to 1, then
+                                  ADD the surplus as 49640879063268
+      pg-case-mobile normalise(): the same rule, on its own 2s beat
+
+  So one stale read turns into a $13.99 spare case the shopper never asked
+  for; each of those writes refreshes the drawer; each refresh is more load on
+  the same endpoint, and the next stale read does it again. That is the cart
+  "glitching out and adding more cases", and every case it added was billable.
+
+  THREE CHANGES, ALL HERE, so no other file has to be touched:
+
+  1. The gift is detected BY VARIANT, not by a property. 49640846426340 in the
+     cart means the gift is present, whatever its properties say and whoever
+     put it there. A question that cannot go stale into a false "no".
+  2. An add is followed by a cooldown, and re-checked against a fresh read
+     before it can happen again. A slow endpoint can no longer be answered
+     with a second gift.
+  3. The gift line is CAPPED at one unit here, by removal. It is capped in
+     pg-drawer and pg-case-mobile too, but both do it by moving the surplus
+     onto the paid variant -- i.e. by charging for it. Removing the surplus
+     first means their branch has nothing left to sell. A unit that arrived by
+     accident is not an upsell.
+
+  The read beat is also slowed from 1.2s to 2s. The badge pass stays at 250ms:
+  it touches the DOM only and never the network.
+
+  ---------------------------------------------------------------- the badge
+  giftTag() picks the line to badge in this order: the line Shopify discounted
+  to zero, else the line carrying _free_gift, else -- as a "never show nothing"
+  fallback -- the first case line on screen. That fallback is wrong on its own:
+  a spare case bought with no console hits exactly that state and gets badged
+  FREE GIFT while being charged for, with its stepper and remove button hidden
+  by pg-drawer's `li:has(.pg-free-tag)` rules. This strips the badge whenever
+  the cart has not earned a gift, stamping data-pg-free so giftTag() treats the
+  line as handled and does not put it back.
+
+  DEPLOY NOTE: the live theme still references the dead variant, so its free
+  case is broken until this theme is published. Publish, verify a console adds
+  a $0.00 case, and only then disable the "Free R36S Case with Console"
+  discount -- it is now redundant, but harmless while it stays on.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgGiftGuard) return; window.pgGiftGuard = 1;
+
+  var CASE_LINK = 'free-gift';               /* the case handle ends in -free-gift */
+  var CONSOLE_HANDLE = 'handheld-game-console';
+  var FREE_VARIANT = 49640846426340;         /* $0.00 "Free with console" */
+  var LINES = '#cart .l4ca > li, body.template-cart .form-cart .l4ca > li';
+  /* null = not checked yet. The badge is only ever removed on an explicit
+     false, so a failed or pending /cart.js never blanks a legitimate gift. */
+  var earned = null;
+  var busy = false;
+  var adding = false;
+  /* No add may follow another inside this window, however many reads come back
+     saying the cart is empty of gifts. 8s comfortably outlasts a throttled
+     response and every drawer refresh it can trigger. */
+  var COOLDOWN = 8000;
+  var lastAdd = 0;
+  var capping = false;
+
+  function caseLines(){
+    var out = [];
+    document.querySelectorAll(LINES).forEach(function(li){
+      if (li.querySelector('a[href*="' + CASE_LINK + '"]')) out.push(li);
+    });
+    return out;
+  }
+
+  function apply(){
+    var lis = caseLines();
+    if (!lis.length) return;
+    if (earned === false){
+      lis.forEach(function(li){
+        li.dataset.pgFree = '1';
+        li.querySelectorAll('.pg-free-tag').forEach(function(el){ el.parentNode.removeChild(el); });
+      });
+    } else if (earned === true){
+      /* A line marked as handled but wearing no badge is one this guard
+         cleared earlier. Release it so pg-drawer can badge it again now that
+         the cart qualifies. */
+      lis.forEach(function(li){
+        if (li.dataset.pgFree && !li.querySelector('.pg-free-tag')) delete li.dataset.pgFree;
+      });
+    }
+  }
+
+  /* The gift line, BY VARIANT. Properties are how this file marks its own
+     work, not how the cart is read back: a line can be rebuilt, merged or
+     re-added by another section and lose the marker while still being the
+     free case sitting in the shopper's cart. */
+  function giftLine(cart){
+    var found = null;
+    (cart.items || []).forEach(function(it){
+      if (it.variant_id === FREE_VARIANT) found = it;
+    });
+    return found;
+  }
+
+  /* Place the gift ourselves: giftSync's hardcoded variant no longer exists.
+     Guarded three ways -- an in-flight add, a cooldown, and a fresh read taken
+     at the moment of the decision -- because the read that got us here may be
+     older than the last add. */
+  function ensureGift(cart){
+    if (adding) return;
+    if (Date.now() - lastAdd < COOLDOWN) return;
+    var items = cart.items || [];
+    if (!items.some(function(it){ return it.handle === CONSOLE_HANDLE; })) return;
+    if (giftLine(cart)) return;
+    adding = true;
+    /* one more read, taken now: the cart above may predate an add that has
+       already landed, and adding a second gift is the whole bug */
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(fresh){
+        if (giftLine(fresh) || !(fresh.items || []).some(function(it){ return it.handle === CONSOLE_HANDLE; })){
+          adding = false;
+          return;
+        }
+        lastAdd = Date.now();
+        return fetch('/cart/add.js', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({items: [{id: FREE_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]})
+        }).then(function(r){
+          adding = false;
+          if (!r.ok) return;
+          if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+        });
+      })
+      .catch(function(){ adding = false; });
+  }
+
+  /* One free case, never more. pg-drawer and pg-case-mobile both answer a
+     surplus here by selling it as a $13.99 spare; taking it off first leaves
+     them nothing to sell. Removal only, and only ever of the $0.00 variant --
+     a spare the shopper actually chose is a different variant and is never
+     touched. */
+  function capGift(cart){
+    if (capping || adding) return;
+    var gift = giftLine(cart);
+    if (!gift || gift.quantity <= 1) return;
+    capping = true;
+    fetch('/cart/change.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({id: gift.key, quantity: 1})
+    }).then(function(){
+      capping = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).catch(function(){ capping = false; });
+  }
+
+  function check(){
+    if (busy) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        earned = (c.items || []).some(function(it){
+          return it.handle === CONSOLE_HANDLE || (it.properties && it.properties._free_gift);
+        });
+        busy = false;
+        apply();
+        capGift(c);
+        ensureGift(c);
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  /* apply() is cheap and runs often so the badge never lingers between cart
+     reads; check() re-reads the cart on a slower beat -- slower than it was,
+     because this endpoint is shared with four other sections and throttles
+     under the load they were putting on it together. */
+  setInterval(apply, 250);
+  setInterval(check, 2000);
+  check();
+})();
+</script>
+{% schema %}
+{"name": "PG Gift Guard", "settings": []}
+{% endschema %}
