@@ -79,6 +79,38 @@
   margin. The inline geometry ftFix owns (width, text-indent) is still taken
   back in script, since inline !important cannot be beaten from a stylesheet.
 
+  THE SPARE-CASE TICKBOX COUNTED WRONG, AND WHY. The owner asked that the
+  "Add a spare case for each console" offer follow the cart: consoles held, minus
+  paid cases already bought. pg-unlock's accRow() computes exactly that --
+
+      q = (o.totalQty + o.need) - (paid cases in cart)
+
+  -- so the rule was never missing. What is missing is a reason to RE-RENDER the
+  row when q changes. render() keeps a per-row signature:
+
+      var sg = o.handle + ':' + (o.freeNth || o.rung.nth) + ':' + o.need;
+      if (existing.getAttribute('data-sig') === sg) return;   /* unchanged */
+
+  Adding a paid case changes q but changes none of handle, nth or need. The
+  signature matches, the row is left exactly as it was, and it keeps its stale
+  count for the life of the drawer -- one console and one spare case in the cart
+  still offering two at $49.98.
+
+  THE FIX IS A NUDGE, NOT A SECOND WRITER. The count is recomputed here from the
+  rendered cart (no network: consoles and paid cases are both readable off the
+  rows, and the free gift line is excluded by its data-pg-free). If it disagrees
+  with the rendered data-q, the row is removed -- which is the one thing
+  pg-unlock's own rowsPresent() checks -- and pg-unlock rebuilds it, correctly,
+  on its next pass. Nothing here writes the row's contents, so pg-unlock remains
+  its only author.
+
+  AND IT ASKS ONCE. The obvious failure mode of nudging another section is a
+  loop: remove, rebuild wrong, remove again. So the state that prompted the
+  nudge (handle, totalQty, need, cases owned) is remembered, and the same state
+  never prompts a second one. Worst case the row stays wrong until the cart
+  changes again -- which is exactly where it is today -- and the drawer cannot
+  churn.
+
   THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title steps from the drawer's
   16.5px/700 to 17.5px/800, scoped to that product's rows and excluding the gift
   line, which is deliberately the thinner module.
@@ -408,6 +440,68 @@
     if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
   }
 
+  /* ---------------- the spare-case tickbox's quantity ----------------
+     See the note above: pg-unlock computes it correctly but its per-row
+     signature does not include it, so the row never re-renders when it changes.
+     Recomputed here off the rendered cart and, on a disagreement, the row is
+     removed once so pg-unlock rebuilds it itself. */
+  var ACC_OWN = {
+    'handheld-game-console': 'r36s-protective-case',
+    'lenticular-poster':     '30x40cm-frame'
+  };
+  var nudged = {};
+
+  function lineQty(li){
+    var inp = li.querySelector('input[type=number]');
+    if (inp) return parseInt(inp.value, 10) || 0;
+    /* nc-cartfix replaces the stepper with <b class="nc-qv">n</b> */
+    var qv = li.querySelector('.nc-qv');
+    if (qv) return parseInt(qv.textContent, 10) || 0;
+    return 1;
+  }
+
+  /* paid units of the accessory in the cart -- the auto-added gift is not a
+     spare, and it is the one line carrying data-pg-free */
+  function ownedPaid(mark){
+    var n = 0;
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li')
+      .forEach(function(li){
+        if (li.hasAttribute('data-pg-free')) return;
+        if (!li.querySelector('a[href*="' + mark + '"]')) return;
+        n += lineQty(li);
+      });
+    return n;
+  }
+
+  function accSync(){
+    document.querySelectorAll('#cart .pg-unlock[data-pg-unlock]').forEach(function(row){
+      var handle = row.getAttribute('data-pg-unlock') || '', mark = null, k;
+      for (k in ACC_OWN){ if (handle.indexOf(k) > -1){ mark = ACC_OWN[k]; break; } }
+      if (!mark) return;
+
+      var add = row.querySelector('.pg-unlock-add');
+      if (!add) return;
+      var t = parseInt(add.getAttribute('data-t'), 10);
+      var n = parseInt(add.getAttribute('data-n'), 10);
+      if (isNaN(t) || isNaN(n)) return;
+
+      var owned = ownedPaid(mark);
+      var want = (t + n) - owned;
+      if (want < 1) want = 0;                 /* accRow renders nothing below 1 */
+
+      var acc  = row.querySelector('.pg-uacc');
+      var have = acc ? (parseInt(acc.getAttribute('data-q'), 10) || 0) : 0;
+      if (want === have) return;              /* agreed */
+
+      /* ask once per distinct state, so a rebuild that comes back the same
+         cannot start a remove/rebuild loop */
+      var key = handle + ':' + t + ':' + n + ':' + owned;
+      if (nudged[key]) return;
+      nudged[key] = 1;
+      if (row.parentNode) row.parentNode.removeChild(row);
+    });
+  }
+
   function pass(){
     giftRows().forEach(function(li){
       pillLeft(li);
@@ -415,6 +509,7 @@
       if (!host) return;
       figures(host);
     });
+    accSync();
   }
 
   var pending = false;

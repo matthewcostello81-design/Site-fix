@@ -1,3 +1,72 @@
+# The spare-case count was stale, and the reason is a signature that omits it
+
+## The rule was never missing
+
+The ask — "the add a spare case for each console should depend how many are in
+the cart like gameboys and how many cases are in the cart" — is already what
+`pg-unlock`'s `accRow()` computes:
+
+    q = (o.totalQty + o.need) - (paid cases in cart)
+
+What is missing is a reason to **re-render the row** when `q` changes.
+`render()` keeps a per-row signature:
+
+    var sg = o.handle + ':' + (o.freeNth || o.rung.nth) + ':' + o.need;
+    if (existing.getAttribute('data-sig') === sg) return;   /* unchanged: leave it */
+
+Adding a paid case changes `q` but changes none of `handle`, `nth` or `need`. The
+signature matches, the row is left exactly as it was, and it keeps its stale
+count for the life of the drawer. That is the screenshot: one console and one
+paid spare case in the cart, still offering **two** at $49.98 → $27.98, when the
+formula gives one.
+
+(`cartSig` — the whole-cart signature — *does* change, so `render()` runs. It
+just declines to touch the row once it gets there.)
+
+## The fix is a nudge, not a second writer
+
+`pg-unlock` is 65KB and its render path has been the source of several past
+regressions, so the count is not recomputed and written from outside. Instead
+`pg-cart-tune` recomputes it from the **rendered cart** — no network; consoles
+and paid cases are both readable off the rows, and the free gift line excludes
+itself with `data-pg-free` — and when it disagrees with the rendered `data-q`,
+removes the row. That is the one thing `pg-unlock`'s own `rowsPresent()` checks,
+so it rebuilds the row itself, correctly. Nothing here writes the row's contents;
+`pg-unlock` stays its only author.
+
+**And it asks once.** The obvious failure mode of nudging another section is a
+loop — remove, rebuild wrong, remove again. The state that prompted the nudge
+(handle, totalQty, need, cases owned) is remembered and never prompts a second
+one.
+
+Verified headless, with a simulated `pg-unlock` on the other side:
+
+    owned=1 (free gift line correctly excluded, paid spare counted)
+    A. cooperative rebuild -> removals=1, final data-q=1, settles over 12 more passes
+    B. stubborn rebuild (always returns the wrong count) -> removals=1 over 40 passes
+
+Case B is the one that matters given this session's history: even if the rebuild
+comes back wrong, it cannot churn.
+
+## The cost, stated
+
+Removing the row opens a gap of a frame or two before `pg-unlock`'s
+`fetch('/cart.js')` resolves and rebuilds it. `pg-frame-add` watches the whole
+body on a 120ms debounce and inserts its own standalone spare-case row whenever
+no `pg-unlock` console row exists, so that gap can show one brief flicker of the
+offer. It is bounded to once per cart state by the guard above. The alternative
+was a permanently wrong number.
+
+## Duo Pack glitch: a lead, not a diagnosis
+
+With two consoles the console ladder tops out — `offers()` finds no rung with
+`r >= paidNow` that is not already taken — so `pg-unlock` returns no offer for it
+and its sweep removes the row. `pg-frame-add`'s `wanted` then flips true and it
+inserts `.pg-frameoffer` into the same slot. Two sections writing into
+`#pg-unlock-slot` on different clocks (120ms/1500ms vs observer/2500ms) is the
+right shape for the reported glitching, but both are idempotent on paper, so this
+is a lead and not a proven cause. Not changed.
+
 # The FREE GIFT pill was in the wrong grid cell the whole time
 
 ## Measured, finally
