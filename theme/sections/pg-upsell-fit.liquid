@@ -1,0 +1,143 @@
+{%- comment -%}
+  PG Upsell Fit: the in-cart offer rows state the offer in full on a phone.
+
+  ------------------------------------------------------------ WHAT WAS WRONG
+
+  On an iPhone 13 / 16 / 17 (390-402pt) the pg-unlock offer rows read
+
+      "Add a 2nd PocketB..."          instead of  "Add a 2nd R36S"
+      "Unlock Buy 2, Get 1 ..."       instead of  "Unlock Buy 2, Get 1 FREE"
+      "SAVE 25" / "SAVE 5"            instead of  "SAVE 25%" / "SAVE 50%"
+
+  -- the headline cut off mid-word and the discount chip cut off mid-number,
+  with its tail painted under the ADD button. Both come from the same squeeze.
+
+  THE SQUEEZE. screen.css styles every bare <button> with
+
+      button { min-width: var(--btn_miw); }        /* min(100%, 120px) here */
+
+  so the three-letter ADD button takes 120px. The drawer is the full viewport
+  on a phone (pg-drawer) less var(--rpp) either side, so at 390pt the row has
+  358px of content: 120px button + 46px thumbnail + gaps + card padding leaves
+  the copy column about 154px. pg-unlock never waives that min-width, and no
+  amount of padding tuning can go under it.
+
+  WHAT THE COLUMN THEN DID WITH 154px. pg-cart-tune styles this row at four
+  ids and, measured at 390/393/414/430 when it was written, both of its
+  choices were safe there and are not here:
+
+    - the title was `white-space:nowrap; text-overflow:ellipsis`, which is only
+      safe while the column is wider than the longest title;
+    - the price line was `flex-wrap:nowrap` with the SAVE chip at
+      `flex:0 1 auto; min-width:0`. When that line cannot fit and cannot break,
+      the one item allowed to shrink is the only thing that can give -- and a
+      shrunken inline-block with nowrap text simply clips. A misstated discount
+      is worse than a wrapped one.
+
+  ------------------------------------------------------------------ THE FIX
+
+  Three declarations, at FIVE ids so they win over pg-cart-tune's four (and
+  pg-cart-timer's two, and pg-unlock's three) at any load order -- which also
+  means a theme-editor reorder of the section groups cannot unseat them:
+
+    1. the ADD button waives --btn_miw and is sized by its own padding
+       (~55px), handing ~65px back to the copy;
+    2. the title wraps, to at most two lines, and is never ellipsised;
+    3. the price line wraps and the SAVE chip never shrinks -- whole badge on
+       the price line where it fits, whole badge on its own line where it does
+       not.
+
+  Measured in Chromium against the real markup and the real stylesheets at
+  375/390/393/402/414/430/485: no truncated title, no clipped chip, no row
+  overflow, and the chip ends 65-154px clear of the ADD button.
+
+  ---------------------------------------------------------------- THE NAME
+
+  The console is the R36S. "PocketBoy R36" is an older name for it and is
+  still hardcoded in two places the shopper reads inside the drawer:
+  pg-unlock's LADDERS (the offer headline) and pg-drawer's pgBar (the
+  free-case progress message). Both files are 54-64KB and can only be written
+  whole, so the name is corrected here in the drawer's text nodes instead --
+  the same approach pg-cart-mobile already takes for the "PokeOrb" rename, and
+  for the same reason.
+
+  It cannot flicker: pg-unlock rewrites a row wholesale (so this re-runs after
+  it and then finds nothing), and pg-drawer's message writer is guarded on
+  data-m -- what IT last wrote -- not on what the node currently says, so it
+  does not write back over this. Idempotent either way.
+
+  WHEN pg-unlock OR pg-drawer IS NEXT REDEPLOYED CLEAN, fix the strings at
+  source (`name: 'R36S'` in pg-unlock's LADDERS; the two `<b>PocketBoy R36</b>`
+  literals in pg-drawer's pgBar) and this sweep quietly finds nothing to do.
+  The cart PAGE's copy of the name is already fixed at source, in
+  pg-cart-upsell.liquid.
+{%- endcomment -%}
+<style>
+  /* the ADD button waives the theme's 120px floor: it is three letters */
+  #cart#cart#cart#cart#cart .pg-unlock-add{min-width:0 !important}
+
+  /* the headline is never truncated; two lines at most */
+  #cart#cart#cart#cart#cart .pg-unlock-t b{
+    white-space:normal !important;
+    text-overflow:clip !important;
+    overflow-wrap:break-word !important;
+    overflow:hidden !important;
+    display:-webkit-box !important;
+    -webkit-box-orient:vertical !important;
+    -webkit-line-clamp:2 !important;
+  }
+
+  /* the price line may wrap, and the SAVE chip is whole or nothing */
+  #cart#cart#cart#cart#cart .pg-unlock-px{
+    flex-wrap:wrap !important;
+    gap:2px 6px !important;
+  }
+  #cart#cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{
+    flex:0 0 auto !important;
+    min-width:auto !important;
+    white-space:nowrap !important;
+  }
+
+  /* same rule for the accessory tickbox under the row: it is a sentence, and
+     at 11px in a column this narrow it was one ellipsis away from the same
+     problem */
+  #cart#cart#cart#cart#cart .pg-uacc-t{
+    white-space:normal !important;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    line-height:1.3 !important;
+  }
+</style>
+<script>
+(function(){
+  if (window.pgUpsellFit) return; window.pgUpsellFit = 1;
+
+  var OLD = 'PocketBoy', RE = /PocketBoy\s+R36S?/g;
+
+  function sweep(){
+    var c = document.getElementById('cart');
+    if (!c || c.textContent.indexOf(OLD) === -1) return;
+    var w = document.createTreeWalker(c, NodeFilter.SHOW_TEXT, null), n, hits = [];
+    while ((n = w.nextNode())){ if (n.nodeValue.indexOf(OLD) > -1) hits.push(n); }
+    hits.forEach(function(t){ t.nodeValue = t.nodeValue.replace(RE, 'R36S'); });
+  }
+
+  function boot(){
+    sweep();
+    /* the drawer is rebuilt on every cart change by several writers, so the
+       rename rides on the mutations rather than on a timer of its own;
+       debounced, and the textContent check above makes a no-op pass cheap */
+    if (!window.MutationObserver) return;
+    var q = false;
+    new MutationObserver(function(){
+      if (q) return;
+      q = true;
+      setTimeout(function(){ q = false; sweep(); }, 60);
+    }).observe(document.documentElement, {childList: true, subtree: true, characterData: true});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Upsell Fit", "settings": []}
+{% endschema %}

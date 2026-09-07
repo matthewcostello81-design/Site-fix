@@ -1,3 +1,79 @@
+# Cart upsell rows: cut-off wording and cut-off SAVE badge on small phones
+
+## Problem
+On an iPhone 13 / 16 / 17 (390-402pt) the in-cart offer rows cut themselves off:
+
+    "Add a 2nd PocketB..."      instead of  "Add a 2nd R36S"
+    "Unlock Buy 2, Get 1 ..."   instead of  "Unlock Buy 2, Get 1 FREE"
+    "SAVE 25" / "SAVE 5"        instead of  "SAVE 25%" / "SAVE 50%"
+
+The headline ended mid-word and the discount chip ended mid-number, with its
+tail painted under the ADD button. The console was also still called by its old
+name, "PocketBoy R36", instead of the R36S.
+
+## Cause
+One squeeze, two symptoms. `screen.css` styles every bare `<button>` with
+
+    button { min-width: var(--btn_miw); }        /* min(100%, 120px) here */
+
+so the three-letter ADD button takes 120px. On a phone the drawer is the full
+viewport (`pg-drawer`) less `var(--rpp)` a side, so at 390pt the row has 358px
+of content; 120px button + 46px thumbnail + gaps + card padding leaves the copy
+column about 154px. `pg-unlock` never waives that min-width, and no amount of
+padding tuning can go under it.
+
+`pg-cart-tune` then styles that column at four ids, with two choices that were
+safe at the widths they were measured at and are not safe at 154px:
+
+- the title was `white-space:nowrap; text-overflow:ellipsis`, which only holds
+  while the column is wider than the longest title;
+- the price line was `flex-wrap:nowrap` with the SAVE chip at
+  `flex:0 1 auto; min-width:0`. A line that cannot fit and cannot break can only
+  give where something is allowed to shrink -- and a shrunken inline-block with
+  nowrap text simply clips, so the badge lost its digits.
+
+Reproduced in headless Chromium against the real markup and the real
+stylesheets: title truncated and chip clipped at 375-393px, clean at 402px+.
+
+## Fix
+A new section, `sections/pg-upsell-fit.liquid`, registered in `header-group`.
+Its rules run at FIVE ids so they beat pg-cart-tune's four (and pg-cart-timer's
+two, and pg-unlock's three) at any load order -- a theme-editor reorder cannot
+unseat them:
+
+- the ADD button waives `--btn_miw` and is sized by its own padding (~55px),
+  handing ~65px back to the copy column;
+- the title wraps, to at most two lines, and is never ellipsised;
+- the price line wraps and the SAVE chip never shrinks: whole badge on the price
+  line where it fits, whole badge on its own line where it does not;
+- the accessory tickbox label wraps for the same reason.
+
+Measured after the change at 375/390/393/402/414/430/485, with both the real
+titles and deliberately over-long ones: no truncated title, no clipped chip, no
+row overflow, and the chip ends 65-154px clear of the ADD button.
+
+The name is corrected in two places. `sections/pg-cart-upsell.liquid` (the cart
+page's free-gift line) is fixed at source. The drawer's two copies -- pg-unlock's
+LADDERS entry and pg-drawer's free-case progress message -- live in 54-64KB
+files that can only be written whole, so the same section renames them in the
+drawer's text nodes instead, the way pg-cart-mobile already handles the
+"PokeOrb" rename. It cannot flicker: pg-unlock rebuilds a row wholesale (so the
+sweep re-runs after it and then finds nothing), and pg-drawer's writer is
+guarded on `data-m` -- what it last wrote -- not on what the node says. When
+either file is next redeployed clean, fix `name: 'R36S'` in pg-unlock's LADDERS
+and the two `<b>PocketBoy R36</b>` literals in pg-drawer's pgBar, and the sweep
+quietly finds nothing to do.
+
+## Applied to
+Files changed: sections/pg-upsell-fit.liquid (new),
+sections/pg-cart-upsell.liquid, sections/header-group.json
+
+Deployed to the unpublished theme "Copy of R36S + cart fixes (Claude 9-6)"
+(163709550820), byte-verified by checksum. Theme writes to the live theme are
+blocked by policy from this session, so the theme still has to be published.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
