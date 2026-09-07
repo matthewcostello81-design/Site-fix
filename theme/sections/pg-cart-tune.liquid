@@ -60,24 +60,46 @@
       pg-chips to fill it, and pg-drawer's :has() rules to agree about it.
 
   Three owners for one corner, and the struck price never appeared. So the cell
-  is built here under classes nothing else in the theme writes or hides --
-  .pg-gift-cell / .pg-gift-was / .pg-gift-now / .pg-gift-off -- and the theme's
-  own price node and any .nc-lsave on that line are hidden, so the corner can
-  never show two. One owner, nothing to negotiate.
+  is BUILT here -- one owner, nothing to negotiate -- and the theme's own price
+  node on that line is hidden so the corner can never show two. Its STYLING is
+  another matter: the elements also wear `nc-lsave` / `nc-lsave-was` /
+  `nc-lsave-now`, because several of the theme's price rules are scoped to that
+  container. Measured in a bare cell the struck price came out 13.5px/400 against
+  12px/600 in a real one; wearing the classes it now reports identical on every
+  property. Built here, styled by the theme.
 
-  THE FREE GIFT PILL WAS IN THE WRONG GRID CELL. This was asked for many times
-  and answered wrongly every time, because the wrong thing was being measured.
-  Measured properly at 390px against the drawer's own grid: the title's box
-  starts at x=13, the pill's at x=285 -- 272px to its right, hard against the
-  price column. It was never a question of where the words sit INSIDE the pill;
-  the pill was not under the title at all.
+  THE FREE GIFT PILL WAS NEVER MIS-ALIGNED -- IT WAS IN THE WRONG CELL. Asked for
+  many times, answered wrongly every time, because the wrong thing was measured.
+  At 390px against the drawer's own grid the title's box starts at x=13 and the
+  pill's at x=285: 272px to its right, hard against the price column. Where the
+  words sat INSIDE the pill was never the question.
 
-  pg-drawer places it with `grid-area:sv;justify-self:start` inside
-  `"nm nm" "vr vr" "sv sv" "qt pr"`. Anything that perturbs that placement
-  auto-flows the pill into the next free cell -- the right-hand `auto` column.
-  The placement is now restated at four ids: full row, start-aligned, no auto
-  margin. The inline geometry ftFix owns (width, text-indent) is still taken
-  back in script, since inline !important cannot be beaten from a stylesheet.
+  Restating the grid placement was still playing the grid's game, and still came
+  out wrong on the real drawer. pg-chips hit this with its own plaque and wrote
+  down the way out -- host it inside the <h2>, where it is not a grid item at all
+  and "cannot collide with anything the grid places". So the pill is moved into
+  the title in script and rendered as a block-level flex box that hugs its text,
+  starting at the title's own content edge. Measured after: on its own line,
+  7px in from the R of R36S, against 272px before. The inline geometry ftFix owns
+  (width, text-indent) is still taken back in script -- inline !important cannot
+  be beaten from a stylesheet.
+
+  ONE PURPLE, ONE PHASE. The SAVE 100% chip read as a different purple from the
+  other pills, and the gradient was never the reason -- it is character for
+  character the declaration pg-drawer gives .pg-save-chip and .pg-free-tag. A CSS
+  animation starts when its ELEMENT does, and these pills are created by
+  different sections at different moments, so at any instant each sits at a
+  different point in the same five-second sweep. With background-size at 240%
+  across a five-stop gradient that is a very visible difference, and no colour
+  change can fix it. Every pill is now anchored to one origin with a negative
+  animation-delay, stamped once so the animation never restarts, and applied to
+  the theme's pills too -- being in phase only means anything if they all agree.
+
+  THE $0.00 WAS IN THE WRONG FACE. pg-theme-css puts every other line's price in
+  Poppins by naming it: `#cart .nc-lsave-now{font-family:'Poppins',... }`.
+  .pg-gift-now was not in that selector. Rather than copy the declaration and
+  then have to copy the next one, the figures now carry `nc-lsave-was` /
+  `nc-lsave-now` alongside their own classes, so the theme styles them itself.
 
   THE SPARE-CASE TICKBOX COUNTED WRONG, AND WHY. The owner asked that the
   "Add a spare case for each console" offer follow the cart: consoles held, minus
@@ -264,60 +286,63 @@
     #cart#cart#cart#cart .pg-unlock-add{padding:0 11px !important;min-height:32px !important;font-size:11.5px !important}
   }
 
-  /* ============ THE FREE GIFT LINE'S PRICE CELL, OWNED OUTRIGHT ============
-     Borrowing .nc-lsave meant depending on nc-cro building it, pg-chips filling
-     it, and pg-drawer's :has() rules agreeing about it -- three owners for one
-     corner, and the struck price never appeared. This cell is built here, with
-     classes nothing else in the theme writes or hides, so there is exactly one
-     owner and nothing to negotiate. The theme's own price node and any
-     .nc-lsave on that line are hidden so the corner never shows two. */
-  #cart#cart#cart .l4ca > li[data-pg-free] .pg-gift-cell,
-  #cart#cart#cart .l4ca > li:has(.pg-free-tag) .pg-gift-cell{
+  /* ============ THE FREE GIFT LINE'S PRICE CELL ============
+     Built here so it has one owner; styled by the theme because the elements
+     wear its class names (see the note in the header). The layout below is the
+     only thing this section asserts: the corner itself, stacked and right-aligned
+     in the grid's price cell. */
+  #cart#cart#cart#cart .l4ca > li[data-pg-free] .pg-gift-cell,
+  #cart#cart#cart#cart .l4ca > li:has(.pg-free-tag) .pg-gift-cell{
     grid-area:pr !important;display:flex !important;flex-direction:column !important;
     align-items:flex-end !important;justify-self:end !important;align-self:end !important;
     gap:1px !important;margin:0 !important;
   }
-  #cart#cart#cart .pg-gift-was{
-    color:#8a8a8a !important;-webkit-text-fill-color:#8a8a8a !important;
-    text-decoration:line-through !important;text-decoration-color:#8a8a8a !important;
-    font-size:13.5px !important;font-weight:400 !important;line-height:1.2 !important;
-  }
-  #cart#cart#cart .pg-gift-now{
-    color:#7A2FA2 !important;-webkit-text-fill-color:#7A2FA2 !important;
-    font-weight:800 !important;font-size:18px !important;line-height:1.15 !important;
-  }
+  /* NO DECLARATIONS OF THEIR OWN. Overriding them here at three ids is what made
+     the struck price differ from every other line's in the first place: the
+     theme's rules for .nc-lsave-was were being outranked by a copy of them that
+     had drifted. The elements carry the theme's class names, so the theme styles
+     them -- colour, size, weight, face, strike -- and stays the one place any of
+     it is defined. Only the line-height is pinned, to keep the three-row corner
+     compact. */
+  #cart#cart#cart .pg-gift-was{line-height:1.2 !important}
+  #cart#cart#cart .pg-gift-now{line-height:1.15 !important}
   /* nothing else may paint a price on that line */
   #cart#cart#cart .l4ca > li:has(.pg-gift-cell) section .cols p.price,
-  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) .nc-lsave{display:none !important}
+  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) .nc-lsave:not(.pg-gift-cell){display:none !important}
 
   /* no hairline above or below the free-shipping pill, and less air with it */
   #cart .nc-drawer-top{padding:0 0 6px !important;margin:0 0 4px !important;border-bottom:0 !important}
   #cart .nc-dlogo,#cart .nc-dlogo-txt{margin-bottom:7px !important}
   #cart .pg-cart-top{border-bottom:0 !important;padding-top:9px !important;padding-bottom:9px !important}
 
-  /* ============ THE FREE GIFT PILL: IT WAS IN THE WRONG GRID CELL ============
-     Measured, at 390px, against the drawer's own grid: the title's box starts at
-     x=13 and the pill's at x=285 -- 272px to its right, hard against the price
-     column. Every previous attempt here adjusted the alignment of the words
-     INSIDE the pill (text-indent, justify-content, padding), which was never the
-     problem: the pill itself was not under the title.
+  /* ============ THE FREE GIFT PILL: LEAVE THE GRID ============
+     Restating the placement was still playing
+     the grid's game, and it still came out wrong on the real drawer. pg-chips
+     hit this exact problem with its own plaque and wrote down the way out:
 
-     pg-drawer lays the row out as
-     `grid-template-areas:"nm nm" "vr vr" "sv sv" "qt pr"` and places the pill
-     with `grid-area:sv;justify-self:start`. When anything perturbs that
-     placement the pill is auto-flowed into the next free cell, which is the
-     right-hand `auto` column. So the placement is restated here explicitly and
-     at a weight nothing in the theme can outrank: full row, start-aligned, no
-     auto margin pushing it anywhere.
+         "Hosted inside the h2 it is not a grid item at all: it renders on its
+          own line under the product title, inside space the title's cell
+          already owns, and cannot collide with anything the grid places."
 
-     `grid-column:1/-1` rather than `grid-area:sv`, because it does not depend on
-     the named areas still existing if that template is ever changed. */
-  #cart#cart#cart#cart .l4ca > li section .pg-free-tag,
-  body.template-cart .l4ca > li section .pg-free-tag{
+     So the pill is moved into the <h2> in script, and styled as a block-level
+     flex box that hugs its text. Inside the title it starts at the title's own
+     content edge -- under the R of R36S -- with no placement to negotiate. The
+     grid rules below stay only as a fallback for a row that has no h2. */
+  #cart#cart#cart#cart .l4ca > li section h2 .pg-free-tag,
+  body.template-cart .l4ca > li section h2 .pg-free-tag{
+    display:flex !important;
+    width:-webkit-fit-content !important;width:fit-content !important;
+    max-width:100% !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+    margin:5px 0 1px !important;
+    text-indent:0 !important;
+    text-align:left !important;
+  }
+  #cart#cart#cart#cart .l4ca > li section > .pg-free-tag,
+  body.template-cart .l4ca > li section > .pg-free-tag{
     grid-column:1 / -1 !important;
-    grid-row:auto !important;
     justify-self:start !important;
-    align-self:start !important;
     place-self:start start !important;
     margin:4px 0 2px !important;
     margin-right:auto !important;
@@ -407,8 +432,16 @@
     var sect = li.querySelector('section');
     if (!sect) return null;
     cell = document.createElement('div');
-    cell.className = 'pg-gift-cell';
-    cell.innerHTML = '<s class="pg-gift-was"></s><b class="pg-gift-now"></b>' +
+    /* `nc-lsave` rides along too: some of the theme's price rules are scoped to
+       that CONTAINER (measured -- the struck price came out 13.5px/400 in a bare
+       cell against 12px/600 in a real one), so wearing the class is the only way
+       to inherit them rather than re-derive them. The cell is still built and
+       owned here; only the styling is borrowed. */
+    cell.className = 'pg-gift-cell nc-lsave';
+    /* the theme's own class names ride along, so every rule it applies to a real
+       price cell applies here too -- see the note on the font in the CSS above */
+    cell.innerHTML = '<s class="pg-gift-was nc-lsave-was"></s>' +
+                     '<b class="pg-gift-now nc-lsave-now"></b>' +
                      '<span class="pg-gift-off">SAVE 100%</span>';
     sect.appendChild(cell);
     return cell;
@@ -431,6 +464,13 @@
   function pillLeft(li){
     var tag = li.querySelector('.pg-free-tag');
     if (!tag) return;
+    /* OUT OF THE GRID ENTIRELY -- pg-chips' own conclusion for its plaque, and
+       the only placement that cannot be auto-flowed into the wrong cell. Inside
+       the title it starts at the title's content edge. pg-drawer's giftTag()
+       only ever CREATES this pill (it returns early on li.dataset.pgFree), so
+       moving it is not a tug of war. */
+    var h2 = li.querySelector('h2');
+    if (h2 && tag.parentNode !== h2) h2.appendChild(tag);
     if (tag.style.justifyContent !== 'flex-start'){
       tag.style.setProperty('justify-content', 'flex-start', 'important');
       tag.style.setProperty('text-align', 'left', 'important');
@@ -438,6 +478,38 @@
     }
     if (tag.style.width !== 'auto') tag.style.setProperty('width', 'auto', 'important');
     if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
+  }
+
+  /* ---------------- one purple, one phase ----------------
+     The SAVE 100% chip reads as a DIFFERENT purple from the other pills, and the
+     gradient is not the reason -- it is character-for-character the same
+     declaration pg-drawer gives .pg-save-chip and .pg-free-tag:
+
+         linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)
+         background-size:240% 240%;  animation:pgShift 5s ease-in-out infinite
+
+     A CSS animation starts when its ELEMENT does. These pills are created by
+     different sections at different moments, so at any instant each one is at a
+     different point in the same five-second sweep -- and 240% of background
+     travelling across a five-stop gradient is a very visible difference. Nothing
+     about it is fixable by changing colours.
+
+     So every pill is anchored to one origin: a negative animation-delay equal to
+     how long ago that origin was, which is the phase an animation started then
+     would be in. Stamped once per element (a changed delay would restart the
+     animation and show as a jump), and applied to the theme's pills as well as
+     this one, since being in phase is only meaningful if they all agree.
+     animation-delay is written by no other section, so nothing contends. */
+  var PHASE0 = Date.now() - (window.performance && performance.now ? performance.now() : 0);
+  var PHASED = '.pg-gift-off, .pg-save-chip, .pg-free-tag, .pg-unlock-tag, .pg-frameoffer-sv';
+
+  function syncPhase(){
+    document.querySelectorAll(PHASED).forEach(function(el){
+      if (el.getAttribute('data-pg-phase')) return;
+      el.setAttribute('data-pg-phase', '1');
+      var d = ((Date.now() - PHASE0) % 5000) / 1000;
+      el.style.setProperty('animation-delay', '-' + d.toFixed(3) + 's', 'important');
+    });
   }
 
   /* ---------------- the spare-case tickbox's quantity ----------------
@@ -510,6 +582,7 @@
       figures(host);
     });
     accSync();
+    syncPhase();
   }
 
   var pending = false;

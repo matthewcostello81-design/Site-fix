@@ -1,3 +1,76 @@
+# Three gift-line details, each with a cause in the code
+
+## 1. The pill: stop fighting the grid, leave it
+
+Restating the grid placement measured `deltaBox 0` in a harness and still came
+out wrong on the real drawer. `pg-chips` hit this exact problem with its own
+plaque and wrote the answer down:
+
+> "Hosted inside the h2 it is not a grid item at all: it renders on its own line
+> under the product title, inside space the title's cell already owns, and cannot
+> collide with anything the grid places."
+
+So the pill is moved into the `<h2>` in script and rendered as a block-level flex
+box that hugs its text. There is no placement left to negotiate. Measured:
+
+    inH2 true | onOwnLine true | glyph offset from the title 7px  (was 272px)
+
+`pg-drawer`'s `giftTag()` only ever *creates* the pill (it returns early on
+`li.dataset.pgFree`), so moving it is not a tug of war.
+
+## 2. The $0.00 was in the wrong face
+
+`pg-theme-css` puts every other line's price in Poppins by naming it:
+
+    #cart .nc-lsave-now{font-family:'Poppins',… !important;letter-spacing:.01em}
+
+`.pg-gift-now` was not in that selector. And some of the theme's price rules are
+scoped to the **container**, not the figure — measured, a struck price in a bare
+cell renders 13.5px/400 against 12px/600 in a real one.
+
+Rather than copy those declarations (and then have to copy the next one), the
+cell and both figures now wear the theme's own class names —
+`nc-lsave` / `nc-lsave-was` / `nc-lsave-now` — alongside their own. The cell is
+still **built** here, so it has one owner; only the **styling** is the theme's.
+The section's own overrides were deleted: they were a drifted copy of the
+theme's rules, which is what made the struck price differ in the first place.
+
+Re-measured against a real line, property by property: **identical**. And
+`$0.00` now reports `Poppins 18px 800 ls=0.18px` on both.
+
+`pg-chips` writes the same two numbers into these elements (`money(0)` and
+compare-at × qty), so wearing its class names creates nothing to disagree about.
+
+## 3. The purple was the same colour, at a different moment
+
+The `SAVE 100%` chip reads as a different purple, and the gradient was never the
+reason — it is character for character `pg-drawer`'s own declaration for
+`.pg-save-chip` and `.pg-free-tag`, confirmed by computed style:
+
+    sameGradient: true   sameSize: true
+
+**A CSS animation starts when its element does.** These pills are created by
+different sections at different moments, so at any instant each sits at a
+different point in the same five-second `pgShift` sweep — and with
+`background-size: 240%` across a five-stop gradient, that is a very visible
+difference. No colour change can fix it.
+
+Every pill is now anchored to one origin with a negative `animation-delay` equal
+to how long ago that origin was — the phase an animation started then would be
+in. Stamped once per element, because a *changed* delay restarts the animation
+and shows as a jump. Applied to the theme's pills as well as this one, since
+being in phase only means anything if they all agree. `animation-delay` is
+written by no other section, so nothing contends.
+
+Verified: two chips created at different times get the same delay
+(`inPhase=true`), and 20 repeated passes produce exactly 2 writes — no restart,
+no flicker.
+
+## Checks
+
+CSS braces balanced 72/72, JS braces and parens balanced, `node --check` parses
+the script, schema intact, uploaded checksum matches local byte for byte.
+
 # The spare-case count was stale, and the reason is a signature that omits it
 
 ## The rule was never missing
