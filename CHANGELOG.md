@@ -1,3 +1,62 @@
+# Reproduced the Duo Pack double-add against the real pgDuo, and the purple had a second cause
+
+## The 3-item add, proven — not inferred
+
+`pgDuo`'s IIFE was extracted from `pg-theme-css` verbatim (9,040 bytes, parses
+clean), served over HTTP at `/products/handheld-game-console/` so its own
+pathname guard passes, with `window.pgCatalog` and `fetch` stubbed to record
+every `/cart/add.js` body. It built its real tile; the tile was clicked to select
+it; then Add was clicked once.
+
+**Before the fix — one tap, two cart writes:**
+
+    posts: [ "RIDER-would-post-cases",
+             [ { "id": 111, "quantity": 2 } ] ]
+
+**After adding this session's window-capture owner — one tap, one write:**
+
+    posts: [ [ { "id": 111, "quantity": 2 } ] ]
+
+That is the whole bug and the whole fix, measured against the shipped code.
+`e.stopPropagation()` never stopped the sibling `document`-capture listener; a
+`window`-capture owner with `stopImmediatePropagation()` does.
+
+## It is not live yet
+
+    163657089252  "R36S + cart fixes (Claude 9-6)"        MAIN   updated 03:46
+    163709550820  "Copy of R36S + cart fixes (Claude 9-6)" draft  updated 16:17
+
+The live theme predates the fix. Everything in this round is in the draft.
+
+## The purple: phase was only half of it
+
+The gradient really is identical (`sameGradient: true` by computed style), and
+the phase anchor from the last round was correct — but insufficient, and it was
+wrong to stop there.
+
+`background-size: 240% 240%` is relative to the **element's own box**, and the
+pills are different widths. Measured against the theme's own pill geometry:
+
+    reference pill "-44%"    42.0px wide  ->  gradient runs over 100.8px
+    ours "SAVE 100%"         79.8px wide  ->  gradient runs over 191.5px
+
+The same five stops stretched to nearly twice the length. At any instant the two
+show a different slice of it — different purples, with neither colour nor phase
+to blame, and no amount of phase-matching could ever fix it.
+
+New section **`pg-gift-purple`** measures the reference pill at runtime and
+copies its gradient size onto ours in **pixels** (100.8px on both), alongside the
+phase anchor. Both writes are guarded on their current value, so neither ever
+restarts the animation. With no reference pill on screen nothing is written and
+the theme's percentage stands.
+
+Its own file rather than more weight in `pg-cart-tune` (already 34KB): it writes
+two properties on one class, and nothing else in the theme writes either.
+
+Registered in `header-group.json` (now 10 sections, well under the 25 cap).
+Deployed checksums match the repo byte for byte: `a626f20a` for the section,
+`bde8cebae8` for the group.
+
 # The Duo Pack added three, because stopPropagation does not stop siblings
 
 **Theme note: `163657089252` is now MAIN (published).** This change went to the

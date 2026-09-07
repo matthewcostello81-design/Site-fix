@@ -120,7 +120,9 @@
     "pg_save_badge": {"type": "pg-save-badge", "settings": {}},
     "pg_offer_copy": {"type": "pg-offer-copy", "settings": {}},
     "pg_cart_tune": {"type": "pg-cart-tune", "settings": {}},
-    "pg_verified": {"type": "pg-verified", "settings": {}}
+    "pg_verified": {"type": "pg-verified", "settings": {}},
+    "pg_upsell_fit": {"type": "pg-upsell-fit", "settings": {}},
+    "pg_gift_purple": {"type": "pg-gift-purple", "settings": {}}
   },
   "order": [
     "nc_classcalm",
@@ -130,6 +132,8 @@
     "pg_save_badge",
     "pg_offer_copy",
     "pg_cart_tune",
-    "pg_verified"
+    "pg_verified",
+    "pg_upsell_fit",
+    "pg_gift_purple"
   ]
 }
