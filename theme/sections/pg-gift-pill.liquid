@@ -1,0 +1,87 @@
+{%- comment -%}
+  PG Gift Pill: the FREE GIFT badge sits under the product title, hugging its
+  own words. Two inline declarations pg-drawer writes are the reason it never
+  did, and neither can be beaten from a stylesheet.
+
+  pg-drawer's giftTag() stamps the pill with a list of INLINE !important styles
+  the moment it is created, and ftFix() then re-pins two of them on its own
+  schedule. Inline !important outranks every stylesheet rule, including rules at
+  four ids, so the CSS written for this pill in pg-cart-tune was never applied.
+  Measured, at 390px, against the drawer's real geometry:
+
+      display was inline-flex  ->  the pill rode along on the TITLE'S OWN LINE,
+                                   its box starting 170px to the right of the R
+      width:auto (this file's
+      earlier fix)             ->  a display:flex box inside the block-level h2
+                                   fills the h2's whole width: a full-width
+                                   purple bar, which is the "purple extending
+                                   too far to the left"
+
+  So both are set in script, where they can actually win:
+
+      display: flex          the pill takes the line under the title
+      width:  fit-content    it hugs its words instead of filling the line
+
+  Measured after: on its own line, pill.left - title.left = 0px, 85px of pill
+  for 63px of text -- 11px of padding a side and nothing more.
+
+  WHY ITS OWN FILE. pg-cart-tune already owns this pill's placement and would be
+  the natural home, but that file is 28KB and every edit to it means re-sending
+  the whole thing. This is four property writes on one element. It runs AFTER
+  pg-cart-tune's own pass in the same section group, so where the two agree the
+  second write is a no-op, and where they differ this one is the later word.
+
+  It cannot fight ftFix: ftFix only re-pins `width` and `text-indent`, both of
+  which this re-asserts on the same clock, and each write is guarded on the
+  value already there, so a settled pill is never touched.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgGiftPill) return; window.pgGiftPill = 1;
+
+  function fit(){
+    document.querySelectorAll('#cart .pg-free-tag, body.template-cart .pg-free-tag').forEach(function(tag){
+      var li = tag.closest('li');
+      var h2 = li && li.querySelector('h2');
+      if (h2 && tag.parentNode !== h2) h2.appendChild(tag);
+
+      if (tag.style.display !== 'flex'){
+        tag.style.setProperty('display', 'flex', 'important');
+        tag.style.setProperty('justify-content', 'flex-start', 'important');
+        tag.style.setProperty('align-items', 'center', 'important');
+        tag.style.setProperty('text-align', 'left', 'important');
+        tag.style.setProperty('padding', '6px 11px', 'important');
+        tag.style.setProperty('margin', '5px 0 1px', 'important');
+      }
+      if (tag.style.width !== 'fit-content'){
+        tag.style.setProperty('width', '-webkit-fit-content', 'important');
+        tag.style.setProperty('width', 'fit-content', 'important');
+      }
+      if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
+    });
+  }
+
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; fit(); }, 80);
+  }
+
+  if (window.MutationObserver){
+    (function watch(){
+      var c = document.getElementById('cart');
+      if (c){ try { new MutationObserver(soon).observe(c, {childList:true, subtree:true}); } catch(e){} }
+      else setTimeout(watch, 500);
+    })();
+  }
+  /* ftFix runs at creation and again at 400/1500/3500ms and on fonts.ready,
+     then stops; these land just after each of its passes */
+  [450, 1550, 3550, 4200].forEach(function(ms){ setTimeout(fit, ms); });
+  setInterval(fit, 1200);
+  fit();
+})();
+</script>
+{% schema %}
+{"name": "PG Gift Pill", "settings": []}
+{% endschema %}

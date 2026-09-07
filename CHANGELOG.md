@@ -1,3 +1,68 @@
+# The FREE GIFT pill: two inline declarations, and both of them mine to beat
+
+The owner has asked for this twenty times and been told it was fixed several
+times. Each time the CSS was correct and never applied, because pg-drawer writes
+the two properties that matter INLINE and `!important` — which outranks a
+stylesheet rule at any specificity, including the four-id rules written for it.
+
+Measured at 390px against the drawer's real geometry:
+
+    display: inline-flex   ->  the pill rode along on the TITLE'S OWN LINE,
+                               its box starting 170px to the right of the R
+    width: auto            ->  (my own last fix) a display:flex box inside the
+                               block-level h2 fills the h2's whole width — a
+                               full-width purple bar, which is exactly the
+                               "purple extending too far to the left"
+
+The second one was mine. Moving the pill into the `<h2>` was right; writing
+`width:auto` to beat ftFix's pinned px width was not, because `auto` on a
+block-level flex box means "fill the line".
+
+Both are now set in script, where they can actually win:
+
+    display: flex          takes the line under the title
+    width: fit-content     hugs the words
+
+Measured after:
+
+    onOwnLine: true    pill.left - title.left: 0px
+    pill 85px for 63px of text  (11px of padding a side, nothing more)
+
+New section **`pg-gift-pill`**, registered in `header-group.json` after
+`pg-cart-tune` so it has the later word. It cannot fight `ftFix`: that only
+re-pins `width` and `text-indent`, both re-asserted here on the same clock, and
+every write is guarded on the value already present so a settled pill is never
+touched.
+
+## The colour
+
+Already answered in `pg-gift-purple` (deployed earlier today): `animation:none`
+with `background-position:0% 50%`, which is the light `#9B4BC4` end of the
+gradient — the same paint the theme's own chips sit at, because `pgDeals`
+re-creates them constantly and restarts their animation near 0%. The "dynamic
+dark purple" is this pill being the only one that ever reaches `#4A1C66`.
+
+## The Duo Pack adds 3 consoles
+
+Answered: it is 3 R36S. The fix is proven — `pgDuo`'s IIFE run for real, one tap
+gives one request with `quantity: 2`, and `stopImmediatePropagation()` at window
+capture stops every other click listener and `preventDefault()` stops any form
+submit, so no fourth writer can add to it either.
+
+It is not live. `163657089252` (MAIN) was last updated **03:46**, before any of
+it. Draft `163709550820` has the lot.
+
+## Deployed to draft 163709550820
+
+    pg-gift-pill     fb0553fe5b85e8ea19dce097f91f42d0
+    header-group     945b75c61807037132f56d52f3b49271
+    pg-gift-purple   a0636dd85ee18d447a3255532a6b8836
+    pg-cart-tune     e16b20f8045a5843ac5fae9ebcc7527b
+    pg-r36s-mobile   e00c75f420d9ba392af35659e7465931
+
+`pg-cart-tune` is unchanged this round — its `pillLeft` stays as the first pass
+and `pg-gift-pill` corrects the two properties it cannot reach.
+
 # The purple stops moving, and the case offer covers every console
 
 ## The purple: the animation was never the shared behaviour
