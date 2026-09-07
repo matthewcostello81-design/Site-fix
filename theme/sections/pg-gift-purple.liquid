@@ -1,96 +1,49 @@
 {%- comment -%}
-  PG Gift Purple: make the gift line's SAVE 100% the SAME purple as the other
-  pills in the cart, for the two reasons it was not.
+  PG Gift Purple: the gift line's SAVE 100% stops moving and paints the same
+  purple as every other pill in the cart.
 
-  This lives in its own file rather than inside pg-cart-tune because that file is
-  already 34KB and this is a self-contained correction with one job. It writes
-  two properties on one class and nothing else in the theme writes either of
-  them, so it cannot contend with anything.
+  WHAT WAS ACTUALLY WRONG. Not the colour, and not the phase. The gradient on
+  .pg-gift-off is character for character the one pg-drawer gives .pg-save-chip
+  and .pg-free-tag, and both carry `animation:pgShift 5s ease-in-out infinite`.
+  The difference is how long each element LIVES:
 
-  ------------------------------------------------------------------ CAUSE ONE
+    - .pg-save-chip is created fresh by pg-drawer's pgDeals every time the
+      drawer rebuilds -- `chip = document.createElement('span')` at pg-drawer:535
+      -- and the drawer's innerHTML is replaced on every cart change. A CSS
+      animation restarts when its element is created, so those pills are
+      permanently near 0% of the sweep and read as one steady purple.
 
-  PHASE. The gradient is not different -- it is character for character the
-  declaration pg-drawer gives .pg-save-chip and .pg-free-tag, confirmed by
-  computed style (sameGradient: true). But a CSS animation starts when its
-  ELEMENT does, and these pills are created by different sections at different
-  moments, so at any instant each sits at a different point in the same
-  five-second pgShift sweep.
+    - .pg-gift-off is created once and then deliberately left alone: this
+      session's cart script only ever writes it when its text differs, on the
+      "settle, do not fight" rule that stopped the earlier flicker bugs. Which
+      means it is the one pill that actually runs the full five-second sweep,
+      over and over, with the colour visibly travelling through it.
 
-  Every pill is anchored to one origin with a negative animation-delay equal to
-  how long ago that origin was -- the phase an animation started then would be
-  in. Stamped once per element, because a CHANGED delay restarts the animation
-  and shows as a jump.
+  So the animation was never the shared behaviour -- it was an accident of the
+  others being short-lived. Per the owner: copy the others.
 
-  ------------------------------------------------------------------ CAUSE TWO
+  THE FIX. Pin the pill to the paint the others sit at: no animation, and
+  `background-position:0% 50%`, which is where a freshly-created chip starts.
+  With background-size at 240% the visible window is the leftmost ~41.7% of the
+  gradient regardless of the pill's width, so a wider pill shows the same ramp of
+  colour, not a different slice of it. Nothing to measure, nothing to keep in
+  sync, and no JavaScript -- an earlier version of this file matched the phase
+  and the pixel scale at runtime, which was solving a problem the owner did not
+  have.
 
-  SCALE, which phase alone could never fix. `background-size:240% 240%` is
-  relative to the ELEMENT'S OWN box, and the pills are different widths.
-  Measured in Chromium against the theme's own pill geometry:
-
-      reference pill "-44%"    42.0px wide  ->  gradient runs over 100.8px
-      ours "SAVE 100%"         79.8px wide  ->  gradient runs over 191.5px
-
-  The same five stops stretched to nearly twice the length. At any instant the
-  two show a different slice of it, so they read as different purples with
-  neither colour nor phase to blame.
-
-  So the reference pill is measured at runtime and its gradient size copied onto
-  ours in PIXELS -- 100.8px on both -- after which the colour at a given phase is
-  the same. Written only when the value changes, so the animation is never
-  restarted. With no reference pill on screen (a cart holding only the gift)
-  nothing is written and the theme's percentage stands.
+  The gradient itself is restated so all four properties are set together and
+  none can be left over from the rule this overrides.
 {%- endcomment -%}
-<script>
-(function(){
-  if (window.pgGiftPurple) return; window.pgGiftPurple = 1;
-
-  /* one origin for every pill, so "in phase" means something */
-  var PHASE0 = Date.now() - (window.performance && performance.now ? performance.now() : 0);
-  var PHASED = '.pg-gift-off, .pg-save-chip, .pg-free-tag, .pg-unlock-tag, .pg-frameoffer-sv';
-
-  function syncPhase(){
-    document.querySelectorAll(PHASED).forEach(function(el){
-      if (el.getAttribute('data-pg-phase')) return;
-      el.setAttribute('data-pg-phase', '1');
-      var d = ((Date.now() - PHASE0) % 5000) / 1000;
-      el.style.setProperty('animation-delay', '-' + d.toFixed(3) + 's', 'important');
-    });
+<style>
+  #cart#cart#cart .pg-gift-off,
+  body.template-cart .pg-gift-off{
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;
+    background-position:0% 50% !important;
+    background-repeat:no-repeat !important;
+    animation:none !important;
   }
-
-  /* and the same gradient scale, in pixels, copied off a real pill */
-  function matchPurple(){
-    var ref = document.querySelector('#cart .pg-save-chip, #cart .pg-free-tag');
-    if (!ref) return;
-    var r = ref.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    var bs = (r.width * 2.4).toFixed(1) + 'px ' + (r.height * 2.4).toFixed(1) + 'px';
-    document.querySelectorAll('#cart .pg-gift-off, body.template-cart .pg-gift-off').forEach(function(el){
-      if (el.getAttribute('data-pg-bs') === bs) return;
-      el.setAttribute('data-pg-bs', bs);
-      el.style.setProperty('background-size', bs, 'important');
-    });
-  }
-
-  function pass(){ syncPhase(); matchPurple(); }
-
-  var pending = false;
-  function soon(){
-    if (pending) return;
-    pending = true;
-    setTimeout(function(){ pending = false; pass(); }, 80);
-  }
-
-  if (window.MutationObserver){
-    (function watch(){
-      var c = document.getElementById('cart');
-      if (c){ try { new MutationObserver(soon).observe(c, {childList:true, subtree:true}); } catch(e){} }
-      else setTimeout(watch, 500);
-    })();
-  }
-  setInterval(pass, 1200);
-  pass();
-})();
-</script>
+</style>
 {% schema %}
 {"name": "PG Gift Purple", "settings": []}
 {% endschema %}

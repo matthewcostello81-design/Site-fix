@@ -84,16 +84,11 @@
   (width, text-indent) is still taken back in script -- inline !important cannot
   be beaten from a stylesheet.
 
-  ONE PURPLE, ONE PHASE. The SAVE 100% chip read as a different purple from the
-  other pills, and the gradient was never the reason -- it is character for
-  character the declaration pg-drawer gives .pg-save-chip and .pg-free-tag. A CSS
-  animation starts when its ELEMENT does, and these pills are created by
-  different sections at different moments, so at any instant each sits at a
-  different point in the same five-second sweep. With background-size at 240%
-  across a five-stop gradient that is a very visible difference, and no colour
-  change can fix it. Every pill is now anchored to one origin with a negative
-  animation-delay, stamped once so the animation never restarts, and applied to
-  the theme's pills too -- being in phase only means anything if they all agree.
+  ONE PURPLE. The SAVE 100% chip's colour is settled in pg-gift-purple, which
+  pins it to the paint the theme's own pills sit at. See that file: the gradient
+  was always identical, and what differed was that pgDeals re-creates its chips
+  on every drawer rebuild (restarting their animation near 0%) while this one is
+  created once and left alone, so it was the only pill actually sweeping.
 
   THE $0.00 WAS IN THE WRONG FACE. pg-theme-css puts every other line's price in
   Poppins by naming it: `#cart .nc-lsave-now{font-family:'Poppins',... }`.
@@ -101,37 +96,17 @@
   then have to copy the next one, the figures now carry `nc-lsave-was` /
   `nc-lsave-now` alongside their own classes, so the theme styles them itself.
 
-  THE SPARE-CASE TICKBOX COUNTED WRONG, AND WHY. The owner asked that the
-  "Add a spare case for each console" offer follow the cart: consoles held, minus
-  paid cases already bought. pg-unlock's accRow() computes exactly that --
+  A CASE FOR EVERY CONSOLE. Owner's rule: the spare-case offer covers every
+  console in the cart that does not already have a case, the free one included.
+  Three consoles and one free case means TWO spares.
 
-      q = (o.totalQty + o.need) - (paid cases in cart)
-
-  -- so the rule was never missing. What is missing is a reason to RE-RENDER the
-  row when q changes. render() keeps a per-row signature:
-
-      var sg = o.handle + ':' + (o.freeNth || o.rung.nth) + ':' + o.need;
-      if (existing.getAttribute('data-sig') === sg) return;   /* unchanged */
-
-  Adding a paid case changes q but changes none of handle, nth or need. The
-  signature matches, the row is left exactly as it was, and it keeps its stale
-  count for the life of the drawer -- one console and one spare case in the cart
-  still offering two at $49.98.
-
-  THE FIX IS A NUDGE, NOT A SECOND WRITER. The count is recomputed here from the
-  rendered cart (no network: consoles and paid cases are both readable off the
-  rows, and the free gift line is excluded by its data-pg-free). If it disagrees
-  with the rendered data-q, the row is removed -- which is the one thing
-  pg-unlock's own rowsPresent() checks -- and pg-unlock rebuilds it, correctly,
-  on its next pass. Nothing here writes the row's contents, so pg-unlock remains
-  its only author.
-
-  AND IT ASKS ONCE. The obvious failure mode of nudging another section is a
-  loop: remove, rebuild wrong, remove again. So the state that prompted the
-  nudge (handle, totalQty, need, cases owned) is remembered, and the same state
-  never prompts a second one. Worst case the row stays wrong until the cart
-  changes again -- which is exactly where it is today -- and the drawer cannot
-  churn.
+  pg-unlock's accRow() answers a different question -- (totalQty + need) minus
+  PAID cases -- which counts consoles not bought yet and ignores the free case.
+  An earlier version here tried to nudge pg-unlock into recomputing its own
+  figure by removing the row, which cannot help when the formula is the wrong
+  one and costs a visible rebuild on every cart change. That is gone; the row's
+  three stated values (data-q, the label, the price pair) are written directly,
+  each only when it differs.
 
   THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title steps from the drawer's
   16.5px/700 to 17.5px/800, scoped to that product's rows and excluding the gift
@@ -211,67 +186,22 @@
      The tile the owner keeps pointing at -- "Add a 2nd PocketBoy R36",
      $64.99 / $48.74, SAVE 25%, "Discount applied at checkout", with the
      "Add a spare case for each console" tickbox under it -- is built by
-     pg-unlock, not by nc-cro's .nc-rec rows. Its markup, from the source:
+     pg-unlock, not by nc-cro's .nc-rec rows.
 
-         <img width=54 height=54>
-         <div class="pg-unlock-t">
-           <b>Add a 2nd PocketBoy R36</b>
-           <span class="pg-unlock-px"><s>$64.99</s>$48.74<span class="pg-unlock-tag">SAVE 25%</span></span>
-           <small>Discount applied at checkout</small>
-         </div>
-         <button class="pg-unlock-add">Add</button>
-         <div class="pg-uacc">...</div>
-
-     WHY SAVE % SITS ON ITS OWN LINE. pg-unlock sets
-     `.pg-unlock-px{display:block}` deliberately: nowrap once made the was +
-     now + chip an unbreakable unit that overflowed the text column and painted
-     under the ADD button. As a block its three children are inline, so a narrow
-     column simply drops the chip to the next line -- which is what the owner is
-     looking at.
-
-     It becomes a flex row with nowrap instead, which fixes the wrap WITHOUT
-     bringing back the overflow: min-width:0 on the copy column and a chip that
-     is allowed to shrink mean the line can no longer push past its column. The
-     ADD button loses the width it does not need on a phone, and the title takes
-     one line, so the copy column has the room the flex row needs.
-
-     Measured in Chromium against pg-unlock's real markup and stylesheet at
-     390/393/414/430px: title one line and NOT truncated, the three price parts
-     on one vertical centre, 0 overflow on both the price line and the row, and
-     the SAVE chip ending 123px clear of the ADD button.
-
-     SPECIFICITY. pg-unlock's own small-phone block already uses THREE ids
-     (`#cart#cart #pg-unlock-slot ...`) because pg-cart-timer stamps the same row
-     with two. Four ids here, so this wins at any load order against both. */
+     NOTE: the wrapping and truncation rules that used to live here for this row
+     were superseded by pg-upsell-fit, which sets them at five ids after
+     measuring the real phone widths. What stays here is the row's size and
+     spacing only. */
 
   /* the tile: closer to what is above it, and less padding of its own */
   #cart#cart#cart#cart .pg-unlock{margin:2px 0 4px !important;padding:9px 11px !important;gap:10px !important}
   #cart#cart#cart#cart .pg-unlock-t{min-width:0 !important}
-
-  /* the title takes one line */
-  #cart#cart#cart#cart .pg-unlock-t b{
-    font-size:13px !important;line-height:1.25 !important;
-    white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;
-  }
+  #cart#cart#cart#cart .pg-unlock-t b{font-size:13px !important;line-height:1.25 !important}
   #cart#cart#cart#cart .pg-unlock-t small{font-size:11px !important;line-height:1.25 !important;margin-top:1px !important}
-
-  /* price, struck price and SAVE % on ONE line */
-  #cart#cart#cart#cart .pg-unlock-px{
-    display:flex !important;align-items:center !important;flex-wrap:nowrap !important;
-    gap:6px !important;margin-top:2px !important;line-height:1.2 !important;
-    min-width:0 !important;
-  }
-  #cart#cart#cart#cart .pg-unlock-px s{margin-right:0 !important;flex:0 0 auto !important;font-size:11.5px !important}
-  #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{
-    margin:0 !important;vertical-align:baseline !important;
-    flex:0 1 auto !important;min-width:0 !important;white-space:nowrap !important;
-    font-size:10.5px !important;padding:3px 7px !important;
-  }
-
-  /* the ADD button gives back the width the copy needs */
+  #cart#cart#cart#cart .pg-unlock-px{margin-top:2px !important;line-height:1.2 !important;min-width:0 !important}
+  #cart#cart#cart#cart .pg-unlock-px s{margin-right:0 !important;font-size:11.5px !important}
+  #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{margin:0 !important;font-size:10.5px !important;padding:3px 7px !important}
   #cart#cart#cart#cart .pg-unlock-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important}
-
-  /* and the spare-case tickbox under it */
   #cart#cart#cart#cart .pg-uacc{margin-top:1px !important;padding:5px 8px !important}
   #cart#cart#cart#cart .pg-uacc-t{font-size:11px !important}
   #cart#cart#cart#cart .pg-uacc-p{font-size:11.5px !important}
@@ -280,7 +210,7 @@
     #cart#cart#cart#cart .pg-unlock{padding:8px 10px !important;gap:9px !important}
     #cart#cart#cart#cart .pg-unlock img{width:46px !important;height:46px !important;min-height:0 !important;align-self:center !important}
     #cart#cart#cart#cart .pg-unlock-t b{font-size:12.5px !important}
-    #cart#cart#cart#cart .pg-unlock-px{font-size:13.5px !important;gap:5px !important}
+    #cart#cart#cart#cart .pg-unlock-px{font-size:13.5px !important}
     #cart#cart#cart#cart .pg-unlock-px s{font-size:11px !important}
     #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{font-size:10px !important;padding:2px 6px !important}
     #cart#cart#cart#cart .pg-unlock-add{padding:0 11px !important;min-height:32px !important;font-size:11.5px !important}
@@ -350,13 +280,13 @@
     text-align:left !important;
   }
   /* the gift line's percentage, in the price corner under the two figures --
-     geometry and colour matched to .pg-save-chip so the two read as the same
-     badge on different rows */
+     geometry matched to .pg-save-chip so the two read as the same badge on
+     different rows. Its COLOUR is settled in pg-gift-purple. */
   #cart .pg-gift-off,
   body.template-cart .pg-gift-off{
     display:inline-flex !important;align-items:center !important;justify-content:center !important;
     background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
-    background-size:240% 240%;animation:pgShift 5s ease-in-out infinite;
+    background-size:240% 240%;
     color:#fff !important;-webkit-text-fill-color:#fff !important;
     font-size:12px !important;font-weight:700 !important;line-height:1 !important;
     letter-spacing:normal !important;word-spacing:normal !important;text-indent:0 !important;
@@ -420,12 +350,7 @@
   var WAS = {{ pg_gift_was | json }};
   if (!/^\$[\d.,]+$/.test(String(WAS || ''))) WAS = '$13.99';
 
-  /* THE PRICE CELL, BUILT AND OWNED HERE. The previous version borrowed
-     .nc-lsave, which meant depending on nc-cro to build it, pg-chips to fill it
-     and pg-drawer's :has() rules to agree about it. Three owners for one corner,
-     and the struck price never appeared. Own classes, one owner, nothing to
-     negotiate -- and the CSS above hides the theme's own price node on that line
-     so the corner never shows two. */
+  /* THE PRICE CELL, BUILT AND OWNED HERE. */
   function cellOf(li){
     var cell = li.querySelector('.pg-gift-cell');
     if (cell) return cell;
@@ -438,8 +363,6 @@
        to inherit them rather than re-derive them. The cell is still built and
        owned here; only the styling is borrowed. */
     cell.className = 'pg-gift-cell nc-lsave';
-    /* the theme's own class names ride along, so every rule it applies to a real
-       price cell applies here too -- see the note on the font in the CSS above */
     cell.innerHTML = '<s class="pg-gift-was nc-lsave-was"></s>' +
                      '<b class="pg-gift-now nc-lsave-now"></b>' +
                      '<span class="pg-gift-off">SAVE 100%</span>';
@@ -458,17 +381,12 @@
   /* THE PILL. Its GRID PLACEMENT is handled in CSS above -- that was the actual
      bug. What still has to be done from script is the inline geometry pg-drawer's
      ftFix() pins (width and text-indent, both inline !important, unbeatable from
-     a stylesheet). ftFix runs a bounded number of times per pill (creation,
-     400/1500/3500ms, fonts.ready) and then stops, so this restates the same
-     values on that clock and once after it. */
+     a stylesheet). */
   function pillLeft(li){
     var tag = li.querySelector('.pg-free-tag');
     if (!tag) return;
     /* OUT OF THE GRID ENTIRELY -- pg-chips' own conclusion for its plaque, and
-       the only placement that cannot be auto-flowed into the wrong cell. Inside
-       the title it starts at the title's content edge. pg-drawer's giftTag()
-       only ever CREATES this pill (it returns early on li.dataset.pgFree), so
-       moving it is not a tug of war. */
+       the only placement that cannot be auto-flowed into the wrong cell. */
     var h2 = li.querySelector('h2');
     if (h2 && tag.parentNode !== h2) h2.appendChild(tag);
     if (tag.style.justifyContent !== 'flex-start'){
@@ -480,48 +398,46 @@
     if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
   }
 
-  /* ---------------- one purple, one phase ----------------
-     The SAVE 100% chip reads as a DIFFERENT purple from the other pills, and the
-     gradient is not the reason -- it is character-for-character the same
-     declaration pg-drawer gives .pg-save-chip and .pg-free-tag:
+  /* ---------------- a case for every console ----------------
+     Owner's rule, stated plainly: the spare-case offer covers every console in
+     the cart that does not already have a case -- the free one included. Three
+     consoles and one free case means TWO spares, so the third console is not
+     left without.
 
-         linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)
-         background-size:240% 240%;  animation:pgShift 5s ease-in-out infinite
+     pg-unlock's accRow() answers a different question:
 
-     A CSS animation starts when its ELEMENT does. These pills are created by
-     different sections at different moments, so at any instant each one is at a
-     different point in the same five-second sweep -- and 240% of background
-     travelling across a five-stop gradient is a very visible difference. Nothing
-     about it is fixable by changing colours.
+         q = (o.totalQty + o.need) - (PAID cases only)
 
-     So every pill is anchored to one origin: a negative animation-delay equal to
-     how long ago that origin was, which is the phase an animation started then
-     would be in. Stamped once per element (a changed delay would restart the
-     animation and show as a jump), and applied to the theme's pills as well as
-     this one, since being in phase is only meaningful if they all agree.
-     animation-delay is written by no other section, so nothing contends. */
-  var PHASE0 = Date.now() - (window.performance && performance.now ? performance.now() : 0);
-  var PHASED = '.pg-gift-off, .pg-save-chip, .pg-free-tag, .pg-unlock-tag, .pg-frameoffer-sv';
+     `need` is however many units the next bundle rung would add, so the count
+     includes consoles the shopper has not bought yet; and excluding the free
+     case means the one console that IS covered still gets counted. Neither is
+     the number the row is asking about.
 
-  function syncPhase(){
-    document.querySelectorAll(PHASED).forEach(function(el){
-      if (el.getAttribute('data-pg-phase')) return;
-      el.setAttribute('data-pg-phase', '1');
-      var d = ((Date.now() - PHASE0) % 5000) / 1000;
-      el.style.setProperty('animation-delay', '-' + d.toFixed(3) + 's', 'important');
-    });
-  }
+     An earlier version of this block tried to NUDGE pg-unlock into recomputing
+     its own figure by removing the row. That cannot help when the formula
+     itself is the wrong one, and a row removal on every cart change is a
+     rebuild the shopper can see -- exactly the kind of churn this cart has been
+     reported for. It is gone. What replaces it writes the three things the row
+     states and nothing else: data-q (which pg-unlock's accPost reads when it
+     adds), the label, and the price pair.
 
-  /* ---------------- the spare-case tickbox's quantity ----------------
-     See the note above: pg-unlock computes it correctly but its per-row
-     signature does not include it, so the row never re-renders when it changes.
-     Recomputed here off the rendered cart and, on a disagreement, the row is
-     removed once so pg-unlock rebuilds it itself. */
-  var ACC_OWN = {
-    'handheld-game-console': 'r36s-protective-case',
-    'lenticular-poster':     '30x40cm-frame'
+     Each is written only when it actually differs, so a settled row is never
+     touched. pg-unlock rewrites the row wholesale whenever its own signature
+     changes, and this simply re-applies on the next pass -- the same
+     arrangement pg-upsell-fit already uses for the R36S rename, and safe for
+     the same reason. */
+  var ACC = {
+    'handheld-game-console': {
+      mark: 'r36s-protective-case', now: 1399, was: 2499,
+      one: 'Add a spare protective case', many: 'Add a spare case for each console'
+    },
+    'lenticular-poster': {
+      mark: '30x40cm-frame', now: 1499, was: 2799,
+      one: 'Add the matching frame', many: 'Add a frame for each print'
+    }
   };
-  var nudged = {};
+
+  function accMoney(c){ return '$' + (c / 100).toFixed(2); }
 
   function lineQty(li){
     var inp = li.querySelector('input[type=number]');
@@ -532,45 +448,43 @@
     return 1;
   }
 
-  /* paid units of the accessory in the cart -- the auto-added gift is not a
-     spare, and it is the one line carrying data-pg-free */
-  function ownedPaid(mark){
+  /* units of a product in the cart, read off the rendered rows -- no network.
+     The free gift line is NOT excluded here: a console that already has the
+     free case does not need a spare, which is the whole point of the rule. */
+  function unitsOf(mark){
     var n = 0;
     document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li')
       .forEach(function(li){
-        if (li.hasAttribute('data-pg-free')) return;
         if (!li.querySelector('a[href*="' + mark + '"]')) return;
         n += lineQty(li);
       });
     return n;
   }
 
-  function accSync(){
+  function accFit(){
     document.querySelectorAll('#cart .pg-unlock[data-pg-unlock]').forEach(function(row){
-      var handle = row.getAttribute('data-pg-unlock') || '', mark = null, k;
-      for (k in ACC_OWN){ if (handle.indexOf(k) > -1){ mark = ACC_OWN[k]; break; } }
-      if (!mark) return;
+      var handle = row.getAttribute('data-pg-unlock') || '', cfg = null, k;
+      for (k in ACC){ if (handle.indexOf(k) > -1){ cfg = ACC[k]; break; } }
+      if (!cfg) return;
+      var acc = row.querySelector('.pg-uacc');
+      if (!acc) return;
 
-      var add = row.querySelector('.pg-unlock-add');
-      if (!add) return;
-      var t = parseInt(add.getAttribute('data-t'), 10);
-      var n = parseInt(add.getAttribute('data-n'), 10);
-      if (isNaN(t) || isNaN(n)) return;
+      var want = unitsOf(k) - unitsOf(cfg.mark);
+      if (want < 1){
+        if (acc.style.display !== 'none') acc.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      if (acc.style.display === 'none') acc.style.removeProperty('display');
 
-      var owned = ownedPaid(mark);
-      var want = (t + n) - owned;
-      if (want < 1) want = 0;                 /* accRow renders nothing below 1 */
+      if (acc.getAttribute('data-q') !== String(want)) acc.setAttribute('data-q', String(want));
 
-      var acc  = row.querySelector('.pg-uacc');
-      var have = acc ? (parseInt(acc.getAttribute('data-q'), 10) || 0) : 0;
-      if (want === have) return;              /* agreed */
+      var t = acc.querySelector('.pg-uacc-t');
+      var label = want > 1 ? cfg.many : cfg.one;
+      if (t && t.textContent !== label) t.textContent = label;
 
-      /* ask once per distinct state, so a rebuild that comes back the same
-         cannot start a remove/rebuild loop */
-      var key = handle + ':' + t + ':' + n + ':' + owned;
-      if (nudged[key]) return;
-      nudged[key] = 1;
-      if (row.parentNode) row.parentNode.removeChild(row);
+      var p = acc.querySelector('.pg-uacc-p');
+      var html = '<s>' + accMoney(cfg.was * want) + '</s>' + accMoney(cfg.now * want);
+      if (p && p.innerHTML !== html) p.innerHTML = html;
     });
   }
 
@@ -581,8 +495,7 @@
       if (!host) return;
       figures(host);
     });
-    accSync();
-    syncPhase();
+    accFit();
   }
 
   var pending = false;

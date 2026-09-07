@@ -1,3 +1,79 @@
+# The purple stops moving, and the case offer covers every console
+
+## The purple: the animation was never the shared behaviour
+
+The owner's report was the opposite of what I had been solving for — the other
+pills are STATIC and ours is the one moving. That is exactly right, and the
+reason is lifetime, not colour or phase:
+
+- `.pg-save-chip` is created fresh by `pg-drawer`'s `pgDeals` on every drawer
+  rebuild (`chip = document.createElement('span')`, pg-drawer:535) and the
+  drawer's `innerHTML` is replaced on every cart change. A CSS animation
+  restarts when its element is created, so those pills sit permanently near 0%
+  of the sweep and read as one steady purple.
+- `.pg-gift-off` is created once and then deliberately left alone — this
+  session's own "settle, do not fight" rule, the one that stopped the earlier
+  flicker bugs. So it is the only pill that actually runs the full five-second
+  sweep, over and over.
+
+`pg-gift-purple` is now four lines of CSS: same gradient, same 240% size,
+`background-position: 0% 50%`, `animation: none`. That is the paint a
+freshly-created chip shows. The runtime phase-matching and pixel-scale matching
+from the previous round are deleted — they were solving a problem the owner did
+not have.
+
+Verified: `sameGradient: true`, `sameSize: true`, ours `animation: none` at
+`0% 50%`.
+
+## A case for every console
+
+Owner's rule: the spare-case offer covers every console in the cart that does
+not already have a case — **the free one included**. Three consoles and one free
+case means two spares, so the third console is not left without.
+
+`pg-unlock`'s `accRow()` answers a different question:
+
+    q = (o.totalQty + o.need) - (PAID cases only)
+
+`need` is however many units the next bundle rung would add, so it counts
+consoles not bought yet; and excluding the free case means the one console that
+*is* covered still gets counted.
+
+**The nudge is gone.** Last round's `accSync` removed the row to make `pg-unlock`
+recompute — which cannot help when the formula itself is wrong, and costs a
+visible rebuild on every cart change. That is a plausible contributor to the
+glitching reported since. It is replaced by writing the three things the row
+states — `data-q` (which `accPost` reads when it adds), the label, and the price
+pair — each only when it differs.
+
+Verified headless:
+
+    3 consoles + 1 free case  ->  2 | "Add a spare case for each console" | $49.98 $27.98
+    15 further passes         ->  unchanged, zero writes
+    3 consoles + 3 cases      ->  row hidden
+
+## Deployed
+
+All to draft `163709550820`; checksums match the repo byte for byte.
+
+    pg-cart-tune     e16b20f8045a5843ac5fae9ebcc7527b   (accSync removed, accFit in)
+    pg-gift-purple   a0636dd85ee18d447a3255532a6b8836   (CSS only now)
+    pg-r36s-mobile   e00c75f420d9ba392af35659e7465931   (Duo owner)
+    header-group     bde8cebae814776bd555d62d4f4bae75
+
+`pg-cart-tune` also drops the row-wrapping rules it used to set for
+`.pg-unlock`: `pg-upsell-fit` (added outside this session) now sets them at five
+ids after measuring real phone widths, and two files asserting the same
+properties is how these fights start.
+
+Deployed JS re-downloaded and re-parsed with `node --check`; CSS braces 71/71.
+
+## Still not live
+
+The live theme is `163657089252`, last updated 03:46 — before the Duo Pack fix
+and everything in this round. A report of glitching from a phone that is on
+thepocketera.com is a report about that build.
+
 # Reproduced the Duo Pack double-add against the real pgDuo, and the purple had a second cause
 
 ## The 3-item add, proven — not inferred
