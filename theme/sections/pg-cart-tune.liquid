@@ -65,12 +65,19 @@
   own price node and any .nc-lsave on that line are hidden, so the corner can
   never show two. One owner, nothing to negotiate.
 
-  THE WORDS INSIDE THE FREE GIFT PILL, LEFT. pg-drawer's ftFix() pins the pill's
-  width and text-indent INLINE and !important, from a measurement of where the
-  glyphs painted -- no stylesheet can move them, which is why the padding rule
-  below never did. ftFix runs a bounded number of times per pill (creation,
-  400/1500/3500ms, fonts.ready) and then stops, so the geometry is restated on
-  the same clock and once after it, and the last word is this one.
+  THE FREE GIFT PILL WAS IN THE WRONG GRID CELL. This was asked for many times
+  and answered wrongly every time, because the wrong thing was being measured.
+  Measured properly at 390px against the drawer's own grid: the title's box
+  starts at x=13, the pill's at x=285 -- 272px to its right, hard against the
+  price column. It was never a question of where the words sit INSIDE the pill;
+  the pill was not under the title at all.
+
+  pg-drawer places it with `grid-area:sv;justify-self:start` inside
+  `"nm nm" "vr vr" "sv sv" "qt pr"`. Anything that perturbs that placement
+  auto-flows the pill into the next free cell -- the right-hand `auto` column.
+  The placement is now restated at four ids: full row, start-aligned, no auto
+  margin. The inline geometry ftFix owns (width, text-indent) is still taken
+  back in script, since inline !important cannot be beaten from a stylesheet.
 
   THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title steps from the drawer's
   16.5px/700 to 17.5px/800, scoped to that product's rows and excluding the gift
@@ -256,15 +263,34 @@
   #cart .nc-dlogo,#cart .nc-dlogo-txt{margin-bottom:7px !important}
   #cart .pg-cart-top{border-bottom:0 !important;padding-top:9px !important;padding-bottom:9px !important}
 
-  /* the FREE GIFT pill sits at the left edge of its line, under the title */
-  #cart .pg-free-tag,
-  body.template-cart .pg-free-tag{
-    text-indent:0 !important;
-    text-align:left !important;
+  /* ============ THE FREE GIFT PILL: IT WAS IN THE WRONG GRID CELL ============
+     Measured, at 390px, against the drawer's own grid: the title's box starts at
+     x=13 and the pill's at x=285 -- 272px to its right, hard against the price
+     column. Every previous attempt here adjusted the alignment of the words
+     INSIDE the pill (text-indent, justify-content, padding), which was never the
+     problem: the pill itself was not under the title.
+
+     pg-drawer lays the row out as
+     `grid-template-areas:"nm nm" "vr vr" "sv sv" "qt pr"` and places the pill
+     with `grid-area:sv;justify-self:start`. When anything perturbs that
+     placement the pill is auto-flowed into the next free cell, which is the
+     right-hand `auto` column. So the placement is restated here explicitly and
+     at a weight nothing in the theme can outrank: full row, start-aligned, no
+     auto margin pushing it anywhere.
+
+     `grid-column:1/-1` rather than `grid-area:sv`, because it does not depend on
+     the named areas still existing if that template is ever changed. */
+  #cart#cart#cart#cart .l4ca > li section .pg-free-tag,
+  body.template-cart .l4ca > li section .pg-free-tag{
+    grid-column:1 / -1 !important;
+    grid-row:auto !important;
     justify-self:start !important;
     align-self:start !important;
-    margin-left:0 !important;
+    place-self:start start !important;
+    margin:4px 0 2px !important;
     margin-right:auto !important;
+    text-indent:0 !important;
+    text-align:left !important;
   }
   /* the gift line's percentage, in the price corner under the two figures --
      geometry and colour matched to .pg-save-chip so the two read as the same
@@ -364,29 +390,20 @@
     setText(cell.querySelector('.pg-gift-off'), 'SAVE 100%');
   }
 
-  /* THE WORDS INSIDE THE PILL, LEFT. pg-drawer's ftFix() pins this pill's width
-     and text-indent INLINE and !important, from a measurement of where the
-     glyphs painted -- no stylesheet can move them, which is why the padding rule
-     above never did. ftFix runs a bounded number of times per pill (creation,
-     400/1500/3500ms, fonts.ready) and then stops, so the geometry is restated
-     here on the same clock and again after it, and the last word is this one.
-     The pill is left-aligned and hugs its text rather than centring it in a box
-     wider than the words. */
+  /* THE PILL. Its GRID PLACEMENT is handled in CSS above -- that was the actual
+     bug. What still has to be done from script is the inline geometry pg-drawer's
+     ftFix() pins (width and text-indent, both inline !important, unbeatable from
+     a stylesheet). ftFix runs a bounded number of times per pill (creation,
+     400/1500/3500ms, fonts.ready) and then stops, so this restates the same
+     values on that clock and once after it. */
   function pillLeft(li){
     var tag = li.querySelector('.pg-free-tag');
     if (!tag) return;
     if (tag.style.justifyContent !== 'flex-start'){
       tag.style.setProperty('justify-content', 'flex-start', 'important');
       tag.style.setProperty('text-align', 'left', 'important');
-      tag.style.setProperty('text-indent', '0', 'important');
       tag.style.setProperty('padding', '6px 11px', 'important');
-      tag.style.setProperty('width', 'auto', 'important');
-      tag.style.setProperty('margin-left', '0', 'important');
-      tag.style.setProperty('margin-right', 'auto', 'important');
-      return;
     }
-    /* ftFix re-pins width on its own schedule; take it back without touching
-       anything else, so this is the only property the two ever exchange */
     if (tag.style.width !== 'auto') tag.style.setProperty('width', 'auto', 'important');
     if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
   }

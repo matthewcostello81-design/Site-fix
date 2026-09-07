@@ -1,3 +1,56 @@
+# The FREE GIFT pill was in the wrong grid cell the whole time
+
+## Measured, finally
+
+Asked for many times, answered wrongly every time — because the wrong thing was
+being measured. At 390px, against the drawer's own grid:
+
+    titleBoxLeft: 13      pillBoxLeft: 285      deltaBox: 272
+
+The pill was **272px to the right of the title**, hard against the price column.
+Every previous attempt adjusted where the words sat *inside* the pill —
+`text-indent`, `justify-content`, `padding`, waiting out `ftFix` — and every one
+of those was answering a question nobody asked. The pill itself was not under the
+title.
+
+`pg-drawer` lays the row out as `grid-template-areas:"nm nm" "vr vr" "sv sv"
+"qt pr"` and places the pill with `grid-area:sv;justify-self:start`. Anything
+that perturbs that placement auto-flows it into the next free cell — the
+right-hand `auto` column. The placement is now restated at four ids:
+
+    grid-column: 1 / -1; justify-self: start; place-self: start start;
+    margin: 4px 0 2px; margin-right: auto;
+
+`grid-column:1/-1` rather than `grid-area:sv` so it does not depend on the named
+areas surviving a future change to that template.
+
+Re-measured against the deployed CSS:
+
+    390px  titleBoxLeft 13  pillBoxLeft 13  deltaBox 0  (pill on its own row, top 170 vs title 144)
+    430px  titleBoxLeft 13  pillBoxLeft 13  deltaBox 0
+
+The script still takes back `width` and `text-indent`, the two properties
+`ftFix()` pins inline and `!important` — a stylesheet cannot beat those. But the
+placement, which was the actual bug, is CSS now.
+
+## Not fixed: the Duo Pack cart glitch
+
+Reported this round, not diagnosed. `pgDuo`'s ADD posts two consoles
+(`{id, quantity: 2}` when both selects match, two lines when they differ) and
+then opens the drawer. From there several sections react to a two-console cart —
+`pg-giftguard`'s 1.2s poll and its gift add, `pg-unlock`'s offer render,
+`pg-chips`' `repct`, the theme's own `ncReopen`.
+
+`pg-cart-tune` was audited against it and is not a contributor: its observer
+watches `childList` only (so its own inline writes cannot re-trigger it), its
+cell is created once per drawer rebuild and is a no-op thereafter, and its pass
+touches no network.
+
+A speculative change to the cart is exactly what has cost this session the most,
+so this one waits for a description of what the glitching actually looks like —
+lines appearing and disappearing, figures flickering between two values, or a
+duplicate case — which distinguishes the candidates.
+
 # The upsell tile is pg-unlock, not nc-cro — and the gift cell now has one owner
 
 ## What the screenshot showed
