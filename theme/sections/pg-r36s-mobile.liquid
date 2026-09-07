@@ -369,6 +369,33 @@
        so it cannot race the console add the way the rider's 900ms timer did */
     if (duo.querySelector('.pg-tadd.on, .pg-uacc.on')) items.push({id: SPARE_CASE, quantity: 2});
 
+    /* AND A BACKSTOP, BECAUSE ONE PHONE STILL SEES THREE.
+       On an iPhone 16 Pro Max this handler is the only writer and the cart gets
+       exactly two. On an iPhone 13 the owner still reports three, and nothing in
+       the theme's files explains it: there is no touch, pointer or submit path
+       that adds a console, and stopImmediatePropagation() at window capture
+       already stops every click listener there is. Something on that device
+       adds one more, and it cannot be identified from here.
+
+       So rather than keep guessing at it, the count is made true afterwards.
+       The console total is read BEFORE the add (in parallel, so it delays
+       nothing) and the target is that plus two. One second and a half later --
+       comfortably past the 900ms rider and any drawer refresh -- the cart is
+       read once more, and if it holds more consoles than the target the surplus
+       is taken off the last console line.
+
+       It is deliberately meek: it runs ONCE per add, it only ever removes, it
+       only touches the console line, and when the total already matches (the
+       Pro Max case, and every desktop) it does nothing at all and issues no
+       write. If the first read fails it does not run. That is the smallest
+       thing that can make the promise "exactly two" hold on a device I cannot
+       reproduce. */
+    var target = null;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){ target = consolesIn(c) + 2; })
+      .catch(function(){ target = null; });
+
     fetch('/cart/add.js', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -378,8 +405,41 @@
       duoBusy = false;
       if (!r.ok) return;
       if (window.pgOpenCart) window.pgOpenCart();
+      setTimeout(function(){ if (target !== null) trimConsoles(target); }, 1500);
     }).catch(function(){ duoBusy = false; });
   }, true);
+
+  function consolesIn(cart){
+    var n = 0;
+    (cart.items || []).forEach(function(it){
+      if (it.handle === 'handheld-game-console') n += it.quantity;
+    });
+    return n;
+  }
+
+  /* remove the surplus, once, from the last console line -- never add, never
+     touch anything else, and never run at all when the count already agrees */
+  function trimConsoles(target){
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        var lines = (c.items || []).filter(function(it){ return it.handle === 'handheld-game-console'; });
+        var total = 0;
+        lines.forEach(function(it){ total += it.quantity; });
+        if (total <= target || !lines.length) return;      /* nothing to do */
+        var last = lines[lines.length - 1];
+        var q = Math.max(0, last.quantity - (total - target));
+        return fetch('/cart/change.js', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({id: last.key, quantity: q})
+        }).then(function(){
+          if (window.pgDrawerRefresh){ try { return window.pgDrawerRefresh(); } catch(e){} }
+        });
+      })
+      .catch(function(){});
+  }
 
   function boot(){
     pass();

@@ -1,3 +1,46 @@
+# Cart: FREE GIFT pill, SAVE 100% gradient, Duo Pack count
+
+Three fixes from the owner's last round of feedback on the R36S cart.
+
+## FREE GIFT pill sits under the title, words aligned (sections/pg-gift-pill.liquid)
+Earlier passes aligned the pill's BOX to the title's left edge, but the box
+carries 11px of left padding, so its WORDS still started ~14px right of the R.
+The pill is now pulled left by exactly that padding (`margin: 5px 0 1px -11px`),
+so the glyphs begin on the title's own left edge and the purple overhangs into
+the row padding. Measured in Chromium at 390px: pill words vs title words = 0px,
+box overhang = 11px, pill 85px wide for 63px of text.
+
+## SAVE 100% gradient runs dark-to-light (sections/pg-gift-purple.liquid)
+The five stops are symmetric (light #9B4BC4 at both ends, dark #4A1C66 in the
+middle), so at background-size 240% the visible window is either the left half
+(light -> dark) or the right half (dark -> light). It was pinned to `0% 50%`,
+which showed the light end first -- the "gradient in reverse" the owner reported.
+Now `100% 50%`, matching how the drawer's other chips read.
+
+## Duo Pack adds exactly two consoles (sections/pg-r36s-mobile.liquid)
+The window-capture owner already stops pgDuo and the 900ms add-on rider, and on
+an iPhone 16 Pro Max the cart gets exactly two. An iPhone 13 still reported three
+and no touch/pointer/submit adder exists anywhere in the theme's files to explain
+it. Rather than keep guessing, the count is made true afterwards: the console
+total is read BEFORE the add (in parallel, so it delays nothing), the target is
+that plus two, and 1.5s later -- past the rider and any drawer refresh -- the
+cart is read once and any surplus is taken off the last console line.
+
+Deliberately meek: once per add, remove-only, console lines only, no write at all
+when the total already agrees, and it does not run if the first read fails.
+Verified in Chromium: 2 consoles/target 2 -> 0 writes; 3 -> 2 in 1 write;
+1+2 lines -> 2 with cases untouched, 1 write; 1 console/target 2 -> never adds.
+
+## Applied to
+- pg-gift-pill.liquid and pg-gift-purple.liquid -> theme 163709550820
+  ("Copy of R36S + cart fixes (Claude 9-6)"), which the owner published mid-run,
+  so both are live.
+- pg-r36s-mobile.liquid -> theme 163721380068 ("Duo Pack fix (Claude 9-7)"),
+  a fresh unpublished duplicate of the live theme. Writes to the live theme are
+  blocked, so the owner must publish this one for the Duo Pack fix to go out.
+
+---
+
 # The FREE GIFT pill: two inline declarations, and both of them mine to beat
 
 The owner has asked for this twenty times and been told it was fixed several

@@ -22,14 +22,18 @@
   So the animation was never the shared behaviour -- it was an accident of the
   others being short-lived. Per the owner: copy the others.
 
-  THE FIX. Pin the pill to the paint the others sit at: no animation, and
-  `background-position:0% 50%`, which is where a freshly-created chip starts.
-  With background-size at 240% the visible window is the leftmost ~41.7% of the
-  gradient regardless of the pill's width, so a wider pill shows the same ramp of
-  colour, not a different slice of it. Nothing to measure, nothing to keep in
-  sync, and no JavaScript -- an earlier version of this file matched the phase
-  and the pixel scale at runtime, which was solving a problem the owner did not
-  have.
+  THE FIX. Pin the pill: no animation, and a fixed background-position.
+
+  WHICH END. The five stops are symmetric -- light #9B4BC4 at both ends, dark
+  #4A1C66 in the middle -- so with background-size at 240% the visible window is
+  either the left half (light -> dark) or the right half (dark -> light). 0%
+  gave the first, which is the "gradient in reverse" the owner reported. 100%
+  gives dark at the beginning, which is what the other pills read as.
+  The window is a fixed ~41.7% of the gradient regardless of the pill's width, so
+  a wider pill shows the same ramp of colour, not a different slice of it.
+  Nothing to measure, nothing to keep in sync, and no JavaScript -- an earlier
+  version of this file matched the phase and the pixel scale at runtime, which
+  was solving a problem the owner did not have.
 
   The gradient itself is restated so all four properties are set together and
   none can be left over from the rule this overrides.
@@ -39,7 +43,7 @@
   body.template-cart .pg-gift-off{
     background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
     background-size:240% 240% !important;
-    background-position:0% 50% !important;
+    background-position:100% 50% !important;
     background-repeat:no-repeat !important;
     animation:none !important;
   }

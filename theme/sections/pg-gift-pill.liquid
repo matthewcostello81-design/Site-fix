@@ -25,6 +25,17 @@
   Measured after: on its own line, pill.left - title.left = 0px, 85px of pill
   for 63px of text -- 11px of padding a side and nothing more.
 
+  AND THEN THE WORDS. Aligning the BOX was not the ask. Measured off the owner's
+  screenshot at 390pt: the title's glyphs start at 148.2px and the pill's box at
+  148.2px -- but its WORDS start at 162.1px, because the box carries 11px of
+  padding and a rounded cap. "Move the text over left more to be under the R36S"
+  is about the words, and they were 14px right of the R.
+
+  So the pill is pulled left by exactly its own left padding. The glyphs then
+  begin on the title's own left edge, and the purple overhangs by those 11px --
+  into the row's padding, where there is room, and small enough not to read as
+  the wide bar the earlier width:auto bug produced.
+
   WHY ITS OWN FILE. pg-cart-tune already owns this pill's placement and would be
   the natural home, but that file is 28KB and every edit to it means re-sending
   the whole thing. This is four property writes on one element. It runs AFTER
@@ -51,7 +62,9 @@
         tag.style.setProperty('align-items', 'center', 'important');
         tag.style.setProperty('text-align', 'left', 'important');
         tag.style.setProperty('padding', '6px 11px', 'important');
-        tag.style.setProperty('margin', '5px 0 1px', 'important');
+        /* -11px == the left padding, so the WORDS start on the title's left
+           edge rather than the box doing so. See the note above. */
+        tag.style.setProperty('margin', '5px 0 1px -11px', 'important');
       }
       if (tag.style.width !== 'fit-content'){
         tag.style.setProperty('width', '-webkit-fit-content', 'important');
