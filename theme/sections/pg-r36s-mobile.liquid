@@ -1,0 +1,511 @@
+{%- comment -%}
+  PG R36S Mobile: one swipeable gallery, the orb page's running order, and an
+  ADD TO CART inside every offer tile.
+
+  Registered in templates/product.pg-landing.json only (the R36S). Every visual
+  rule is ≤900px — desktop keeps the gallery and the column it has today.
+
+  ---------------------------------------------------------------- THE GALLERY
+
+  pg-landing renders three separate things: .pgx-hero (the first image),
+  .pgx-vid (the clip from the section's "Gallery video URL" setting) and
+  .pgx-thumbwrap (every other image). On a phone that reads as one big photo,
+  then a video, then a wall of pictures.
+
+  On phones they are now ONE carousel, like the orb: the strip is the gallery,
+  one item fills the view, and a "‹ SWIPE · n/N ›" pill on the photo says how
+  far along you are. Nothing is dropped — the hero photo is copied in as the
+  first slide, the video is MOVED in as the second, and the rest follow in
+  their product order.
+
+  Copied, not moved, for the hero: pg-landing's own thumbnail clicks write to
+  #pgx-hero-img, so moving that node into the strip would give the shopper a
+  slide whose picture changes under them. A copy takes the hero's src once, at
+  build time, and then stands still. The hero container is hidden only once the
+  copy is in place (the html.pg-r36-gal class), so a failure leaves the page
+  looking exactly as it does today rather than with no photo at all.
+
+  The video IS moved, since a second <video> would download the clip twice, and
+  it leaves a placeholder behind so rotating past 900px puts it back where
+  pg-landing had it. The desktop DOM is restored on that same pass.
+
+  The pill is pg-gallery-tweaks' markup and styling restated: that file is
+  registered on the orb template only, so the class names cannot collide here,
+  and repeating them is what makes the two pages look identical. The counter
+  repaints on every animation frame while the strip scrolls, not on a debounce,
+  so it counts up under the finger instead of jumping when the strip settles.
+
+  ------------------------------------------------------------ THE BUY COLUMN
+
+  The orb's phone layout comes from pg-tiktok-pdp, which turns .pgx-buy into a
+  flex column and gives each child an explicit order. The R36S had pg-landing's
+  plain DOM order — the review carousel directly under the stars, above the
+  bundle. The same order values are restated so both pages read:
+
+      title | stars | BUNDLE & SAVE | tiles | add to cart | sellout risk
+      | review carousel | info row | payment | guarantee | accordions
+
+  Order, not DOM moves: pg-mobile's quoteUp() re-seats the review card after the
+  rating every 1.5s and would fight a relocation. pg-sellout-last (also on this
+  template) is what puts the sellout card under the last tile; this file only
+  gives its wrapper the seat.
+
+  --------------------------------------------------- AN ADD TO CART PER TILE
+
+  Like the orb, where pg-tiktok-pdp puts one in every ladder tile: visible only
+  in the selected tile, with the big bottom button hidden on phones so exactly
+  one button is on screen and it belongs to the offer being looked at.
+
+  It must cover BOTH of this page's tiles, which come from different places and
+  share only .pgx-tile: the Single Item tile is pg-landing's own, and the Duo
+  Pack is built by pgDuo (pg-theme-css) as `.pgx-tile.pgx-duo`. An earlier pass
+  keyed on pg-landing's [data-pgx-tile] attribute and so skipped the Duo Pack
+  entirely — the selector here is every .pgx-tile in the buy column.
+
+  A click clicks #pgx-atc. For the SINGLE tile each owner takes it from there as
+  before. For the DUO PACK this file now owns the click outright -- see the note
+  on THE DUO PACK ADDS EXACTLY TWO further down. The button is a SPAN with
+  role=button (the base theme paints real buttons with a dark ::before overlay)
+  and deliberately does NOT carry .pgx-atc, or the handlers would fire from the
+  in-tile button itself and double-post. It only appears in the selected tile,
+  so by the time it can be pressed the tile it belongs to is already the one
+  that will be sold.
+{%- endcomment -%}
+<style>
+  /* off at every width except phones, where the rules below turn them on */
+  #pgx .pg-gt-swipe{display:none}
+  #pgx .pgx-tile .pg-r36-atc{display:none}
+
+  @media (max-width:900px){
+    /* ---- one carousel: hero copy, then the clip, then every other photo ---- */
+    html.pg-r36-gal #pgx .pgx-hero{display:none !important}
+    #pgx .pgx-thumbwrap{display:block !important;position:relative !important;margin-top:0 !important}
+    #pgx .pgx-thumbwrap .pgx-thumbs{
+      display:flex !important;flex-wrap:nowrap !important;
+      overflow-x:auto !important;scroll-behavior:smooth;
+      scroll-snap-type:x mandatory;
+      gap:10px !important;margin-top:0 !important;
+      scrollbar-width:none;-ms-overflow-style:none;-webkit-overflow-scrolling:touch;
+    }
+    #pgx .pgx-thumbwrap .pgx-thumbs::-webkit-scrollbar{display:none}
+    #pgx .pgx-thumbwrap .pgx-thumbs > *{flex:0 0 100% !important;scroll-snap-align:center}
+    #pgx .pgx-thumbwrap .pgx-thumbs button{padding:0;border:0;background:#0D0714;border-radius:10px;overflow:hidden;cursor:pointer}
+    #pgx .pgx-thumbwrap .pgx-thumbs button img{aspect-ratio:1/1 !important;object-fit:cover !important;width:100% !important;height:auto !important}
+    #pgx .pgx-thumbwrap .pgx-thumbs .pgx-vid{margin:0 !important;border-radius:10px;overflow:hidden;background:#0d0d0d}
+    #pgx .pgx-thumbwrap .pgx-thumbs .pgx-vid video{
+      width:100% !important;display:block;
+      aspect-ratio:1/1 !important;object-fit:cover !important;
+      height:auto !important;max-height:none !important;
+    }
+    /* phones swipe; the arrows sat on top of the picture */
+    #pgx .pgx-tharrow{display:none !important}
+
+    /* ---- the swipe pill, as on the orb ---- */
+    #pgx .pgx-thumbwrap .pg-gt-swipe{
+      display:flex;align-items:center;justify-content:center;gap:10px;
+      position:absolute;bottom:10px;top:auto;left:50%;transform:translateX(-50%);
+      z-index:4;margin:0;padding:11px 20px;
+      width:max-content;max-width:100%;
+      border-radius:999px;
+      background:rgba(11,7,16,.82);
+      border:1px solid rgba(190,140,235,.55);
+      box-shadow:0 6px 18px -6px rgba(0,0,0,.8);
+      color:#EEE1FB;
+      font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+      font-size:15px;font-weight:800;
+      letter-spacing:.10em;text-transform:uppercase;
+      white-space:nowrap;pointer-events:none;
+    }
+    #pgx .pg-gt-swipe span{display:inline-block;font-size:23px;line-height:.7;color:#F6ECFF;animation:pgGtNudge 1.5s ease-in-out infinite}
+    #pgx .pg-gt-swipe .pg-gt-l{animation-direction:reverse}
+    /* fixed width, so the centred pill does not shimmy as the digits change */
+    #pgx .pg-gt-swipe b.pg-gt-n{
+      display:inline-block;min-width:4.8ch;text-align:center;
+      font-weight:800;color:#FFFFFF;letter-spacing:.04em;
+      font-variant-numeric:tabular-nums;
+    }
+
+    /* ---- the orb page's running order ---- */
+    #pgx .pgx-buy{display:flex;flex-direction:column}
+    #pgx .pgx-buy > *{order:7}
+    #pgx .pgx-buy > .pgx-title{order:1}
+    #pgx .pgx-buy > .pgx-rating{order:2}
+    #pgx .pgx-buy > .pgx-bs{order:3}
+    #pgx .pgx-buy > .pgx-divider{order:3}
+    #pgx .pgx-buy > .pgx-tile{order:4}
+    #pgx .pgx-buy > .pgx-deal-note{order:5}
+    #pgx .pgx-buy > .pgx-atc{order:5}
+    #pgx .pgx-buy > .pgx-err{order:6}
+    #pgx .pgx-buy > .pgx-quote{order:8;margin-top:16px}
+    #pgx .pgx-buy > .pgx-sellout{order:9}
+    #pgx .pgx-buy > .pgx-info{order:10}
+    #pgx .pgx-buy > .pg-payrow{order:11}
+    #pgx .pgx-buy > .pgx-pay{order:11}
+    #pgx .pgx-buy > .pgx-guar{order:12}
+    #pgx .pgx-buy > .pgx-acc{order:13}
+
+    /* ---- an ADD TO CART inside the selected tile ---- */
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      margin-top:12px;padding:15px 12px;
+      border-radius:10px;
+      background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 55%,#5E2380 100%);
+      color:#FFFFFF;
+      font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+      font-size:15.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      text-align:center;cursor:pointer;
+      box-shadow:0 14px 30px -12px rgba(139,68,190,.75);
+      -webkit-user-select:none;user-select:none;
+      transition:filter .15s ease,opacity .15s ease;
+    }
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc:hover{filter:brightness(1.1)}
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc.busy{opacity:.6;cursor:default}
+    #pgx .pgx-tile.pgx-sel .pg-r36-atc:after{content:"\2192";font-size:17px;line-height:1}
+    /* the bottom button duplicates the in-tile one on phones. Browsers without
+       :has() simply keep both, which is harmless. */
+    #pgx .pgx-buy:has(.pgx-tile .pg-r36-atc) > .pgx-atc{display:none !important}
+  }
+
+  @keyframes pgGtNudge{
+    0%,100%{transform:translateX(0);opacity:.55}
+    50%    {transform:translateX(4px);opacity:1}
+  }
+  @media (prefers-reduced-motion:reduce){
+    #pgx .pg-gt-swipe span{animation:none}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgR36Mobile) return; window.pgR36Mobile = 1;
+
+  /* Claimed before anything else runs: pg-theme-css reads this to stand its own
+     Duo Pack handler and its add-on ride-along down, so the tile has exactly
+     one writer even on a browser where stopImmediatePropagation does not save
+     us. See THE DUO PACK ADDS EXACTLY TWO below. */
+  window.pgDuoOwner = 1;
+
+  function mobile(){ return !window.matchMedia || window.matchMedia('(max-width: 900px)').matches; }
+
+  /* ---------------- the carousel ---------------- */
+
+  var HEROSRC = '';   /* read once: thumbnail clicks rewrite #pgx-hero-img */
+
+  function gallery(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip) return;
+
+    if (mobile()){
+      var hero = document.getElementById('pgx-hero-img');
+      if (hero && !HEROSRC) HEROSRC = hero.getAttribute('src') || '';
+      if (HEROSRC && !strip.querySelector('.pg-r36-slide')){
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'pg-r36-slide';
+        var im = document.createElement('img');
+        im.src = HEROSRC;
+        im.alt = (hero && hero.getAttribute('alt')) || '';
+        b.appendChild(im);
+        strip.insertBefore(b, strip.firstChild);
+      }
+      /* the clip becomes the second slide, leaving a marker in its old seat */
+      var vid = document.querySelector('#pgx .pgx-vid');
+      if (vid && vid.parentNode !== strip){
+        if (!vid.pgR36Ph){
+          var ph = document.createElement('i');
+          ph.className = 'pg-r36-ph';
+          ph.hidden = true;
+          vid.parentNode.insertBefore(ph, vid);
+          vid.pgR36Ph = ph;
+        }
+        var lead = strip.querySelector('.pg-r36-slide');
+        strip.insertBefore(vid, lead ? lead.nextSibling : strip.firstChild);
+      }
+      if (strip.querySelector('.pg-r36-slide')) document.documentElement.classList.add('pg-r36-gal');
+      pill(wrap, strip);
+    } else {
+      /* rotated back to desktop: put pg-landing's gallery back as it was */
+      var v2 = strip.querySelector('.pgx-vid');
+      if (v2 && v2.pgR36Ph && v2.pgR36Ph.parentNode){
+        v2.pgR36Ph.parentNode.insertBefore(v2, v2.pgR36Ph);
+        v2.pgR36Ph.parentNode.removeChild(v2.pgR36Ph);
+        v2.pgR36Ph = null;
+      }
+      var s2 = strip.querySelector('.pg-r36-slide');
+      if (s2 && s2.parentNode) s2.parentNode.removeChild(s2);
+      document.documentElement.classList.remove('pg-r36-gal');
+    }
+  }
+
+  function pill(wrap, strip){
+    var el = wrap.querySelector('.pg-gt-swipe');
+    if (!el){
+      if (strip.children.length < 2) return;      /* nothing to swipe to */
+      el = document.createElement('div');
+      el.className = 'pg-gt-swipe';
+      el.setAttribute('aria-hidden', 'true');
+      el.innerHTML = '<span class="pg-gt-l">&lsaquo;</span> Swipe &middot; <b class="pg-gt-n"></b> <span>&rsaquo;</span>';
+      wrap.appendChild(el);
+    }
+    paint();
+  }
+
+  /* which slide is in view. Synchronous and allocation-light: safe to call once
+     per animation frame while the strip is being swiped. */
+  function paint(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    var cnt = wrap.querySelector('.pg-gt-swipe .pg-gt-n');
+    if (!strip || !cnt) return;
+    var kids = strip.children;
+    if (!kids.length) return;
+    var mid = strip.scrollLeft + strip.clientWidth / 2;
+    var best = 0, bestD = Infinity;
+    for (var i = 0; i < kids.length; i++){
+      var k = kids[i];
+      var d = Math.abs((k.offsetLeft + k.offsetWidth / 2) - mid);
+      if (d < bestD){ bestD = d; best = i; }
+    }
+    var pos = (best + 1) + '/' + kids.length;
+    if (cnt.textContent !== pos) cnt.textContent = pos;
+  }
+
+  /* ---------------- an ADD TO CART in every tile ---------------- */
+
+  function buttons(){
+    /* every tile in the buy column: pg-landing's Single Item AND pgDuo's
+       Duo Pack, which share only .pgx-tile */
+    document.querySelectorAll('#pgx .pgx-buy > .pgx-tile').forEach(function(tile){
+      if (tile.querySelector('.pg-r36-atc')) return;
+      var b = document.createElement('span');
+      b.className = 'pg-r36-atc';
+      b.setAttribute('role', 'button');
+      b.setAttribute('tabindex', '0');
+      b.textContent = 'Add to cart';
+      b.addEventListener('click', function(){
+        if (b.classList.contains('busy')) return;
+        var atc = document.getElementById('pgx-atc');
+        if (!atc) return;
+        b.classList.add('busy');
+        b.textContent = 'Adding…';
+        /* whichever tile is selected owns the click: the Duo Pack is taken by
+           the window-capture owner below, pg-landing's own handler posts the
+           single variant otherwise */
+        atc.click();
+        setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
+      });
+      b.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); b.click(); }
+      });
+      tile.appendChild(b);
+    });
+  }
+
+  function pass(){ gallery(); buttons(); }
+
+  /* ================= THE DUO PACK ADDS EXACTLY TWO =================
+     Reported: adding the Duo Pack puts THREE in the cart and the drawer starts
+     glitching. Measured in Chromium against the real handler shapes, not guessed.
+
+     pgDuo posts the two consoles and then calls `e.stopPropagation()`. That is
+     the bug. stopPropagation stops the event travelling to the NEXT node -- it
+     does nothing about other listeners already bound to the SAME node, and
+     pg-theme-css binds three separate `.pgx-atc` click handlers on `document`
+     in the capture phase. Reproduced:
+
+         click -> pgDuo (+2 consoles) , rider (+N cases)     <- both ran
+
+     The second is the add-on rider at pg-theme-css:1303, which posts the spare
+     case with `quantity: unitsOf(sel)` 900ms later on its own timer. So one tap
+     becomes two independent /cart/add.js calls plus pg-giftguard's free case --
+     three writes to the cart in under a second, each triggering its own drawer
+     refresh. That is both the extra item and the glitching: the drawer is being
+     rebuilt from three different answers while the shopper watches.
+
+     (pg-landing's handler is bound on #pgx-atc itself and IS correctly stopped,
+     confirmed in the same test -- so the console count comes from pgDuo alone.)
+
+     THE FIX IS ONE OWNER FOR THAT ONE CLICK. This listener is on WINDOW in the
+     capture phase. Window is the first node in the propagation path, so it runs
+     before every document-level listener no matter who registered first --
+     pg-case-add already relies on exactly this and says so. When the Duo tile is
+     the selected one it takes the click outright with stopImmediatePropagation,
+     posts ONE request, and neither pgDuo nor the rider ever sees it.
+
+     Scoped as narrowly as it can be: the console page, and only while
+     .pgx-duo.pgx-sel exists. Every other tile and every other page keeps the
+     behaviour it has today -- verified: with the duo NOT selected the two theme
+     handlers still fire exactly as before.
+
+     The spare case is still honoured if its tickbox is ticked, in the same
+     request, so ticking it cannot race the console add either. */
+  var SPARE_CASE = 49640879063268;   /* r36s-protective-case-free-gift / "Spare case" */
+  var duoBusy = false;
+
+  function duoTile(){
+    if (!/\/products\/handheld-game-console/.test(location.pathname)) return null;
+    return document.querySelector('#pgx .pgx-tile.pgx-duo.pgx-sel');
+  }
+
+  window.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    if (!e.target.closest('.pgx-atc')) return;
+    var duo = duoTile();
+    if (!duo) return;                       /* not the Duo Pack: leave the theme alone */
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (duoBusy) return;                    /* a second tap cannot double-add */
+    duoBusy = true;
+
+    var sels = duo.querySelectorAll('select');
+    var id1 = sels[0] ? parseInt(sels[0].value, 10) : 0;
+    var id2 = sels[1] ? parseInt(sels[1].value, 10) : 0;
+    if (!id1 || !id2){ duoBusy = false; return; }
+
+    /* exactly two consoles, however the two designs were chosen */
+    var items = (id1 === id2)
+      ? [{id: id1, quantity: 2}]
+      : [{id: id1, quantity: 1}, {id: id2, quantity: 1}];
+
+    /* and the spare case only if the shopper actually ticked it -- same request,
+       so it cannot race the console add the way the rider's 900ms timer did */
+    if (duo.querySelector('.pg-tadd.on, .pg-uacc.on')) items.push({id: SPARE_CASE, quantity: 2});
+
+    /* AND THE COUNT IS MADE TRUE AFTERWARDS.
+       Owning the click stops every writer this theme has, and the two handlers
+       that could add a third console -- pg-landing's single and pgDuo's own duo
+       -- are now stood down by name rather than by event ordering. That should
+       be the whole fix. It is not trusted to be: three-in-cart was reported
+       from a device whose extra write nothing in these files explains, and a
+       shopper being charged for a console they did not ask for is not a bug to
+       leave riding on an argument about propagation.
+
+       So the promise is enforced: the count the cart held BEFORE this tap, plus
+       two. The cart is then re-read on a short schedule that outlasts every
+       late writer in the theme (pg-theme-css's 900ms add-on rider,
+       pg-giftguard's 1200ms beat, a drawer refresh), and any surplus console is
+       taken back off.
+
+       THE BASELINE IS READ BEFORE THE CLICK, NOT DURING IT. A /cart.js issued
+       alongside the add is not a baseline: a stray write from this same tap can
+       reach the server first and be counted, which would raise the target to
+       three and license the very thing being prevented. lastN below is polled
+       on its own beat and is therefore always a strictly-earlier reading. If it
+       has not been read yet, nothing is enforced -- an unenforced add is far
+       better than one trimmed against a number that might be wrong.
+
+       Deliberately meek: it only ever REMOVES, only ever touches the console
+       line, never takes off more than the two units this tap added, never
+       leaves fewer than the pack's two, and stops as soon as the count agrees.
+       When the total is already right -- every case that could be measured --
+       it issues no write. */
+    var target = lastN === null ? null : lastN + 2;
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: items})
+    }).then(function(r){
+      duoBusy = false;
+      if (!r.ok) return;
+      if (window.pgOpenCart) window.pgOpenCart();
+      [900, 1800, 3000, 4500, 6000].forEach(function(t){
+        setTimeout(function(){ if (target !== null) trimConsoles(target); }, t);
+      });
+    }).catch(function(){ duoBusy = false; });
+  }, true);
+
+  function consolesIn(cart){
+    var n = 0;
+    (cart.items || []).forEach(function(it){
+      if (it.handle === 'handheld-game-console') n += it.quantity;
+    });
+    return n;
+  }
+
+  /* The console count as it stood BEFORE the current tap. Polled on the console
+     page only -- one small GET every 1.2s there, and nothing anywhere else,
+     since this section is registered on that one template. */
+  var lastN = null;
+  function watch(){
+    if (!/\/products\/handheld-game-console/.test(location.pathname)) return;
+    if (duoBusy) return;                    /* mid-add: not a baseline any more */
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){ if (!duoBusy) lastN = consolesIn(c); })
+      .catch(function(){});
+  }
+
+  /* Take the surplus off the last console line. Never adds, never touches
+     another product, never removes more than the two units this tap added, and
+     returns without a write whenever the count already agrees -- the normal
+     case, so the repeated checks cost one GET each and nothing more. */
+  var trimBusy = false;
+  function trimConsoles(target){
+    if (trimBusy) return;
+    trimBusy = true;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        var lines = (c.items || []).filter(function(it){ return it.handle === 'handheld-game-console'; });
+        var total = 0;
+        lines.forEach(function(it){ total += it.quantity; });
+        if (total <= target || !lines.length){ trimBusy = false; return; }
+        /* capped at the two units this tap is answerable for, so a stale
+           baseline can never eat a console the shopper put there themselves */
+        var surplus = Math.min(total - target, 2);
+        var last = lines[lines.length - 1];
+        var q = Math.max(0, last.quantity - surplus);
+        return fetch('/cart/change.js', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          credentials: 'same-origin',
+          body: JSON.stringify({id: last.key, quantity: q})
+        }).then(function(){
+          trimBusy = false;
+          if (window.pgDrawerRefresh){ try { return window.pgDrawerRefresh(); } catch (e){} }
+          if (window.pgOpenCart) window.pgOpenCart();
+        });
+      })
+      .catch(function(){ trimBusy = false; });
+  }
+
+  function boot(){
+    pass();
+    /* the strip's own scrolling: `scroll` does not bubble but it does capture,
+       and listening on the document survives the gallery being rebuilt */
+    var raf = 0;
+    document.addEventListener('scroll', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('pgx-thumbs')) return;
+      if (!raf) raf = requestAnimationFrame(function(){ raf = 0; paint(); });
+    }, {capture: true, passive: true});
+
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      /* pgDuo rebuilds its tile on an interval, and the gallery can be
+         re-rendered under us; every pass is idempotent */
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; pass(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    window.addEventListener('resize', function(){ pass(); paint(); }, {passive: true});
+    watch();
+    setInterval(watch, 1200);
+    setInterval(pass, 900);
+    [300, 900, 2000, 4000].forEach(function(t){ setTimeout(function(){ pass(); paint(); }, t); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG R36S Mobile", "settings": [], "presets": [{"name": "PG R36S Mobile"}]}
+{% endschema %}

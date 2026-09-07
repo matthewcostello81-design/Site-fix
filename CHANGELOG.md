@@ -1,3 +1,69 @@
+# R36S Duo Pack: add exactly two consoles, not three
+
+## Problem
+Adding the Duo Pack on the R36S product page put THREE consoles in the cart.
+Confirmed against real store data, not just reported: the abandoned checkout of
+2026-09-07 18:31 holds three `Transparent Purple / 64G` consoles plus the free
+case, and order #1029 shows the correct shape for comparison (two consoles plus
+the free case).
+
+## Cause
+The console page has three separate scripts that can post to `/cart/add.js`:
+
+- `pg-landing`'s own handler, bound to `#pgx-atc`. Its `mode` is only ever set
+  by clicking a `[data-pgx-tile]` tile, and the visible 2-pack is NOT one of
+  those: `pg-theme-css:140` hides pg-landing's `double` tile and `pgDuo`
+  injects its own `.pgx-tile.pgx-duo`. So selecting the Duo Pack leaves `mode`
+  at `'single'` — this handler adds ONE.
+- `pgDuo` (in `pg-theme-css`), a document-capture handler that adds TWO.
+- `pg-r36s-mobile`, a window-capture owner, added in the 9-6 round, that also
+  adds two and stops the event.
+
+Two plus one is the only arithmetic in these files that produces three. In a
+spec-compliant browser it cannot happen — the window-capture owner stops the
+event before either of the other two sees it, verified in Chromium against the
+real handler shapes (`WITH/WITHOUT guards`, tap on both the bottom button and
+the in-tile one: always two). The owner was already live and the count was
+still wrong, so the extra write comes from something these files do not
+explain, and the previous round's one-shot trim was never published.
+
+## Fix
+`sections/pg-r36s-mobile.liquid` — the enforcement, and the only part that is
+live-critical:
+
+- Claims `window.pgDuoOwner` so the other two writers can stand down by name
+  rather than by event ordering.
+- Enforces the count instead of arguing about it. `lastN` — the console total
+  polled BEFORE the tap, on its own 1.2s beat, so a stray write from the same
+  tap can never inflate it — sets the target at `lastN + 2`. The cart is
+  re-read at 900/1800/3000/4500/6000ms, past every late writer in the theme
+  (the 900ms add-on rider, pg-giftguard's 1200ms beat, a drawer refresh), and
+  any surplus console is taken back off.
+- The trim only ever REMOVES, only touches the console line, never removes more
+  than the two units the tap is answerable for (so a stale baseline cannot eat
+  a console the shopper added themselves), and issues no write at all when the
+  count already agrees — which is every case that could be measured.
+
+`sections/pg-landing.liquid` and `sections/pg-theme-css.liquid` — defence in
+depth, in the repo but NOT applied to the theme: pg-landing's handler returns
+early while a Duo Pack tile is selected, pgDuo's handler and the add-on
+ride-along defer to `window.pgDuoOwner`. They close the 2+1 path at its source.
+They were left unapplied deliberately: with the window-capture owner in place
+neither path is reachable (the Chromium run above), and they are 41KB and 90KB
+files on the store's main product page, so rewriting them wholesale to add one
+line each is not a trade worth making until one of them is being edited anyway.
+
+## Applied to
+Theme "Duo Pack fix (Claude 9-7)" (unpublished, 163721380068):
+`sections/pg-r36s-mobile.liquid` — uploaded and verified byte-identical
+(md5 e844f0f90c1e357f3883b02f295fc1c8). The live theme cannot be written to
+through the Shopify MCP; publish or merge that theme to ship it.
+
+Files changed: sections/pg-r36s-mobile.liquid, sections/pg-landing.liquid,
+sections/pg-theme-css.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
