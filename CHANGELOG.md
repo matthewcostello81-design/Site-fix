@@ -1,3 +1,62 @@
+# The Duo Pack added three, because stopPropagation does not stop siblings
+
+**Theme note: `163657089252` is now MAIN (published).** This change went to the
+new draft **`163709550820` "Copy of R36S + cart fixes (Claude 9-6)"**, which
+already carried the published `pg-cart-tune` (`41b184a9`).
+
+## What actually happens on that tap — measured, not guessed
+
+`pgDuo` posts the two consoles and then calls `e.stopPropagation()`. That is the
+bug in one line: **`stopPropagation` stops the event travelling to the NEXT node.
+It does nothing about other listeners already bound to the SAME node** — and
+`pg-theme-css` binds *three* separate `.pgx-atc` click handlers on `document` in
+the capture phase.
+
+Reproduced in Chromium against the real handler shapes:
+
+    click the span inside #pgx-atc  ->  pgDuo(+2)  ,  addOnRider
+    click #pgx-atc itself           ->  pgDuo(+2)  ,  addOnRider
+    click the in-tile button        ->  pgDuo(+2)  ,  addOnRider
+
+The rider is `pg-theme-css:1303`, which posts the spare case with
+`quantity: unitsOf(sel)` on a **900ms timer** of its own. So one tap becomes two
+independent `/cart/add.js` calls, plus `pg-giftguard`'s free case — three writes
+to the cart inside a second, each triggering its own drawer refresh. That is both
+the extra item *and* the glitching: the drawer is being rebuilt from three
+different answers while the shopper watches.
+
+The same test clears `pg-landing`: its handler is bound on `#pgx-atc` itself, so
+capture-phase `stopPropagation` **does** stop it. The console count comes from
+`pgDuo` alone.
+
+## One owner for that one click
+
+`pg-theme-css` is 90KB and cannot be safely rewritten from here, so the fix lives
+in `pg-r36s-mobile` (this session's own file). It registers on **`window`**, in
+the capture phase. Window is the first node in the propagation path, so it runs
+before every `document` listener regardless of registration order —
+`pg-case-add` already relies on exactly this and documents it.
+
+When the Duo tile is the selected one it takes the click outright with
+`stopImmediatePropagation()`, posts **one** request with exactly two consoles,
+and neither `pgDuo` nor the rider ever sees the event. The spare case is still
+honoured if its tickbox is ticked — in the *same* request, so it cannot race the
+console add the way the rider's timer did.
+
+Scoped as narrowly as possible: the console page, and only while
+`.pgx-duo.pgx-sel` exists.
+
+Verified:
+
+    duo NOT selected  ->  pgDuo +2 consoles , rider +N cases     (unchanged)
+    duo SELECTED      ->  OURS: exactly 2 consoles (one request)
+    second tap        ->  (nothing — the busy guard holds)
+
+Every other tile and every other page keeps the behaviour it has today.
+
+Deployed JS re-downloaded and re-parsed with `node --check`; checksum
+`e00c75f420d9ba392af35659e7465931` matches the file in the repo.
+
 # Three gift-line details, each with a cause in the code
 
 ## 1. The pill: stop fighting the grid, leave it

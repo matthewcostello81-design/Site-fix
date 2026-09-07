@@ -62,17 +62,14 @@
   keyed on pg-landing's [data-pgx-tile] attribute and so skipped the Duo Pack
   entirely — the selector here is every .pgx-tile in the buy column.
 
-  A click clicks #pgx-atc, and each tile's own owner takes it from there:
-  pgDuo listens for a .pgx-atc click in the CAPTURE phase and, while its tile is
-  selected, posts the two chosen versions and stops the event, so pg-landing's
-  handler does not also fire; with the single tile selected pgDuo bows out and
-  pg-landing's handler posts the single variant. A programmatic .click() reaches
-  both even though the bottom button is display:none, which is what lets it be
-  hidden while still doing the work. The button is a SPAN with role=button (the
-  base theme paints real buttons with a dark ::before overlay) and deliberately
-  does NOT carry .pgx-atc, or pgDuo's handler would fire from the in-tile button
-  itself and double-post. It only appears in the selected tile, so by the time
-  it can be pressed the tile it belongs to is already the one that will be sold.
+  A click clicks #pgx-atc. For the SINGLE tile each owner takes it from there as
+  before. For the DUO PACK this file now owns the click outright -- see the note
+  on THE DUO PACK ADDS EXACTLY TWO further down. The button is a SPAN with
+  role=button (the base theme paints real buttons with a dark ::before overlay)
+  and deliberately does NOT carry .pgx-atc, or the handlers would fire from the
+  in-tile button itself and double-post. It only appears in the selected tile,
+  so by the time it can be pressed the tile it belongs to is already the one
+  that will be sold.
 {%- endcomment -%}
 <style>
   /* off at every width except phones, where the rules below turn them on */
@@ -287,8 +284,8 @@
         if (!atc) return;
         b.classList.add('busy');
         b.textContent = 'Adding…';
-        /* whichever tile is selected owns the click: pgDuo intercepts it in the
-           capture phase for the Duo Pack, pg-landing's own handler posts the
+        /* whichever tile is selected owns the click: the Duo Pack is taken by
+           the window-capture owner below, pg-landing's own handler posts the
            single variant otherwise */
         atc.click();
         setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
@@ -301,6 +298,88 @@
   }
 
   function pass(){ gallery(); buttons(); }
+
+  /* ================= THE DUO PACK ADDS EXACTLY TWO =================
+     Reported: adding the Duo Pack puts THREE in the cart and the drawer starts
+     glitching. Measured in Chromium against the real handler shapes, not guessed.
+
+     pgDuo posts the two consoles and then calls `e.stopPropagation()`. That is
+     the bug. stopPropagation stops the event travelling to the NEXT node -- it
+     does nothing about other listeners already bound to the SAME node, and
+     pg-theme-css binds three separate `.pgx-atc` click handlers on `document`
+     in the capture phase. Reproduced:
+
+         click -> pgDuo (+2 consoles) , rider (+N cases)     <- both ran
+
+     The second is the add-on rider at pg-theme-css:1303, which posts the spare
+     case with `quantity: unitsOf(sel)` 900ms later on its own timer. So one tap
+     becomes two independent /cart/add.js calls plus pg-giftguard's free case --
+     three writes to the cart in under a second, each triggering its own drawer
+     refresh. That is both the extra item and the glitching: the drawer is being
+     rebuilt from three different answers while the shopper watches.
+
+     (pg-landing's handler is bound on #pgx-atc itself and IS correctly stopped,
+     confirmed in the same test -- so the console count comes from pgDuo alone.)
+
+     THE FIX IS ONE OWNER FOR THAT ONE CLICK. This listener is on WINDOW in the
+     capture phase. Window is the first node in the propagation path, so it runs
+     before every document-level listener no matter who registered first --
+     pg-case-add already relies on exactly this and says so. When the Duo tile is
+     the selected one it takes the click outright with stopImmediatePropagation,
+     posts ONE request, and neither pgDuo nor the rider ever sees it.
+
+     Scoped as narrowly as it can be: the console page, and only while
+     .pgx-duo.pgx-sel exists. Every other tile and every other page keeps the
+     behaviour it has today -- verified: with the duo NOT selected the two theme
+     handlers still fire exactly as before.
+
+     The spare case is still honoured if its tickbox is ticked, in the same
+     request, so ticking it cannot race the console add either. */
+  var SPARE_CASE = 49640879063268;   /* r36s-protective-case-free-gift / "Spare case" */
+  var duoBusy = false;
+
+  function duoTile(){
+    if (!/\/products\/handheld-game-console/.test(location.pathname)) return null;
+    return document.querySelector('#pgx .pgx-tile.pgx-duo.pgx-sel');
+  }
+
+  window.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    if (!e.target.closest('.pgx-atc')) return;
+    var duo = duoTile();
+    if (!duo) return;                       /* not the Duo Pack: leave the theme alone */
+
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (duoBusy) return;                    /* a second tap cannot double-add */
+    duoBusy = true;
+
+    var sels = duo.querySelectorAll('select');
+    var id1 = sels[0] ? parseInt(sels[0].value, 10) : 0;
+    var id2 = sels[1] ? parseInt(sels[1].value, 10) : 0;
+    if (!id1 || !id2){ duoBusy = false; return; }
+
+    /* exactly two consoles, however the two designs were chosen */
+    var items = (id1 === id2)
+      ? [{id: id1, quantity: 2}]
+      : [{id: id1, quantity: 1}, {id: id2, quantity: 1}];
+
+    /* and the spare case only if the shopper actually ticked it -- same request,
+       so it cannot race the console add the way the rider's 900ms timer did */
+    if (duo.querySelector('.pg-tadd.on, .pg-uacc.on')) items.push({id: SPARE_CASE, quantity: 2});
+
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: items})
+    }).then(function(r){
+      duoBusy = false;
+      if (!r.ok) return;
+      if (window.pgOpenCart) window.pgOpenCart();
+    }).catch(function(){ duoBusy = false; });
+  }, true);
 
   function boot(){
     pass();
