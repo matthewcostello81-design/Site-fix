@@ -1,0 +1,123 @@
+{% comment %} Per-line bundle savings badge at the top of each cart line item (cart page + drawer). Truthful values from /cart.js: struck original line price, discounted line total, and amount saved. Only shows when the line actually has a discount, so displayed savings always match the charged price. Loaded globally via overlay-group.
+
+It also hides pg-drawer's .pg-save-chip, which stated the SAME discount a second time on the same line -- "-55%" under the variant picker beside this row's "Save 55%". Two pills, one number, and the shopper has to check they agree. This row is the one that keeps it, because it prints the struck price and the charged price the percentage is actually the arithmetic between; the chip printed the figure alone. Hidden rather than deleted: pg-chips positions its "n FREE INCLUDED" note by inserting relative to the chip, so the node has to stay in the DOM. pg-chips and pg-drawer both still write text into it -- harmless, and left alone so neither file needs touching.
+
+A THIRD reading of the same number goes with it: pg-chips' deal plaque, the "6 PACK" pill it appends to the title of a PAID row when the rung it matched yields no free units. By the time that renders, the row already carries the struck total, the charged total and this row's Save % -- the plaque was the fourth label for one discount and the widest thing on the line. Hidden only on paid rows: the same element on a FREE row reads "FREE" or "3 FREE", which names units the shopper is getting and is said nowhere else, so `li:not(.pg-free-line)` is what separates them. Plain display:none is enough here, unlike the chip below -- .pg-free-note is not in pg-chips' stamp list (SEL is .pg-free-tag, .pg-save-chip, .nc-lsave-off) and its own rule sets display:flex without !important.
+
+NOT display:none for the chip. pg-chips' stamp() writes its whole STYLE map onto every pill as INLINE !important on a 300ms interval and on every drawer mutation, and that map contains display:inline-flex. Inline !important outranks any stylesheet rule, !important or not, so a display rule here is overwritten within a tick and the pill comes straight back -- which is exactly what happened on the first attempt. The properties below are the ones stamp() never writes: position, visibility, opacity and pointer-events. position:absolute takes it out of the line's grid flow so it occupies no space, and the rest make sure it neither paints nor catches a click. Anything added to pg-chips' STYLE map later must stay clear of those four.
+
+THE FRAME UPSELL THAT USED TO BE FOLDED IN HERE IS GONE. It lived in this file only because footer-group was at Shopify's 25-section cap at the time and a section registered past that cap is accepted, reported back correctly, and silently never rendered -- so the row had to ride inside a file that already rendered. sections/pg-frame-add.liquid now does the same job properly and is registered in footer-group, and it is a better version of it: it also puts the offer on the product page, hides the frame's card in "You may also like", reads cart state off the rendered rows instead of polling /cart.js, and rides inside #pg-unlock-slot so pg-cart-mobile lifts it above the pinned checkout pane on phones (parked under the line list, as the version here was, it measured y=783 on an 844px screen -- underneath the pane).
+
+Both rendering at once is what the shop owner saw as a duplicate. pg-frame-add's focusOne() benches every upsell but one, and it can only bench what it knows about -- it sweeps `#cart .pg-unlock, #cart .pg-frameoffer`, and the row here answered to neither, so it sat there beside the winner. Deleting it is the fix; teaching focusOne a third class would just be keeping two implementations of one offer. {% endcomment %}
+<script>
+!function(){
+  var css="#cart .nc-lsave,body.template-cart .nc-lsave{display:flex;flex-wrap:nowrap;align-items:baseline;gap:6px;margin:0 0 7px;font-size:13px;line-height:1.3;font-weight:600;white-space:nowrap}"
+    +"#cart .nc-lsave .nc-lsave-was,body.template-cart .nc-lsave .nc-lsave-was{color:#9aa7ac;text-decoration:line-through;font-weight:600}"
+    +"#cart .nc-lsave .nc-lsave-now,body.template-cart .nc-lsave .nc-lsave-now{color:#0F2A33;font-weight:800;font-size:15px}"
+    +"#cart .nc-lsave .nc-lsave-off,body.template-cart .nc-lsave .nc-lsave-off{color:#fff;background:linear-gradient(120deg,#C85C22,#E8935A);font-weight:800;font-size:11px;padding:2px 8px;border-radius:20px;letter-spacing:.02em}"
+    +"#cart .pg-save-chip,body.template-cart .pg-save-chip{position:absolute !important;visibility:hidden !important;opacity:0 !important;pointer-events:none !important}"
+    +"#cart li:not(.pg-free-line) .pg-free-note,body.template-cart li:not(.pg-free-line) .pg-free-note{display:none !important}";
+  var st=document.createElement('style');st.textContent=css;(document.head||document.documentElement).appendChild(st);
+  function money(c){try{return (window.Shopify&&Shopify.formatMoney)?Shopify.formatMoney(c):'$'+(c/100).toFixed(2)}catch(e){return '$'+(c/100).toFixed(2)}}
+  var busy=false;
+  /* ROWS ARE MATCHED BY LINE KEY, NOT BY POSITION.
+
+     This paired lis[i] with cart.items[i]. Rendered order is not cart order:
+     pg-chips' liftFree() moves every free row to the top of the drawer, and a
+     line swapped by the size picker is removed and re-added so it comes back
+     at the END of the cart. Either one slides the two lists apart, and then
+     each row is handed its neighbour's item.
+
+     That is not just wrong numbers. The else-branch below DELETES .nc-lsave
+     from any row whose item shows no discount, so a console paired with the
+     free case's item lost its price block outright and the theme's own price
+     node showed through instead -- a different face, unbolded, beside a
+     neighbour still in Poppins 800. That is the "font gets unbolded on one"
+     report, and it flickered because the pairing changed on every render.
+
+     Every row prints its own remove link, /cart/change?id=<variant>:<key>, and
+     that key is exactly cart item .key. Index stays as the fallback for a row
+     that has no remove link yet. */
+  function keyOf(li){
+    var a=li.querySelector('a[href*="/cart/change"]');
+    if(!a)return '';
+    var m=(a.getAttribute('href')||'').match(/[?&]id=([^&]+)/);
+    return m?decodeURIComponent(m[1]):'';
+  }
+  function apply(cart){
+    var byKey={};
+    (cart.items||[]).forEach(function(x){ if(x&&x.key) byKey[x.key]=x; });
+    var uls=document.querySelectorAll('.l4ca:not(.in-panel)');
+    uls.forEach(function(ul){
+      var lis=ul.querySelectorAll(':scope > li');
+      for(var i=0;i<lis.length;i++){
+        var li=lis[i];
+        var k=keyOf(li);
+        var it=(k&&byKey[k])||(k?null:cart.items[i]);
+        if(!it)continue;
+        var host=li.querySelector('section')||li;
+        var existing=host.querySelector(':scope > .nc-lsave');
+        var saved=it.total_discount||0;
+        var orig=it.original_line_price||0;
+        if(saved>0&&orig>0){
+          var now=orig-saved;var key=orig+'_'+saved;
+          if(existing&&existing.getAttribute('data-k')===key)continue;
+          var pct=Math.round(saved/orig*100);
+          var html='<span class="nc-lsave-was">'+money(orig)+'</span><span class="nc-lsave-now">'+money(now)+'</span><span class="nc-lsave-off">Save '+pct+'%</span>';
+          if(existing){existing.innerHTML=html;existing.setAttribute('data-k',key);}
+          else{var d=document.createElement('div');d.className='nc-lsave';d.setAttribute('data-k',key);d.innerHTML=html;host.insertBefore(d,host.firstChild);}
+        }else if(existing&&existing.getAttribute('data-k')){existing.parentNode.removeChild(existing);}
+      }
+    });
+  }
+  /* THE PRICE USED TO PAINT TWICE, AND THE SECOND ONE WAS SMALLER.
+
+     This block is not server-rendered: the theme prints its own price markup,
+     and apply() replaces it with .nc-lsave (was 11.5px / now 15px / SAVE chip).
+     The drawer is rebuilt wholesale on every cart change, so every change threw
+     the .nc-lsave block away -- and getting it back meant waiting out
+     `setTimeout(run,140)` AND a /cart.js round trip before a single pixel could
+     change. For that whole window the shopper is looking at the theme's raw
+     price at its own larger size; then it is replaced and everything below it
+     moves. That is "the price text gets bigger" and a good part of "the words
+     glitch up and down" -- on the free case most of all, since pg-case-mobile
+     rewrites .nc-lsave-now to $0.00 and that cannot happen until this has run.
+
+     The cart contents do not change during a re-render, so the last reading is
+     still true: it is kept and repainted SYNCHRONOUSLY when the drawer mutates,
+     which puts the final markup in the same frame as the swap. The fetch still
+     follows, as the authority, for the case where the contents really did
+     change. apply() is keyed on data-k and skips anything already correct, so
+     the second pass is a no-op when it agrees.
+
+     pg-drawer fires pg:cart-updated in the same task as its swap; listening for
+     it as well means the repaint does not depend on observer timing. */
+  var LAST=null,painting=false;
+  function paintNow(){
+    if(painting||!LAST)return;
+    painting=true;
+    try{apply(LAST);}catch(e){}
+    /* released after the current task: apply() writes to the DOM and would
+       otherwise wake the observer that called us */
+    setTimeout(function(){painting=false;},0);
+  }
+  function run(){
+    if(busy)return;
+    if(!document.querySelector('.l4ca:not(.in-panel)'))return;
+    busy=true;
+    fetch('/cart.js').then(function(r){return r.json()}).then(function(cart){
+      if(cart&&cart.items){LAST=cart;try{apply(cart);}catch(e){}}
+      busy=false;
+    }).catch(function(){busy=false;});
+  }
+  var c=document.getElementById('cart');
+  if(c){try{new MutationObserver(function(){paintNow();setTimeout(run,140)}).observe(c,{childList:true,subtree:true});}catch(e){}}
+  document.addEventListener('pg:cart-updated',function(){paintNow();setTimeout(run,60);});
+  if(window.openPanel){var o=window.openPanel;window.openPanel=function(){var r=o.apply(this,arguments);setTimeout(run,280);setTimeout(run,850);return r};}
+  if(document.readyState!=='loading')run();else document.addEventListener('DOMContentLoaded',run);
+  setTimeout(run,1200);setTimeout(run,2600);
+}();
+</script>
+{% schema %}
+{"name":"NC Line Save","settings":[],"presets":[{"name":"NC Line Save"}]}
+{% endschema %}

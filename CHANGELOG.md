@@ -1,3 +1,92 @@
+# Cart: text resizing, lines jumping, and a slow drawer
+
+Theme: "MATT 9/10 R36S Duo Pack as product (Claude)" (163834364132, draft).
+
+## Problem
+Three reports, one underlying shape:
+1. Toggling Shipping Protection made the free case's text and its price get bigger.
+2. Adding or removing anything made the words jump up and down on the free-case line.
+3. The cart was slow to open and did not feel smooth.
+
+## Cause
+### The resize and the jump: the price block is built in JavaScript, late
+`.nc-lsave` (struck price / charged price / SAVE chip) is not server-rendered.
+The theme prints its own price markup and `nc-linesave`'s `apply()` replaces it.
+The drawer is rebuilt wholesale on every cart change, so every change threw that
+block away — and getting it back meant waiting out `setTimeout(run, 140)` AND a
+`/cart.js` round trip before a single pixel could change.
+
+For that whole window the shopper looks at the theme's raw price at its own
+larger size; then it is replaced and everything below it moves. Measured in
+Chromium against the real markup and CSS: the raw 19px price showed for ~160ms
+after a toggle and the row was 115px tall, then it swapped to the 15px block and
+the row dropped to 104px. That 11px is the jump. On the free case it is worst,
+because pg-case-mobile rewrites `.nc-lsave-now` to $0.00 and cannot do that until
+this has run.
+
+### The slowness: the refresh downloaded the whole homepage
+`window.pgDrawerRefresh` — which every section calls after every cart write — is
+pg-drawer's `spRefreshDrawer()`, and it did:
+
+    fetch('/') -> r.text() -> new DOMParser().parseFromString(t,'text/html')
+               -> doc.querySelector('#cart')
+
+The entire homepage, downloaded and parsed into a second complete DOM on the main
+thread, to lift one element out and discard the rest. Measured in Chromium on a
+homepage-sized document: 117 KB and 13.5 ms of parsing per refresh, against
+0.07 KB and 0.045 ms for the section alone. It ran after add, remove, quantity,
+gift placement and the Shipping Protection toggle.
+
+Two more costs in the same file: `pass()` and `savRows()` share an 800ms interval
+and each fetched `/cart.js` for itself — two requests a second, for the same
+answer, forever, on every page of the site, whether or not the drawer was open.
+
+## Fix
+`sections/nc-linesave.liquid`
+- Keeps the last cart reading and repaints SYNCHRONOUSLY when the drawer mutates,
+  so the final markup lands in the same frame as the swap. The fetch still
+  follows as the authority; `apply()` is keyed on `data-k` and no-ops when it
+  agrees.
+- Also listens for `pg:cart-updated` so the repaint does not depend on observer
+  timing.
+
+`sections/pg-drawer.liquid`
+- `spRefreshDrawer()` now uses the Section Rendering API (`/?sections=side-cart`)
+  and a `<template>` parse instead of the homepage + DOMParser.
+- Concurrent callers share one in-flight request, with one more pass queued if a
+  write landed after the request went out.
+- Fires `pg:cart-updated` in the same task as the swap, so re-stampers can run in
+  that frame instead of on their own 250-1200ms beats.
+- `pass()` and `savRows()` share one `/cart.js` read per tick, and the two
+  cart-reading passes are held back while the drawer is shut or the tab is
+  hidden — then run immediately on open and on every re-render, so nothing is
+  ever a tick late on screen. The DOM-only passes stay on the clock unchanged.
+
+## Verification
+- Chromium, simulated Shipping Protection toggle sampling t+0…t+300ms: OLD showed
+  the big raw price in 4 of 6 frames with the row changing height 115px -> 104px;
+  NEW was correct in 6 of 6 with no height change.
+- Chromium parse benchmark: 117 KB / 13.51 ms -> 0.07 KB / 0.045 ms per refresh.
+- The uploaded pg-drawer was fetched back and all three of its script blocks were
+  syntax-checked (node --check) against the live bytes, not the local copy.
+
+## Applied to
+Draft theme 163834364132, both files verified against their uploaded bytes
+(nc-linesave 51a11791ac2195602d004abe17a7b7a7,
+pg-drawer 62f02921cab3c17e439a899c5a93ba21).
+
+TWO STRAY FILES TO DELETE BY HAND. An earlier pass in this round created
+`sections/pg-cart-refresh.liquid` (an override approach that was abandoned —
+it could not cover the Shipping Protection toggle, which calls pg-drawer's
+closure rather than the window alias) and `snippets/pg-cart-perf.liquid` (a
+placeholder). Neither is registered in a section group, so neither renders, and
+`themeFilesDelete` is blocked for this store. Delete both in Shopify admin ->
+Edit code. The retired section's own comment says the same.
+
+Files changed: sections/pg-drawer.liquid, sections/nc-linesave.liquid
+
+---
+
 # Duo Pack cart link landed on a stock theme page
 
 ## Problem
