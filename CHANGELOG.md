@@ -1,3 +1,71 @@
+# Free-case text glitching when Shipping Protection is toggled
+
+## Problem
+Flicking the Shipping Protection switch in the cart made the free case's text
+jump around before settling — every time, in both directions.
+
+## Cause
+It is not the switch, it is what the switch does. pg-drawer's `spBox()` handler
+ends in `spRefreshDrawer()`, which re-fetches `/` and runs
+
+    cur.innerHTML = fresh.innerHTML;
+
+replacing the WHOLE drawer with the server's rendering. Everything pg-case-mobile
+stamps onto a case line is DOM state and dies with it: the `data-pg-case` /
+`data-pg-truefree` / `data-pg-paidcase` attributes, the inline `display:none` on
+the variant paragraph, the hidden stepper, and its own FREE GIFT pill.
+
+Every rule that suppresses the wrong pill and the money on the $0.00 line was
+keyed on those attributes. So between the swap and the next 250ms tick the line
+rendered raw — "Free with console /" back, a stepper and a struck price on a free
+line — while pg-drawer's `badge()` (800ms) and pg-mobile's `caseLine()` (1200ms)
+each got a say on which line wears the pill. Three writers repainting one line at
+three different offsets is the flicker.
+
+A second, permanent fault sat underneath it: `caseLine()` writes
+`visibility:visible !important` INLINE on `.semantic-amount`, `.nc-lsave`,
+`.cols`, `.money` and `.price` for every case line, and inline `!important` beats
+any stylesheet. A visibility-only hide is therefore reversed on its beat and
+restored on ours, forever — the struck $24.99 on the free line was never hidden
+at all.
+
+## Fix
+`sections/pg-case-mobile.liquid`:
+
+- The rules now key on markup the SERVER renders, so they are in force in the
+  same frame the new HTML lands with no JS in the path: any case line via
+  `li:has(a[href*="free-gift"])` (both variants share the handle), and the gift
+  line specifically via `li:has(a[href*="id=49640846426340"])` — the remove link
+  carries the variant id, the same evidence `variantOf()` reads. The old
+  attribute selectors stay as the no-`:has()` fallback.
+- The money and stepper on the gift line are hidden with `opacity` and
+  `pointer-events` as well as `visibility` — properties pg-mobile's `caseLine()`
+  never writes (nor pg-chips' STYLE map), which is the same trick this file
+  already used for the pills. The box keeps its size; the digits cannot be
+  brought back.
+- `pass()` also runs on a MutationObserver over `#cart`, so our own pill lands
+  with the rest of the new markup instead of up to 250ms later. Re-entrancy is
+  guarded so our own writes do not re-trigger it; the 250ms interval stays as the
+  backstop for a wholesale `#cart` replacement.
+
+## Verification
+Chromium harness with both real cart lines (paid-first, the order the cart
+actually ends up in) and both competing writers at their real beats, sampling
+computed styles across t+0 … t+2600ms after a simulated `spRefreshDrawer()`:
+
+- Control (old rules): 12/12 sampled frames wrong — raw variant line and stepper
+  for the first ~250ms, FREE GIFT pill on the PAID line from t+120, stepper
+  flashing back at t+900, struck price never hidden.
+- Fixed: 0/12 wrong, including t+0 and t+16, before any script has run.
+
+## Applied to
+Theme "MATT Duo Pack fix (Claude 9-7)" (unpublished, 163721380068), verified
+byte-identical (md5 14f36d6b33d9cda9a3b7431b14489126).
+
+Files changed: sections/pg-case-mobile.liquid
+
+---
+
 # Duo Pack spare-case upsell: same row as every other upsell on a phone
 
 ## Problem

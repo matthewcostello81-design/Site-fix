@@ -1,0 +1,638 @@
+{%- comment -%}
+  PG Case Mobile: make the spare-case upsell tile fit a phone.
+
+  pg-mobile builds `.pgx-case` as a single non-wrapping flex row: 52px thumb,
+  text, price, then an ADD button padded 11px 26px. On a 390px screen the button
+  and thumb take their width first, leaving the text roughly 110px, so "Add a
+  spare protective case" breaks over three lines, the sentence below it turns
+  into a tall ribbon, and the price ends up wedged against the button.
+
+  Below 600px the tile becomes two rows instead:
+
+      [thumb] [title + note............]
+      [$13.99]              [   ADD   ]
+
+  The text gets the full width beside the thumb, and the price and button share
+  a second row with the button taking the slack, which also makes it a much
+  bigger tap target. Rules are id-scoped and this section loads after pg-mobile,
+  so they win on source order without fighting anything.
+{%- endcomment -%}
+<style>
+@media (max-width:600px){
+  #pgx .pgx-case{
+    flex-wrap:wrap !important;
+    gap:10px 12px !important;
+    padding:14px !important;
+    align-items:center !important
+  }
+  #pgx .pgx-case img{
+    width:48px !important;height:48px !important;flex:none !important
+  }
+  /* flex-basis over half the row forces the price and button onto row two */
+  #pgx .pgx-case-t{
+    flex:1 1 60% !important;min-width:0 !important
+  }
+  #pgx .pgx-case-t b{font-size:15px !important;line-height:1.3 !important}
+  #pgx .pgx-case-t small{font-size:12.5px !important;line-height:1.4 !important;margin-top:3px !important}
+  #pgx .pgx-case-p{
+    order:3 !important;flex:0 0 auto !important;font-size:16px !important
+  }
+  #pgx .pgx-case-add{
+    order:4 !important;flex:1 1 auto !important;
+    padding:13px 20px !important;font-size:13.5px !important
+  }
+}
+</style>
+{%- comment -%}
+  ============================================================
+  ADDED 2026-09-06. Host for the R36S / cart round of fixes
+  below. It lives here rather than in its own section because
+  registering a NEW section means rewriting the auto-generated
+  sections/footer-group.json, which this session had no safe way
+  to push. pg-case-mobile was the right host anyway: it is
+  already wired into footer-group at position 14, so it renders
+  AFTER every overlay-group cart section (pg-drawer, pg-giftguard,
+  pg-cart-*) and after the PDP template sections, and it already
+  owns the spare-case upsell. Verified: no later footer-group
+  section touches .pg-tadd, .pgx-lad-chip, .pgx-tile-sub,
+  .pgx-deal-note, .pgx-sstrike, .pg-sell-slot, .pgx-sellout,
+  .sticky-in-panel or aside#cart.
+  ============================================================
+
+  PG R36S Fix (2026-09-06). Four reported problems, all measured on the live
+  theme at 375px before anything was changed:
+
+  1. "50% OFF TODAY" LOOKED RANDOM. Not the SAVE n% badge - that one is fine
+     where it is, at the tile's top-right, and is left alone. The problem was
+     .pgx-tile-sub, which rendered as the LAST line of the tile, under the
+     "+ FREE Case" chip (measured: name 801, chip 858, sub 885), so the one
+     line stating the actual offer hung off the bottom with nothing to relate
+     to. The chip is markup inside .pgx-tile-name rather than a sibling, so
+     CSS ordering cannot reach it; subFirst() moves the chip node to sit after
+     the sub instead. Reads name -> 50% OFF today -> + FREE Case.
+
+  2. SPARE-CASE ADD-ON ROW WAS TOO SMALL. .pg-tadd measured 34px tall on mobile
+     (padding 5/7, 22px thumb, 10.5px label) - a checkbox-sized strip under a
+     55px Add to cart button. Enlarged to ~46px on both the single and the duo
+     tile. Scoped with :not(.pg-tadd-frame) so the lenticular poster's frame
+     row, which already has its own larger sizing, is untouched.
+
+  3. SELLOUT RISK CARD TOUCHED THE REVIEW UNDER IT. Measured: .pg-sell-slot
+     bottom 1355, .pgx-quote top 1355. Exactly zero gap. pg-sellout-last sets
+     margin:14px 0 0 on the slot, so there was top spacing and no bottom
+     spacing. 18px added below.
+
+  4. CART: THE FREE CASE COULD SHOW A PRICE, AND THE TWO CASE LINES SWAPPED
+     IDENTITIES. This is the real bug and it is worth spelling out.
+
+     Both cases are variants of ONE product, r36s-protective-case-free-gift:
+     49640846426340 is the $0.00 gift, 49640879063268 is the $13.99 spare.
+     Every existing script decides which cart line is "the free one" by
+     POSITION, not by variant:
+
+       - pg-drawer badge(): giftAt falls back to "the first line whose product
+         link contains free-gift" whenever FREE_IDX/GIFT_IDX are not resolved
+         yet - which is exactly the window right after a paid case is added.
+       - pg-mobile caseLine(): shows .pg-free-tag when seen === 1, i.e. purely
+         first-in-DOM-order, and force-sets visibility:visible !important on
+         .semantic-amount / .nc-lsave / .price for EVERY case line, overriding
+         the stylesheet rule that keeps money off the gift line.
+
+     Cart line order is add order, and the paid case is frequently added FIRST:
+     pg-theme-css's ride-along posts the add-on 900ms after Add to cart, while
+     pg-giftguard only places the gift on its own 1200ms beat. Verified live:
+     adding the spare case and the console together produced cart order
+     [Spare case, Free with console, Console]. In that order both scripts above
+     put FREE GIFT on the PAID line and leave the genuinely free line showing
+     $12.59 / Save 50% - "the free case is showing that it costs them money".
+
+     Also verified: pg-drawer's GIFT_ID and pg-mobile's CASE_VARIANT are both
+     49623692247268, which no longer exists - POST /cart/add.js returns
+     422 "Cannot find variant". So pg-drawer's giftSync cannot place the gift
+     (pg-giftguard does it instead), and its "split the extra units onto a paid
+     line" branch drops those units on the floor.
+
+     The fix below settles identity by VARIANT ID, read from the line's own
+     /cart/change?id=<variant>:<key> remove link - that link survives
+     pgNoAddonLinks, which strips only hrefs containing r36s-protective-case.
+     It re-asserts every 250ms because the drawer rebuilds its lines and
+     one-shot guards lose to rebuilders. Result, always: one FREE GIFT line at
+     $0.00 and one ordinary paid line, whatever order they were added in.
+
+     Removing the misplaced pill is NOT enough on its own - pg-drawer re-adds
+     it every 800ms and the two beats produce a visibly flickering badge. The
+     paid line is stamped data-pg-paidcase and the pill is benched by rule (see
+     4a), so it never paints even in the window between ticks.
+
+  4b. TOGGLING SHIPPING PROTECTION MADE THE FREE-CASE TEXT GLITCH (2026-09-10).
+
+     Reported: flick the Shipping Protection switch and the free case's text
+     jumps around before settling. It is not the switch - it is what the switch
+     does. pg-drawer's spBox() handler ends in spRefreshDrawer(), which
+     re-fetches `/` and does
+
+         cur.innerHTML = fresh.innerHTML;
+
+     i.e. it replaces the WHOLE drawer with the server's rendering. Everything
+     the pass below stamps onto a case line is DOM state and dies with it: the
+     data-pg-case / data-pg-truefree / data-pg-paidcase attributes, the inline
+     display:none on the variant paragraph, the hidden stepper, our own pill.
+
+     And every rule in 4a was keyed on those attributes. So between the swap and
+     the next 250ms tick the line rendered raw - the "Free with console /"
+     variant line back, a stepper and a price on a $0.00 line - while
+     pg-drawer's badge() (800ms) and pg-mobile's caseLine() (1200ms) each got a
+     say on which line wears FREE GIFT. Three writers repainting one line at
+     three different offsets is exactly the flicker, and it repeats on every
+     toggle because every toggle rebuilds the drawer.
+
+     Reproduced in Chromium against all three writers at their real beats: on
+     the old rules every sampled frame from t+0 to t+2600ms after a rebuild was
+     wrong in some way -- raw variant line and stepper for the first ~250ms, the
+     FREE GIFT pill landing on the PAID line at t+120, the stepper flashing back
+     at t+900 when pg-mobile's beat lands, and the struck $24.99 never hidden at
+     all. On the rules below, every one of those frames is correct, including
+     t+0 and t+16 -- before any script has run.
+
+     THE ANSWER IS TO STOP DEPENDING ON THE STAMP. The rules below now key on
+     markup the SERVER renders, so they are already in force in the same frame
+     the new HTML lands, with no JS in the path:
+
+       - any case line at all: `li:has(a[href*="free-gift"])` - both variants
+         share that handle, so this benches a foreign pill on either of them.
+       - the gift line specifically: `li:has(a[href*="id=49640846426340"])` -
+         the remove link carries the variant id, which is the same evidence
+         variantOf() reads, and it is in the server's HTML.
+
+     The attribute selectors are kept alongside them: they are the fallback
+     where :has() is unsupported, and for a line whose remove link is missing.
+
+     THE PRICE IS HIDDEN WITH PROPERTIES pg-mobile DOES NOT WRITE. caseLine()
+     sets `visibility:visible !important` INLINE on .semantic-amount, .nc-lsave,
+     .cols, .money and .price for every case line, and inline !important beats
+     any stylesheet rule - so a visibility-only hide is reversed on its beat and
+     restored on ours, forever. opacity and pointer-events are not in its list
+     (nor in pg-chips' STYLE map), so the same trick 4a already uses for the
+     pills is used here for the money: the box keeps its size, the digits do not
+     paint, and no other script can bring them back.
+
+     pass() also runs the instant the drawer mutates now, not just on the
+     250ms beat, so our own pill lands with the rest of the new markup rather
+     than a fifth of a second later.
+
+  5. MOBILE CART: 40px of dead white under CHECKOUT. Measured at 375x812:
+     checkout button bottom 772, viewport 812. aside#cart carries a 34px
+     bottom padding from the base theme (safe-area-inset-bottom is 0 here, so
+     it is a literal), and .sticky-in-panel adds 6px. The sticky pane sticks to
+     the bottom of the drawer's CONTENT box, so those 34px sat below it as bare
+     white. pg-drawer's pgPane() owns that value and re-writes it inline every
+     800ms, so it is changed there (34px -> 6px) rather than fought from here;
+     the safe-area-inset moves INTO the pane's own padding. Net: the pane and
+     its button drop ~28px, the gap under the button becomes 12px, and notched
+     phones still clear the home indicator.
+
+  6. "BUNDLE PRICING SHOWN" ON A SINGLE. See dealNote() below: pg-tile-copy
+     prints one constant sentence under Add to Cart on this product, so a
+     shopper with SINGLE selected was told bundle pricing was being shown. The
+     first sentence is dropped for that tier only.
+
+  7. SINGLE TILE SHOWED THE 64G COMPARE-AT ON 128G. See strikeSync() below:
+     $129.99 struck against $74.99 (42%) next to a SAVE 50% badge, when the
+     128G's real compare-at is $149.99. Read live from the product JSON.
+{%- endcomment -%}
+<style>
+  /* ---- 1. "50% OFF today" sits above the FREE Case chip ----
+     The SAVE n% badge at the tile's top-right is deliberate and stays put.
+     The chip becomes a block on its own line, which is the same treatment
+     pg-tile-copy already gives it on ladder tiles. */
+  #pgx#pgx .pgx-tile:not(.pgx-lad) .pgx-lad-chip{
+    display:block !important;
+    width:max-content !important;
+    margin:5px 0 0 !important;
+    vertical-align:baseline !important;
+  }
+
+  /* ---- 2. spare-case add-on row, both tiles ---- */
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame){
+    gap:10px !important;
+    padding:9px 11px !important;
+    border-radius:12px !important;
+  }
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame) img{
+    width:32px !important;
+    height:32px !important;
+    border-radius:8px !important;
+  }
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-ck{
+    width:18px !important;
+    height:18px !important;
+    border-radius:5px !important;
+  }
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-t{font-size:12.5px !important}
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-p{font-size:14px !important}
+  #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-p s{font-size:11.5px !important}
+  @media (max-width:600px){
+    #pgx#pgx .pg-tadd:not(.pg-tadd-frame){
+      gap:9px !important;
+      padding:8px 10px !important;
+    }
+    #pgx#pgx .pg-tadd:not(.pg-tadd-frame) img{width:30px !important;height:30px !important}
+    #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-t{font-size:12px !important}
+    #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-p{font-size:13px !important}
+    #pgx#pgx .pg-tadd:not(.pg-tadd-frame) .pg-tadd-p s{font-size:11px !important}
+  }
+
+  /* ---- 3. breathing room under the sellout-risk card, every PDP ---- */
+  #pgx#pgx .pg-sell-slot{margin-bottom:18px !important}
+  #pgx#pgx .pgx-buy > .pgx-sellout{margin-bottom:18px !important}
+
+  /* ---- 4. ONE gift pill, ours, on the line we choose ----
+     pg-drawer's badge() ADDS .pg-free-tag to whichever case line it guessed
+     and REMOVES it from every other one, on an 800ms beat. Fighting that node
+     is unwinnable in BOTH directions: re-adding it on the right line flickers,
+     and stripping it off the wrong line flickers. That is what the shopper
+     sees as "the free gift logo glitching".
+
+     So .pg-free-tag is benched on every case line and the badge is rendered as
+     our own element, .pg-truegift-tag, which pg-drawer has never heard of and
+     so never touches. One writer, no race.
+
+     Benched with position/visibility/opacity/pointer-events rather than
+     display, because pg-chips' stamp() writes its STYLE map - which contains
+     display:inline-flex - onto .pg-free-tag, .pg-save-chip and .nc-lsave-off
+     as INLINE !important every 300ms, and inline !important beats any
+     stylesheet rule. Those four properties are the ones stamp() never writes;
+     nc-linesave already benches .pg-save-chip exactly this way. Anything added
+     to pg-chips' STYLE map later must stay clear of them.
+
+     THE SELECTOR IS THE SERVER'S MARKUP, NOT OUR STAMP - see 4b. A case line
+     is one whose product link carries the shared `free-gift` handle, which is
+     true the moment the drawer's HTML is replaced and does not wait for a
+     tick. The data-attribute selectors stay as the no-:has() fallback. */
+  #cart#cart .l4ca > li:has(a[href*="free-gift"]) .pg-free-tag,
+  #cart#cart .l4ca > li:has(a[href*="free-gift"]) .pg-free-sub,
+  #cart#cart .l4ca > li[data-pg-case] .pg-free-tag,
+  #cart#cart .l4ca > li[data-pg-case] .pg-free-sub,
+  #cart#cart .l4ca > li[data-pg-truefree] .pg-free-note,
+  #cart#cart .l4ca > li[data-pg-truefree] .nc-lsave-off,
+  #cart#cart .l4ca > li[data-pg-truefree] .nc-lsave-was,
+  #cart#cart .l4ca > li[data-pg-truefree] .pg-save-chip,
+  body.template-cart .l4ca > li:has(a[href*="free-gift"]) .pg-free-tag,
+  body.template-cart .l4ca > li:has(a[href*="free-gift"]) .pg-free-sub,
+  body.template-cart .l4ca > li[data-pg-case] .pg-free-tag,
+  body.template-cart .l4ca > li[data-pg-case] .pg-free-sub,
+  body.template-cart .l4ca > li[data-pg-truefree] .pg-free-note,
+  body.template-cart .l4ca > li[data-pg-truefree] .nc-lsave-off,
+  body.template-cart .l4ca > li[data-pg-truefree] .nc-lsave-was,
+  body.template-cart .l4ca > li[data-pg-truefree] .pg-save-chip{
+    position:absolute !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  /* ---- 4b. THE GIFT LINE, RECOGNISED FROM THE SERVER'S HTML ----
+     The remove link carries the variant id (/cart/change?id=<variant>:<key>),
+     the same evidence variantOf() reads below, so the $0.00 line can be styled
+     before any script has run - which is what stops the rebuild after a
+     Shipping Protection toggle from flashing the raw line.
+
+     The struck value, the save chips and the stepper are hidden with opacity
+     and pointer-events as well as visibility: pg-mobile's caseLine() writes
+     `visibility:visible !important` INLINE on these very elements every 1200ms,
+     and inline beats a stylesheet. It does not write opacity. */
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]) section > p:not([class]),
+  body.template-cart .l4ca > li:has(a[href*="id=49640846426340"]) section > p:not([class]){
+    display:none !important;
+  }
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]) .semantic-amount,
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]) .nc-lsave-was,
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]) .nc-lsave-off,
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]) .pg-save-chip,
+  #cart#cart .l4ca > li[data-pg-truefree] .semantic-amount,
+  body.template-cart .l4ca > li:has(a[href*="id=49640846426340"]) .semantic-amount,
+  body.template-cart .l4ca > li:has(a[href*="id=49640846426340"]) .nc-lsave-was,
+  body.template-cart .l4ca > li:has(a[href*="id=49640846426340"]) .nc-lsave-off,
+  body.template-cart .l4ca > li:has(a[href*="id=49640846426340"]) .pg-save-chip,
+  body.template-cart .l4ca > li[data-pg-truefree] .semantic-amount{
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  /* pg-drawer pins `li:has(.pg-free-tag)` to the top with order:-1. With the
+     pill on the paid line, the PAID case was being pinned above the gift -
+     visible in the report. Ordering is stated explicitly instead, and from the
+     server's markup too so the rows do not re-sort a beat after a rebuild. */
+  #cart#cart .l4ca > li:has(a[href*="id=49640846426340"]){order:-1 !important}
+  #cart#cart .l4ca > li:has(a[href*="id=49640879063268"]){order:0 !important}
+  #cart#cart .l4ca > li[data-pg-truefree]{order:-1 !important}
+  #cart#cart .l4ca > li[data-pg-paidcase]{order:0 !important}
+
+  /* Same dynamic purple the gift pill has always had. */
+  #cart#cart .pg-truegift-tag,
+  body.template-cart .pg-truegift-tag{
+    display:inline-block !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;
+    animation:pgShift 5s ease-in-out infinite !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    font-size:12px !important;
+    font-weight:700 !important;
+    letter-spacing:.04em !important;
+    padding:3px 10px !important;
+    border-radius:999px !important;
+    line-height:1.35 !important;
+    white-space:nowrap !important;
+    width:max-content !important;
+    grid-area:sv !important;
+    justify-self:start !important;
+  }
+
+  /* ---- 5. checkout pane sits on the bottom edge, not 40px above it ----
+     The drawer's own bottom gutter is NOT set in CSS at all: pg-drawer's
+     pgPane() writes it inline with !important every 800ms, so no stylesheet
+     rule and no competing inline write can hold against it (both were tried
+     and measured losing). It is changed at its single source, 34px -> 6px, in
+     sections/pg-drawer.liquid. pg-cart-mobile's floorOf() reads that same
+     value to decide whether CHECKOUT is reachable, so one owner is correct.
+     This rule carries the safe-area inset INSIDE the pane, so a notched phone
+     still clears its home indicator. 6 + 6 = a 12px resting gap. */
+  aside#cart#cart .sticky-in-panel{
+    padding-bottom:calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCaseTruth) return; window.pgCaseTruth = 1;
+
+  var FREE = 49640846426340;   /* $0.00  "Free with console" */
+  var PAID = 49640879063268;   /* $13.99 "Spare case"        */
+  var LINES = '#cart .l4ca > li, body.template-cart .form-cart .l4ca > li';
+  var TAG = '<span class="pg-truegift-tag">Free Gift</span>';
+
+  /* The remove link is the only identifier that always survives: pg-theme-css
+     strips product hrefs containing r36s-protective-case, but /cart/change
+     carries no such substring. data-pg-keys (written by pg-cart-variants) is
+     the backup, the product href the last resort. */
+  function variantOf(li){
+    var a = li.querySelector('a[href*="/cart/change"]');
+    var m = a && (a.getAttribute('href') || '').match(/[?&]id=(\d+):/);
+    if (m) return parseInt(m[1], 10);
+    if (li.dataset.pgKeys){
+      m = li.dataset.pgKeys.match(/^(\d+):/);
+      if (m) return parseInt(m[1], 10);
+    }
+    a = li.querySelector('a[href*="/products/"]');
+    m = a && (a.getAttribute('href') || '').match(/[?&]variant=(\d+)/);
+    return m ? parseInt(m[1], 10) : 0;
+  }
+
+  function setText(el, txt){ if (el && el.textContent !== txt) el.textContent = txt; }
+
+  /* The gift line: FREE GIFT pill, $0.00, no struck value, no save chip, and a
+     quantity the shopper cannot push past one. */
+  function asGift(li){
+    delete li.dataset.pgPaidcase;      /* a line can flip variants when the cart is rebuilt */
+    li.dataset.pgCase = '1';
+    li.dataset.pgTruefree = '1';
+    li.dataset.pgFree = '1';
+    if (!li.querySelector('.pg-truegift-tag')){
+      var h2 = li.querySelector('h2');
+      if (h2) h2.insertAdjacentHTML('afterend', TAG);
+    }
+    /* "Free with console /" - the variant line, trailing separator and all,
+       because the product's second option is unset on this variant. pg-drawer
+       does hide it, but only via [data-pg-free] > section > p, so it appeared
+       whenever this line lost the badge race to the paid case - which is the
+       very failure being fixed here. Hidden inline as well as by the rule in
+       4b, so it cannot come back on any ordering. The variant paragraph is the
+       only unclassed direct <p> child of <section>; the price lives in .cols. */
+    var sect = li.querySelector('section');
+    if (sect){
+      Array.prototype.forEach.call(sect.children, function(el){
+        if (el.tagName === 'P' && !el.className) el.style.setProperty('display', 'none', 'important');
+      });
+    }
+    setText(li.querySelector('.nc-lsave-now'), '$0.00');
+    var p = li.querySelector('.cols p.price');
+    if (p && !li.querySelector('.nc-lsave')) setText(p, '$0.00');
+    /* opacity as well as visibility: pg-mobile's caseLine() re-writes
+       visibility inline every 1200ms and would otherwise flash the stepper
+       back on between our ticks (see 4b) */
+    li.querySelectorAll('.semantic-amount').forEach(function(el){
+      el.style.setProperty('visibility', 'hidden', 'important');
+      el.style.setProperty('opacity', '0', 'important');
+      el.style.setProperty('pointer-events', 'none', 'important');
+    });
+    var q = li.querySelector('input[name="updates[]"]');
+    if (q && q.value !== '1') q.value = '1';
+  }
+
+  /* The paid line is an ordinary cart line. Everything the gift treatment adds
+     is taken back off it, because two scripts still hand it that treatment
+     whenever it happens to be the first case line in the cart. */
+  function asPaid(li){
+    li.dataset.pgCase = '1';
+    li.dataset.pgPaidcase = '1';       /* CSS above benches any pill re-added between ticks */
+    delete li.dataset.pgTruefree;
+    delete li.dataset.pgFree;
+    li.classList.remove('pg-free-line');
+    /* our own pill is the one thing safe to remove: nothing else re-adds it */
+    li.querySelectorAll('.pg-truegift-tag').forEach(function(el){
+      if (el.parentNode) el.parentNode.removeChild(el);
+    });
+    li.querySelectorAll('.semantic-amount, .nc-lsave, .cols').forEach(function(el){
+      el.style.setProperty('visibility', 'visible', 'important');
+      el.style.removeProperty('opacity');
+      el.style.removeProperty('pointer-events');
+    });
+  }
+
+  /* "50% OFF today" (.pgx-tile-sub) rendered BELOW the "+ FREE Case" chip,
+     where it read as an orphan line hanging off the bottom of the tile. The
+     chip is markup INSIDE .pgx-tile-name, not a sibling, so no amount of CSS
+     order can get the sub above it - the chip node itself is moved to sit
+     after the sub. Idempotent, and re-run per tick because pg-landing and
+     pg-tile-copy both rebuild these tiles from scratch on their own beats.
+     Scoped away from .pgx-lad so the orb / wall-art ladders keep their own
+     chip placement. */
+  function subFirst(){
+    document.querySelectorAll('#pgx .pgx-tile:not(.pgx-lad)').forEach(function(tile){
+      var chip = tile.querySelector('.pgx-lad-chip');
+      var sub = tile.querySelector('.pgx-tile-sub');
+      if (!chip || !sub || !sub.parentNode) return;
+      if (chip.previousElementSibling === sub) return;   /* already seated */
+      /* the tiles are rebuilt underneath us; a node can be detached between
+         the query and the move, which throws NotFoundError and would take the
+         rest of the tick with it */
+      try { sub.parentNode.insertBefore(chip, sub.nextSibling); } catch (e){}
+    });
+  }
+
+  /* THE NOTE UNDER ADD TO CART. pg-tile-copy's noteFor() returns a real
+     per-tier offer line on the orb / wall-art ladders, but on this product
+     there is no PACK, so it falls through to one constant sentence that opens
+     "Bundle pricing shown." - printed even when SINGLE is selected, where
+     nothing is bundled and the sentence is simply not true. The rest of it is:
+     a lone console is still discounted automatically at checkout (verified,
+     /cart.js reports total_discount 649 on a 6499 line), so only the first
+     sentence is dropped.
+
+     Guarded twice so ladder products are never touched: it returns unless the
+     note is that generic fallback, and it is self-correcting in both
+     directions rather than latched on an attribute, so a repaint by
+     pg-tile-copy is put back on the next tick. */
+  var NOTE_SINGLE = 'Your <b>best available discount</b> is applied automatically at checkout.';
+  var NOTE_BUNDLE = 'Bundle pricing shown. Your <b>best available discount</b> is applied automatically at checkout.';
+
+  function dealNote(){
+    var root = document.getElementById('pgx');
+    if (!root) return;
+    var p = root.querySelector('.pgx-deal-note');
+    if (!p) return;
+    var txt = (p.textContent || '').replace(/\s+/g, ' ').trim();
+    if (txt.indexOf('best available discount') === -1) return;   /* a real ladder offer line: leave it */
+    var sel = root.querySelector('.pgx-lad.pgx-sel') || root.querySelector('.pgx-tile.pgx-sel');
+    if (!sel) return;
+    var single = sel.getAttribute('data-pgx-tile') === 'single' && !sel.classList.contains('pgx-duo');
+    var bundleText = txt.indexOf('Bundle pricing shown') === 0;
+    if (single && bundleText) p.innerHTML = NOTE_SINGLE;
+    else if (!single && !bundleText) p.innerHTML = NOTE_BUNDLE;
+  }
+
+  /* Each step is isolated. A ReferenceError in one helper used to abort the
+     whole tick, which silently disabled the cart fixes below it. */
+  /* THE SINGLE TILE'S COMPARE-AT MUST FOLLOW THE SIZE PICKER.
+     pg-theme-css builds .pgx-sstrike and the SAVE n% badge ONCE, from VARS[0]
+     - the FIRST variant - and only ever updates them from a .pgx-storage
+     <select> it synthesises for tiles that render option PILLS. This tile has
+     a native <select data-pgx-size>, so `haveSel ? [] : pills` leaves pills
+     empty, that whole branch never runs, and no updater is ever attached.
+     Result, measured: picking 128G updated the price to $74.99 but left the
+     64G compare-at struck beside it, so the tile read $129.99 -> $74.99 (42%)
+     while its own badge said SAVE 50%. The 128G's real compare-at is $149.99.
+     Showing another variant's compare-at is not a cosmetic problem, so this
+     reads the figures live from the product JSON rather than hardcoding them,
+     and an admin price change propagates with no further edit. */
+  var VMAP = null, vmapPending = false;
+  function loadVmap(){
+    if (VMAP || vmapPending) return;
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m) return;
+    vmapPending = true;
+    fetch('/products/' + m[1] + '.js')
+      .then(function(r){ return r.json(); })
+      .then(function(p){
+        VMAP = (p.variants || []).map(function(v){
+          return {title: String(v.title || ''), price: v.price, cap: v.compare_at_price || 0};
+        });
+      })
+      .catch(function(){ vmapPending = false; });
+  }
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function strikeSync(){
+    if (!VMAP){ loadVmap(); return; }
+    var tile = document.querySelector('#pgx .pgx-tile[data-pgx-tile="single"]');
+    if (!tile) return;
+    var sel = tile.querySelector('select[data-pgx-size]');
+    if (!sel) return;
+    var want = String(sel.value || '').trim();
+    if (!want) return;
+    /* variant titles read "Transparent Purple / 64G"; the picker's value is
+       the option segment, so compare on the last segment only */
+    var v = null;
+    for (var i = 0; i < VMAP.length; i++){
+      if (VMAP[i].title.split('/').pop().trim() === want){ v = VMAP[i]; break; }
+    }
+    if (!v || !v.cap || v.cap <= v.price) return;
+    setText(tile.querySelector('.pgx-sstrike'), money(v.cap));
+    var bd = tile.querySelector('[data-pg-singlesave]') || tile.querySelector('.pgx-lad-badge');
+    setText(bd, 'SAVE ' + Math.round((v.cap - v.price) / v.cap * 100) + '%');
+  }
+
+  function pass(){
+    try { subFirst(); } catch (e){}
+    try { dealNote(); } catch (e){}
+    try { strikeSync(); } catch (e){}
+    document.querySelectorAll(LINES).forEach(function(li){
+      var v = variantOf(li);
+      if (v === FREE) asGift(li);
+      else if (v === PAID) asPaid(li);
+    });
+  }
+
+  /* One gift, one paid line. Extra gift units are moved onto the paid variant
+     rather than deleted - pg-drawer attempts the same split with a variant id
+     that 422s, so the units vanish instead of being charged for. */
+  var busy = false;
+  function normalise(){
+    if (busy) return;
+    busy = true;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        var gift = null;
+        (c.items || []).forEach(function(it){ if (it.variant_id === FREE) gift = it; });
+        if (!gift || gift.quantity <= 1){ busy = false; return; }
+        var extra = gift.quantity - 1;
+        return fetch('/cart/change.js', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({id: gift.key, quantity: 1})
+        }).then(function(){
+          return fetch('/cart/add.js', {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({items: [{id: PAID, quantity: extra}]})
+          });
+        }).then(function(){
+          busy = false;
+          if (window.pgDrawerRefresh) window.pgDrawerRefresh();
+        });
+      })
+      .catch(function(){ busy = false; });
+  }
+
+  /* THE REBUILD IS THE MOMENT THAT MATTERS. A Shipping Protection toggle
+     replaces the drawer's entire innerHTML (pg-drawer spRefreshDrawer), and
+     until this runs again the new nodes carry none of our stamps. Waiting for
+     the next 250ms tick is what let pg-drawer's badge() and pg-mobile's
+     caseLine() paint first. Observing #cart re-stamps in the same frame the
+     nodes arrive.
+
+     Re-entrancy: pass() writes to the DOM, which would re-trigger the
+     observer, so the flag below drops anything raised by our own writes. The
+     interval stays as the backstop for a drawer that is replaced wholesale
+     (a new #cart element the observer is no longer attached to). */
+  var stamping = false;
+  function stamp(){
+    if (stamping) return;
+    stamping = true;
+    try { pass(); } catch (e){}
+    /* released after the current task so our own mutations are not read back
+       as a reason to run again */
+    setTimeout(function(){ stamping = false; }, 0);
+  }
+  function watchDrawer(){
+    if (!window.MutationObserver) return;
+    var c = document.getElementById('cart');
+    if (!c || c.dataset.pgCaseWatch) return;
+    c.dataset.pgCaseWatch = '1';
+    new MutationObserver(stamp).observe(c, {childList: true, subtree: true});
+  }
+
+  /* Fast beat because the drawer replaces its own line nodes and pg-mobile
+     re-badges by DOM order on its own interval; a one-shot guard loses. */
+  setInterval(function(){ pass(); watchDrawer(); }, 250);
+  setInterval(normalise, 2000);
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ pass(); watchDrawer(); });
+  } else {
+    pass();
+    watchDrawer();
+  }
+})();
+</script>
+{% schema %}
+{"name": "PG Case Mobile + R36S Fix", "settings": []}
+{% endschema %}
