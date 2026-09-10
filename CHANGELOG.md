@@ -1,3 +1,48 @@
+# Duo Pack cart link landed on a stock theme page
+
+## Problem
+Clicking the "Pocket Era R36S Duo Pack" title in the cart opened a product page
+nobody on the team recognised — plain title, stock Sale badge, white
+"Configuration" boxes, "Excl. VAT" line.
+
+## Cause
+Nothing was wrong with the link. `r36s-duo-pack` is a real, ACTIVE product and
+the cart pointed at it correctly. It simply had **no template assigned**
+(`templateSuffix: null`), so Shopify fell back to the base theme's default
+`templates/product.json` — the untouched Xtra product template. That is the
+"weird looking product page": it was never designed, it is what every product
+gets when no template is chosen.
+
+For comparison, the console (`handheld-game-console`) carries `pg-landing`, and
+the protective case carries `redirect`. The Duo Pack was created without one —
+half-finished work from the "Duo Pack as product" round.
+
+## Fix
+Set the Duo Pack's `templateSuffix` to `pg-landing`, so
+`/products/r36s-duo-pack` renders the real R36S landing page. This is a PRODUCT
+setting, not a theme file, so it applies on the live store immediately and to
+every route into the product (cart title, search, collections, ads), not just
+the cart link. Reversible by setting the suffix back to null.
+
+    productUpdate(product: {id: "gid://shopify/Product/9225766043876",
+                            templateSuffix: "pg-landing"})
+
+KNOWN TRADE-OFF, chosen deliberately by the owner: `pg-landing`'s section has
+its own `product` setting, pinned to `handheld-game-console`. The template
+therefore renders the CONSOLE landing page whatever product it is assigned to —
+so the Duo Pack's own title, its Sale -$107.50 badge and its
+64GB+64GB / 64GB+128GB / 128GB+128GB configuration picker do NOT appear on that
+URL. The shopper lands on the R36S page and buys from its own tiles. If the Duo
+Pack is later meant to sell itself from its own page, it needs a template driven
+by the current product rather than a pinned one.
+
+## Applied to
+Live product data (all themes). No theme file changed.
+
+Files changed: none — CHANGELOG only
+
+---
+
 # Free-case text glitching when Shipping Protection is toggled
 
 ## Problem
