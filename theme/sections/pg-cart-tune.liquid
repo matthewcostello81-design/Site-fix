@@ -275,8 +275,19 @@
   }
   #cart .pg-soloff .pg-soloff-add[disabled],
   #cart .pg-duoup .pg-duoup-add[disabled]{opacity:.65 !important;cursor:default !important}
+  /* THE PILL IS THREE LETTERS WIDE, NOT 120px. screen.css gives every bare
+     <button> `min-width:var(--btn_miw)` (min(100%,120px) on phones) and
+     `margin:0 16px 16px 0`, which pg-upsell-fit waives for pg-unlock's own
+     ADD -- but never for these two. Measured on the owner's 440px screenshot:
+     the case offer's pill was 134px wide for "ADD", sat 8px above the row's
+     centre, and left the copy beside it ~100-150px, in which the Duo row's
+     headline needs three lines and pg-upsell-fit's two-line clamp cuts it to
+     "Add a 2nd R36S: upgrade to the". Waived here for both rows, at the four
+     ids the rest of this block uses, so the pill is sized by its own padding
+     (~55px) and the copy gets the width back. pg-frame-add's case offer
+     carries the same waiver so the three custom rows agree. */
   #cart#cart#cart#cart .pg-soloff .pg-soloff-add,
-  #cart#cart#cart#cart .pg-duoup .pg-duoup-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important}
+  #cart#cart#cart#cart .pg-duoup .pg-duoup-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important;min-width:0 !important;margin:0 !important}
   #cart#cart#cart#cart .pg-soloff,
   #cart#cart#cart#cart .pg-duoup{margin:2px 0 4px !important;padding:9px 11px !important;gap:10px !important}
   /* AND ITS PLACE IN THE SLOT IS PINNED. #pg-unlock-slot is a CSS-ordered flex

@@ -1,0 +1,439 @@
+{%- comment -%}
+  PG Frame Add: the 30x40 black wood frame offered as a paid ADD-ON, the way
+  the spare case is on the console page -- on the wall-art product page and in
+  the cart -- and NOT as a card in "You may also like".
+
+  Two parts, both DOM-only.
+
+  THERE WAS A THIRD, AND IT IS GONE ON PURPOSE: a tile above ADD TO CART on the
+  wall art product page, offering the same frame before the print was even in
+  the cart. The shop owner asked for it removed at every width. The cart row
+  below is the only place the frame is pitched now, which is the right moment
+  for it anyway -- an add-on reads as an add-on once there is something to add
+  it to, and on the product page it competed with ADD TO CART for the same
+  click. Deleted rather than hidden, so nothing renders and is then covered up:
+  its markup, its styling and its `onPrintPage()` guard all went with it.
+
+  If it is ever wanted back, the one trap it was built around is worth knowing:
+  its button was `.pgx-frame-add` and deliberately NOT `.pgx-case-add`, because
+  pg-mobile and pg-case-add both listen for that class in the CAPTURE phase and
+  post the CASE variant -- a shared class would have added a case to the cart
+  when the shopper asked for a frame.
+
+  (1) CART. The same offer as one compact light row, shown only while the print
+      is in the cart and the frame is not. It lives INSIDE #pg-unlock-slot when
+      pg-unlock has built one -- pg-cart-mobile moves that slot above the pinned
+      checkout pane on phones, and riding in it is what keeps this row reachable
+      there; parked after the line list it measured y=783 on an 844px screen,
+      underneath the pane, which is why "they can't add the frame". It still
+      does NOT wear the `.pg-unlock` class: pg-unlock's own render sweeps rows
+      by that class and removes any it did not ask for, and pg-cart-mobile's
+      fallback selector grabs the first one.
+
+  (1b) ONE UPSELL AT A TIME. With the wall art, an orb and a console all in the
+      cart, the drawer stacked pg-unlock's three offer rows plus this one --
+      four pitches in a row, which reads as clutter and, when two point at the
+      same product family, as duplication. focusOne() below keeps exactly one
+      of them visible: the frame offer first whenever it is eligible (owner's
+      rule: wall art in cart means the frame is the upsell), then the offer for
+      the product whose quantity moved most recently, then the slot's own CSS
+      order. The losers are benched with a class, not removed -- pg-unlock
+      counts its rows to decide whether to rebuild, and removing them would
+      make it rebuild forever. A row mid-interaction (is-open, or holding
+      focus) is never benched out from under the shopper.
+
+  (2) "YOU MAY ALSO LIKE". The frame card is hidden there, exactly as pg-mobile
+      hides the case card -- an add-on and a standalone product card for the
+      same thing read as two different offers at two different prices.
+
+  Nothing here polls /cart.js. Whether the print and the frame are in the cart
+  is read off the rendered rows, so the offer costs no requests on a cart that
+  four other sections are already fetching.
+
+  ================================================================
+  WHY THIS ROW LOOKED NOTHING LIKE THE OTHER UPSELLS ON A PHONE
+
+  Reported: with the DUO PACK in the cart the spare-case upsell is bulky and
+  cut off, while with a single console the same pitch looks right.
+
+  They are two different components, and only one of them had ever been fixed.
+  With ONE console the offer comes from pg-unlock's ladder row (rung 1, "Add a
+  2nd R36S") -- the row whose phone geometry was measured and corrected. With
+  the DUO PACK that rung is already taken (1 paid + 1 discounted = the 2 in the
+  cart), so pg-unlock renders nothing for the console, offer() below sees no
+  `.pg-unlock[data-pg-unlock*="handheld-game-console"]` and shows THIS row
+  instead. Same pitch, same moment in the cart, different stylesheet -- and this
+  one still carried the two faults pg-unlock had already had taken out of it:
+
+  1. `.pg-frameoffer-px` was `white-space:nowrap`, which makes "was + now + SAVE
+     chip" one unbreakable unit. On a 390px phone that unit is wider than the
+     copy column, so it overflowed and painted UNDER the ADD button -- the
+     overlap in the screenshot. pg-unlock's note on its own `-px` rule describes
+     the identical failure. The line now breaks BETWEEN its pieces: the struck
+     price is nowrap on its own element, the chip is an inline-block, so a
+     narrow column drops the chip to its own line instead of running it under
+     the button.
+  2. The row had no small-phone geometry at all. Its only media block was
+     `max-width:480px`, and the one thing it sized -- `.pg-frameoffer-p` -- is a
+     class this markup does not contain (the price element is `-px`), so the
+     block did nothing but recolour the subtitle. Meanwhile the row sits in
+     #pg-unlock-slot, where pg-cart-timer stamps geometry with two-ID
+     `!important` rules; with nothing here to answer them the row took whatever
+     they gave it.
+
+  So the geometry below is pg-unlock's, restated for this row at the strength
+  this slot needs -- `#cart#cart` is three ids, which beats a two-ID !important
+  rule whatever the load order, the same trick and for the same reason as
+  pg-unlock's own 414px block. The base card also picks up that row's padding,
+  radius, gradient and shadow, so the two pitches read as one component whether
+  the shopper is holding one console or two.
+{%- endcomment -%}
+<style>
+  /* ---- the cart row ---- */
+  /* Geometry, palette and type are pg-unlock's offer row, restated: this row
+     and that one are the same pitch in the same slot and must be one design.
+     The drawer is light where the product page is dark, so the palette is the
+     drawer's, not the tile's. */
+  #cart .pg-frameoffer,body.template-cart .pg-frameoffer{
+    display:flex;align-items:center;gap:12px;
+    /* the price line and, on a narrow phone, the chip must be able to drop to
+       their own line rather than overflow the copy column */
+    flex-wrap:wrap;
+    margin:10px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    box-sizing:border-box
+  }
+  #cart .pg-frameoffer img,body.template-cart .pg-frameoffer img{
+    width:54px;height:54px;flex:none;border-radius:11px;object-fit:cover;
+    background:#efe4f8
+  }
+  #cart .pg-frameoffer-t,body.template-cart .pg-frameoffer-t{flex:1;min-width:0}
+  #cart .pg-frameoffer-t b,body.template-cart .pg-frameoffer-t b{
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800
+  }
+  #cart .pg-frameoffer,body.template-cart .pg-frameoffer{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{
+    display:block;font-size:12.5px;line-height:1.35;color:#6E5C80;margin-top:2px
+  }
+  /* NO `white-space:nowrap` HERE -- see fault 1 in the note above. Each piece
+     stays whole on its own element; only the line between them may break. */
+  #cart .pg-frameoffer-px,body.template-cart .pg-frameoffer-px{
+    display:block;margin-top:3px;font-size:14.5px;font-weight:800;color:#7A2FA2;
+    line-height:1.45
+  }
+  #cart .pg-frameoffer-px s,body.template-cart .pg-frameoffer-px s{
+    color:#8a8a8a;font-weight:400;font-size:12px;margin-right:6px;white-space:nowrap
+  }
+  /* same pill geometry as .pg-unlock-tag: letter-spacing `normal` because
+     tracking applies after the final glyph too, leaving a gap no padding can
+     balance out */
+  #cart .pg-frameoffer-sv,body.template-cart .pg-frameoffer-sv{
+    display:inline-block;width:fit-content;margin:0 0 0 8px;
+    padding:3px 7px;border-radius:999px;
+    font-size:11.5px;font-weight:800;letter-spacing:normal;word-spacing:normal;
+    text-transform:uppercase;vertical-align:1px;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2)
+  }
+  /* ONE SIZE, BESIDE THE COPY AT EVERY WIDTH, and its height comes from
+     min-height rather than padding -- padding-derived height put the twin of
+     this button at 32px, under the 40px minimum for a tap target sitting above
+     CHECKOUT. It was previously declared twice here, in two blocks that
+     disagreed about padding and font-size. */
+  #cart .pg-frameoffer-add,body.template-cart .pg-frameoffer-add{
+    flex:0 0 auto;order:0;
+    display:inline-flex;align-items:center;justify-content:center;
+    min-height:34px;line-height:1;white-space:nowrap;
+    border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;
+    box-shadow:0 10px 22px -12px rgba(139,68,190,.7) !important;
+    border-radius:999px !important;padding:0 16px !important;
+    font-family:inherit;font-weight:800;font-size:12.5px;
+    letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+    /* screen.css's bare-<button> floor (min-width min(100%,120px)) and its
+       16px right/bottom margins were never waived here, only for pg-unlock's
+       ADD (pg-upsell-fit). Measured on a 440px phone: this pill was 134px
+       wide for three letters and rode 8px high, and the copy beside it had
+       ~150px. Waived, so the pill is sized by its padding like the other
+       offer rows' and the title keeps the line width. */
+    min-width:0 !important;margin:0 !important
+  }
+  html body #cart .pg-frameoffer-add::before,html body #cart .pg-frameoffer-add::after{
+    display:none !important;content:none !important;background:none !important
+  }
+  #cart .pg-frameoffer-add[disabled]{opacity:.6;cursor:default}
+  /* Inside the slot the row goes FIRST -- the slot is a CSS-ordered flex
+     column, and every pg-unlock row already carries an explicit order, so the
+     frame offer takes a rank below them all. */
+  #cart #pg-unlock-slot .pg-frameoffer{order:99}
+
+  /* The bench. Hidden, not removed: pg-unlock decides whether to rebuild by
+     COUNTING its rows, so a removed row would be rebuilt on the next pass and
+     the drawer would churn. display beats the slot's flex layout either way. */
+  #cart .pg-upsell-bench,body.template-cart .pg-upsell-bench{display:none !important}
+
+  /* ---- PHONES (max-width:600px) ----
+     pg-unlock's mobile-parity block, restated: the row keeps the same three
+     parts in the same order at every width -- image, copy, button, all on one
+     line. The button deliberately does NOT go full-width here; that is what
+     made the twin of this row a 322x42 slab on a 390px phone. */
+  @media (max-width:600px){
+    #cart .pg-frameoffer,body.template-cart .pg-frameoffer{gap:11px}
+    #cart .pg-frameoffer img,body.template-cart .pg-frameoffer img{width:48px;height:48px}
+    #cart .pg-frameoffer-t b,body.template-cart .pg-frameoffer-t b{font-size:14px}
+    #cart .pg-frameoffer-t small,body.template-cart .pg-frameoffer-t small{font-size:11.5px}
+  }
+
+  /* ---- SMALL PHONES (max-width:414px) ----
+     iPhone 13/16/17 at 390-402px land here. pg-cart-timer's compact block
+     stamps rows in this slot with TWO-ID !important rules (38x38 thumbnails,
+     every text node at 12px) and loads after this file, so at equal specificity
+     it wins. `#cart#cart` is three ids and wins at any load order -- the same
+     answer pg-unlock's own 414px block gives, so the two rows end up identical
+     rather than merely similar. Thumbnail stretched to the row's height, button
+     compact so the copy keeps the line width, and the SAVE chip gives up its
+     slack before the line has to wrap. */
+  @media (max-width:414px){
+    #cart#cart .pg-frameoffer img{
+      width:46px !important;height:auto !important;min-height:52px !important;
+      align-self:stretch !important
+    }
+    #cart#cart .pg-frameoffer .pg-frameoffer-add{
+      min-height:30px !important;padding:0 11px !important;font-size:12px !important
+    }
+    #cart#cart .pg-frameoffer .pg-frameoffer-px .pg-frameoffer-sv{
+      padding:2px 5px !important;margin-left:6px !important;font-size:10.5px !important
+    }
+    #cart#cart .pg-frameoffer .pg-frameoffer-t b{font-size:13.5px !important;line-height:1.3 !important}
+    #cart#cart .pg-frameoffer .pg-frameoffer-t small{font-size:11px !important}
+    #cart#cart .pg-frameoffer .pg-frameoffer-px{font-size:14px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgFrameAdd) return; window.pgFrameAdd = 1;
+
+  /* Both accessory upsells share this one row builder: the frame rides with
+     the wall art, the spare case with the console. Prices are the LIVE ones -
+     was = the variant's compareAtPrice - so the strike and the SAVE % are the
+     same maths the cart itself shows. */
+  var ACCS = [
+    {
+      key: 'frame',
+      variant: 49688364613860,
+      ownMark: '30x40cm-frame',
+      withMark: 'lenticular-poster',
+      img: 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/blackframe_120x.png?v=1787284280',
+      title: 'Add the matching frame',
+      each: 'Add a frame for each print',
+      sub: '30x40cm black wood grain',
+      now: 1499, was: 2799
+    },
+    {
+      key: 'case',
+      variant: 49640879063268,
+      ownMark: 'r36s-protective-case',
+      withMark: 'handheld-game-console',
+      img: 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120',
+      title: 'Add a spare protective case',
+      each: 'Add a spare case for each console',
+      sub: 'One case already comes free',
+      now: 1399, was: 2499
+    }
+  ];
+  window.pgAccFor = function(handle){
+    var h = String(handle || '');
+    for (var i = 0; i < ACCS.length; i++){ if (h.indexOf(ACCS[i].withMark) > -1) return ACCS[i]; }
+    return null;
+  };
+  function moneyC(c){ return '$' + (c / 100).toFixed(2); }
+  var FRAME_MARK = '30x40cm-frame';   /* still referenced by the YML trim below */
+
+  /* ---------------- (1) the cart row ---------------- */
+  function cartLines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+  function cartHas(mark, paidOnly){
+    var ls = cartLines();
+    for (var i = 0; i < ls.length; i++){
+      if (!ls[i].querySelector('a[href*="' + mark + '"]')) continue;
+      /* paidOnly skips the auto-added FREE gift line - the spare-case offer
+         must still show while only the free case is in the cart */
+      if (paidOnly && ls[i].hasAttribute('data-pg-free')) continue;
+      return true;
+    }
+    return false;
+  }
+  function offer(){
+    var list = document.querySelector('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)');
+    ACCS.forEach(function(cfg){
+      /* one row per accessory, ever */
+      var rows = document.querySelectorAll('.pg-frameoffer[data-acc="' + cfg.key + '"]');
+      var row = rows[0] || null;
+      for (var i = 1; i < rows.length; i++){
+        if (rows[i].parentNode) rows[i].parentNode.removeChild(rows[i]);
+      }
+      var wanted = !!list && cartHas(cfg.withMark) && !cartHas(cfg.ownMark, true) &&
+        !document.querySelector('#cart .pg-unlock[data-pg-unlock*="' + cfg.withMark + '"]');
+      if (!wanted){
+        if (row && row.parentNode) row.parentNode.removeChild(row);
+        return;
+      }
+      var save = Math.round((cfg.was - cfg.now) / cfg.was * 100);
+      if (!row){
+        row = document.createElement('div');
+        row.className = 'pg-frameoffer';
+        row.setAttribute('data-acc', cfg.key);
+        row.innerHTML =
+            '<img alt="" width="54" height="54" decoding="sync" src="' + cfg.img + '">'
+          + '<div class="pg-frameoffer-t"><b>' + cfg.title + '</b>'
+          + '<span class="pg-frameoffer-px"><s>' + moneyC(cfg.was) + '</s>' + moneyC(cfg.now)
+          + '<span class="pg-frameoffer-sv">SAVE ' + save + '%</span></span>'
+          + '<small>' + cfg.sub + '</small></div>'
+          + '<button type="button" class="pg-frameoffer-add" data-v="' + cfg.variant + '">Add</button>';
+      }
+      var slot = document.querySelector('#cart #pg-unlock-slot');
+      if (slot){
+        if (row.parentNode !== slot) slot.appendChild(row);
+      } else if (row.previousElementSibling !== list || row.parentNode !== list.parentNode){
+        list.parentNode.insertBefore(row, list.nextSibling);
+      }
+    });
+  }
+
+  /* ---------------- (1b) one upsell at a time ----------------
+     Candidates are the frame offer plus every pg-unlock row. The winner:
+       1. any row the shopper is interacting with (open picker / focus)
+       2. the frame offer, whenever it is on screen at all -- offer() has
+          already established eligibility by then
+       3. the row for the product whose cart quantity changed most recently
+       4. the slot's own CSS order
+     Everyone else gets the bench class. */
+  var lastTouched = '', prevQty = null;
+  function trackTouch(){
+    var q = {};
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li').forEach(function(li){
+      var a = li.querySelector('a[href*="/products/"]');
+      if (!a) return;
+      var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+      if (!m) return;
+      var inp = li.querySelector('input[type=number]');
+      q[m[1]] = (q[m[1]] || 0) + (inp ? (parseInt(inp.value, 10) || 0) : 1);
+    });
+    if (prevQty){
+      for (var h in q){
+        if (!(h in prevQty) || q[h] > prevQty[h]) lastTouched = h;
+      }
+    }
+    prevQty = q;
+  }
+  function focusOne(){
+    /* Benching is OFF by request: each product in the cart shows its next
+       bundle up, and the poster/console additionally show their accessory
+       (frame / spare case). The bench class is only cleared now. */
+    var cands = [];
+    document.querySelectorAll('#cart .pg-unlock, #cart .pg-frameoffer').forEach(function(el){
+      cands.push(el);
+    });
+    cands.forEach(function(el){ el.classList.remove('pg-upsell-bench'); });
+    if (true) return;
+    if (cands.length < 2){
+      cands.forEach(function(el){ el.classList.remove('pg-upsell-bench'); });
+      return;
+    }
+    var winner = null, i, el;
+    for (i = 0; i < cands.length && !winner; i++){
+      el = cands[i];
+      if (el.classList.contains('is-open') || el.contains(document.activeElement)) winner = el;
+    }
+    if (!winner){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].classList.contains('pg-frameoffer')) winner = cands[i];
+      }
+    }
+    if (!winner && lastTouched){
+      for (i = 0; i < cands.length && !winner; i++){
+        if (cands[i].getAttribute('data-pg-unlock') === lastTouched) winner = cands[i];
+      }
+    }
+    if (!winner){
+      var best = null;
+      for (i = 0; i < cands.length; i++){
+        var o = parseInt(getComputedStyle(cands[i]).order, 10) || 0;
+        if (best === null || o < best){ best = o; winner = cands[i]; }
+      }
+    }
+    cands.forEach(function(c){ c.classList.toggle('pg-upsell-bench', c !== winner); });
+  }
+
+  /* ---------------- adding it ---------------- */
+  /* Capture phase, delegated: the row above is re-created by the sweep below
+     whenever the drawer rebuilds, so a listener bound to the button itself
+     would not survive; and the drawer's own handlers call stopPropagation on
+     clicks inside it. */
+  var busy = false;
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('.pg-frameoffer-add');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (busy) return;
+    busy = true;
+    var was = btn.textContent;
+    btn.textContent = 'ADDING...';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: [{id: parseInt(btn.getAttribute('data-v'), 10) || 49688364613860, quantity: 1}]})
+    }).then(function(r){
+      if (!r.ok) throw 0;
+      btn.innerHTML = 'ADDED ✓';
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).then(function(){
+      /* the pgOpenCart() call that used to live here belonged to the product
+         page tile -- adding from the cart means the cart is already open */
+      setTimeout(function(){ busy = false; offer(); }, 400);
+      setTimeout(function(){ btn.textContent = was; }, 2200);
+    }).catch(function(){
+      /* reverting silently to ADD reads as a dead button -- say it failed */
+      btn.textContent = 'TRY AGAIN';
+      setTimeout(function(){ btn.textContent = was; }, 2000);
+      busy = false;
+    });
+  }, true);
+
+  /* ---------------- (2) out of "You may also like" ---------------- */
+  function ymlTrim(){
+    document.querySelectorAll('.pgu-yml a, .pgu-yml-grid a').forEach(function(a){
+      if ((a.getAttribute('href') || '').indexOf(FRAME_MARK) > -1){
+        var card = a.closest('.pgu-yml-card') || a;
+        card.style.setProperty('display', 'none', 'important');
+      }
+    });
+  }
+
+  function pass(){ offer(); trackTouch(); focusOne(); ymlTrim(); }
+
+  /* Event-driven, with a slow backstop -- the drawer rebuilds on every cart
+     change and fires no event this section can subscribe to. Nothing in the
+     pass touches the network. */
+  if (window.MutationObserver){
+    var t = null;
+    new MutationObserver(function(){
+      if (t) return;
+      t = setTimeout(function(){ t = null; pass(); }, 120);
+    }).observe(document.body, {childList: true, subtree: true});
+  }
+  setInterval(pass, 1500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  else pass();
+})();
+</script>
+{% schema %}
+{"name": "PG Frame Add", "settings": []}
+{% endschema %}

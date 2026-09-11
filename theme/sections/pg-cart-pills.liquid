@@ -1,0 +1,124 @@
+{%- comment -%}
+  PG Cart Pills: one colour, one clock, for every pill in the cart.
+
+  By request (2026-09-11): the SAVED % pill at the bottom right of each cart
+  line "looks good but should be the same fading colour for all of them", and
+  "same thing with the free gift thing under the case" -- the moving purple
+  the product page's ADD TO CART wears, at the 8s every wave on the site now
+  runs.
+
+  WHAT WAS UNEVEN. Six pills, four paints:
+    - .pg-save-chip / .pg-free-tag   the moving gradient, 5s (pg-drawer)
+    - .nc-lsave-off (bottom right)   a static two-stop purple (pg-drawer:48)
+                                     over a static teal (nc-cartfix:172)
+    - .pg-gift-off (gift line)       pinned still by pg-gift-purple, by an
+                                     earlier request to match the SAVED chips,
+                                     which only looked still because the
+                                     drawer recreates them on every rebuild
+    - .pg-free-note (under the case) a translucent lilac plaque, dark text
+    - .pg-unlock-tag / .pg-frameoffer-sv (offer rows)  a static gradient
+
+  THE PAINT. One rule at four ids -- the heaviest earlier writer is
+  pg-drawer's three -- gives them all the same five-stop gradient, the same
+  240% canvas and the same 8s sweep, white text, no border.
+
+  WHY TWO OTHER FILES HAD TO GIVE WAY. A property that carries !important
+  cannot be animated: the important declaration outranks the animation in
+  the cascade. And a `background:` SHORTHAND marked !important stamps
+  background-position !important along with everything else -- which is the
+  one property the wave moves. Two such shorthands sat on .nc-lsave-off
+  (pg-drawer:48, nc-cartfix:172); both are `background-image` now, so the
+  position is free. pg-gift-purple's pinned position was the same problem
+  and that section is retired.
+
+  THE CLOCK. A CSS animation starts when its element is created. The drawer
+  recreates the SAVED chips on every cart change while the gift pill and the
+  offer rows live on, so "the same animation" drifted out of step -- the
+  reversal an earlier request was about. So every moving element is given an
+  animation-delay of minus (time since page load, modulo 8s): whenever it was
+  created, it is at the same point of the same sweep as everything else on
+  the page, the product page's buttons included. Inline and !important,
+  because the shorthand it corrects is !important too. The entrance fade that
+  pg-cart-smooth gives a chip new to the drawer (pgSoftIn) is listed second
+  and keeps its own zero delay.
+{%- endcomment -%}
+<style>
+  @keyframes pgWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  #cart#cart#cart#cart .pg-save-chip,
+  #cart#cart#cart#cart .pg-free-tag,
+  #cart#cart#cart#cart .nc-lsave-off,
+  #cart#cart#cart#cart .pg-gift-off,
+  #cart#cart#cart#cart .pg-free-note,
+  #cart#cart#cart#cart .pg-unlock-tag,
+  #cart#cart#cart#cart .pg-frameoffer-sv,
+  html body.template-cart .pg-save-chip,
+  html body.template-cart .pg-free-tag,
+  html body.template-cart .nc-lsave-off,
+  html body.template-cart .pg-gift-off,
+  html body.template-cart .pg-free-note,
+  html body.template-cart .pg-truegift-tag{
+    background-color:#7A2FA2 !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;
+    background-repeat:no-repeat !important;
+    animation:pgWave 8s ease-in-out infinite !important;
+    color:#fff !important;
+    -webkit-text-fill-color:#fff !important;
+    border-color:transparent !important;
+  }
+  /* the plaque under the case was bordered, translucent and dark-lettered */
+  #cart#cart#cart#cart .pg-free-note,
+  html body.template-cart .pg-free-note{border:0 !important}
+  /* a chip new to the drawer keeps its entrance fade (pg-cart-smooth) */
+  #cart#cart#cart#cart .pg-save-chip:not([data-pg-kept]),
+  #cart#cart#cart#cart .pg-free-tag:not([data-pg-kept]){animation:pgWave 8s ease-in-out infinite,pgSoftIn .26s ease both !important}
+</style>
+<script>
+(function(){
+  if (window.pgCartPills) return; window.pgCartPills = 1;
+
+  var PERIOD = 8000;   /* the one duration every wave on the site runs */
+  var SEL = '#cart .pg-save-chip, #cart .pg-free-tag, #cart .nc-lsave-off, #cart .pg-gift-off, '
+          + '#cart .pg-free-note, #cart .pg-unlock-tag, #cart .pg-frameoffer-sv, #cart .nc-dship, #cart .pg-bar-fill, '
+          + '.pgx-atc, .pgst-b, .pgh-atc, .pgh-badge, .pgx-lad-chip, .pgx-duo-ribbon, .pg-r36-atc, .pg-orb-atc';
+
+  /* minus the time since page load, modulo one sweep: an element started now
+     with this delay is at the same point of the sweep as one started at load */
+  function phase(){
+    var t = (window.performance && performance.now) ? performance.now() : Date.now();
+    return '-' + (Math.round(t) % PERIOD) + 'ms';
+  }
+
+  function sync(){
+    var els = document.querySelectorAll(SEL);
+    if (!els.length) return;
+    var v = phase() + ', 0s';   /* the second value keeps pgSoftIn on time */
+    els.forEach(function(el){
+      /* written once per element. A writer that re-stamps the animation
+         shorthand (pg-theme-css's paint, pg-home's hover repaint) zeroes the
+         delay and restarts the sweep, and that is the one case written again. */
+      var cur = el.style.getPropertyValue('animation-delay');
+      if (cur && cur === el.getAttribute('data-pg-phase')) return;
+      el.style.setProperty('animation-delay', v, 'important');
+      el.setAttribute('data-pg-phase', v);
+    });
+  }
+
+  function boot(){
+    sync();
+    if (window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; sync(); }, 60);
+      }).observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+    }
+    setInterval(sync, 1500);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Pills", "settings": []}
+{% endschema %}

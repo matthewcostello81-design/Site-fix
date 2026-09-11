@@ -66,16 +66,61 @@ the prices and free orbs unchanged. This is live product data (it is not scoped
 to a draft theme); the badges and struck figures derive from it at render time,
 so no theme code changed for it.
 
+# Cart offer rows: the ADD pill is three letters wide
+
+The theme's bare `<button>` rule (`min-width:min(100%,120px)` and 16px
+right/bottom margins) was never waived for the custom offer-row pills, only for
+pg-unlock's. On a 440px phone the case offer's pill measured 134px for "ADD"
+and left the copy beside it ~100-150px, in which the Duo row's headline would
+be clipped by the drawer's two-line clamp. `min-width:0; margin:0` on the
+`.pg-soloff-add` / `.pg-duoup-add` rule (pg-cart-tune) and on
+`.pg-frameoffer-add` (pg-frame-add), so all three custom rows agree and the
+copy keeps the line width.
+
+---
+
+# Shipping Protection: $3.99
+
+Variant 49529437028580 repriced 2.99 -> 3.99 (product data). The two places
+the drawer prints the figure by hand -- pg-drawer's service toggle and
+pg-cart-main's card -- updated to match.
+
+---
+
+# Cart pills: one colour, one clock
+
+By request the bottom-right SAVED % pill and the "free gift" plaque under the
+case line take the same moving purple as the product page buttons, at the same
+8s. New `sections/pg-cart-pills.liquid` (header-group) paints every cart pill
+(.pg-save-chip, .pg-free-tag, .nc-lsave-off, .pg-gift-off, .pg-free-note,
+.pg-unlock-tag, .pg-frameoffer-sv) with one gradient and one animation, and a
+small script gives every moving element on the page an animation-delay of
+minus (time since load mod 8s) so chips the drawer recreates stay in step with
+the ones that live on. Two `background:` shorthands marked !important on
+.nc-lsave-off (pg-drawer:48, nc-cartfix:172) pinned its background-position
+and would have blocked the animation; both are `background-image` now.
+pg-gift-purple, which pinned the gift pill still, is retired (empty section,
+still registered). pg-drawer's own waves (free-shipping pill, progress bar,
+chips) and pg-home's inline button stamp move from 5s to 8s.
+
 ## Applied to
 Shopify draft theme `163849208036` ("Duo case wording (Claude 9-10c)") on
 thepocketera.com via the Admin API (themeFilesUpsert).
 
 Files changed:
-- sections/pg-cart-tune.liquid (Duo row CSS)
+- sections/pg-cart-tune.liquid (Duo row CSS, pill floor)
+- sections/pg-frame-add.liquid (pill floor)
 - sections/pg-theme-css.liquid (8s wave)
 - sections/pg-r36s-mobile.liquid (8s wave)
 - sections/pg-orb-atc.liquid (new)
 - templates/product.pg-crystal.json (registers pg-orb-atc)
+- sections/pg-drawer.liquid ($3.99, 8s waves, .nc-lsave-off shorthand)
+- sections/pg-cart-main.liquid ($3.99, 8s)
+- sections/nc-cartfix.liquid (.nc-lsave-off shorthand)
+- sections/pg-home.liquid (8s)
+- sections/pg-cart-pills.liquid (new)
+- sections/pg-gift-purple.liquid (retired)
+- sections/header-group.json (registers pg-cart-pills)
 
 ---
 
