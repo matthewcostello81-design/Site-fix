@@ -356,7 +356,11 @@
           <div class="pgx-opt">
             <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
               {%- for value in size_opt.values -%}
-                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
+                {%- comment -%} the 128G is the better buy (twice the storage for $15, and
+                    a deeper cut against its compare-at); the option says so, by request
+                    (2026-09-11). Only this picker: the pack pickers sit three to a row
+                    and a longer option widens every <select> past the tile edge. {%- endcomment -%}
+                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}{% if value contains '128' %} &mdash; Best Value{% endif %}</option>
               {%- endfor -%}
             </select>
           </div>
@@ -643,7 +647,9 @@
     var sub1 = root.querySelector('[data-pgx-single-sub]');
     if (now1) now1.textContent = money(v1.price);
     if (was1) was1.textContent = v1.cap > v1.price ? money(v1.cap) : '';
-    if (sub1) sub1.textContent = v1.cap > v1.price ? (Math.round((1 - v1.price / v1.cap) * 100) + '% OFF today') : '';
+    /* FLOOR, like the SAVE badge (pg-theme-css): rounding printed "31% OFF
+       today" beside "SAVE 30%" on the 128G once its compare-at was $129.99 */
+    if (sub1) sub1.textContent = v1.cap > v1.price ? (Math.floor((1 - v1.price / v1.cap) * 100) + '% OFF today') : '';
     var dNow = root.querySelector('[data-pgx-double-now]');
     if (dNow){
       var a = bySize(val('d1')), b = bySize(val('d2'));

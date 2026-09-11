@@ -172,6 +172,9 @@
     #cart#cart#cart#cart .pg-offer-px{font-size:13px}
     #cart#cart#cart#cart .pg-offer-pick{flex-basis:calc(33.333% - 4px)}
   }
+  /* a card with one picker (the pack cards' GB) gives it room for the longer
+     "128GB — Best Value" option instead of a third of the row */
+  #cart#cart#cart#cart .pg-offer-pick:only-child{flex-basis:calc(66.666% - 2px);max-width:calc(66.666% - 2px)}
   /* the pinned pane, if a stale pg-cart-mobile ever seats the slot there */
   #cart#cart#cart#cart .sticky-in-panel .pg-offer{margin:0 0 6px}
   @keyframes pgWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
@@ -191,6 +194,9 @@
   var SPARE_CASE = 49640879063268;           /* $13.99 "Spare case" */
   var FREE_CASE  = 49640846426340;           /* $0.00 "Free with console" */
   var SIZE_OF = {49622431858916: '64', 49622431826148: '128'};   /* console variant -> GB */
+  /* the 128GB is the better buy (twice the storage for $15 more, a deeper cut
+     against its compare-at): the picker says so, by request (2026-09-11) */
+  var GB_OPTS = [{id: '64', t: '64GB'}, {id: '128', t: '128GB \u2014 Best Value'}];
   var CASE_IMG = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120';
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
@@ -309,7 +315,7 @@
             title: isDuo ? 'Add a 2nd R36S: the Duo Pack' : 'Add a 3rd R36S: the Trio Pack',
             sub: isDuo ? 'Two consoles, one price' : 'Three consoles, one price',   /* no "+$" figure here, by request */
             was: withPick.cap || withPick.price, now: withPick.price,
-            picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
+            picks: [{label: 'GB for the new one', options: GB_OPTS, value: pickDefault}],
             btn: 'Upgrade to the ' + (isDuo ? 'Duo' : 'Trio') + ' Pack',
             pack: pack
           };
@@ -347,7 +353,7 @@
           title: 'Add a 3rd R36S: the Trio Pack',
           sub: 'Three consoles, one price',
           was: withPick.cap || withPick.price, now: withPick.price,
-          picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
+          picks: [{label: 'GB for the new one', options: GB_OPTS, value: pickDefault}],
           btn: 'Upgrade to the Trio Pack', pack: trio
         };
       });

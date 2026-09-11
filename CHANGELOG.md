@@ -1,3 +1,25 @@
+# 128G as the better buy: deeper compare-at, "Best Value" on the pickers
+
+By request ("do 1 and 2"), on a fresh theme duplicated from the live one,
+"128G Best Value (Claude 9-11)" (gid 163875881188), since the previous draft
+was published.
+
+Live product data (not theme): the 128G console's compare-at is $129.99
+(was $119.99; price unchanged at $89.99), so it shows 30% off against the
+64G's 25%. The packs' compare-ats follow, as the sum of their consoles'
+compare-ats: Duo 64+128 $229.98 (35%), 128+128 $259.98 (37%); Trio
+64+64+128 $329.97 (40%), 64+128+128 $359.97 (41%), 128x3 $389.97 (43%). The
+retired 128GB + 64GB duo variant carries $229.98 too. Pack prices unchanged.
+
+`sections/pg-landing.liquid`: the Single tile's storage dropdown reads
+"128G -- Best Value" (the pack pickers are left alone: three to a row, a
+longer option widens every select past the tile edge). The "% OFF today"
+line floors like the SAVE badge; rounding printed 31% beside SAVE 30%.
+
+`sections/pg-cart-offer.liquid`: the pack cards' GB picker reads "128GB --
+Best Value", and a card with a single picker gives it two thirds of the row
+so the option is not clipped.
+
 # Cart offer: every card's title in Title Case
 
 By request: "the title of the upsell in cart, every word" starts with a
