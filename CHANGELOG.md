@@ -1,43 +1,51 @@
-# R36S page: Best Deal folded into the SAVE pill, orb-style
+# R36S page: tile labels ride inside the SAVE pill, side by side, orb-style
 
 ## Problem
-On the R36S product page (`/products/handheld-game-console`) the tile with the
-deepest saving (the Trio Pack) wore its "Best Deal" as a second pill stacked
-under the SAVE pill. The owner wants it the way the Crystal Legends Orb page
-shows it: one pill on the tile's top edge reading "BEST DEAL · SAVE 43%".
+On the R36S product page (`/products/handheld-game-console`) each bundle tile
+wore two stacked pills: the SAVE % on the tile's top edge and, under it, a
+label ribbon ("Best Deal", "Great Value", "Most Popular"). The owner wants it
+the way the Crystal Legends Orb page shows it: one pill, side by side,
+"BEST DEAL · SAVE 43%". A first pass folded only the Best Deal label into its
+pill and left the other two stacked; the owner called that out, so every label
+now rides inside its pill.
 
 ## Cause
 Two tile builders, two treatments. The orb's tiles come from pgLadder plus
 `sections/pg-tile-copy.liquid`, which writes the label INTO the SAVE pill of the
 biggest pack. The R36S tiles come from the pgDuo script in
 `sections/pg-theme-css.liquid`, whose `labelPacks()` ranks the tiles from their
-live SAVE % and writes every rank name ("Best Deal", "Great Value", "Good
-Value", or the "Most Popular" section setting) into a separate
-`.pgx-duo-ribbon` pill under the SAVE pill.
+live SAVE % and wrote every rank name into a separate `.pgx-duo-ribbon` pill.
 
-## Fix (`sections/pg-theme-css.liquid`, pgDuo block only)
-- `labelPacks()`: the tile ranked "Best Deal" now has its SAVE pill rewritten to
-  "BEST DEAL · SAVE N%" (N is the floored percent the pill already showed) and
-  its ribbon left empty, which the existing `:empty` rule hides and `put()`
-  answers by lifting the price block back up. Every other tile keeps its
-  ribbon. A tile that loses the rank on a repricing has the prefix stripped and
-  keeps its number, so the single's pill (rewritten by pg-case-mobile on its
-  own 250ms beat) is never fought over.
-- `build()`: once the tiles exist, the existing 2.5s beat re-runs
-  `labelPacks()` (idempotent: it writes only what differs), and `labelPacks()`
-  runs once more right after the single's SAVE pill is created so every tile
-  carries its label on the first paint.
+## Fix (`sections/pg-theme-css.liquid`)
+- `labelPacks()`: every ranked label is written into the tile's SAVE pill as
+  "LABEL · SAVE N%". The pill is split into a label span and a percent span;
+  the percent span carries the `data-pg-duosave` / `data-pg-singlesave`
+  attribute the percent writers look up (`calc()`, the storage picker,
+  pg-case-mobile's 250ms `strikeSync`), so those keep writing a plain "SAVE N%"
+  into their own span and never clobber the label. The ribbon element is left
+  empty, which the existing `:empty` rule hides, and `put()` lifts the price
+  block back up. A tile with no pill (nothing to save) keeps the ribbon
+  fallback.
+- `build()`: once the tiles exist, the 2.5s beat re-runs `labelPacks()`
+  (idempotent, zero DOM mutations when nothing changed), and it runs once more
+  right after the single's SAVE pill is created so the single is labelled on
+  the first paint.
+- `labelPacks` is exported as `window.pgLabelPacks`, and the pgPayRow `tick()`
+  now calls that. Its bare `labelPacks()` call referenced a function in another
+  closure and threw a ReferenceError every 1.6s.
 
 Verified offline by running the real pgDuo script in jsdom against a mock R36S
-page with the live prices: the trio reads "BEST DEAL · SAVE 38%" at 64x3 and
-"BEST DEAL · SAVE 43%" at 128x3 with no ribbon; the duo keeps "SAVE 32-37%" +
-Great Value; the single keeps "SAVE 25%" + Most Popular. Re-ranking on a
-repricing, prefix stripping, and idempotence across the 2.5s beat all hold.
-The storefront is not reachable from this environment, so no screenshot.
+page with the live prices: single "MOST POPULAR · SAVE 25%", duo
+"GREAT VALUE · SAVE 32-37%", trio "BEST DEAL · SAVE 38%" at 64x3 and
+"BEST DEAL · SAVE 43%" at 128x3; no ribbons; re-ranking on a repricing swaps
+the labels; a simulated 250ms strikeSync writer never touches the label; zero
+mutations across an idle 2.5s beat. The pill measures about 165px at 12px
+Poppins, the same width as the orb's, so it cannot wrap. The storefront is not
+reachable from this environment, so no screenshot.
 
 ## Applied to
 Shopify draft theme 163875881188 ("128G Best Value (Claude 9-11)") on shop
-`v9fqfa-bd.myshopify.com` via the Admin API (themeFilesUpsert).
+`v9fqfa-bd.myshopify.com` via the Admin API (staged upload + themeFilesUpsert).
 Files changed: sections/pg-theme-css.liquid
 
 ---

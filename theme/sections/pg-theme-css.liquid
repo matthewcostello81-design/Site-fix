@@ -886,7 +886,10 @@
     var target = tiles[0];
     if (bs.nextElementSibling !== target && target.parentElement) target.parentElement.insertBefore(bs, target);
   }
-  function tick(){ put(); subWhite(); paint(); paintNews(); killUsdc(); moveQuote(); cardAtc(); titleStars(); tilePaint(); accPaint(); bsFix(); labelPacks(); }
+  /* labelPacks lives in the pgDuo closure below and is exported as
+     window.pgLabelPacks; the bare call this line used to make threw a
+     ReferenceError on every beat. */
+  function tick(){ put(); subWhite(); paint(); paintNews(); killUsdc(); moveQuote(); cardAtc(); titleStars(); tilePaint(); accPaint(); bsFix(); if (window.pgLabelPacks) window.pgLabelPacks(); }
   /* The selected tile's purple border is stamped INLINE by tilePaint, which
      used to run only on the 1600ms interval - so a click showed its highlight
      up to 1.6s late (the stale inline border-color outranked the .pgx-sel
@@ -958,12 +961,15 @@
      on 2026-09-11 (14 orders held one console, 11 of them the 128G; 3 held
      two; none three) and moved by hand as sales move. It replaces that
      tile's ranking name, except "Best Deal", which is a price fact and
-     stays. The labels sit stacked under the SAVE pill; the price block is
-     dropped beneath the pair. Best Deal is the one exception: it rides
-     INSIDE the SAVE pill, the way the orb's biggest pack wears it (see the
-     note in labelPacks below), so that tile carries one pill, not two. */
+     stays. EVERY LABEL RIDES INSIDE THE SAVE PILL, side by side with the
+     percent ("BEST DEAL · SAVE 43%"), the way the orb's biggest pack wears
+     its own (pg-tile-copy): by request, 2026-09-11, "copy how the orb has
+     it, side by side", after a first pass that stacked a second ribbon pill
+     under SAVE. The .pgx-duo-ribbon in the pack markup is kept but left
+     empty (the :empty rule hides it), so nothing on this page stacks. */
   var MOST_POPULAR = '{{ section.settings.most_popular | default: "single" }}';
   var RANK_NAMES = ['Best Deal', 'Great Value', 'Good Value'];
+  window.pgLabelPacks = labelPacks;
   function labelPacks(){
     var onR36 = location.pathname.indexOf('/products/handheld-game-console') !== -1;
     var packs = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile.pgx-duo'));
@@ -988,27 +994,44 @@
     else if (MOST_POPULAR === 'duo') mp = packs.filter(function(t){ return !t.classList.contains('pgx-trio'); })[0] || null;
     else if (MOST_POPULAR === 'trio') mp = packs.filter(function(t){ return t.classList.contains('pgx-trio'); })[0] || null;
     ranked.forEach(function(e){ if (mp && e.t === mp && e.txt !== 'Best Deal') e.txt = 'Most Popular'; });
-    /* BEST DEAL READS THE WAY THE ORB'S DOES (by request, 2026-09-11): folded
-       into the SAVE pill on the tile's top edge as "BEST DEAL · SAVE 43%",
-       the one pill pg-tile-copy gives the orb's biggest pack, rather than a
-       second pill under it. That tile's ribbon is left empty (the :empty rule
-       hides it and put() lifts the price block back up); every other tile
-       keeps its ribbon. A tile that loses the rank on a repricing has the
-       prefix taken off its pill again and keeps the number it already shows,
-       so the single's pill, which pg-case-mobile rewrites on its own beat, is
-       never fought over. calc() writes a plain "SAVE N%" and calls in here
-       straight after, so the prefix is on before the tile paints; build()'s
-       2.5s beat re-asserts it, idempotently, should anything else repaint a
-       pack's pill without going through calc(). */
+    /* THE PILL IS SPLIT IN TWO so no script fights another over it: a label
+       span in front, and behind it the percent span, which carries the
+       data-pg-duosave / data-pg-singlesave attribute every percent writer
+       looks up (calc() above, the storage picker in build(), pg-case-mobile's
+       strikeSync on its 250ms beat). Those keep writing a plain "SAVE N%"
+       into the percent span alone, so the label survives every repricing.
+       The first pass moves the attribute off the pill onto the new span and
+       carries the pill's current text with it; every later pass only writes
+       a label that differs, so the 2.5s beat is silent when nothing changed.
+       The label is uppercased in the text itself (pg-save-badge uppercases
+       the pill visually anyway) so anything that reads the pill's text, such
+       as pg-tile-copy's bottom bar, gets the orb's "BEST DEAL · SAVE 43%".
+       A tile with no pill (no compare-at, so nothing to save) keeps the old
+       ribbon as its fallback. */
     ranked.forEach(function(e){
       var pill = e.t.querySelector('.pgx-lad-badge');
-      var best = e.txt === 'Best Deal' && !!pill;
       if (pill){
-        var cur = pill.textContent || '';
-        var want = best ? 'BEST DEAL \u00B7 SAVE ' + e.pc + '%' : cur.replace(/^\s*BEST DEAL\s*\u00B7\s*/i, '');
-        if (cur !== want) pill.textContent = want;
+        var lbl = pill.querySelector('.pgx-pill-lbl');
+        if (!lbl){
+          var attr = pill.hasAttribute('data-pg-duosave') ? 'data-pg-duosave' : 'data-pg-singlesave';
+          var pct = pill.querySelector('[' + attr + ']');
+          if (!pct){
+            var had = pill.textContent || '';
+            pill.removeAttribute(attr);
+            pill.textContent = '';
+            pct = document.createElement('span');
+            pct.setAttribute(attr, '1');
+            pct.textContent = had;
+            pill.appendChild(pct);
+          }
+          lbl = document.createElement('span');
+          lbl.className = 'pgx-pill-lbl';
+          pill.insertBefore(lbl, pill.firstChild);
+        }
+        var want = e.txt ? e.txt.toUpperCase() + ' \u00B7 ' : '';
+        if (lbl.textContent !== want) lbl.textContent = want;
       }
-      put(e.t, best ? '' : e.txt);
+      put(e.t, pill ? '' : e.txt);
     });
     function put(t, txt){
       var r = t.querySelector('.pgx-duo-ribbon');
@@ -1074,9 +1097,7 @@
     if (!first || !first.parentElement) return;
     if (first.dataset.pgSingled && (!isR36 || document.querySelector('.pgx-duo'))){
       /* built already: keep the tile labels honest on this beat. Idempotent
-         (labelPacks only writes what differs), and the one place the Best
-         Deal pill is put back if a later script repaints a pack's SAVE pill
-         without calling calc(). */
+         (labelPacks only writes what differs). */
       if (isR36) labelPacks();
       return;
     }
@@ -1219,9 +1240,8 @@
         }
       }
       /* The single's SAVE pill is only created just above, AFTER both packs
-         ran calc() and ranked the tiles without it, so on a fresh load the
-         single stood unlabelled until a picker changed. Rank once more now,
-         so every tile carries its label on the first paint. */
+         ran calc() and ranked the tiles without it. Rank once more now, so
+         the single's label is in its pill on the first paint. */
       if (isR36) labelPacks();
       /* ONE WIRING FOR EVERY PACK TILE. The duo and the trio get the same
          three bindings: storage pickers recalculate their own tile, a tap
