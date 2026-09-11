@@ -36,8 +36,12 @@ Verified in a mocked-cart harness across 12 cart states at true 390px and
 # Orb page: tiles read like the console's; one in-tile button, not two
 
 - `sections/pg-orb-tiles.liquid` (new, orb template): the Single Item tile
-  wears the "+ FREE LED Base" chip and says "25% OFF today" under its title
-  (floored from the live price and compare-at, the SAVE badge's own measure);
+  gets its radio dot back (pg-theme-css's product-page pass strips the dot
+  from whichever tile is first, which on the orb page is the ladder's single;
+  the restored dot wears its own class so that pass leaves it alone), says
+  "25% OFF today" under its title beside the dot (floored from the live price
+  and compare-at, the SAVE badge's own measure) and then wears the
+  "+ FREE LED Base" chip, in the console's order;
   every ladder tile carries the console's white-and-lavender note inside it,
   worded per tile; the bottom deal note under the last bundle is hidden.
 - `sections/pg-tiktok-pdp.liquid`: its in-tile ADD TO CART (.pg-tt-atc) was a
