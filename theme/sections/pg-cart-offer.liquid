@@ -161,6 +161,7 @@
   #cart#cart#cart#cart .pg-offer-add:after{display:none}
   #cart#cart#cart#cart .pg-offer-add:hover{filter:brightness(1.08)}
   #cart#cart#cart#cart .pg-offer-add[disabled]{opacity:.65 !important;cursor:default}
+  #cart#cart#cart#cart .pg-offer.is-done{opacity:.7;pointer-events:none}
   #cart#cart#cart#cart .pg-offer-add .arr{font-size:16px;line-height:1}
 
   /* iPhone 13 (390) and the compact block pg-cart-timer stamps under 414px:
@@ -199,26 +200,29 @@
      (automatic, every item, stacks with the Buy X Get Y) comes off at checkout,
      so a card that printed the catalogue price overstated what the shopper
      would pay; by request (2026-09-11) every card prints the net figure and
-     says so on a line of its own ("Extra 10% off included"). The rate is READ FROM THE CART, not
-     hard-coded: Shopify allocates that discount onto every paid line
+     says so on a line of its own ("Extra 10% off included"). The admin's 10%
+     is the DEFAULT. Shopify allocates that discount onto every paid line
      (line_level_discount_allocations, an automatic percentage over all
-     items), so switching it off in the admin drops it out of these prices on
-     the next read. A cart with no paid line to read falls back to the
-     admin's 10%. The Buy X Get Y allocations are percentage discounts too, but
-     over the entitled item only, and are not counted. */
-  var RATE = 0.10;
+     items), and when a cart shows such a rate it replaces the default, so an
+     admin change to the percentage follows on the next read. Absence never
+     zeroes it: a first cut did that, and the live cart printed the gross
+     $135.98 for a Duo Pack the till then charged $122.38 -- "show the best
+     price in the upsell and state the 10% is included in that", by request.
+     The Buy X Get Y allocations are percentage discounts too, but over the
+     entitled item only, and are not counted. */
+  var ADMIN_RATE = 0.10;
+  var RATE = ADMIN_RATE;
   function readRate(cart){
     var found = null;
     (cart.items || []).forEach(function(it){
-      if (found !== null || !it.line_price) return;
-      var r = 0;
       (it.line_level_discount_allocations || []).forEach(function(a){
         var d = a && a.discount_application;
-        if (d && d.type === 'automatic' && d.value_type === 'percentage' && d.target_type === 'line_item' && d.target_selection === 'all') r = Math.max(r, parseFloat(d.value || 0) / 100);
+        if (!d || d.type !== 'automatic' || d.value_type !== 'percentage' || d.target_selection !== 'all') return;
+        var v = parseFloat(d.value || 0) / 100;
+        if (v > 0 && v < 0.9 && (found === null || v > found)) found = v;
       });
-      found = r;
     });
-    return found === null ? 0.10 : Math.min(found, 0.9);
+    return found === null ? ADMIN_RATE : found;
   }
   function net(c){ return Math.round(c * (1 - RATE)); }
   /* a line's price before any discount (the compare-at figures the cards are
@@ -439,13 +443,21 @@
   function orbOffer(t, cross){ return ladderOffer(H.orb, t.orbUnits, t.orb, t.held, !!cross); }
 
   /* the families in the cart, the one the shopper added last first. /cart.js
-     lists lines newest first; a line of an unknown handle names no family */
+     lists lines newest first; a line of an unknown handle names no family.
+     FREE LINES DO NOT COUNT: the free case is put in by pg-giftguard a beat
+     after the console, so it would name the console family "newest" over an
+     orb the shopper had just added (the card swapped in front of them), and a
+     cart holding only the free case, mid-way through emptying, would name the
+     console family with no console in it and fall to the orb cross-sell (a
+     "random orb upsell" that popped up and vanished). A Buy X Get Y free orb
+     is a line the shopper added and keeps its say. */
   var FAMILY = {};
   FAMILY[H.con] = FAMILY[H.duo] = FAMILY[H.trio] = FAMILY[H.kase] = 'console';
   FAMILY[H.orb] = 'orb'; FAMILY[H.wall] = 'wall';
   function familiesByRecency(cart){
     var out = [];
     (cart.items || []).forEach(function(it){
+      if (!gross(it)) return;
       var f = FAMILY[it.handle || ''];
       if (f && out.indexOf(f) === -1) out.push(f);
     });
@@ -528,7 +540,7 @@
     offers.forEach(function(o){ want[o.key] = o; });
     slot.querySelectorAll('.pg-offer').forEach(function(el){
       var k = el.getAttribute('data-offer');
-      if (!want[k]){ el.parentNode.removeChild(el); return; }
+      if (!want[k] || el.classList.contains('is-done')){ el.parentNode.removeChild(el); return; }
       want[k].el = el;   /* same offer: keep it, and whatever the shopper picked */
     });
     var prev = null;
@@ -546,10 +558,10 @@
   }
 
   /* ---------------- watching ---------------- */
-  var busy = false, watch = null, lastSig = null, seenSig = null, force = false;
+  var busy = false, again = false, watch = null, lastSig = null, seenSig = null, force = false;
   function sig(cart){ return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(','); }
   function read(){
-    if (busy){ return; }
+    if (busy){ again = true; return; }
     var c = document.getElementById('cart');
     if (!c || !c.querySelector('.l4ca:not(.in-panel)')) return;
     busy = true;
@@ -566,7 +578,7 @@
       if (!force && lastSig !== null && s !== seenSig){ seenSig = s; setTimeout(read, 600); return; }   /* a change is seen once, then confirmed */
       force = false; seenSig = s;
       return offersFor(cart).then(function(offers){ lastSig = s; lastOffers = offers; paint(offers); });
-    }).catch(function(){}).then(function(){ clearTimeout(watch); busy = false; });
+    }).catch(function(){}).then(function(){ clearTimeout(watch); busy = false; if (again){ again = false; schedule(0); } });
   }
   var lastOffers = null;
   var q = null;
@@ -617,8 +629,16 @@
     var label = btn.innerHTML;
     btn.disabled = true; btn.textContent = 'Adding…';
     perform(o, el).then(function(){
-      adding = false; force = true; lastSig = null;
-      if (el.parentNode) el.parentNode.removeChild(el);
+      /* SMOOTH. The card is not pulled out here (the slot collapsed, the
+         drawer rebuilt, and the next card popped in a second or two later:
+         "slight glitching and a delay", by report). It stays put, marked
+         done, and the fresh read swaps it for the next offer in one paint;
+         paint() never reuses a done card. lastOffers is dropped so a drawer
+         rebuild in between heals to nothing rather than to the stale card. */
+      adding = false; force = true; lastSig = null; lastOffers = null;
+      el.classList.add('is-done');
+      btn.textContent = 'Added \u2713';
+      read();
       if (window.pgDrawerRefresh){ try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ schedule(50); }, function(){ schedule(50); }); } catch(x){ schedule(50); } }
       else schedule(50);
       setTimeout(read, 1500);
@@ -642,7 +662,12 @@
         var c = document.getElementById('cart');
         if (!c || c.pgOfferObs) return;
         c.pgOfferObs = 1;
-        new MutationObserver(function(){ schedule(150); }).observe(c, {childList: true, subtree: true});
+        new MutationObserver(function(){
+          /* a drawer rebuild replaces #cart's innerHTML wholesale: put the
+             standing card straight back, no fetch first, then re-read */
+          if (lastOffers && lastOffers.length && !c.querySelector('.pg-offer') && c.querySelector('.l4ca:not(.in-panel)')) paint(lastOffers);
+          schedule(150);
+        }).observe(c, {childList: true, subtree: true});
       };
       hook();
       mo = new MutationObserver(hook);

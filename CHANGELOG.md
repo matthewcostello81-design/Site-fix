@@ -1,3 +1,47 @@
+# Home page: pg-home now owns its buttons and badges; cart card: best price always, no swaps, smooth add; Single tile picker back on its own row
+
+By report: "nothing has changed on the homepage" (it had not: two footer-group
+sections were overriding pg-home); "the cart upsell is not showing the price
+including 10% off -- it showed $135 for the Duo Pack, then $122 once added;
+show the best price and state the 10% is included"; "slight glitching and a
+delay when you add an upsell, and I saw it swap upsells"; "when you delete
+everything from the cart a random orb upsell pops up then disappears"; and
+"the GB dropdown on the single R36S is hard to see -- put it back how it was
+in the first revision".
+
+`sections/pg-theme-css.liquid`: its cardAtc() restamped the home cards' ADD
+TO CART inline with the old 13.5px pill under the same data-pgStyled flag
+pg-home used, and because that script runs before DOMContentLoaded it won the
+race every time, so pg-home's new button never showed. cardAtc() now only
+seats the button at the card's end. Its #pgh .pgh-atc pill rules and its
+moving-gradient #pgh .pgh-badge rule are gone too.
+
+`sections/pg-home.liquid`: styleAtc() uses its own flag and re-runs on a slow
+beat; the arrow is a real span (the base theme hides button::after and
+pg-theme-css kills it); the badge rule is !important at html-body-id
+specificity so pg-dark-atc's solid #8B44BE / border:0 no longer wins.
+Verified in a harness carrying the base theme CSS, pg-theme-css, pg-dark,
+pg-dark-atc and pg-mobile with the old restamp running first.
+
+`sections/pg-cart-offer.liquid`
+- The 10% is the default, replaced only by a rate the cart positively shows
+  in its line-level allocations, never zeroed by absence. The first cut zeroed
+  it when it could not read an allocation, which is why the live card printed
+  the gross $135.98 the till then charged $122.38 for.
+- Free lines no longer name the newest family: the free case lands a beat
+  after the console and was making the console family "newest" over an orb
+  the shopper had just added (the card swapped), and a cart holding only the
+  free case mid-way through emptying named the console family with no console
+  and fell to the orb cross-sell (the orb card that popped up and vanished).
+- On add, the card stays put marked "Added" until the fresh read swaps in the
+  next offer in one paint (it was pulled out at once, the slot collapsed, and
+  the next card arrived a second or two later). A read requested during a
+  read runs right after it; a drawer rebuild that wipes the card gets it back
+  synchronously from the last offers, without a fetch first.
+
+`sections/pg-r36s-mobile.liquid`: restored to the version before the two
+picker moves (the GB dropdown on its own row under the head, as first built).
+
 # Cart offer: one card, for the product added last
 
 By request: "limit it to 1 upsell max. It should go off the product they

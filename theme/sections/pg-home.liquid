@@ -58,17 +58,22 @@
   .pgh-card:hover .pgh-card-img img{transform:scale(1.04)}
   /* the Sale badge wears the bundle tiles' SAVE badge (pg-save-badge's
      .pgx-lad-badge, restated): the deep end of the purple family, by request
-     (2026-09-11) */
-  .pgh-badge{
-    position:absolute;left:12px;top:12px;border-radius:999px;
-    background:linear-gradient(120deg,#8B44BE 0%,#7A2FA2 45%,#4A1C66 100%);
-    color:#F7EDFF;border:1px solid rgba(139,68,190,.85);
-    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;
-    padding:5px 13px;white-space:nowrap;box-shadow:0 6px 14px -10px rgba(0,0,0,.85);
+     (2026-09-11). !important at html-body-id specificity because pg-dark-atc
+     (#pgh .pgh-badge{background:#8B44BE !important;border:0 !important}) paints
+     this badge from the footer group; that rule is outranked here rather than
+     depended on. */
+  html body #pgh .pgh-badge,html body .pgh-badge{
+    position:absolute !important;left:12px !important;top:12px !important;bottom:auto !important;border-radius:999px !important;
+    background:linear-gradient(120deg,#8B44BE 0%,#7A2FA2 45%,#4A1C66 100%) !important;
+    color:#F7EDFF !important;border:1px solid rgba(139,68,190,.85) !important;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;font-size:12.5px !important;font-weight:800 !important;letter-spacing:.04em !important;text-transform:uppercase !important;
+    padding:5px 13px !important;white-space:nowrap !important;box-shadow:0 6px 14px -10px rgba(0,0,0,.85) !important;
+    animation:none !important;text-shadow:none !important;
   }
-  @media (max-width:600px){.pgh-badge{font-size:12px;padding:5px 11px}}
-  /* the arrow the product tiles' ADD TO CART carries (pg-r36s-mobile .pg-r36-atc:after) */
-  .pgh-atc:after{content:"\2192";font-size:17px;line-height:1}
+  @media (max-width:600px){html body #pgh .pgh-badge,html body .pgh-badge{font-size:12px !important;padding:5px 11px !important}}
+  /* the arrow the product tiles' ADD TO CART carries, as a real span: the
+     base theme hides button::after and pg-theme-css kills it outright */
+  .pgh-atc .pgh-arr{font-size:17px;line-height:1;font-weight:400}
   /* pgShiftT is declared in pg-theme-css (footer-group); restated here so the
      home page's buttons never depend on that section being present. Same
      three stops, so a double declaration is a no-op. */
@@ -349,10 +354,14 @@
   }
   function styleAtc(){
     document.querySelectorAll('.pgh-atc').forEach(function(b){
-      if (b.dataset.pgStyled) return;
-      b.dataset.pgStyled = '1';
+      /* our own flag: pg-theme-css's cardAtc() used to set data-pgStyled
+         first (it runs before DOMContentLoaded) and this pass then skipped
+         every button, so the home page kept the old pill (2026-09-11) */
+      if (b.dataset.pgHomeAtc) return;
+      b.dataset.pgHomeAtc = '1';
       var card = b.closest('.pgh-card');
       if (card && b.parentElement !== card) card.appendChild(b);
+      if (!b.querySelector('.pgh-arr')) b.insertAdjacentHTML('beforeend', '<span class="pgh-arr" aria-hidden="true">\u2192</span>');
       paint(b, false);
       b.addEventListener('mouseenter', function(){ paint(b, true); });
       b.addEventListener('mouseleave', function(){ paint(b, false); });
@@ -360,21 +369,22 @@
   }
   if (document.readyState !== 'loading') styleAtc(); else document.addEventListener('DOMContentLoaded', styleAtc);
   setTimeout(styleAtc, 600);
+  setInterval(styleAtc, 2000);   /* a later script rebuilding the cards gets the same button */
   document.addEventListener('click', function(e){
     var b = e.target.closest('.pgh-atc');
     if (!b) return;
     e.preventDefault(); e.stopPropagation();
     if (b.disabled) return;
     b.disabled = true;
-    var t = b.textContent;
+    var t = b.innerHTML;   /* label + arrow span */
     b.textContent = 'Adding...';
     fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: parseInt(b.dataset.variant, 10), quantity: 1}]})}).then(function(r){
       if (!r.ok) throw 0;
-      b.disabled = false; b.textContent = t;
+      b.disabled = false; b.innerHTML = t;
       if (window.pgOpenCart) { window.pgOpenCart(); } else { window.location.href = '/cart'; }
     }).catch(function(){
       b.disabled = false;
-      b.textContent = t;
+      b.innerHTML = t;
     });
   }, true);
 })();

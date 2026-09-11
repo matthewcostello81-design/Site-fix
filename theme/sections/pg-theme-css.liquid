@@ -100,10 +100,10 @@
   #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
   #pgh .pgh-grid .pgh-card{width:calc(50% - 11px);max-width:100%}
   #pgh .pgh-card-t,#pgh .pgh-card-p{text-align:center}
-  /* Card ATC: same pill look as the Sale badge, top right of the image */
-  #pgh .pgh-badge{top:12px !important;bottom:auto !important}
-  #pgh .pgh-atc{position:static !important;left:auto !important;right:auto !important;top:auto !important;bottom:auto !important;transform:none !important;display:block !important;width:calc(100% - 24px) !important;margin:10px 12px 14px !important;padding:11px 16px !important;border:none !important;border-radius:999px !important;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-color:#7A2FA2 !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;font-weight:700 !important;font-size:13.5px !important;letter-spacing:.05em !important;text-transform:uppercase !important;line-height:1.2 !important;height:auto !important;min-height:0 !important;box-shadow:0 10px 24px -12px rgba(122,47,162,.7) !important;text-align:center !important}
-  #pgh .pgh-atc:hover{background:#4A1C66 !important;background-color:#4A1C66 !important;color:#fff !important;transform:none !important}
+  /* the home cards' ADD TO CART and Sale badge are pg-home's own (it stamps the
+     product tiles' button inline and paints the badge with the tiles' SAVE look).
+     The pill rules that sat here, and cardAtc()'s inline restamp below, were what
+     kept the home page on the old look after pg-home changed (2026-09-11). */
   /* Banner Shop now button removed per request */
   #pgh .pgh-split-btn{display:none !important}
   /* Collections tiles removed per request */
@@ -241,7 +241,7 @@
   .pg-marq > span{display:inline-block !important;white-space:nowrap !important;padding:0 20px}
   @keyframes pgMarqScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
   .shopify-section[id*="__footer"] div.strong:has(form.contact-form){height:auto !important;align-self:start !important;min-height:0 !important}
-  #pgh .pgh-badge{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;font-weight:800 !important;font-size:12.5px !important;padding:6px 14px !important;border-radius:999px !important;letter-spacing:.03em !important;box-shadow:0 8px 20px -10px rgba(122,47,162,.85) !important}
+  /* (#pgh .pgh-badge: pg-home's, see above) */
   .pgh-head-in > .pgh-logo,.pgx-head-in > .pgx-logo,.pgc-head-in > .pgc-logo{grid-column:2 !important;justify-self:center !important}
   .pgh-head-in > .pgh-ic,.pgx-head-in > .pgx-ic,.pgc-head-in > .pgc-ic{grid-column:3 !important;justify-self:end !important}
   .shopify-section[id*="__nc_contactcard"],.shopify-section[id*="__nc-contactcard"]{display:none !important;height:0 !important;overflow:hidden !important}
@@ -754,20 +754,16 @@
     else main.parentElement.insertBefore(q,main.nextSibling);
   }
   function cardAtc(){
+    /* the button rides at the card's end, under the title and price; its
+       LOOK is pg-home's (styleAtc there stamps the product tiles' button
+       inline). This used to restamp the old 13.5px pill here under the same
+       data-pgStyled flag, and because this script runs before DOMContentLoaded
+       it won the race every time: the home page never showed pg-home's
+       button (2026-09-11). */
     document.querySelectorAll('#pgh .pgh-card').forEach(function(card){
       var b = card.querySelector('.pgh-atc');
       if (!b) return;
       if (!b.dataset.pgMoved){ b.dataset.pgMoved = '1'; card.appendChild(b); }
-      if (!b.dataset.pgStyled){
-        b.dataset.pgStyled = '1';
-        var G = 'linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)';
-        ['position:static','left:auto','right:auto','top:auto','bottom:auto','transform:none','display:block','width:calc(100% - 24px)','margin:10px 12px 14px','padding:11px 16px','border:none','border-radius:999px','background-color:#7A2FA2','background-size:240% 240%','color:#fff','font-weight:700','font-size:13.5px','letter-spacing:.05em','text-transform:uppercase','line-height:1.2','height:auto','min-height:0','text-align:center','box-shadow:0 10px 24px -12px rgba(122,47,162,.7)'].forEach(function(kv){
-          var i2 = kv.indexOf(':');
-          b.style.setProperty(kv.slice(0, i2), kv.slice(i2 + 1), 'important');
-        });
-        b.style.setProperty('background-image', G, 'important');
-        b.style.setProperty('animation', 'pgShiftT 8s ease-in-out infinite', 'important');
-      }
     });
   }
   function titleStars(){
