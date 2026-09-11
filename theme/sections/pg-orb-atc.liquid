@@ -1,0 +1,17 @@
+{%- comment -%}
+  PG Orb ATC: RETIRED the day it was written (2026-09-11).
+
+  It added an in-tile ADD TO CART to the orb page's bundle tiles -- but the
+  orb template already carries one: pg-tiktok-pdp's .pg-tt-atc, built for the
+  TikTok landing, shown on the selected tile on phones and hidden above 900px.
+  Two sections doing the same job put two buttons in every tile ("too many add
+  to cart buttons, duplicated"). What the owner had actually asked for was the
+  console button's LOOK -- its moving purple -- and that is now on .pg-tt-atc
+  itself, in pg-tiktok-pdp. This file is empty, unregistered from
+  templates/product.pg-crystal.json, and kept only because theme file deletion
+  is blocked through the API this store is administered with; delete it from
+  the admin whenever convenient.
+{%- endcomment -%}
+{% schema %}
+{"name": "PG Orb ATC (retired)", "settings": []}
+{% endschema %}

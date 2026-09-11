@@ -1,0 +1,15 @@
+{%- comment -%}
+  PG Gift Purple: RETIRED 2026-09-11.
+
+  This pinned the gift line's SAVE 100% pill still (a fixed background-position
+  and animation:none), to match SAVED chips that only looked still because the
+  drawer recreates them on every rebuild. The request since is the opposite:
+  every pill in the cart moves, in one colour and on one clock -- see
+  sections/pg-cart-pills.liquid, which now owns the paint of .pg-gift-off along
+  with every other pill. The !important position this file set is exactly what
+  would stop that animation, so the rule is gone. The section stays registered
+  in header-group and renders nothing.
+{%- endcomment -%}
+{% schema %}
+{"name": "PG Gift Purple", "settings": []}
+{% endschema %}
