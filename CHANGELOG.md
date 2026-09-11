@@ -1,3 +1,23 @@
+# Cart offer: the pack goes in before the old lines come out
+
+By report: "when they add a 3rd R36S through the upsell the whole cart goes
+blank." The Duo to Trio upgrade took the Duo line out first and put the Trio
+in second, and for the beat in between the cart held nothing but the free
+case: pg-giftguard pulled the case (no console to earn it), the drawer's
+watchers re-rendered the side-cart section in its EMPTY state, and the
+shopper looked at a blank drawer.
+
+`sections/pg-cart-offer.liquid`
+- Pack upgrades and pack switches add the pack first and remove the lines it
+  replaces after, so the cart is never empty and never without a console. A
+  retry after a failed removal never adds a second pack (the add is
+  remembered on the offer); a removal that fails leaves both lines standing,
+  which the shopper can see and fix, rather than a cart with neither.
+- The reader no longer gives up when the drawer shows no line list: with
+  lines in the cart that is the empty render caught mid-flight, so it asks
+  pg-drawer for a fresh section once per cart state and reads again when it
+  lands.
+
 # Home page: pg-home now owns its buttons and badges; cart card: best price always, no swaps, smooth add; Single tile picker back on its own row
 
 By report: "nothing has changed on the homepage" (it had not: two footer-group

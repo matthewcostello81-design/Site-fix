@@ -560,15 +560,24 @@
   /* ---------------- watching ---------------- */
   var busy = false, again = false, watch = null, lastSig = null, seenSig = null, force = false;
   function sig(cart){ return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(','); }
+  var healSig = null;
   function read(){
     if (busy){ again = true; return; }
     var c = document.getElementById('cart');
-    if (!c || !c.querySelector('.l4ca:not(.in-panel)')) return;
+    if (!c) return;
     busy = true;
     clearTimeout(watch);
     watch = setTimeout(function(){ busy = false; }, 8000);
     fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}}).then(function(r){ return r.json(); }).then(function(cart){
       var s = sig(cart);
+      if (!c.querySelector('.l4ca:not(.in-panel)')){
+        /* the drawer shows no line list. With lines in the cart that is the
+           side-cart section caught in its empty render (see swapIn): ask
+           pg-drawer for a fresh one, once per cart state, and read again
+           when it lands (pg:cart-updated) */
+        if ((cart.items || []).length && healSig !== s && window.pgDrawerRefresh){ healSig = s; try { window.pgDrawerRefresh(); } catch(e){} }
+        return;
+      }
       if (s === lastSig && document.querySelector('#cart .pg-offer, #cart #pg-unlock-slot')){
         /* unchanged: only make sure the cards are still standing (a drawer
            rebuild replaces #cart's innerHTML wholesale) */
@@ -600,21 +609,37 @@
       if (!items.length) return Promise.reject(new Error('nothing to add'));
       return post('/cart/add.js', {items: items});
     }
-    if (o.kind === 'pack'){
-      var size = sels[0] ? sels[0].value : '64';
-      var v = packBySizes(o.pack, o.packSizes.concat([size]));
+    if (o.kind === 'pack' || o.kind === 'switch'){
+      var v = o.variant;
+      if (o.kind === 'pack'){
+        var size = sels[0] ? sels[0].value : '64';
+        v = packBySizes(o.pack, o.packSizes.concat([size]));
+      }
       if (!v) return Promise.reject(new Error('no pack variant'));
-      /* out with the lines by KEY, then in with the pack; a failed removal never proceeds */
-      var chain = Promise.resolve();
-      o.lines.forEach(function(it){ chain = chain.then(function(){ return post('/cart/change.js', {id: it.key, quantity: 0}); }); });
-      return chain.then(function(){ return post('/cart/add.js', {items: [{id: v.id, quantity: 1}]}); });
-    }
-    if (o.kind === 'switch'){
-      var ch = Promise.resolve();
-      o.lines.forEach(function(it){ ch = ch.then(function(){ return post('/cart/change.js', {id: it.key, quantity: 0}); }); });
-      return ch.then(function(){ return post('/cart/add.js', {items: [{id: o.variant.id, quantity: 1}]}); });
+      return swapIn(o, v.id);
     }
     return Promise.reject(new Error('unknown offer'));
+  }
+  /* THE PACK GOES IN FIRST; THE LINES IT REPLACES COME OUT AFTER. The first
+     cut took the old lines out and then put the pack in, and for the beat in
+     between the cart held nothing but the free case: pg-giftguard pulled the
+     case (no console to earn it), the drawer's watchers re-rendered the
+     side-cart section in its EMPTY state, and a Duo to Trio upgrade "made the
+     whole cart go blank" (by report, 2026-09-11). In this order the cart is
+     never empty and never without a console. A retry after a failed removal
+     never adds a second pack: the add is remembered on the offer. A removal
+     that fails leaves both lines standing, which the shopper can see and
+     fix, rather than a cart with neither. */
+  function swapIn(o, variantId){
+    var start = o.added ? Promise.resolve() : post('/cart/add.js', {items: [{id: variantId, quantity: 1}]}).then(function(){ o.added = true; });
+    return start.then(function(){
+      var chain = Promise.resolve();
+      o.lines.forEach(function(it){
+        if (it.pgRemoved) return;
+        chain = chain.then(function(){ return post('/cart/change.js', {id: it.key, quantity: 0}).then(function(){ it.pgRemoved = true; }); });
+      });
+      return chain;
+    });
   }
   document.addEventListener('click', function(e){
     if (!e.target || !e.target.closest) return;
