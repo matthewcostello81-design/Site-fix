@@ -234,6 +234,10 @@
   function nths(from, to){ var p = []; for (var i = from; i <= to; i++) p.push(ord(i)); var l = p.pop(); return (p.length ? p.join(', ') + ' & ' : '') + l; }
   function thumb(src){ return src ? String(src).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : ''; }
   function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  /* Title Case: every word starts with a capital, on the orb card only, by
+     request (2026-09-11). Words already in capitals (FREE) are left as they
+     are; a word starting with a digit (3rd, 10%) is untouched. */
+  function tc(s){ return String(s).replace(/(^|\s)(\S)/g, function(m, a, b){ return a + b.toUpperCase(); }); }
 
   /* ---------------- products, read once ---------------- */
   var P = {}, PBUSY = {};
@@ -505,9 +509,10 @@
     var el = document.createElement('div');
     el.className = 'pg-offer';
     el.setAttribute('data-offer', o.key);
+    var T = o.handle === H.orb ? tc : function(x){ return x; };   /* the orb card: Every Word Capitalised */
     var picks = '';
     (o.picks || []).forEach(function(p, i){
-      picks += '<label class="pg-offer-pick"><span' + (p.free ? ' class="is-free"' : '') + '>' + esc(p.label) + '</span><select data-i="' + i + '">';
+      picks += '<label class="pg-offer-pick"><span' + (p.free ? ' class="is-free"' : '') + '>' + esc(T(p.label)) + '</span><select data-i="' + i + '">';
       p.options.forEach(function(op){ picks += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(p.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>'; });
       picks += '</select></label>';
     });
@@ -515,12 +520,12 @@
     var inc = RATE > 0 ? 'Extra ' + Math.round(RATE * 100) + '% off included' : '';
     el.innerHTML =
       '<img alt="" width="48" height="48" decoding="sync" src="' + esc(o.img || '') + '">' +
-      '<div class="pg-offer-t"><b>' + esc(o.title) + '</b>' +
+      '<div class="pg-offer-t"><b>' + esc(T(o.title)) + '</b>' +
         '<span class="pg-offer-px">' + priceHtml(o.was, o.now) + '</span>' +
-        (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') +
-        (inc ? '<small class="pg-offer-inc">' + inc + '</small>' : '') + '</div>' +
+        (o.sub ? '<small>' + esc(T(o.sub)) + '</small>' : '') +
+        (inc ? '<small class="pg-offer-inc">' + T(inc) + '</small>' : '') + '</div>' +
       '<div class="pg-offer-picks">' + picks + '</div>' +
-      '<button type="button" class="pg-offer-add">' + esc(o.btn) + '<span class="arr">→</span></button>';
+      '<button type="button" class="pg-offer-add">' + esc(T(o.btn)) + '<span class="arr">→</span></button>';
     el.pgOffer = o;
     return el;
   }

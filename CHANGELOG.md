@@ -1,3 +1,15 @@
+# Cart offer: the orb card in Title Case
+
+By request: "for the add-on upsell in the cart every word should start with
+a capital letter, solely for the orbs."
+
+`sections/pg-cart-offer.liquid`: on the orb card (ladder rungs and the
+cross-sell) the title, sub-line, "Extra 10% Off Included" line, picker
+labels and button are Title Case: "Buy 1 More, Get 1 FREE", "Add Your FREE
+3rd Orb", "Add A Crystal Legends Orb", "Add 2 To Cart -- 1 FREE". Words in
+capitals stay; words starting with a digit are untouched. Console and wall
+art cards are as they were.
+
 # Home cards: button, badge and price in the titles' type
 
 By report: "that font doesn't match our theme font, like the product titles
