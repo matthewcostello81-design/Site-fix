@@ -1,3 +1,51 @@
+# Cart offer: the extra 10% in every price, cases for every console; struck prices brighter
+
+By request: "auto include the 10% off in the upsell price and say that
+somewhere for all upsells", "if you upsell to 3 pocket boys the next upsell
+should be 2 cases not 1", "make the crossed out prices more visible", and, on
+the Single R36S tile, "make the GB dropdown more up to the right instead of
+taking a whole new line". The ADD TO CART buttons keep their size ("actually
+keep the add to cart same size" reversed the shrink asked for minutes before).
+
+`sections/pg-cart-offer.liquid`
+- Every card prints the net price: the admin's "Extra 10% off entire order"
+  (automatic, every item, stacks with the Buy X Get Y) is folded into the
+  figure beside the struck compare-at, and the SAVE chip measures the net. The
+  rate is read from the cart, not hard-coded: Shopify allocates that discount
+  onto every paid line, so switching it off in the admin drops it out of these
+  prices on the next read; a cart with no paid line falls back to 10%.
+- One line under the cards: "Prices include your extra 10% off, applied at
+  checkout". The two sub-lines that named the 10% themselves are gone (the
+  cross-sell now reads "Buy 2, Get 1 FREE"; "Add another Orb" has none).
+- "Switch to the Duo/Trio Pack" compares the singles' pre-discount line prices
+  to the pack (it compared post-discount singles to the gross pack, so with
+  the 10% on, the switch never showed for two singles) and quotes the net
+  difference ($14.40 for a 64G + 128G pair).
+- The case offer is one card for every console without a case: the free gift
+  is one per order, so a Trio Pack is offered "Add 2 protective cases"
+  ($25.18 for both, net) and a Duo Pack plus a single the same; one spare
+  already held brings it down to one.
+- Struck prices in the card: #666 at 12.5px, not #8a8a8a at 12px.
+
+`sections/pg-theme-css.liquid`: the product tiles' struck prices (Single,
+Duo, Trio and the orb ladder) are .85 white at 13.5px medium, not .55 white
+at 12.5px; the inline colour tilePaint() stamps on them moves with it.
+
+`sections/pg-drawer.liquid`: the cart lines' struck prices (.nc-lsave-was,
+s.pg-lwas) are #666, not #8a8a8a; s.pg-lwas 13.5px.
+
+`sections/pg-r36s-mobile.liquid`: the Single tile's storage picker moves into
+the price column, right-aligned under the price, instead of a row of its own
+under the head (storageUp(); pg-theme-css's own .pgx-storage select and its
+"Storage" label ride along, label dropped). The in-tile ADD TO CART keeps
+15px / 15.5px. `sections/pg-tiktok-pdp.liquid`: the orb tile's button likewise
+unchanged in size.
+
+Not changed: the Duo Pack's SAVE badge. 64G + 64G saves 32.0%, 64G + 128G
+32.3%, 128G + 128G 32.5% against the packs' compare-at prices, all flooring to
+32%; the dollar saving climbs ($64, $71, $78) but the percentage is flat by
+construction of the pack prices.
+
 # Cart upsells: one clean card per family, always something to offer
 
 By request: "there should always be upsells in the cart even at max orbs or max

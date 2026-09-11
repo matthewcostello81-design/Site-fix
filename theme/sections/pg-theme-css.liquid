@@ -147,7 +147,7 @@
   /* unified price typography (PocketBoy duo style) */
   #pgx .pgx-tile-price,#pgx .pgx-tile-price *,.pgx-lad-px b,.pgx-duo-px b,.pgst-p,.pgu-yml-grid .p,#pgh .pgh-card-p,#cart .nc-lsave-now,.pgm-price,.pgm-total{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;font-weight:800 !important;letter-spacing:.01em}
   #pgx .pgx-tile:not(.pgx-lad):not(.pgx-duo) .pgx-tile-price{font-size:19px !important}
-  #pgx .pgx-tile-price .pgx-sstrike,#pgx .pgx-tile-price s,#pgx .pgx-tile-price .old-price{font-size:12.5px !important;font-weight:400 !important}
+  #pgx .pgx-tile-price .pgx-sstrike,#pgx .pgx-tile-price s,#pgx .pgx-tile-price .old-price{font-size:13.5px !important;font-weight:500 !important}
   /* custom image dropdown */
   .pg-drop{position:relative;display:inline-block;min-width:160px}
   .pg-drop-h{display:flex;align-items:center;gap:8px;background:#16101F;border:1.5px solid rgba(139,68,190,.75);border-radius:10px;padding:4px 10px 4px 6px;cursor:pointer;color:#fff;font-size:13px;font-weight:600}
@@ -170,7 +170,10 @@
   .pgx-lad-save{font-size:13.5px;font-weight:700;color:#C79BEA !important;margin-top:3px}
   .pgx-lad-px{text-align:right}
   .pgx-lad-px b{display:block;font-size:19px;font-weight:800}
-  .pgx-lad-px s{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400}
+  /* the struck prices: .85 white at 13.5px, not .55 at 12.5px -- "more
+     visible", by request (2026-09-11). tilePaint() below stamps the same
+     colour inline, so the two must move together. */
+  .pgx-lad-px s{display:block;font-size:13.5px;color:rgba(255,255,255,.85) !important;font-weight:500}
   .pgx-lad-picks{margin-top:12px;display:none}
   .pgx-tile.pgx-sel .pgx-lad-picks{display:block}
   .pgx-lad-picks .lbl{font-size:12.5px;color:rgba(255,255,255,.7) !important;margin-bottom:6px}
@@ -184,7 +187,7 @@
   .pgx-tile[data-pg-singled] .pgx-tile-row{align-items:flex-start}
   .pgx-storage-lb{font-size:12.5px;color:rgba(255,255,255,.7) !important;margin:12px 0 5px}
   .pgx-storage{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid rgba(139,68,190,.5);background:#16101F;color:#fff !important;font-family:inherit}
-  .pgx-sstrike{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400;text-decoration:line-through;text-align:right}
+  .pgx-sstrike{display:block;font-size:13.5px;color:rgba(255,255,255,.85) !important;font-weight:500;text-decoration:line-through;text-align:right}
 
   /* TIGHT, BUT THE BADGE NEVER TOUCHES THE TILE ABOVE. The SAVE badge hangs
      13px above the tile edge. On phones the theme already leaves 12px under
@@ -202,7 +205,7 @@
   .pgx-duo-t small{display:block;font-size:13.5px;font-weight:600;color:#C79BEA !important;margin-top:2px}
   .pgx-duo-px{text-align:right}
   .pgx-duo-px b{display:block;font-size:19px;font-weight:800}
-  .pgx-duo-px s{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400}
+  .pgx-duo-px s{display:block;font-size:13.5px;color:rgba(255,255,255,.85) !important;font-weight:500}
   .pgx-duo-body{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid rgba(139,68,190,.4);border-radius:12px;margin-top:14px;overflow:visible}
   /* Collapsed until the tile is chosen, matching the ladder tiles on the orb
      and wall-art pages, where the picker only opens on the selected option. */
@@ -850,7 +853,7 @@
           return;
         }
         var mut = el.tagName === 'S' || /pgx-sstrike|old-price/.test(el.className || '');
-        el.style.setProperty('color', mut ? 'rgba(255,255,255,.55)' : '#fff', 'important');
+        el.style.setProperty('color', mut ? 'rgba(255,255,255,.85)' : '#fff', 'important');
       });
     });
   }

@@ -98,7 +98,7 @@
     display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;
     margin-top:2px;font-size:13.5px;font-weight:800;color:#7A2FA2;line-height:1.3;
   }
-  #cart#cart#cart#cart .pg-offer-px s{color:#8a8a8a;font-weight:400;font-size:12px;white-space:nowrap}
+  #cart#cart#cart#cart .pg-offer-px s{color:#666;font-weight:400;font-size:12.5px;white-space:nowrap}   /* #666, not #8a8a8a: "more visible", by request */
   #cart#cart#cart#cart .pg-offer-sv{
     display:inline-block;padding:3px 7px;border-radius:999px;
     font-size:10.5px;font-weight:800;letter-spacing:normal;text-transform:uppercase;font-style:normal;
@@ -106,6 +106,10 @@
     color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);animation:none;
   }
   #cart#cart#cart#cart .pg-offer-t small{display:block;font-size:11px;line-height:1.3;color:#6E5C80;margin-top:2px}
+  #cart#cart#cart#cart .pg-offer-note{
+    display:block;margin:-2px 0 8px;padding:0 4px;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:1.3;color:#6E5C80;text-align:center;
+  }
 
   /* the pickers: one per unit, in a row that wraps; the free ones say so */
   #cart#cart#cart#cart .pg-offer-picks{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:5px;min-width:0}
@@ -183,6 +187,36 @@
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
   function pct(was, now){ return was > now ? Math.floor((was - now) / was * 100) : 0; }
+
+  /* THE EXTRA 10% IS IN THE PRICE. The admin's "Extra 10% off entire order"
+     (automatic, every item, stacks with the Buy X Get Y) comes off at checkout,
+     so a card that printed the catalogue price overstated what the shopper
+     would pay; by request (2026-09-11) every card prints the net figure and a
+     line under the cards says so. The rate is READ FROM THE CART, not
+     hard-coded: Shopify allocates that discount onto every paid line
+     (line_level_discount_allocations, an automatic percentage over all
+     items), so switching it off in the admin drops it out of these prices on
+     the next read. A cart with no paid line to read falls back to the
+     admin's 10%. The Buy X Get Y allocations are percentage discounts too, but
+     over the entitled item only, and are not counted. */
+  var RATE = 0.10;
+  function readRate(cart){
+    var found = null;
+    (cart.items || []).forEach(function(it){
+      if (found !== null || !it.line_price) return;
+      var r = 0;
+      (it.line_level_discount_allocations || []).forEach(function(a){
+        var d = a && a.discount_application;
+        if (d && d.type === 'automatic' && d.value_type === 'percentage' && d.target_type === 'line_item' && d.target_selection === 'all') r = Math.max(r, parseFloat(d.value || 0) / 100);
+      });
+      found = r;
+    });
+    return found === null ? 0.10 : Math.min(found, 0.9);
+  }
+  function net(c){ return Math.round(c * (1 - RATE)); }
+  /* a line's price before any discount (the compare-at figures the cards are
+     measured against are gross too); older carts only carry line_price */
+  function gross(it){ return it.original_line_price != null ? it.original_line_price : it.line_price; }
   function ord(k){ var t = k % 10, h = k % 100; return k + (t === 1 && h !== 11 ? 'st' : t === 2 && h !== 12 ? 'nd' : t === 3 && h !== 13 ? 'rd' : 'th'); }
   function nths(from, to){ var p = []; for (var i = from; i <= to; i++) p.push(ord(i)); var l = p.pop(); return (p.length ? p.join(', ') + ' & ' : '') + l; }
   function thumb(src){ return src ? String(src).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : ''; }
@@ -251,9 +285,6 @@
           var isDuo = true;
           var pickDefault = sizes[sizes.length - 1];
           var withPick = packBySizes(pack, sizes.concat([pickDefault])); if (!withPick) return null;
-          var singlesNow = 0; t.con.forEach(function(it){ singlesNow += it.line_price; });
-          var addOne = 0; con.variants.forEach(function(v){ if (String(v.id) === String(single.variant_id)) addOne = v.price; });
-          var extra = withPick.price - singlesNow;      /* what the added console costs inside the pack */
           return {
             kind: 'pack', key: 'pack:' + handle + ':' + sizes.join('|'),
             handle: handle, packSizes: sizes, lines: t.con,
@@ -272,13 +303,15 @@
       return product(packH).then(function(pack){
         if (!pack) return null;
         var v = packBySizes(pack, sizes); if (!v) return null;
-        var singlesNow = 0; t.con.forEach(function(it){ singlesNow += it.line_price; });
+        var singlesNow = 0; t.con.forEach(function(it){ singlesNow += gross(it); });
         if (v.price >= singlesNow) return null;
+        /* both sides carry the extra 10% at checkout, so the saving is net too */
+        var less = net(singlesNow) - net(v.price);
         return {
           kind: 'switch', key: 'switch:' + packH + ':' + sizes.join('|'), handle: packH, variant: v, lines: t.con,
           img: thumb(v.img || pack.image),
-          title: 'Switch to the ' + packName + ' Pack', sub: 'Same ' + (t.conUnits === 2 ? 'two' : 'three') + ' consoles, ' + money(singlesNow - v.price) + ' less',
-          was: v.cap || singlesNow, now: v.price, picks: [], btn: 'Switch to the ' + packName + ' Pack — save ' + money(singlesNow - v.price)
+          title: 'Switch to the ' + packName + ' Pack', sub: 'Same ' + (t.conUnits === 2 ? 'two' : 'three') + ' consoles, ' + money(less) + ' less',
+          was: v.cap || singlesNow, now: v.price, picks: [], btn: 'Switch to the ' + packName + ' Pack — save ' + money(less)
         };
       });
     }
@@ -302,16 +335,20 @@
         };
       });
     }
-    /* every other console cart: a spare case until each console has one, then an orb */
-    if (t.spares < t.consoles - 1 || (t.spares < t.consoles && !t.freeCase)){
+    /* every other console cart: a case for every console that has none, in
+       ONE card (the first case is the free gift, one per order, so a Trio is
+       offered two cases, not one -- by request, 2026-09-11); then an orb */
+    var needCases = t.consoles - 1 - t.spares;
+    if (needCases > 0){
       return product(H.kase).then(function(pr){
         var v = null; (pr ? pr.variants : []).forEach(function(x){ if (x.id === SPARE_CASE) v = x; });
+        var unit = (v && v.price) || 1399, cap = (v && v.cap) || 2499;
         return {
-          kind: 'add', key: 'case:' + t.spares, items: [{id: SPARE_CASE, quantity: 1}],
+          kind: 'add', key: 'case:' + t.spares + ':' + needCases, items: [{id: SPARE_CASE, quantity: needCases}],
           img: thumb((v && v.img) || (pr && pr.image) || CASE_IMG),
-          title: t.spares ? 'Add another protective case' : 'Add a spare protective case',
-          sub: t.freeCase ? 'One case already comes free with your console' : 'Zip case, fitted for the R36S',
-          was: (v && v.cap) || 2499, now: (v && v.price) || 1399, picks: [], btn: 'Add the case'
+          title: needCases > 1 ? 'Add ' + needCases + ' protective cases' : (t.spares ? 'Add another protective case' : 'Add a spare protective case'),
+          sub: needCases > 1 ? 'One per console — your 1st case is already free' : (t.freeCase ? 'One case already comes free with your console' : 'Zip case, fitted for the R36S'),
+          was: cap * needCases, now: unit * needCases, picks: [], btn: needCases > 1 ? 'Add ' + needCases + ' cases' : 'Add the case'
         };
       });
     }
@@ -337,7 +374,7 @@
         var one = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
         return {
           kind: 'add', key: 'cross:' + handle, handle: handle, need: 1, single: one.length < 2 ? one[0] : null,
-          img: thumb(pr.image), title: 'Add a Crystal Legends ' + L.name, sub: 'Extra 10% off at checkout — and Buy 2, Get 1 FREE',
+          img: thumb(pr.image), title: 'Add a Crystal Legends ' + L.name, sub: 'Buy 2, Get 1 FREE',
           was: cap || unit, now: unit, btn: 'Add to cart',
           picks: one.length > 1 ? [{label: L.name, free: false, options: one, value: one[0].id}] : []
         };
@@ -372,7 +409,7 @@
       } else {
         need = 1; paidAdded = 1; freeAdded = 0;
         title = cross ? 'Add a Crystal Legends ' + L.name : 'Add another ' + L.name;
-        sub = 'Extra 10% off at checkout';
+        sub = '';   /* the note under the cards names the extra 10% */
         was = cap || unit; now = unit; btn = 'Add to cart';
       }
       var opts = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
@@ -395,6 +432,7 @@
   function orbOffer(t, cross){ return ladderOffer(H.orb, t.orbUnits, t.orb, t.held, !!cross); }
 
   function offersFor(cart){
+    RATE = readRate(cart);
     var t = tally(cart);
     var jobs = [];
     if (t.consoles) jobs.push(consoleOffer(t));
@@ -419,11 +457,12 @@
       p.options.forEach(function(op){ picks += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(p.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>'; });
       picks += '</select></label>';
     });
-    var save = pct(o.was, o.now);
+    var now = o.now ? net(o.now) : 0;      /* what the till will take, extra 10% included */
+    var save = pct(o.was, now);
     el.innerHTML =
       '<img alt="" width="48" height="48" decoding="sync" src="' + esc(o.img || '') + '">' +
       '<div class="pg-offer-t"><b>' + esc(o.title) + '</b>' +
-        '<span class="pg-offer-px">' + (o.was > o.now ? '<s>' + money(o.was) + '</s>' : '') + (o.now === 0 ? 'FREE' : money(o.now)) +
+        '<span class="pg-offer-px">' + (o.was > now ? '<s>' + money(o.was) + '</s>' : '') + (now === 0 ? 'FREE' : money(now)) +
           (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '') + '</span>' +
         (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</div>' +
       '<div class="pg-offer-picks">' + picks + '</div>' +
@@ -467,6 +506,15 @@
       }
       prev = el;
     });
+    /* one line under the cards naming the extra 10% their prices include */
+    var note = slot.querySelector('.pg-offer-note');
+    if (offers.length && RATE > 0){
+      if (!note){ note = document.createElement('div'); note.className = 'pg-offer-note'; slot.appendChild(note); }
+      var txt = 'Prices include your extra ' + Math.round(RATE * 100) + '% off, applied at checkout';
+      if (note.textContent !== txt) note.textContent = txt;
+      note.style.order = String(-10 + offers.length);
+      if (prev && note.previousElementSibling !== prev) slot.insertBefore(note, prev.nextSibling);
+    } else if (note){ note.parentNode.removeChild(note); }
     if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
   }
 
