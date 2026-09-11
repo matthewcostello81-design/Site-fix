@@ -39,7 +39,7 @@
       }
     },
     "pg_picksize": {"type": "pg-pick-size", "settings": {}},
-    "pg_orbatc": {"type": "pg-orb-atc", "settings": {}},
+    "pg_orbtiles": {"type": "pg-orb-tiles", "settings": {}},
     "pg_galtweaks": {"type": "pg-gallery-tweaks", "settings": {}},
     "pg_tiktok": {"type": "pg-tiktok-pdp", "settings": {}},
     "pg_revlink": {"type": "pg-rev-link", "settings": {}},
@@ -47,5 +47,5 @@
     "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}},
     "pg_ymllast": {"type": "pg-yml-last", "settings": {}}
   },
-  "order": ["pg_landing", "pg_picksize", "pg_orbatc", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_orbtitle", "pg_selloutlast", "pg_ymllast"]
+  "order": ["pg_landing", "pg_picksize", "pg_orbtiles", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_orbtitle", "pg_selloutlast", "pg_ymllast"]
 }

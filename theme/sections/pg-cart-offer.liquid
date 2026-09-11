@@ -1,0 +1,582 @@
+{%- comment -%}
+  PG Cart Offer: the cart's one upsell card per product family.
+
+  By request (2026-09-11): "there should always be upsells in the cart even if
+  they order max orbs or max game boys -- game boys add another case option,
+  orbs add more orbs -- less cluttered, cleaner, simpler; they should still
+  be able to choose Pokemons and GBs; optimised for iPhone 16 Pro Max and
+  iPhone 13."
+
+  WHAT IT REPLACES. Four writers each put their own row into #pg-unlock-slot:
+  pg-unlock (the Buy-2-Get-1 rails, with a chooser that opens under the row),
+  pg-cart-tune (the Duo Pack upgrade and the stand-alone spare case),
+  pg-frame-add (the case / frame accessory). A one-console cart showed two or
+  three of them stacked, and every one of them went quiet at the top of its
+  ladder -- three Trio Packs, nine orbs -- leaving nothing to offer. Those rows
+  are hidden here (display:none; their scripts keep running unchanged, and one
+  of them, pg-unlock, also carries the drawer's duplicate-line repair, which
+  must not be switched off), and this section paints the offers instead.
+
+  ONE CARD PER FAMILY, at most two, console first:
+
+    consoles   1 single ............ Add a 2nd: the Duo Pack (GB picker)
+               2 singles ........... Switch to the Duo Pack (same consoles, less)
+               Duo Pack ............ Add a 3rd: the Trio Pack (GB picker)
+               3 singles ........... Switch to the Trio Pack
+               anything else ....... Add a spare case, until every console has
+                                     one; then a Crystal Legends Orb
+    orbs       the next rung of the ladder the product page sells --
+               Buy 2 Get 1 (repeats), Buy 5 Get 4 (once) -- phrased as the
+               shopper experiences it: "Add 2 more, get 1 FREE", "Add your
+               FREE 3rd Orb"; one design picker per orb added, defaulted to
+               designs not already in the cart. Past the ladder's top the
+               repeating Buy 2 Get 1 is offered again once it beats the
+               Buy 5 Get 4 already earned (from 12 orbs); between 9 and 11
+               a single orb is offered plainly, since no free-orb promise is
+               honest there.
+    wall art   the repeating Buy 2 Get 1, the same way.
+
+  THE MATHS IS THE DISCOUNTS'. Read from the admin on 2026-09-11:
+  "PokeOrb - Buy 2 Get 1 Free" ACTIVE, unlimited per order; "PokeOrb - Buy 5
+  Get 4 Free" ACTIVE, once per order; "Wall Art - Buy 2 Get 1 Free" ACTIVE,
+  unlimited; "Extra 10% off entire order" ACTIVE. The packs are products with
+  their own prices and compare-at prices, read live from /products/*.js so an
+  admin reprice propagates on its own. The SAVE chip measures what the row
+  prints: free units against units x price, a pack against its compare-at,
+  and a plain single against the product's compare-at -- the same measure the
+  product page tiles and the cart lines use.
+
+  HOW IT ADDS. Orbs and prints: one line per chosen design (a mixed three
+  still earns the free one -- different variants of one product all qualify).
+  Pack upgrades: the single line is taken out BY LINE KEY and the pack variant
+  that holds those consoles plus the picked one goes in, so the cart charges
+  exactly the pack price the row printed. Every write is checked for r.ok and
+  the second write never follows a failed first one. The drawer is then
+  refreshed through pg-drawer's own pgDrawerRefresh.
+
+  HOW IT WATCHES. /cart.js is shared with half a dozen sections and throttled
+  under their load, so this reads on the drawer's pg:cart-updated event and a
+  debounced observer, plus a slow 4s beat, single-flight with a watchdog. A
+  changed cart must be seen on two consecutive reads before the card is
+  rebuilt (a read caught between two writes must never flash a wrong offer);
+  our own add forces the rebuild. An unchanged cart is a no-op, so an open
+  picker is never yanked mid-choice.
+
+  THE SLOT is pg-unlock's #pg-unlock-slot, created here if it is not there
+  yet, in the same position (above the item list) so pg-cart-mobile's
+  placeUnlock() and pg-unlock agree with it.
+{%- endcomment -%}
+<style>
+  /* the rows this card replaces; their scripts keep running unchanged */
+  #cart#cart#cart#cart .pg-unlock,
+  #cart#cart#cart#cart .pg-soloff,
+  #cart#cart#cart#cart .pg-duoup,
+  #cart#cart#cart#cart .pg-frameoffer{display:none !important}
+
+  #cart#cart#cart#cart .pg-offer{
+    display:grid !important;
+    grid-template-columns:48px minmax(0,1fr);
+    grid-auto-flow:row;
+    column-gap:11px;row-gap:9px;align-items:center;
+    margin:8px 0 6px;padding:11px 12px 12px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    box-sizing:border-box;
+  }
+  #cart#cart#cart#cart .pg-offer > img{
+    grid-column:1;width:48px !important;min-width:48px !important;height:48px !important;
+    flex:none;border-radius:11px !important;object-fit:cover !important;background:#efe4f8;display:block !important;
+  }
+  #cart#cart#cart#cart .pg-offer-t{grid-column:2;min-width:0}
+  #cart#cart#cart#cart .pg-offer-t b{
+    display:block;font-size:14px;line-height:1.25;color:#3B1553;font-weight:800;
+    white-space:normal;overflow-wrap:anywhere;
+  }
+  #cart#cart#cart#cart .pg-offer-px{
+    display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;
+    margin-top:3px;font-size:14px;font-weight:800;color:#7A2FA2;line-height:1.3;
+  }
+  #cart#cart#cart#cart .pg-offer-px s{color:#8a8a8a;font-weight:400;font-size:12px;white-space:nowrap}
+  #cart#cart#cart#cart .pg-offer-sv{
+    display:inline-block;padding:3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:800;letter-spacing:normal;text-transform:uppercase;font-style:normal;
+    color:#fff;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
+    background-size:240% 240%;animation:pgWave 8s ease-in-out infinite;
+  }
+  #cart#cart#cart#cart .pg-offer-t small{display:block;font-size:11.5px;line-height:1.3;color:#6E5C80;margin-top:2px}
+
+  /* the pickers: one per unit, in a row that wraps; the free ones say so */
+  #cart#cart#cart#cart .pg-offer-picks{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  #cart#cart#cart#cart .pg-offer-picks:empty{display:none}
+  #cart#cart#cart#cart .pg-offer-pick{
+    flex:1 1 calc(33.333% - 4px);min-width:96px;max-width:100%;
+    display:flex;flex-direction:column;gap:2px;min-width:0;
+  }
+  #cart#cart#cart#cart .pg-offer-pick span{
+    font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7A2FA2;padding-left:2px;
+  }
+  #cart#cart#cart#cart .pg-offer-pick span.is-free{color:#1F8A5B}
+  #cart#cart#cart#cart .pg-offer-pick select{
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+    width:100% !important;max-width:100% !important;min-width:0 !important;box-sizing:border-box !important;
+    height:34px !important;min-height:0 !important;padding:0 26px 0 9px !important;margin:0 !important;
+    border:1.5px solid rgba(122,47,162,.35) !important;border-radius:9px !important;
+    background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center !important;
+    color:#3B1553 !important;font-family:inherit !important;font-size:12.5px !important;font-weight:700 !important;
+    line-height:32px !important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
+    box-shadow:none !important;
+  }
+  #cart#cart#cart#cart .pg-offer-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
+
+  /* the one button: full width, the site's moving purple at the same 8s */
+  #cart#cart#cart#cart .pg-offer-add{
+    grid-column:1 / -1;display:flex !important;align-items:center;justify-content:center;gap:8px;
+    width:100% !important;min-width:0 !important;max-width:none !important;margin:0 !important;
+    min-height:42px !important;padding:0 14px !important;
+    border:0 !important;border-radius:11px !important;
+    background-color:#7A2FA2 !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;animation:pgWave 8s ease-in-out infinite !important;
+    color:#fff !important;-webkit-text-fill-color:#fff !important;
+    font-family:inherit !important;font-size:13.5px !important;font-weight:800 !important;
+    letter-spacing:.06em !important;text-transform:uppercase !important;line-height:1 !important;
+    box-shadow:0 12px 26px -12px rgba(139,68,190,.7) !important;cursor:pointer;
+    transition:filter .15s ease,opacity .15s ease;
+  }
+  html body #cart .pg-offer-add::before,html body #cart .pg-offer-add::after{display:none !important;content:none !important;background:none !important}
+  #cart#cart#cart#cart .pg-offer-add:after{display:none}
+  #cart#cart#cart#cart .pg-offer-add:hover{filter:brightness(1.08)}
+  #cart#cart#cart#cart .pg-offer-add[disabled]{opacity:.65 !important;cursor:default}
+  #cart#cart#cart#cart .pg-offer-add .arr{font-size:16px;line-height:1}
+
+  /* iPhone 13 (390) and the compact block pg-cart-timer stamps under 414px:
+     a touch tighter, and never narrower than the 34px touch height */
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-offer{padding:10px 10px 11px;column-gap:10px;row-gap:8px}
+    #cart#cart#cart#cart .pg-offer-t b{font-size:13.5px}
+    #cart#cart#cart#cart .pg-offer-px{font-size:13.5px}
+    #cart#cart#cart#cart .pg-offer-pick{flex-basis:calc(50% - 3px);min-width:88px}
+  }
+  /* the pinned pane, if a stale pg-cart-mobile ever seats the slot there */
+  #cart#cart#cart#cart .sticky-in-panel .pg-offer{margin:0 0 6px}
+  @keyframes pgWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+</style>
+<script>
+(function(){
+  if (window.pgCartOffer) return; window.pgCartOffer = 1;
+
+  var H = {
+    orb:   'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift',
+    wall:  'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame',
+    con:   'handheld-game-console',
+    duo:   'r36s-duo-pack',
+    trio:  'r36s-trio-pack',
+    kase:  'r36s-protective-case-free-gift'
+  };
+  var SPARE_CASE = 49640879063268;           /* $13.99 "Spare case" */
+  var FREE_CASE  = 49640846426340;           /* $0.00 "Free with console" */
+  var SIZE_OF = {49622431858916: '64', 49622431826148: '128'};   /* console variant -> GB */
+  var CASE_IMG = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function pct(was, now){ return was > now ? Math.floor((was - now) / was * 100) : 0; }
+  function ord(k){ var t = k % 10, h = k % 100; return k + (t === 1 && h !== 11 ? 'st' : t === 2 && h !== 12 ? 'nd' : t === 3 && h !== 13 ? 'rd' : 'th'); }
+  function nths(from, to){ var p = []; for (var i = from; i <= to; i++) p.push(ord(i)); var l = p.pop(); return (p.length ? p.join(', ') + ' & ' : '') + l; }
+  function thumb(src){ return src ? String(src).replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : ''; }
+  function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+
+  /* ---------------- products, read once ---------------- */
+  var P = {}, PBUSY = {};
+  function product(handle){
+    if (P[handle]) return Promise.resolve(P[handle]);
+    if (PBUSY[handle]) return PBUSY[handle];
+    PBUSY[handle] = fetch('/products/' + handle + '.js').then(function(r){ return r.json(); }).then(function(pr){
+      var out = {handle: handle, image: (pr.featured_image || (pr.images && pr.images[0]) || ''), variants: []};
+      (pr.variants || []).forEach(function(v){
+        out.variants.push({id: v.id, title: v.title, price: v.price, cap: v.compare_at_price || 0, available: v.available !== false,
+          img: (v.featured_image && v.featured_image.src) || ''});
+      });
+      P[handle] = out; PBUSY[handle] = null; return out;
+    }).catch(function(){ PBUSY[handle] = null; return null; });
+    return PBUSY[handle];
+  }
+  /* a pack variant by the sorted GB sizes it holds ("64GB + 128GB") */
+  function packBySizes(pr, sizes){
+    var key = sizes.slice().sort(function(a, b){ return a - b; }).join('|');
+    for (var i = 0; i < pr.variants.length; i++){
+      var m = String(pr.variants[i].title).match(/\d+(?=GB)/g);
+      if (m && m.slice().sort(function(a, b){ return a - b; }).join('|') === key && pr.variants[i].available) return pr.variants[i];
+    }
+    return null;
+  }
+  function sizesOfPack(title){ return (String(title).match(/\d+(?=GB)/g) || []); }
+
+  /* ---------------- reading the cart ---------------- */
+  function tally(cart){
+    var t = {con: [], duo: [], trio: [], orb: [], wall: [], spares: 0, freeCase: 0, held: {}};
+    (cart.items || []).forEach(function(it){
+      var h = it.handle || '';
+      if (h === H.con) t.con.push(it);
+      else if (h === H.duo) t.duo.push(it);
+      else if (h === H.trio) t.trio.push(it);
+      else if (h === H.orb) t.orb.push(it);
+      else if (h === H.wall) t.wall.push(it);
+      else if (h === H.kase){ if (it.variant_id === SPARE_CASE) t.spares += it.quantity; else t.freeCase += it.quantity; }
+      (t.held[h] = t.held[h] || {})[it.variant_id] = true;
+    });
+    t.conUnits = 0; t.con.forEach(function(it){ t.conUnits += it.quantity; });
+    t.duoUnits = 0; t.duo.forEach(function(it){ t.duoUnits += it.quantity; });
+    t.trioUnits = 0; t.trio.forEach(function(it){ t.trioUnits += it.quantity; });
+    t.consoles = t.conUnits + 2 * t.duoUnits + 3 * t.trioUnits;
+    t.orbUnits = 0; t.orb.forEach(function(it){ t.orbUnits += it.quantity; });
+    t.wallUnits = 0; t.wall.forEach(function(it){ t.wallUnits += it.quantity; });
+    return t;
+  }
+
+  /* the console family's one offer */
+  function consoleOffer(t){
+    if (!t.consoles) return Promise.resolve(null);
+    var single = t.con[0];
+    /* 1 or 2 or 3 loose singles, no pack: the pack that holds exactly them (plus one picked) */
+    if (!t.duoUnits && !t.trioUnits && t.conUnits >= 1 && t.conUnits <= 3){
+      var sizes = [];
+      t.con.forEach(function(it){ for (var i = 0; i < it.quantity; i++) sizes.push(SIZE_OF[it.variant_id] || '64'); });
+      if (t.conUnits === 1){
+        var handle = H.duo;
+        return Promise.all([product(H.con), product(handle)]).then(function(r){
+          var con = r[0], pack = r[1]; if (!con || !pack) return null;
+          var isDuo = true;
+          var pickDefault = sizes[sizes.length - 1];
+          var withPick = packBySizes(pack, sizes.concat([pickDefault])); if (!withPick) return null;
+          var singlesNow = 0; t.con.forEach(function(it){ singlesNow += it.line_price; });
+          var addOne = 0; con.variants.forEach(function(v){ if (String(v.id) === String(single.variant_id)) addOne = v.price; });
+          var extra = withPick.price - singlesNow;      /* what the added console costs inside the pack */
+          return {
+            kind: 'pack', key: 'pack:' + handle + ':' + sizes.join('|'),
+            handle: handle, packSizes: sizes, lines: t.con,
+            img: thumb(con.image),
+            title: isDuo ? 'Add a 2nd R36S: the Duo Pack' : 'Add a 3rd R36S: the Trio Pack',
+            sub: (isDuo ? 'Two consoles, one price' : 'Three consoles, one price') + ' — ' + money(Math.max(0, addOne - extra)) + ' less than adding it alone',
+            was: withPick.cap || withPick.price, now: withPick.price,
+            picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
+            btn: 'Upgrade to the ' + (isDuo ? 'Duo' : 'Trio') + ' Pack',
+            pack: pack
+          };
+        });
+      }
+      /* two or three loose singles: the pack holding exactly them, for less */
+      var packH = t.conUnits === 2 ? H.duo : H.trio, packName = t.conUnits === 2 ? 'Duo' : 'Trio';
+      return product(packH).then(function(pack){
+        if (!pack) return null;
+        var v = packBySizes(pack, sizes); if (!v) return null;
+        var singlesNow = 0; t.con.forEach(function(it){ singlesNow += it.line_price; });
+        if (v.price >= singlesNow) return null;
+        return {
+          kind: 'switch', key: 'switch:' + packH + ':' + sizes.join('|'), handle: packH, variant: v, lines: t.con,
+          img: thumb(v.img || pack.image),
+          title: 'Switch to the ' + packName + ' Pack', sub: 'Same ' + (t.conUnits === 2 ? 'two' : 'three') + ' consoles, ' + money(singlesNow - v.price) + ' less',
+          was: v.cap || singlesNow, now: v.price, picks: [], btn: 'Switch to the ' + packName + ' Pack — save ' + money(singlesNow - v.price)
+        };
+      });
+    }
+    /* a Duo Pack (and nothing else on the console side): the Trio holding it plus one */
+    if (t.duoUnits === 1 && !t.trioUnits && !t.conUnits){
+      return Promise.all([product(H.duo), product(H.trio)]).then(function(r){
+        var duo = r[0], trio = r[1]; if (!duo || !trio) return null;
+        var line = t.duo[0], sizes = sizesOfPack(line.title || line.product_title || '');
+        duo.variants.forEach(function(v){ if (String(v.id) === String(line.variant_id)) sizes = sizesOfPack(v.title); });
+        if (sizes.length !== 2) return null;
+        var pickDefault = sizes[1];
+        var withPick = packBySizes(trio, sizes.concat([pickDefault])); if (!withPick) return null;
+        return {
+          kind: 'pack', key: 'pack:' + H.trio + ':' + sizes.join('|'), handle: H.trio, packSizes: sizes, lines: t.duo,
+          img: thumb(withPick.img || trio.image),
+          title: 'Add a 3rd R36S: the Trio Pack',
+          sub: 'Three consoles, one price — +' + money(withPick.price - line.line_price) + ' for the third',
+          was: withPick.cap || withPick.price, now: withPick.price,
+          picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
+          btn: 'Upgrade to the Trio Pack', pack: trio
+        };
+      });
+    }
+    /* every other console cart: a spare case until each console has one, then an orb */
+    if (t.spares < t.consoles - 1 || (t.spares < t.consoles && !t.freeCase)){
+      return product(H.kase).then(function(pr){
+        var v = null; (pr ? pr.variants : []).forEach(function(x){ if (x.id === SPARE_CASE) v = x; });
+        return {
+          kind: 'add', key: 'case:' + t.spares, items: [{id: SPARE_CASE, quantity: 1}],
+          img: thumb((v && v.img) || (pr && pr.image) || CASE_IMG),
+          title: t.spares ? 'Add another protective case' : 'Add a spare protective case',
+          sub: t.freeCase ? 'One case already comes free with your console' : 'Zip case, fitted for the R36S',
+          was: (v && v.cap) || 2499, now: (v && v.price) || 1399, picks: [], btn: 'Add the case'
+        };
+      });
+    }
+    return orbOffer(t, true);
+  }
+
+  /* the orb (and wall art) ladder, phrased as the shopper experiences it */
+  var RUNGS = {};
+  RUNGS[H.orb]  = {name: 'Orb', rungs: [{paid: 2, free: 1}, {paid: 5, free: 4}], repeats: true, top: 4};
+  RUNGS[H.wall] = {name: 'Print', rungs: [{paid: 2, free: 1}], repeats: true, top: 0};
+
+  function ladderOffer(handle, units, lines, held, cross){
+    var L = RUNGS[handle];
+    return product(handle).then(function(pr){
+      if (!pr) return null;
+      var unitV = null;
+      if (lines.length) pr.variants.forEach(function(v){ if (String(v.id) === String(lines[0].variant_id)) unitV = v; });
+      var unit = unitV ? unitV.price : (pr.variants[0] ? pr.variants[0].price : 0);
+      var cap = unitV ? unitV.cap : (pr.variants[0] ? pr.variants[0].cap : 0);
+      if (!unit) return null;
+      var n = units;
+      if (cross && !n){
+        var one = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
+        return {
+          kind: 'add', key: 'cross:' + handle, handle: handle, need: 1, single: one.length < 2 ? one[0] : null,
+          img: thumb(pr.image), title: 'Add a Crystal Legends ' + L.name, sub: 'Extra 10% off at checkout — and Buy 2, Get 1 FREE',
+          was: cap || unit, now: unit, btn: 'Add to cart',
+          picks: one.length > 1 ? [{label: L.name, free: false, options: one, value: one[0].id}] : []
+        };
+      }
+      var freeNow = 0;
+      L.rungs.forEach(function(g){ if (g.paid + g.free <= n && g.free > freeNow) freeNow = g.free; });
+      if (L.repeats) freeNow = Math.max(freeNow, Math.floor(n / 3) * L.rungs[0].free);
+      var paidNow = n - freeNow;
+      var need = 0, paidAdded = 0, freeAdded = 0, tier = null;
+      for (var i = 0; i < L.rungs.length; i++){
+        var g = L.rungs[i];
+        if (g.paid < paidNow) continue;
+        if (g.paid + g.free <= n) continue;
+        tier = g; need = g.paid + g.free - n; paidAdded = Math.max(0, g.paid - paidNow); freeAdded = Math.max(0, need - paidAdded); break;
+      }
+      if (!tier && L.repeats){
+        /* past the ladder: the repeating Buy 2 Get 1, once it beats what is held */
+        var m = 3 * (freeNow + 1);
+        if (m - n <= 3){ tier = L.rungs[0]; need = m - n; freeAdded = 1; paidAdded = need - 1; }
+      }
+      var title, sub, was, now, btn;
+      if (tier && need > 0){
+        if (paidAdded === 0){
+          title = 'Add your FREE ' + nths(n + 1, n + need) + ' ' + L.name + (need > 1 ? 's' : '');
+          sub = 'You already qualify — costs nothing';
+        } else {
+          title = 'Buy ' + paidAdded + ' more, get ' + freeAdded + ' FREE';
+          sub = 'Buy ' + tier.paid + ', Get ' + tier.free + ' FREE — the free one' + (freeAdded > 1 ? 's come' : ' comes') + ' off at checkout';
+        }
+        was = unit * need; now = unit * paidAdded;
+        btn = 'Add ' + need + ' to cart' + (freeAdded ? ' — ' + freeAdded + ' FREE' : '');
+      } else {
+        need = 1; paidAdded = 1; freeAdded = 0;
+        title = cross ? 'Add a Crystal Legends ' + L.name : 'Add another ' + L.name;
+        sub = 'Extra 10% off at checkout';
+        was = cap || unit; now = unit; btn = 'Add to cart';
+      }
+      var opts = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
+      var heldHere = held[handle] || {};
+      var fresh = opts.filter(function(o){ return !heldHere[o.id]; });
+      var pool = fresh.length >= need ? fresh : opts;
+      var picks = [];
+      if (opts.length > 1){
+        for (var k = 0; k < need; k++){
+          var isFree = k >= need - freeAdded;
+          picks.push({label: isFree ? 'Free' : L.name + ' ' + (k + 1), free: isFree, options: opts, value: pool[k % pool.length].id});
+        }
+      }
+      return {
+        kind: 'add', key: 'ladder:' + handle + ':' + n + ':' + need, handle: handle, need: need, single: opts.length < 2 ? opts[0] : null,
+        img: thumb(pr.image), title: title, sub: sub, was: was, now: now, picks: picks, btn: btn
+      };
+    });
+  }
+  function orbOffer(t, cross){ return ladderOffer(H.orb, t.orbUnits, t.orb, t.held, !!cross); }
+
+  function offersFor(cart){
+    var t = tally(cart);
+    var jobs = [];
+    if (t.consoles) jobs.push(consoleOffer(t));
+    if (t.orbUnits) jobs.push(orbOffer(t, false));
+    if (t.wallUnits) jobs.push(ladderOffer(H.wall, t.wallUnits, t.wall, t.held, false));
+    if (!jobs.length) return Promise.resolve([]);
+    return Promise.all(jobs).then(function(list){
+      var out = [], seen = {};
+      list.forEach(function(o){ if (o && !seen[o.key]){ seen[o.key] = 1; out.push(o); } });
+      return out.slice(0, 2);
+    });
+  }
+
+  /* ---------------- the card ---------------- */
+  function card(o){
+    var el = document.createElement('div');
+    el.className = 'pg-offer';
+    el.setAttribute('data-offer', o.key);
+    var picks = '';
+    (o.picks || []).forEach(function(p, i){
+      picks += '<label class="pg-offer-pick"><span' + (p.free ? ' class="is-free"' : '') + '>' + esc(p.label) + '</span><select data-i="' + i + '">';
+      p.options.forEach(function(op){ picks += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(p.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>'; });
+      picks += '</select></label>';
+    });
+    var save = pct(o.was, o.now);
+    el.innerHTML =
+      '<img alt="" width="48" height="48" decoding="sync" src="' + esc(o.img || '') + '">' +
+      '<div class="pg-offer-t"><b>' + esc(o.title) + '</b>' +
+        '<span class="pg-offer-px">' + (o.was > o.now ? '<s>' + money(o.was) + '</s>' : '') + (o.now === 0 ? 'FREE' : money(o.now)) +
+          (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '') + '</span>' +
+        '<small>' + esc(o.sub) + '</small></div>' +
+      '<div class="pg-offer-picks">' + picks + '</div>' +
+      '<button type="button" class="pg-offer-add">' + esc(o.btn) + '<span class="arr">→</span></button>';
+    el.pgOffer = o;
+    return el;
+  }
+
+  function slotFor(c){
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return null;
+    var slot = c.querySelector('#pg-unlock-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'pg-unlock-slot';
+      list.parentNode.insertBefore(slot, list);
+    }
+    return slot;
+  }
+
+  function paint(offers){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var slot = slotFor(c);
+    if (!slot) return;
+    var want = {};
+    offers.forEach(function(o){ want[o.key] = o; });
+    slot.querySelectorAll('.pg-offer').forEach(function(el){
+      var k = el.getAttribute('data-offer');
+      if (!want[k]){ el.parentNode.removeChild(el); return; }
+      want[k].el = el;   /* same offer: keep it, and whatever the shopper picked */
+    });
+    var prev = null;
+    offers.forEach(function(o, i){
+      var el = o.el || card(o);
+      el.style.order = String(-10 + i);   /* ahead of the hidden rows, console first */
+      if (!o.el){
+        if (prev && prev.nextSibling) slot.insertBefore(el, prev.nextSibling);
+        else if (prev) slot.appendChild(el);
+        else slot.insertBefore(el, slot.firstChild);
+      }
+      prev = el;
+    });
+    if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
+  }
+
+  /* ---------------- watching ---------------- */
+  var busy = false, watch = null, lastSig = null, seenSig = null, force = false;
+  function sig(cart){ return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(','); }
+  function read(){
+    if (busy){ return; }
+    var c = document.getElementById('cart');
+    if (!c || !c.querySelector('.l4ca:not(.in-panel)')) return;
+    busy = true;
+    clearTimeout(watch);
+    watch = setTimeout(function(){ busy = false; }, 8000);
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}}).then(function(r){ return r.json(); }).then(function(cart){
+      var s = sig(cart);
+      if (s === lastSig && document.querySelector('#cart .pg-offer, #cart #pg-unlock-slot')){
+        /* unchanged: only make sure the cards are still standing (a drawer
+           rebuild replaces #cart's innerHTML wholesale) */
+        if (!document.querySelector('#cart .pg-offer') && lastOffers && lastOffers.length) paint(lastOffers);
+        return;
+      }
+      if (!force && lastSig !== null && s !== seenSig){ seenSig = s; setTimeout(read, 600); return; }   /* a change is seen once, then confirmed */
+      force = false; seenSig = s;
+      return offersFor(cart).then(function(offers){ lastSig = s; lastOffers = offers; paint(offers); });
+    }).catch(function(){}).then(function(){ clearTimeout(watch); busy = false; });
+  }
+  var lastOffers = null;
+  var q = null;
+  function schedule(ms){ if (q) return; q = setTimeout(function(){ q = null; read(); }, ms || 150); }
+
+  /* ---------------- adding ---------------- */
+  var adding = false;
+  function post(url, body){
+    return fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', body: JSON.stringify(body)})
+      .then(function(r){ if (!r || !r.ok) throw new Error('write ' + (r && r.status)); return r; });
+  }
+  function perform(o, el){
+    var sels = el.querySelectorAll('.pg-offer-pick select');
+    if (o.kind === 'add'){
+      var items = [];
+      if (o.items) items = o.items;
+      else if (o.single) items = [{id: parseInt(o.single.id, 10), quantity: o.need}];
+      else sels.forEach(function(s){ var id = parseInt(s.value, 10); if (id) items.push({id: id, quantity: 1}); });
+      if (!items.length) return Promise.reject(new Error('nothing to add'));
+      return post('/cart/add.js', {items: items});
+    }
+    if (o.kind === 'pack'){
+      var size = sels[0] ? sels[0].value : '64';
+      var v = packBySizes(o.pack, o.packSizes.concat([size]));
+      if (!v) return Promise.reject(new Error('no pack variant'));
+      /* out with the lines by KEY, then in with the pack; a failed removal never proceeds */
+      var chain = Promise.resolve();
+      o.lines.forEach(function(it){ chain = chain.then(function(){ return post('/cart/change.js', {id: it.key, quantity: 0}); }); });
+      return chain.then(function(){ return post('/cart/add.js', {items: [{id: v.id, quantity: 1}]}); });
+    }
+    if (o.kind === 'switch'){
+      var ch = Promise.resolve();
+      o.lines.forEach(function(it){ ch = ch.then(function(){ return post('/cart/change.js', {id: it.key, quantity: 0}); }); });
+      return ch.then(function(){ return post('/cart/add.js', {items: [{id: o.variant.id, quantity: 1}]}); });
+    }
+    return Promise.reject(new Error('unknown offer'));
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    var btn = e.target.closest('#cart .pg-offer-add');
+    if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (adding) return;
+    var el = btn.closest('.pg-offer'), o = el && el.pgOffer;
+    if (!o) return;
+    adding = true;
+    var label = btn.innerHTML;
+    btn.disabled = true; btn.textContent = 'Adding…';
+    perform(o, el).then(function(){
+      adding = false; force = true; lastSig = null;
+      if (el.parentNode) el.parentNode.removeChild(el);
+      if (window.pgDrawerRefresh){ try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ schedule(50); }, function(){ schedule(50); }); } catch(x){ schedule(50); } }
+      else schedule(50);
+      setTimeout(read, 1500);
+    }).catch(function(){
+      adding = false;
+      btn.disabled = false; btn.innerHTML = label;
+      btn.textContent = 'Try again';
+    });
+  }, true);
+  /* a tap inside the card must not fall through to the theme's drawer handlers */
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('#cart .pg-offer-pick')) e.stopPropagation();
+  }, true);
+
+  function boot(){
+    read();
+    document.addEventListener('pg:cart-updated', function(){ schedule(120); });
+    if (window.MutationObserver){
+      var mo = null;
+      var hook = function(){
+        var c = document.getElementById('cart');
+        if (!c || c.pgOfferObs) return;
+        c.pgOfferObs = 1;
+        new MutationObserver(function(){ schedule(150); }).observe(c, {childList: true, subtree: true});
+      };
+      hook();
+      mo = new MutationObserver(hook);
+      mo.observe(document.documentElement, {childList: true, subtree: true});
+    }
+    setInterval(read, 4000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Offer", "settings": []}
+{% endschema %}

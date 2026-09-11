@@ -1,0 +1,108 @@
+{%- comment -%}
+  PG Orb Tiles: the orb page's bundle tiles read the way the console's do.
+
+  By request (2026-09-11):
+    - the Single Item tile says "25% OFF today" under its title, as the
+      console's single tile does, and wears the "+ FREE LED Base" chip there;
+    - the white-and-lavender sentence the console prints inside each selected
+      tile (the .pgx-tier-note pg-theme-css builds for the R36S: "One R36S +
+      FREE Case, plus an extra 10% off at checkout") appears on the orb tiles
+      too, one per tile, worded for that tile;
+    - and the note that sat under the last bundle at the bottom of the page
+      (pg-tile-copy's .pgx-deal-note) goes, since every tile now carries its own.
+
+  HOW. The orb ladder is built by pg-theme-css (pgLadder) and reshaped by
+  pg-tile-copy on their own beats, so this runs on an observer and a slow
+  interval and is idempotent: it only ever writes what is missing or differs.
+  The tier note takes pg-theme-css's own class, so it is styled by the rules
+  that already style the console's (display:block only on the selected tile,
+  lavender <b>s, and the stamp loop leaves its colours alone), and the
+  #pgx[data-pg-tiernotes] attribute is the switch pg-theme-css already reads
+  to hide the bottom deal note. The percentage is floored from the product's
+  live price and compare-at (the variant data pg-landing prints in #pgx-vdata),
+  the same measure the SAVE badge uses, so the two figures always agree.
+
+  Registered in templates/product.pg-crystal.json only.
+{%- endcomment -%}
+<style>
+  /* the single tile's chip sits where the console's does: beside the name */
+  #pgx .pgx-lad[data-pg-tier="0"] .pgx-lad-t > .pgx-lad-chip{margin-left:0;margin-top:4px;display:inline-block}
+  #pgx .pgx-lad[data-pg-tier="0"] .pgx-lad-t > b{display:block}
+</style>
+<script>
+(function(){
+  if (window.pgOrbTiles) return; window.pgOrbTiles = 1;
+
+  var NOTES = {
+    '0': '<b>One Orb + FREE LED Base</b>, plus an extra <b>10% off</b> at checkout.',
+    '1': '<b>Buy 2, Get 1 FREE</b> — your 3rd Orb comes off at checkout, plus an extra <b>10% off</b>.',
+    '5': '<b>Buy 5, Get 4 FREE</b> — 4 Orbs come off at checkout, plus an extra <b>10% off</b>.'
+  };
+
+  var pctCache = null;
+  function pctOff(){
+    if (pctCache !== null) return pctCache;
+    var el = document.getElementById('pgx-vdata');
+    if (!el) return 0;
+    try {
+      var vs = JSON.parse(el.textContent || '[]'), v = vs && vs[0];
+      if (v && v.cap > v.price) pctCache = Math.floor((v.cap - v.price) / v.cap * 100);
+      else pctCache = 0;
+    } catch (e){ return 0; }
+    return pctCache;
+  }
+
+  function pass(){
+    var pgx = document.getElementById('pgx');
+    if (!pgx) return;
+    var tiles = pgx.querySelectorAll('.pgx-lad');
+    if (!tiles.length) return;
+    tiles.forEach(function(t){
+      var tier = t.getAttribute('data-pg-tier');
+      if (tier === '0'){
+        var tt = t.querySelector('.pgx-lad-t'), b = tt && tt.querySelector('b');
+        if (b && !tt.querySelector('.pgx-lad-chip')){
+          var chip = document.createElement('span');
+          chip.className = 'pgx-lad-chip';
+          chip.textContent = '+ FREE LED Base';
+          b.parentNode.insertBefore(chip, b.nextSibling);
+        }
+        var sv = t.querySelector('.pgx-lad-save'), p = pctOff();
+        var txt = p ? p + '% OFF today' : '';
+        if (sv && txt && sv.textContent !== txt) sv.textContent = txt;
+      }
+      var html = NOTES[tier];
+      if (!html) return;
+      var n = t.querySelector('.pgx-tier-note');
+      if (!n){
+        n = document.createElement('div');
+        n.className = 'pgx-tier-note';
+        n.innerHTML = html;
+        /* under the pickers, above the in-tile ADD TO CART (pg-tiktok-pdp's .pg-tt-atc) */
+        var atc = t.querySelector('.pg-tt-atc');
+        if (atc) t.insertBefore(n, atc); else t.appendChild(n);
+      } else if (n.innerHTML !== html){
+        n.innerHTML = html;
+      }
+    });
+    if (!pgx.hasAttribute('data-pg-tiernotes')) pgx.setAttribute('data-pg-tiernotes', '1');
+  }
+
+  function boot(){
+    pass();
+    if (window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; pass(); }, 80);
+      }).observe(document.documentElement, {childList: true, subtree: true});
+    }
+    setInterval(pass, 1200);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Orb Tiles", "settings": []}
+{% endschema %}

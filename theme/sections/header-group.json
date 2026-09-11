@@ -124,7 +124,8 @@
     "pg_upsell_fit": {"type": "pg-upsell-fit", "settings": {}},
     "pg_gift_purple": {"type": "pg-gift-purple", "settings": {}},
     "pg_gift_pill": {"type": "pg-gift-pill", "settings": {}},
-    "pg_cart_pills": {"type": "pg-cart-pills", "settings": {}}
+    "pg_cart_pills": {"type": "pg-cart-pills", "settings": {}},
+    "pg_cart_offer": {"type": "pg-cart-offer", "settings": {}}
   },
   "order": [
     "nc_classcalm",
@@ -138,6 +139,7 @@
     "pg_upsell_fit",
     "pg_gift_purple",
     "pg_gift_pill",
-    "pg_cart_pills"
+    "pg_cart_pills",
+    "pg_cart_offer"
   ]
 }
