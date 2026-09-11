@@ -196,14 +196,14 @@
      kissing the tile above (measured 0px), so desktop gets 16. Was 26. */
   .pgx-tile.pgx-duo{position:relative;margin-top:16px}
   @media (max-width:600px){ .pgx-tile.pgx-duo{margin-top:12px} }
-  /* the tile label, BESIDE the SAVE pill: labelPacks() reads the SAVE pill's
-     own top/right (or left) and seats this one 8px inboard of it on the same
-     line, so the two cannot overlap whatever positions SAVE ("you stacked the
-     best deal on top of the %", by report, after a corner-based placement
-     did exactly that). Same size as SAVE (pg-save-badge: 12.5px/800, 5px 13px;
-     12px/5px 11px under 600px), in the moving purple the chips wear. The
-     static corner below only applies while there is no SAVE pill to sit by. */
-  .pgx-duo-ribbon{position:absolute;top:-13px;right:14px;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
+  /* the tile label, STACKED under the SAVE pill in the top-right corner
+     ("stack them", by request 2026-09-11, after side-by-side and corner
+     placements): SAVE keeps its place straddling the top border; this one
+     sits directly beneath it inside the tile, and labelPacks() drops the
+     price block under the pair so nothing collides. Same size as SAVE
+     (pg-save-badge: 12.5px/800, 5px 13px; 12px/5px 11px under 600px), in the
+     moving purple the chips wear. */
+  .pgx-duo-ribbon{position:absolute;top:19px;right:14px;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
   @media (max-width:600px){ .pgx-duo-ribbon{font-size:12px;padding:5px 11px} }
   .pgx-duo-ribbon:empty{display:none}
   .pgx-duo-head{display:flex;align-items:flex-start;gap:12px}
@@ -947,70 +947,62 @@
     });
     return out;
   }
-  /* BEST DEAL, FROM THE PRICES. The pack whose saving against its compare-at
-     is the deeper (for the sizes picked right now, re-read on every change)
-     carries "Best Deal"; a tie labels neither. By request (2026-09-11):
-     "based on pricing".
-
-     MOST POPULAR, FROM THE ORDERS. It cannot be computed in the browser, so
-     it is a section setting (Customize > footer > PG Theme CSS), set from
-     the order book and moved by hand as sales move. Set to the single
-     console on 2026-09-11: since launch 14 orders held one console (11 of
-     them the 128G), 3 held two, none held three -- the Duo had carried the
-     label unearned. "Only where it's earned", by request. A tile that is
-     the best deal keeps that label; the two never stack. */
+  /* EVERY TILE CARRIES A LABEL ("each bundle needs something", by request
+     2026-09-11), ranked from the prices: the tile whose saving against its
+     compare-at is the deepest (whole percents, as the SAVE pill prints; the
+     single's read from its pill, the packs' from their live recalculation)
+     is "Best Deal", the next "Great Value", the next "Good Value"; a tile
+     tied with one above it takes the next name down. MOST POPULAR comes
+     from the orders, which the browser cannot see, so it is a section
+     setting (Customize > footer > PG Theme CSS), set to the single console
+     on 2026-09-11 (14 orders held one console, 11 of them the 128G; 3 held
+     two; none three) and moved by hand as sales move. It replaces that
+     tile's ranking name, except "Best Deal", which is a price fact and
+     stays. The labels sit stacked under the SAVE pill; the price block is
+     dropped beneath the pair. */
   var MOST_POPULAR = '{{ section.settings.most_popular | default: "single" }}';
+  var RANK_NAMES = ['Best Deal', 'Great Value', 'Good Value'];
   function labelPacks(){
     var onR36 = location.pathname.indexOf('/products/handheld-game-console') !== -1;
     var packs = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile.pgx-duo'));
     var single = onR36 ? document.querySelector('#pgx .pgx-tile[data-pgx-tile="single"]') : null;
     if (!packs.length && !single) return;
-    var best = null, bestPct = 0, tie = false;
-    packs.forEach(function(t){
-      var pc = Math.floor(parseFloat(t.dataset.pgPct || '0') * 100);   /* whole percents, as the SAVE pill prints */
-      if (pc > bestPct){ best = t; bestPct = pc; tie = false; }
-      else if (pc === bestPct && pc > 0 && t !== best) tie = true;
+    var tiles = (single ? [single] : []).concat(packs);
+    function pctOf(t){
+      if (t === single){
+        var b = t.querySelector('.pgx-lad-badge'), m = b && /(\d+)\s*%/.exec(b.textContent || '');
+        return m ? parseInt(m[1], 10) : 0;
+      }
+      return Math.floor(parseFloat(t.dataset.pgPct || '0') * 100);
+    }
+    var ranked = tiles.map(function(t){ return {t: t, pc: pctOf(t)}; }).sort(function(a, b){ return b.pc - a.pc; });
+    var nameIx = 0;
+    ranked.forEach(function(e, i){
+      if (i > 0) nameIx = (e.pc === ranked[i - 1].pc) ? nameIx + 1 : i;
+      e.txt = e.pc > 0 ? (RANK_NAMES[Math.min(nameIx, RANK_NAMES.length - 1)] || '') : '';
     });
     var mp = null;
     if (MOST_POPULAR === 'single') mp = single;
     else if (MOST_POPULAR === 'duo') mp = packs.filter(function(t){ return !t.classList.contains('pgx-trio'); })[0] || null;
     else if (MOST_POPULAR === 'trio') mp = packs.filter(function(t){ return t.classList.contains('pgx-trio'); })[0] || null;
+    ranked.forEach(function(e){ if (mp && e.t === mp && e.txt !== 'Best Deal') e.txt = 'Most Popular'; });
+    ranked.forEach(function(e){ put(e.t, e.txt); });
     function put(t, txt){
       var r = t.querySelector('.pgx-duo-ribbon');
       if (!r && !txt) return;
       if (!r){ r = document.createElement('span'); r.className = 'pgx-duo-ribbon'; t.insertBefore(r, t.firstChild); }
       if (r.textContent !== txt) r.textContent = txt;
-      /* beside the SAVE pill, 8px inboard of it on its own line: read from
-         SAVE's computed offsets, so the two never overlap whichever section
-         positions SAVE, and re-read every tick */
-      var b = t.querySelector('.pgx-lad-badge');
-      if (txt && b && b.offsetWidth){
-        var cs = getComputedStyle(b), gap = 8, w = b.offsetWidth;
-        var top = cs.top, key;
-        /* an absolutely positioned pill reports resolved pixels for BOTH left
-           and right, never 'auto': the side it hangs from is the smaller one */
-        var offR = parseFloat(cs.right), offL = parseFloat(cs.left);
-        if (!(offR > offL)){                                    /* SAVE hangs from the right */
-          key = 'r:' + Math.round(parseFloat(cs.right) + w + gap) + ':' + top;
-          if (r.dataset.pgSeat !== key){
-            r.dataset.pgSeat = key;
-            r.style.setProperty('right', Math.round(parseFloat(cs.right) + w + gap) + 'px', 'important');
-            r.style.setProperty('left', 'auto', 'important');
-            r.style.setProperty('top', top, 'important');
-          }
-        } else {                                                /* SAVE hangs from the left */
-          key = 'l:' + Math.round(parseFloat(cs.left) + w + gap) + ':' + top;
-          if (r.dataset.pgSeat !== key){
-            r.dataset.pgSeat = key;
-            r.style.setProperty('left', Math.round(parseFloat(cs.left) + w + gap) + 'px', 'important');
-            r.style.setProperty('right', 'auto', 'important');
-            r.style.setProperty('top', top, 'important');
-          }
+      /* the price block clears the stacked pair (SAVE straddles the top
+         border, the label sits under it): 34px when labelled, else none */
+      var px = t.querySelector('.pgx-duo-px, .pgx-tile-price');
+      if (px){
+        var want = txt ? '34px' : '';
+        if (px.dataset.pgDrop !== want){
+          px.dataset.pgDrop = want;
+          if (want) px.style.setProperty('margin-top', want, 'important'); else px.style.removeProperty('margin-top');
         }
       }
     }
-    packs.forEach(function(t){ put(t, (!tie && t === best) ? 'Best Deal' : (t === mp ? 'Most Popular' : '')); });
-    if (single) put(single, mp === single ? 'Most Popular' : '');
   }
   function calc(tile){
     if (!VARS) return;

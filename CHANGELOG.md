@@ -1,3 +1,19 @@
+# Tile labels stacked under the SAVE pill; every tile carries one
+
+By request: "stack them, and each bundle needs something."
+
+`sections/pg-theme-css.liquid`: the SAVE pill keeps its place straddling
+the top border; the label sits directly beneath it inside the tile, and the
+price block is dropped 34px so it sits under the pair. Every tile is
+labelled, ranked from the prices: the deepest cut is "Best Deal", the next
+"Great Value", the next "Good Value" (a tie takes the next name down);
+"Most Popular", from the section setting, replaces the ranking name on its
+tile unless that tile is the best deal. Today: single "Most Popular" over
+SAVE 25%, Duo "Great Value" over SAVE 32%, Trio "Best Deal" over SAVE 38%.
+Measured with the section's own function in the harness at 390 and 430: no
+label over SAVE, none over the price, 6px between the pills, 4-5px to the
+price.
+
 # Tile labels seated beside the SAVE pill, measured from it
 
 By report: "you stacked the Best Deal and those boxes on top of the %."
