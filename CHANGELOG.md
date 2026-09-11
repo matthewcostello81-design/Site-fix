@@ -1,3 +1,17 @@
+# Cart offer: the pack card reprices as the GB is picked
+
+By report: "the price is not changing when they choose a different GB in the
+cart upsell." The price line was written once when the card was built, for
+the default size.
+
+`sections/pg-cart-offer.liquid`: a change on the card's GB picker looks the
+pack variant up again (the consoles in the cart plus the picked one) and
+rewrites the price line: struck compare-at, net figure with the extra 10%,
+SAVE chip; the thumbnail follows the variant when it has one. perform()
+reads the same picker, so what is printed is what is added. Duo 64G + 128G
+reads $219.98 / $134.08 / SAVE 39%; Trio 64 + 64 + 128 reads $319.97 /
+$178.17 / SAVE 44%.
+
 # Cart offer: the pack goes in before the old lines come out
 
 By report: "when they add a 3rd R36S through the upsell the whole cart goes

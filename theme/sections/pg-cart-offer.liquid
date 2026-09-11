@@ -492,6 +492,13 @@
   }
 
   /* ---------------- the card ---------------- */
+  /* the price line: struck compare-at, the net figure, the SAVE chip on it */
+  function priceHtml(was, now0){
+    var now = now0 ? net(now0) : 0;      /* what the till will take, extra 10% included */
+    var save = pct(was, now);
+    return (was > now ? '<s>' + money(was) + '</s>' : '') + (now === 0 ? 'FREE' : money(now)) +
+      (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '');
+  }
   function card(o){
     var el = document.createElement('div');
     el.className = 'pg-offer';
@@ -502,15 +509,12 @@
       p.options.forEach(function(op){ picks += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(p.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>'; });
       picks += '</select></label>';
     });
-    var now = o.now ? net(o.now) : 0;      /* what the till will take, extra 10% included */
-    var save = pct(o.was, now);
     /* every card says so itself ("state it in the upsell", by request) */
     var inc = RATE > 0 ? 'Extra ' + Math.round(RATE * 100) + '% off included' : '';
     el.innerHTML =
       '<img alt="" width="48" height="48" decoding="sync" src="' + esc(o.img || '') + '">' +
       '<div class="pg-offer-t"><b>' + esc(o.title) + '</b>' +
-        '<span class="pg-offer-px">' + (o.was > now ? '<s>' + money(o.was) + '</s>' : '') + (now === 0 ? 'FREE' : money(now)) +
-          (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '') + '</span>' +
+        '<span class="pg-offer-px">' + priceHtml(o.was, o.now) + '</span>' +
         (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') +
         (inc ? '<small class="pg-offer-inc">' + inc + '</small>' : '') + '</div>' +
       '<div class="pg-offer-picks">' + picks + '</div>' +
@@ -676,6 +680,23 @@
   /* a tap inside the card must not fall through to the theme's drawer handlers */
   document.addEventListener('click', function(e){
     if (e.target && e.target.closest && e.target.closest('#cart .pg-offer-pick')) e.stopPropagation();
+  }, true);
+  /* THE PACK CARD REPRICES AS THE GB IS PICKED. The price was set once when
+     the card was built, for the default size, and a shopper choosing 128GB
+     kept reading the 64GB figure (by report, 2026-09-11). The pack variant
+     that holds the consoles plus the picked one is looked up again and the
+     price line rewritten; perform() reads the same picker, so what is
+     printed is what is added. */
+  document.addEventListener('change', function(e){
+    var sel = e.target && e.target.closest && e.target.closest('#cart .pg-offer-pick select');
+    if (!sel) return;
+    var el = sel.closest('.pg-offer'), o = el && el.pgOffer;
+    if (!o || o.kind !== 'pack' || !o.pack) return;
+    var v = packBySizes(o.pack, o.packSizes.concat([sel.value]));
+    var px = el.querySelector('.pg-offer-px');
+    if (!v || !px) return;
+    px.innerHTML = priceHtml(v.cap || v.price, v.price);
+    if (v.img){ var im = el.querySelector('img'); if (im) im.src = thumb(v.img); }
   }, true);
 
   function boot(){
