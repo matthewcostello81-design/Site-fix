@@ -543,7 +543,10 @@
     /* Pop-out cart: refresh the drawer section markup, then slide it out */
     window.pgOpenCart = function(){
       if (window.pgGiftSync) setTimeout(window.pgGiftSync, 60);
-      var done=function(){ if (window.openPanel) { openPanel('cart'); } else { window.location.href='/cart'; } };
+      /* openPanel comes from custom-async.js, which loads lazily; the old
+         fallback navigated to /cart, which pg-cart-gone bounces straight back,
+         so the page reloaded and the drawer never opened. Wait for it instead. */
+      var done=function(){ var n=0; (function w(){ if (window.openPanel){ openPanel('cart'); } else if (n++ < 30){ setTimeout(w, 100); } })(); };
       fetch('/?sections=side-cart').then(function(r){return r.json();}).then(function(j){
         var html=j['side-cart']||'';
         var t=document.createElement('div'); t.innerHTML=html;
@@ -604,7 +607,11 @@
       var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1];
       if(!cur)return;
       window.pgCatalog().then(function(j){
-        var ps=(j.products||[]).filter(function(p){var v=(p.variants&&p.variants[0])||{};return p.handle!==cur&&p.images&&p.images.length&&parseFloat(v.price||0)>0;});
+        /* the packs, the case and shipping protection are sold from the
+           console page's own tiles and the cart, and their pages redirect,
+           so a card for them led nowhere (2026-09-11) */
+        var SKIP={'r36s-duo-pack':1,'r36s-trio-pack':1,'r36s-protective-case-free-gift':1,'shipping-protection':1};
+        var ps=(j.products||[]).filter(function(p){var v=(p.variants&&p.variants[0])||{};return p.handle!==cur&&!SKIP[p.handle]&&p.images&&p.images.length&&parseFloat(v.price||0)>0;});
         if(!ps.length||document.querySelector('.pgu-yml'))return;
         var d=document.createElement('div'); d.className='pgu-yml';
         d.innerHTML='<div class="pgu-yml-eye">Keep exploring</div><h3>You may also like</h3><div class="pgu-yml-grid">'+
@@ -1394,8 +1401,13 @@
         });
         var items = Object.keys(counts).map(function(k){ return {id: parseInt(k, 10), quantity: counts[k]}; });
         fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: items})})
-          .then(function(){ BUSY = false; if (window.pgOpenCart) window.pgOpenCart(); })
-          .catch(function(){ BUSY = false; });
+          .then(function(r){ BUSY = false; if (!r || !r.ok) throw new Error('add ' + (r && r.status)); if (window.pgOpenCart) window.pgOpenCart(); })
+          .catch(function(){
+            /* a refused add used to open the drawer as if it had worked */
+            BUSY = false;
+            var err = document.getElementById('pgx-err');
+            if (err){ err.textContent = 'Could not add to cart. Please try again.'; err.style.display = 'block'; }
+          });
       }, true);
     }).catch(function(){});
   }
@@ -1621,11 +1633,17 @@
         headers: {'Content-Type': 'application/json'},
         credentials: 'same-origin',
         body: JSON.stringify({items: [{id: C.variant, quantity: qty}]})
-      }).then(function(){
+      }).then(function(r){
         busy = false;
+        if (!r || !r.ok) throw new Error('addon ' + (r && r.status));
         if (window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); return; } catch(err){} }
         if (window.pgOpenCart) window.pgOpenCart();
-      }).catch(function(){ busy = false; });
+      }).catch(function(){
+        /* a refused add-on used to refresh the drawer as if it had gone in */
+        busy = false;
+        var err = document.getElementById('pgx-err');
+        if (err){ err.textContent = 'Could not add the ' + (C.noun || 'add-on') + '. Please add it from the cart.'; err.style.display = 'block'; }
+      });
     }, 900);
   }, true);
 

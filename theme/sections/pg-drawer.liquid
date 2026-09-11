@@ -1,0 +1,1068 @@
+{%- comment -%}
+  PG Drawer: Pocketera overrides for the cart drawer (and cart page bars) built by
+  nc-cartfix / nc-recs. Loads LAST in overlay-group so its rules win. Swaps the
+  drawer logo to the Pocketera logo, recolors the NC green/orange accents to
+  purple and black gradients, limits the Better together rail to the crystal
+  orbs, and auto-adds the free R36S protective case whenever the cart holds a
+  paid item.
+{%- endcomment -%}
+<style>
+  /* Drawer top: logo + free-shipping pill */
+  #cart#cart#cart img.nc-dlogo{height:110px !important;max-width:300px !important;margin:-6px auto 2px !important;object-fit:contain !important}
+  #cart#cart#cart .nc-dship{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShift 8s ease-in-out infinite !important;box-shadow:0 10px 22px -12px rgba(122,47,162,.6) !important}
+  #cart#cart#cart .nc-dtrust span{color:#7A2FA2 !important}
+  #cart#cart#cart .nc-dtrust svg{stroke:#7A2FA2 !important}
+
+  /* Checkout button: purple gradient */
+  #cart#cart#cart button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;animation:none !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.65) !important;border-radius:999px !important;text-transform:uppercase !important;letter-spacing:.05em !important;font-weight:700 !important}
+  #cart#cart#cart button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
+
+  /* Discount tier progress: purple */
+  #cart#cart#cart .nc-tiers{background:linear-gradient(120deg,#F6EFFB,#EEE0F7) !important;border:1px solid rgba(122,47,162,.25) !important}
+  #cart#cart#cart .nc-track-fill{background:linear-gradient(90deg,#9B4BC4,#7A2FA2) !important;animation:none !important}
+  #cart#cart#cart .nc-node{border-color:#CBA8E0 !important;background:#fff !important}
+  #cart#cart#cart .nc-node.done{background:#7A2FA2 !important;border-color:#7A2FA2 !important;animation:none !important}
+  #cart#cart#cart .nc-node.cur{box-shadow:0 0 0 5px rgba(122,47,162,.25) !important}
+  #cart#cart#cart .nc-tiers-msg b{color:#7A2FA2 !important}
+  #cart#cart#cart .nc-lab.on,#cart#cart#cart .nc-lab.on b{color:#7A2FA2 !important}
+  #cart#cart#cart .nc-lab b{color:#2b2b2b !important}
+
+  /* Items card */
+  #cart#cart#cart .l4ca:not(.in-panel){background:#fff !important;border:1px solid #e0cdee !important;box-shadow:0 12px 26px -20px rgba(74,28,102,.35) !important}
+  #cart#cart#cart .l4ca:not(.in-panel)::before{color:#7A2FA2 !important;border-bottom-color:rgba(122,47,162,.15) !important}
+
+  /* Recommendation rails: purple/black */
+  #cart#cart#cart .nc-rec-price{color:#7A2FA2 !important}
+  #cart#cart#cart .nc-rec-was{color:#8a8a8a !important}
+  #cart#cart#cart .nc-rec-off{background:#7A2FA2 !important;color:#fff !important}
+  #cart#cart#cart .nc-recs-panel{background:linear-gradient(120deg,#F8F3FC,#F1E7F8) !important;border:1px solid rgba(122,47,162,.2) !important}
+  #cart#cart#cart .nc-rec:hover{background:rgba(122,47,162,.06) !important}
+
+  /* Better together: only the crystal orbs may appear as a recommendation */
+  /* upsell panel: all products welcome (crystal-only filter removed) */
+  /* Rec ADD buttons: outlined purple pill, gradient on hover */
+  #cart#cart#cart .nc-rec-add,#cart#cart#cart .nc-recs-panel .nc-rec-add{background:#fff !important;background-image:none !important;animation:none !important;color:#7A2FA2 !important;border:1.5px solid #7A2FA2 !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.04em !important}
+  #cart#cart#cart .nc-rec-add:hover,#cart#cart#cart .nc-recs-panel .nc-rec-add:hover{background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important;border-color:#7A2FA2 !important;filter:none !important}
+
+  /* Free shipping bar, savings chips, count badge, stepper, upsell note */
+  /* background-image, never the background shorthand: a shorthand marked
+     !important pins background-position too, and that is the property the
+     pill's wave moves (pg-cart-pills, which paints every pill in the cart) */
+  #cart#cart#cart .nc-lsave-off{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;color:#fff !important}
+  #cart#cart#cart .nc-cc-badge{background:#7A2FA2 !important}
+  #cart#cart#cart .semantic-amount .decr,#cart#cart#cart .semantic-amount .incr{color:#7A2FA2 !important}
+  #cart#cart#cart .nc-upsell-note{color:#7A2FA2 !important;background:rgba(122,47,162,.1) !important}
+
+  /* Shipping Protection: rendered as a service toggle, raw line item hidden */
+  .pg-sp{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:13px 14px;margin:12px 0;box-shadow:0 12px 30px -24px rgba(74,28,102,.4);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-sp-ic{flex:none;width:42px;height:42px;border-radius:50%;background:#f5eefa;display:flex;align-items:center;justify-content:center}
+  .pg-sp-ic svg{width:22px;height:22px;stroke:#7A2FA2;fill:none;stroke-width:1.8}
+  .pg-sp-t{flex:1;min-width:0}
+  .pg-sp-t b{display:block;font-size:14.5px;color:#121212 !important}
+  .pg-sp-t small{display:block;font-size:12px;color:#6a6a6a !important;margin-top:1px}
+  .pg-sp-price{font-weight:700;font-size:14.5px;color:#7A2FA2 !important;margin-right:2px}
+  .pg-sp-sw{position:relative;display:inline-block;width:46px !important;min-width:46px !important;max-width:46px !important;height:26px !important;flex:none;cursor:pointer;margin:0 !important;padding:0 !important;box-sizing:border-box}
+  .pg-sp-sw input{opacity:0;width:0;height:0;position:absolute;margin:0;padding:0}
+  .pg-sp-sw i{position:absolute;inset:0 !important;width:46px !important;height:26px !important;background:#d6d6d6;border-radius:999px;transition:background .2s ease;font-style:normal !important;display:block !important;margin:0 !important;padding:0 !important;box-sizing:border-box}
+  .pg-sp-sw i:before{content:"" !important;position:absolute;top:50% !important;left:3px !important;right:auto !important;width:20px !important;height:20px !important;margin:-10px 0 0 !important;border-radius:50% !important;background:#fff !important;transition:transform .2s ease;box-shadow:0 2px 6px rgba(0,0,0,.25);display:block !important}
+  .pg-sp-sw input:checked + i{background:#7A2FA2}
+  .pg-sp-sw input:checked + i:before{transform:translateX(20px)}
+  .pg-sp[data-busy]{opacity:.55;pointer-events:none}
+  #cart .l4ca > li:has(a[href*="shipping-protection"]),
+  body.template-cart .form-cart .l4ca > li:has(a[href*="shipping-protection"]){display:none !important}
+
+  /* Free gift line: FREE tag replaces $0.00, stepper locked */
+  #cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
+  body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:hidden !important}
+  .pg-free-tag{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 8s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;width:max-content;margin:4px 0 2px}
+  /* North Cove cart-line layout: title top, save chip under it, was/now bottom-right */
+  #cart .l4ca > li section{display:grid !important;grid-template-columns:minmax(0,1fr) auto !important;grid-template-areas:"nm nm" "vr vr" "sv sv" "qt pr" !important;align-items:end !important;gap:2px 10px !important;overflow:hidden !important}
+  #cart .l4ca > li section > p{grid-area:vr;margin:0 !important;font-size:12.5px;color:#8a8a8a;justify-self:start}
+  #cart .l4ca > li section > span.overlay-gray{display:none !important}
+  #cart .l4ca > li section .nc-lsave{position:static !important;width:auto !important;max-width:100% !important;margin:0 !important;padding:0 !important}
+  #cart .l4ca > li section .cols{display:contents !important}
+  #cart .l4ca > li section h2{grid-area:nm !important;border:0 !important;margin:0 !important}
+  #cart .l4ca > li section .pg-save-chip,#cart .l4ca > li section .pg-free-tag{grid-area:sv;justify-self:start}
+  #cart .l4ca > li section footer{grid-area:qt !important;position:static !important;display:flex !important;align-items:center !important}
+  #cart .l4ca > li section .nc-lsave{grid-area:pr !important;display:flex !important;flex-direction:column !important;align-items:flex-end !important;gap:1px !important;justify-self:end;align-self:end}
+  #cart .l4ca > li section .cols p.price{display:none !important}
+  /* A discounted line gets its price from .nc-lsave, which only exists when
+     there is a discount — so wall art, orbs and a paid case showed no price at
+     all. Put the theme's own line price back in the price cell for those, in
+     the same purple as .nc-lsave-now. The free gift line stays priceless. */
+  #cart .l4ca > li:not(:has(.nc-lsave)):not(:has(.pg-free-tag)) section .cols p.price{
+    display:block !important;grid-area:pr !important;justify-self:end !important;align-self:end !important;
+    margin:0 !important;color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important;
+    white-space:nowrap !important
+  }
+  #cart .l4ca > li .nc-lsave-was{color:#666 !important;text-decoration:line-through !important;font-size:13.5px !important;font-weight:400 !important}
+  #cart .l4ca > li .nc-lsave-now{color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important}
+  #cart .l4ca > li .nc-lsave-off{display:none !important}
+  #cart .l4ca > li section > p:empty{display:none !important}
+  #cart .l4ca > li:hover,#cart .l4ca > li:hover section,#cart .l4ca > li:hover figure{background:transparent !important;box-shadow:none !important}
+  #cart .l4ca > li::before,#cart .l4ca > li::after{display:none !important;content:none !important}
+  #cart .l4ca > li section{padding-right:4px !important}
+  @keyframes pgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  /* round 2: qty, trash, no tints, breakdown, bar, vsel, payments */
+  #cart#cart#cart{width:490px !important;max-width:96vw !important}
+  @media(max-width:600px){#cart#cart#cart{width:100vw !important;max-width:100vw !important}}
+
+  #cart .l4ca > li,#cart .l4ca > li section,#cart .l4ca > li figure{background:transparent !important}
+  #cart .l4ca .input-amount{margin:0 !important}
+  #cart .l4ca .input-amount input{border:1.5px solid rgba(122,47,162,.4) !important;border-radius:10px !important;color:#4A1C66 !important;font-weight:700 !important;width:52px !important;min-width:0 !important;height:36px !important;min-height:0 !important;background:#fff !important;text-align:center !important;font-size:15px !important;padding:0 !important}
+  #cart .l4ca > li section{position:relative !important}
+  #cart .l4ca > li section h2{padding-right:30px !important;font-size:16.5px !important;line-height:1.3 !important}
+  #cart .l4ca > li section footer p:last-child{position:absolute !important;top:0 !important;right:0 !important;margin:0 !important;padding:0 !important}
+  #cart .l4ca a.remove{display:inline-flex !important;width:26px;height:26px;align-items:center;justify-content:center;color:#9a8fa5 !important;text-decoration:none !important}
+  #cart .l4ca a.remove:hover{color:#7A2FA2 !important}
+  #cart .l4ca a.remove .mobile-hide{display:none !important}
+  #cart .l4ca > li section > p:not(.pg-varp){pointer-events:none}
+  #cart .l4ca > li section > p.pg-varp{pointer-events:auto !important}
+  #cart .nc-recs,#cart .nc-recs-panel{margin-top:6px !important}
+  #cart .l4ca{display:flex !important;flex-direction:column !important}
+  /* Only the badged gift line is pinned above "Your Cart". A case the shopper
+     paid for is an ordinary line and stays in cart order. */
+  #cart .l4ca > li:has(.pg-free-tag){order:-1}
+  /* The gift line keeps its .nc-lsave, which is what renders $13.99 struck
+     through and $0.00 beside it — the value of the gift, visible. Only the
+     "Saved 100%" chip is dropped, since FREE GIFT already says it. */
+  #cart .l4ca > li:has(.pg-free-tag) .pg-save-chip{display:none !important}
+  /* Gift line, by request: FREE GIFT is the one label. The FREE plaque and
+     the "Free with console" variant text go; the price cell shows $0.00 in
+     the same purple as every other line (unless .nc-lsave already renders
+     the struck value + $0.00 pair, which stays). */
+  #cart .l4ca > li[data-pg-free] .pg-free-note{display:none !important}
+  #cart .l4ca > li[data-pg-free] > section > p{display:none !important}
+  #cart .l4ca > li:has(.pg-free-tag):not(:has(.nc-lsave)) section .cols p.price{
+    display:block !important;grid-area:pr !important;justify-self:end !important;align-self:end !important;
+    margin:0 !important;color:#7A2FA2 !important;font-weight:800 !important;font-size:18px !important;
+    white-space:nowrap !important
+  }
+  #cart .l4ca > li[data-pg-free] > section{
+    height:100% !important;
+    grid-template-rows:auto auto auto 1fr !important;
+  }
+  /* The gift MODULE runs thinner than the full lines (it carries no stepper,
+     no variant, no save maths). The photo is not cropped or reshaped: its
+     height is capped and its width follows the natural aspect. */
+  #cart .l4ca > li[data-pg-free] figure{
+    width:auto !important;min-width:0 !important;flex:0 0 auto !important;
+  }
+  #cart .l4ca > li[data-pg-free] figure img{
+    height:110px !important;width:auto !important;max-width:none !important;object-fit:contain !important;
+  }
+  .pg-orbsel{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .pg-orbsel img{width:26px;height:26px;border-radius:6px;object-fit:cover;flex:none;background:#f4f4f4}
+  .pg-orbsel select{font-size:12px;padding:2px 6px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#555;max-width:130px;font-family:inherit}
+  /* Orb variant picker inside a rec row. .pg-drop carries min-width:160px and so
+     refuses to shrink; as a flex sibling it squeezed .nc-rec-info to nothing and
+     the price/percent-off overflowed underneath it. Give the picker its own
+     full-width line beneath the title instead of a column in the same row. */
+  #cart .nc-rec:has(.pg-orbsel){flex-wrap:wrap !important}
+  #cart .nc-rec:has(.pg-orbsel) .nc-rec-info{overflow:hidden !important}
+  #cart .nc-rec .pg-orbsel{order:9;flex:1 1 100%;min-width:0;margin:8px 0 0}
+  #cart .nc-rec .pg-orbsel .pg-drop{min-width:0;width:100%;display:block}
+  #cart .nc-rec .pg-orbsel .pg-drop-h{width:100%;box-sizing:border-box}
+  #cart .nc-rec .pg-orbsel .pg-drop-l{max-height:190px}
+  #cart .pg-free-sub{display:none !important}
+  /* Savings breakdown above the drawer total, mirroring the cart page rows. */
+  #cart .pg-sav{margin:2px 0 7px;padding:8px 11px;border-radius:10px;background:linear-gradient(120deg,#F6EFFB,#EEE0F7);border:1px solid rgba(122,47,162,.18)}
+  #cart .pg-sav-r{display:flex;justify-content:space-between;gap:10px;font-size:13px;line-height:1.55;color:#4A1C66;font-weight:600}
+  #cart .pg-sav-r span:last-child{font-weight:800;white-space:nowrap}
+  #cart .pg-sav-t{margin-top:4px;padding-top:5px;border-top:1px solid rgba(122,47,162,.22);font-size:14px;font-weight:800}
+  #cart .sticky-in-panel{background:#fff !important;z-index:5 !important;box-shadow:0 -14px 26px -18px rgba(74,28,102,.4) !important;border-top:1px solid rgba(122,47,162,.18) !important;padding-top:5px !important;padding-bottom:6px !important}
+  #cart .sticky-in-panel .offset-dist{display:none !important;height:0 !important}
+  #cart .sticky-in-panel .pg-sp{margin:3px 0 5px !important;padding:7px 10px !important;box-shadow:none !important}
+  #cart .sticky-in-panel .pg-sp-ic{width:28px !important;height:28px !important}
+  #cart .sticky-in-panel .pg-sp-ic svg{width:16px !important;height:16px !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:12.5px !important}
+  #cart .sticky-in-panel .pg-sp-t small{font-size:10.5px !important;line-height:1.25 !important;margin-top:0 !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:12.5px !important}
+  #cart .sticky-in-panel .l4tt{margin:2px 0 !important}
+  #cart .sticky-in-panel .nc-dtrust{margin:3px 0 !important;padding:2px 0 !important}
+  #cart .sticky-in-panel form.f8vl{margin:3px 0 0 !important}
+  #cart .sticky-in-panel button[name="checkout"]{padding:12px 16px !important;min-height:0 !important}
+  #cart .sticky-in-panel .l4pm{margin:5px 0 0 !important}
+  .pg-cart-top{position:sticky;top:0;z-index:6;background:#fff;display:flex;align-items:center;gap:9px;padding:11px 16px;border-bottom:1px solid rgba(122,47,162,.16);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-weight:800;color:#4A1C66;font-size:15px}
+  .pg-cart-top svg{width:20px;height:20px;stroke:#7A2FA2;fill:none;stroke-width:1.8;flex:none}
+  .pg-cart-top .pg-ct-n{font-weight:600;color:#7A2FA2;font-size:13.5px}
+  .pg-qbtn{width:26px;height:26px;border:1.5px solid rgba(122,47,162,.4);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;padding:0 0 4px;box-sizing:border-box;color:#7A2FA2;font-weight:800;font-size:16px;line-height:1;cursor:pointer;background:#fff;user-select:none;flex:none}
+  .pg-qbtn:hover{background:#7A2FA2;color:#fff;border-color:#7A2FA2}
+  #cart .pg-vsel{font-size:13.5px;color:#555;border:1px solid #ddd;border-radius:8px;padding:3px 6px;background:#fff;font-family:inherit;max-width:150px}
+  #cart .sticky-in-panel .pg-sp{margin:8px 0 10px}
+  #cart .sticky-in-panel .l4tt li{display:flex !important;justify-content:space-between !important;align-items:baseline !important;font-size:13px;padding:1px 0;line-height:1.35}
+  #cart .l4tt li.pg-drow,#cart .l4tt li.pg-drow *{color:#7A2FA2 !important;font-weight:700 !important;font-size:13.5px !important}
+  #cart .l4tt li.pg-tt,#cart .l4tt li.pg-tt *{font-weight:800 !important;font-size:16px !important;color:#4A1C66 !important}
+  #cart ul.l4al.inline{display:none !important}
+  #cart .sticky-in-panel form.f8vl{margin-bottom:0 !important}
+  #cart .l4pm{display:flex !important;flex-wrap:wrap;justify-content:center;gap:6px;margin:10px 0 2px !important;padding:0 !important}
+  #cart .l4pm li{margin:0 !important;padding:0 !important;list-style:none}
+  #cart .l4pm svg{width:36px;height:23px;display:block;border-radius:4px}
+  #cart .sticky-in-panel .l4pm{margin-top:2px !important;padding-top:0 !important}
+  .pg-bar{background:#fff;border:1px solid #e0cdee;border-radius:14px;padding:16px 16px 15px;margin:0 0 12px;box-shadow:0 12px 30px -24px rgba(74,28,102,.4);font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-bar-t{font-size:14.5px;font-weight:600;color:#3a2a4a;text-align:center;margin:0 0 12px;line-height:1.5}
+  .pg-bar-t b{color:#7A2FA2}
+  .pg-bar-track{position:relative;height:14px;border-radius:999px;background:#efe4f8;margin:6px 22px 4px}
+  .pg-bar-fill{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 8s ease-in-out infinite;transition:width .5s ease}
+  .pg-bar-dot{position:absolute;top:50%;transform:translate(-50%,-50%);width:36px;height:36px;border-radius:50%;background:#fff;border:2px solid #cbb3e0;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;color:#7d6a90;box-shadow:0 4px 12px -4px rgba(74,28,102,.35)}
+  .pg-bar-dot.on{border-color:#7A2FA2;background:#7A2FA2;color:#fff}
+  .pg-bar-lbl{display:flex;justify-content:space-between;font-size:12px;font-weight:700;letter-spacing:.04em;color:#7d6a90;margin-top:10px;text-transform:uppercase}
+  .pg-bar-lbl .on{color:#7A2FA2}
+  .pg-save-chip{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShift 8s ease-in-out infinite;color:#fff !important;-webkit-text-fill-color:#fff !important;font-size:12px;font-weight:700;letter-spacing:normal;word-spacing:normal;padding:6px 7px;border-radius:999px;text-transform:uppercase;margin:4px 0 2px;width:max-content}
+  s.pg-lwas{color:#666 !important;font-weight:400;font-size:13.5px;margin-right:6px}   /* #666, not #8a8a8a: "more visible", by request (2026-09-11) */
+  #cart .l4ca > li .old-price{display:none !important}
+
+  /* "Shipped for free" bars anywhere (drawer, cart page, express checkout):
+     nc-cartfix also paints the gradient on the ::before pseudo, so both layers
+     must be recolored. Global on purpose - every lime status bar goes purple. */
+  .overlay-lime,
+  html .overlay-lime,
+  #cart#cart#cart .overlay-lime,
+  body.template-cart .overlay-lime{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important;border:none !important}
+  .overlay-lime::before,
+  html .overlay-lime::before,
+  #cart#cart#cart .overlay-lime::before{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 45%,#4A1C66 100%) !important}
+  .overlay-lime,.overlay-lime *{color:#fff !important;-webkit-text-fill-color:#fff !important}
+  body.template-cart .form-cart .l4us li::before{color:#7A2FA2 !important;-webkit-text-fill-color:#7A2FA2 !important}
+</style>
+<script>
+(function(){
+  if (window.pgDrawer) return; window.pgDrawer = 1;
+  var LOGO = {{ section.settings.logo_image | image_url: width: 420 | json }};
+  function fix(){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var img = c.querySelector('img.nc-dlogo');
+    if (img && !img.dataset.pg){ img.dataset.pg = '1'; if (LOGO) img.src = LOGO; img.alt = 'Pocketera'; }
+    var t = c.querySelector('.nc-dlogo-txt');
+    if (t && t.textContent !== 'POCKETERA') t.textContent = 'POCKETERA';
+  }
+  /* Shipping Protection service toggle */
+  var SP_ID = 49529437028580;
+  /* THE DRAWER REFRESH. Every section in this theme calls it, through the
+     window.pgDrawerRefresh alias below: pg-giftguard after placing the gift,
+     pg-case-mobile after normalising the case lines, pg-unlock, pg-frame-add,
+     pg-cart-variants, pg-chips' stepper, the Shipping Protection toggle above.
+     It runs after essentially every cart mutation, so what it costs is what the
+     cart costs.
+
+     IT USED TO FETCH THE ENTIRE HOMEPAGE.
+
+         fetch('/') -> r.text() -> new DOMParser().parseFromString(t, 'text/html')
+                    -> doc.querySelector('#cart')
+
+     The whole of `/` -- hero video markup, the product grids, every section on
+     the front page -- downloaded and parsed into a second complete DOM, on the
+     main thread, to lift one element out of it and throw the rest away. Measured
+     in Chromium on a homepage-sized document: 117 KB and 13.5ms of parsing per
+     refresh, against 0.07 KB and 0.045ms for the section alone. That is the
+     "cart takes too long", and because the parse blocks the main thread it is
+     also part of the jumpiness: the swap lands late and all at once.
+
+     Shopify renders one section on request. `/?sections=side-cart` returns a
+     JSON object of {section-id: html} -- a few KB, no second document, no
+     parse of anything the cart does not use. pg-theme-css's pgOpenCart has
+     always used exactly this; this function simply never caught up.
+
+     TWO MORE THINGS IT NOW DOES:
+
+     1. CONCURRENT CALLS SHARE ONE REQUEST. A single add can trigger three
+        callers within a few hundred ms (the add itself, pg-giftguard placing
+        the free case, pg-case-mobile normalising). That was three full page
+        loads and three wholesale innerHTML swaps, each one re-triggering every
+        observer in the theme. In flight, they now all await the same promise,
+        and one more pass is queued if a write landed after the request went
+        out -- so the last state is never missed.
+
+     2. IT ANNOUNCES ITSELF. The swap replaces every node in the drawer, which
+        drops the stamps a dozen sections put there (badges, chip geometry,
+        the free-case treatment) until each one's own 250-1200ms interval comes
+        round. That stagger is what the shopper reads as text resizing and
+        lines jumping after every change. A `pg:cart-updated` event now fires
+        on document in the same task as the swap, so any section that wants to
+        re-stamp can do it in that frame instead of a beat later -- nc-linesave
+        listens for it and repaints the price block there. Intervals stay as
+        they are: this is a fast path, not a replacement. */
+  var spBusy = null, spAgain = false;
+  function spSwap(html){
+    var cur = document.getElementById('cart');
+    if (!cur || !html) return;
+    /* the section response is the <aside id="cart"> itself, so its inner HTML
+       is what belongs inside the live one; parsing into a <template> keeps the
+       markup inert (no image or iframe loads from a throwaway document) */
+    var t = document.createElement('template');
+    t.innerHTML = html;
+    var fresh = t.content.querySelector('#cart') || t.content.firstElementChild;
+    if (!fresh) return;
+    cur.innerHTML = fresh.innerHTML;
+    try {
+      document.dispatchEvent(new CustomEvent('pg:cart-updated'));
+    } catch (e){
+      /* older WebKit: CustomEvent constructor missing */
+      var ev = document.createEvent('Event');
+      ev.initEvent('pg:cart-updated', true, false);
+      document.dispatchEvent(ev);
+    }
+  }
+  function spRefreshDrawer(){
+    if (spBusy){ spAgain = true; return spBusy; }
+    spBusy = fetch('/?sections=side-cart', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(j){ spSwap(j && j['side-cart']); })
+      .catch(function(){})
+      .then(function(){
+        spBusy = null;
+        if (spAgain){ spAgain = false; return spRefreshDrawer(); }
+      });
+    return spBusy;
+  }
+  function spCount(){
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      var n = 0;
+      c.items.forEach(function(it){ if (it.handle !== 'shipping-protection') n += it.quantity; });
+      document.querySelectorAll('.pgh-cart-n,.pgx-cart-n,.cart-count,[data-cart-count]').forEach(function(el){
+        el.textContent = n;
+        el.style.display = n === 0 ? 'none' : '';
+      });
+    }).catch(function(){});
+  }
+  function spBox(){
+    var box = document.createElement('div');
+    box.className = 'pg-sp'; box.setAttribute('data-pg-sp', '1');
+    box.innerHTML = '<div class="pg-sp-ic"><svg viewBox="0 0 24 24"><path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5z"/><path d="M9 12l2 2 4-4"/></svg></div>'
+      + '<div class="pg-sp-t"><b>Shipping Protection</b><small>Protect your order against loss or damage in transit</small></div>'
+      + '<span class="pg-sp-price">$3.99</span>'
+      + '<label class="pg-sp-sw"><input type="checkbox" aria-label="Add shipping protection"><i></i></label>';
+    var input = box.querySelector('input');
+    input.addEventListener('change', function(){
+      box.setAttribute('data-busy', '1');
+      var req = input.checked
+        ? fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: SP_ID, quantity: 1}]})})
+        : fetch('/cart/update.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({updates: {"49529437028580": 0}})});
+      req.then(function(r){
+        if (!r.ok) throw 0;
+        spCount();
+        var c = document.getElementById('cart');
+        if (c && c.contains(box)) return spRefreshDrawer();
+        location.reload();
+      }).catch(function(){
+        input.checked = !input.checked;
+        box.removeAttribute('data-busy');
+      });
+    });
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      input.checked = c.items.some(function(it){ return it.id === SP_ID || it.handle === 'shipping-protection'; });
+    }).catch(function(){});
+    return box;
+  }
+  /* Free gift: the R36S protective case is auto-added at $0 whenever the cart
+     holds a paid item, always re-added if removed, and auto-removed when the
+     cart empties. */
+  /* 2026-09-06: GIFT_ID was 49623692247268, a variant that NO LONGER EXISTS -
+     /cart/add.js answers 422 "Cannot find variant". Measured: one Add to cart
+     produced the correct duo add followed by NINE identical retries of that
+     dead id, one per second, and it never stops while a console is in the
+     cart. Every shopper was firing a failing request a second, forever.
+     The two real variants of r36s-protective-case-free-gift: */
+  var GIFT_ID = 49640846426340;   /* $0.00  "Free with console" */
+  var PAID_ID = 49640879063268;   /* $13.99 "Spare case"        */
+  var GIFT_HANDLE = 'r36s-protective-case-free-gift';
+  var giftBusy = false;
+  /* Index in cart.items of the auto-added gift line, or -1. The "Free R36S Case
+     with Console" BXGY discounts one unit, and Shopify renders a partly
+     discounted variant as two cart lines — so the case can legitimately appear
+     twice. Exactly one of those lines is the gift, and only it gets the badge. */
+  var GIFT_IDX = -1;
+  /* Index of the case line Shopify actually discounted to zero. The BXGY does
+     not necessarily land on the line carrying _free_gift, so the badge follows
+     the money: whichever line is genuinely free is the one labelled FREE GIFT,
+     and the other shows its real price. */
+  var FREE_IDX = -1;
+  function giftDone(r){
+    giftBusy = false;
+    if (r && r.ok){
+      spCount();
+      if (document.getElementById('cart')) spRefreshDrawer();
+      if (document.querySelector('body.template-cart')) location.reload();
+    }
+  }
+  function giftSync(){
+    if (giftBusy) return;
+    giftBusy = true;
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      var gift = null, paid = 0;
+      GIFT_IDX = -1;
+      FREE_IDX = -1;
+      c.items.forEach(function(it, i){
+        var isCase = (it.id === GIFT_ID || it.handle === GIFT_HANDLE);
+        if (isCase && FREE_IDX < 0 && ((it.line_price || 0) - (it.total_discount || 0)) <= 0) FREE_IDX = i;
+        /* Only the line this script added carries _free_gift. A case the
+           shopper added themselves has no property, so it is left alone —
+           that is what lets someone buy a case without a console. */
+        if (isCase && it.properties && it.properties._free_gift){ gift = it; GIFT_IDX = i; }
+        /* THE DUO PACK COUNTS AS TWO CONSOLES. It is its own product now, so a
+           cart holding one has no console line at all -- this counted zero,
+           concluded the gift was unearned and REMOVED it, while pg-giftguard
+           (which does know about the pack) immediately put it back. One
+           removal and one re-add per beat is a tug-of-war over the shopper's
+           free case; counting the pack here ends it. */
+        if (it.handle === 'handheld-game-console') paid += it.quantity;
+        else if (it.handle === 'r36s-duo-pack') paid += it.quantity * 2;
+        else if (it.handle === 'r36s-trio-pack') paid += it.quantity * 3;
+      });
+      /* PLACEMENT BELONGS TO pg-giftguard, NOT HERE. That section was written
+         precisely because this add was dead ("giftSync's hardcoded variant no
+         longer exists") and it already places the gift correctly. Now that the
+         id above is real, re-enabling this add would mean TWO owners racing to
+         add the same gift and a cart that intermittently holds two of them.
+         One owner. This branch only reports what it found. */
+      if (paid > 0 && !gift){
+        giftBusy = false;
+        return;
+      }
+      if (gift && paid === 0){
+        /* change.js by line key: update.js keys on the variant and would also
+           zero a case the shopper added themselves. */
+        return fetch('/cart/change.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: gift.key, quantity: 0})}).then(giftDone);
+      }
+      /* The BXGY covers exactly one case, so the gift line stays at 1. Extra
+         units are not discarded — they move to a plain line with no _free_gift
+         property, which is the paid case. That way a line labelled FREE GIFT
+         never silently contains a unit the shopper is being charged for. */
+      if (gift && gift.quantity > 1){
+        /* CAP ONLY. A second unit on the gift line is an accident (two tabs,
+           two guards, a merge), never a purchase: converting it into a paid
+           $13.99 spare the shopper did not choose charged them for it. The
+           surplus is simply taken off, the same thing pg-giftguard's capGift
+           does, so the two can no longer disagree (2026-09-11). */
+        return fetch('/cart/change.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: gift.key, quantity: 1})})
+          .then(giftDone);
+      }
+      giftBusy = false;
+    }).catch(function(){ giftBusy = false; });
+  }
+  function giftTag(root){
+    var lis = root.querySelectorAll('.l4ca:not(.in-panel) > li');
+    /* Cart lines render in cart.items order, so the list index identifies the
+       gift line. If the index is not known yet, fall back to the first case
+       line so the badge is never missing altogether. */
+    /* THE FREE ROW IS NAMED BY ITS VARIANT, NOT BY ITS POSITION. Both cases are
+       variants of ONE product, so `href*="free-gift"` matches the paid spare as
+       well, and the index this used to trust is written by an async /cart.js
+       read while this function runs on a beat against the DOM. Adding a spare
+       case left that index pointing a row behind reality for a moment, so the
+       badge jumped onto the paid row and back -- and every jump re-ran
+       `order:-1`, the save-chip toggle, the price rule and the inline pill
+       geometry below. That is the flicker that ran through the whole cart the
+       moment the case upsell was used. The variant id sits in the row's own
+       link, is readable synchronously, and cannot rotate, so it decides. The
+       index path is kept only for a row whose link carries no variant. */
+    var giftLi = null;
+    for (var gi = 0; gi < lis.length; gi++){
+      if (lis[gi].querySelector('a[href*="variant=' + GIFT_ID + '"]')){ giftLi = lis[gi]; break; }
+    }
+    var fallback = -1;
+    lis.forEach(function(li, i){
+      if (fallback < 0 && li.querySelector('a[href*="free-gift"]')) fallback = i;
+    });
+    var giftAt = (FREE_IDX >= 0) ? FREE_IDX : ((GIFT_IDX >= 0) ? GIFT_IDX : fallback);
+    lis.forEach(function(li, i){
+      var a = li.querySelector('a[href*="free-gift"]');
+      if (!a) return;
+      var tt = li.querySelector('h2 a') || li.querySelector('h2');
+      if (tt && /\(\s*FREE\s*Gift\s*\)/i.test(tt.textContent)) tt.textContent = tt.textContent.replace(/\s*\(\s*FREE\s*Gift\s*\)\s*/i, '');
+      /* visual order handled by CSS flex order; DOM order must stay in cart order */
+      var isGift = giftLi ? (li === giftLi) : (i === giftAt);
+      if (!isGift){
+        li.querySelectorAll('.pg-free-tag, .pg-free-sub').forEach(function(el){ el.parentNode.removeChild(el); });
+        delete li.dataset.pgFree;
+        return;
+      }
+      /* Clear the note the earlier build added, on the gift line too. */
+      li.querySelectorAll('.pg-free-sub').forEach(function(el){ el.parentNode.removeChild(el); });
+      if (li.dataset.pgFree) return;
+      li.dataset.pgFree = '1';
+      /* The $0.00 is left alone on purpose: the gift line should read
+         $13.99 struck through, then $0.00, so the value of the gift is
+         visible rather than blank. */
+      var tagHTML = '<span class="pg-free-tag">Free Gift</span>';
+      var h2g = a.closest('h2');
+      if (h2g) h2g.insertAdjacentHTML('afterend', tagHTML);
+      else a.insertAdjacentHTML('afterend', tagHTML);
+      var ftag = li.querySelector('.pg-free-tag');
+      if (ftag){
+        /* GEOMETRY MATCHED TO pg-chips' STAMP. This list writes inline !important, and
+           so does pg-chips' stamp() -- they were writing DIFFERENT values for the
+           same two properties (12px of side padding and .05em of tracking here
+           against 7px and normal there), so the pill went wide every time this
+           ran and was snapped narrow again on pg-chips' next 300ms tick. The
+           shopper saw it resize under them after every cart change. Fixing it
+           here removes the disagreement rather than winning the race. */
+        ['width:fit-content','max-width:100%','justify-self:start','font-size:12px','line-height:1','padding:6px 7px','height:26px','box-sizing:border-box','display:inline-flex','align-items:center','justify-content:center','letter-spacing:normal','word-spacing:normal','column-gap:0','text-indent:0','border-radius:999px','min-width:0','flex:none','font-family:Poppins,Arial,sans-serif'].forEach(function(kv){
+          var p = kv.split(':'); ftag.style.setProperty(p[0], p[1], 'important');
+        });
+        /* MEASURED CENTRING. The text's layout advance has run wider than its
+           painted glyphs (a font-metric mismatch), leaving the words parked
+           right of centre inside the purple with dead space on the left. So
+           the pill is corrected from what actually painted: measure where the
+           glyphs sit, pull them back over the dead space with a negative
+           text-indent, and shrink the pill by the same amount so both sides
+           hold 7px. A healthy layout measures ~0 and changes nothing. Re-run
+           once the webfont settles, because the mismatch IS the font. */
+        var ftFix = function(){
+          try {
+            ftag.style.setProperty('text-indent', '0', 'important');
+            ftag.style.setProperty('width', 'fit-content', 'important');
+            var rr = document.createRange();
+            rr.selectNodeContents(ftag);
+            var tb = rr.getBoundingClientRect(), pb = ftag.getBoundingClientRect();
+            if (!tb.width || !pb.width) return;
+            var lead = (tb.left - pb.left) - 7;
+            if (lead > 1 || lead < -1){
+              ftag.style.setProperty('text-indent', (-lead) + 'px', 'important');
+            }
+            /* width comes from the GLYPHS, not pill-minus-lead: if the webfont
+               finishes after a pass, the glyph run grows and a stale width
+               left the words poking out the right edge. Sized from the run
+               itself, both sides hold 7px whatever the metrics did. */
+            ftag.style.setProperty('width', Math.ceil(tb.width + 14) + 'px', 'important');
+          } catch(err){}
+        };
+        ftFix();
+        [400, 1500, 3500].forEach(function(ms){ setTimeout(ftFix, ms); });
+        if (document.fonts && document.fonts.ready && document.fonts.ready.then){
+          document.fonts.ready.then(function(){ setTimeout(ftFix, 60); });
+        }
+      }
+    });
+  }
+  window.pgGiftTag = giftTag;
+  window.pgGiftSync = giftSync;
+  window.pgDrawerRefresh = spRefreshDrawer;
+  function spInject(){
+    var c = document.getElementById('cart');
+    if (c){
+      var items = c.querySelector('.l4ca:not(.in-panel)');
+      var pane = c.querySelector('.sticky-in-panel');
+      if (pane && !c.querySelector('[data-pg-sp]')){
+        pane.insertBefore(spBox(), pane.querySelector('.l4tt') || pane.firstChild);
+      } else if (!pane && items && !c.querySelector('[data-pg-sp]')){
+        items.parentNode.insertBefore(spBox(), items.nextSibling);
+      }
+      c.querySelectorAll('.l4ca > li').forEach(function(li){
+        if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
+      });
+      giftTag(c);
+    }
+    var form = document.querySelector('body.template-cart .form-cart');
+    if (form){
+      var list = form.querySelector('.l4ca');
+      if (list && !form.querySelector('[data-pg-sp]')){
+        list.parentNode.insertBefore(spBox(), list.nextSibling);
+      }
+      form.querySelectorAll('.l4ca > li').forEach(function(li){
+        if (/Shipping Protection/i.test(li.textContent)) li.style.display = 'none';
+      });
+      giftTag(form);
+    }
+  }
+  var giftTimer;
+  function giftQueue(){
+    clearTimeout(giftTimer);
+    giftTimer = setTimeout(giftSync, 150);
+  }
+  function bind(){
+    fix();
+    spInject();
+    giftQueue();
+    var c = document.getElementById('cart');
+    if (c){ try { new MutationObserver(function(){ fix(); spInject(); giftQueue(); }).observe(c, {childList: true, subtree: true}); } catch(e){} }
+  }
+  if (document.readyState !== 'loading') bind(); else document.addEventListener('DOMContentLoaded', bind);
+  setTimeout(function(){ fix(); spInject(); }, 400);
+  setTimeout(function(){ fix(); spInject(); giftQueue(); }, 1200);
+  setTimeout(function(){ fix(); spInject(); }, 3000);
+})();
+</script>
+<script>
+(function(){
+  if (window.pgDeals) return; window.pgDeals = 1;
+  var VMAP = null, PRODVARS = null, VSEL_BUSY = false;
+  fetch('/products.json?limit=50').then(function(r){return r.json();}).then(function(j){
+    VMAP = {};
+    PRODVARS = {};
+    (j.products||[]).forEach(function(p){
+      PRODVARS[p.handle] = [];
+      (p.variants||[]).forEach(function(v){
+        VMAP[v.id]=[parseFloat(v.price||0),parseFloat(v.compare_at_price||0)];
+        PRODVARS[p.handle].push({id: v.id, t: v.title});
+      });
+    });
+  }).catch(function(){});
+  function money(n){ return '$' + n.toFixed(2); }
+  /* ONE CART READING PER TICK, SHARED.
+     pass() and savRows() run off the same 800ms interval and each used to fetch
+     /cart.js for itself -- two requests every 800ms, for the same answer, for as
+     long as the page was open. /cart.js is already the busiest endpoint in this
+     theme (pg-chips documents Shopify throttling it, and a throttled reply is
+     what let pg-giftguard add duplicate cases), so the two now share one
+     in-flight read. 600ms is under the tick, so a genuine change is never
+     served from the previous tick's answer. */
+  var CARTQ = null, CARTQ_T = 0;
+  function cartOnce(){
+    var now = Date.now();
+    if (CARTQ && (now - CARTQ_T) < 600) return CARTQ;
+    CARTQ_T = now;
+    CARTQ = fetch('/cart.js').then(function(r){ return r.json(); });
+    CARTQ['catch'](function(){ CARTQ = null; });
+    return CARTQ;
+  }
+  /* The drawer is closed most of the time, and everything below writes INTO it.
+     Polling for a panel nobody is looking at cost two requests a second and the
+     main-thread work behind them, on every page of the site. */
+  function cartOnScreen(){
+    var c = document.getElementById('cart');
+    if (c && /(^|\s)toggle(\s|$)/.test(c.className)) return true;
+    return !!document.querySelector('body.template-cart');
+  }
+  function pass(){
+    if (!VMAP) return;
+    if (!document.querySelector('#cart .l4ca > li')) return;
+    cartOnce().then(function(c){
+      var items = c.items || [];
+      var used = {};
+      document.querySelectorAll('#cart .l4ca > li').forEach(function(li){
+        var a = li.querySelector('a[href*="/products/"]'); if (!a) return;
+        var href = a.getAttribute('href') || '';
+        if (href.indexOf('free-gift') > -1) return;
+        var it = null, m = href.match(/[?&]variant=([0-9]+)/);
+        if (m){ var vid = parseInt(m[1],10); it = items.filter(function(x){return x.variant_id===vid;})[0]; }
+        if (!it){
+          var h = (href.match(/\/products\/([^\/?#]+)/)||[])[1];
+          for (var i=0;i<items.length;i++){ if(!used[i] && items[i].handle===h){ it=items[i]; used[i]=1; break; } }
+        }
+        if (!it) return;
+        if (href.indexOf('handheld-game-console') > -1) vsel(li, it);
+        var pc = VMAP[it.variant_id];
+        if (!pc || !(pc[1] > pc[0])) return;
+        var key = it.variant_id + ':' + it.quantity;
+        if (li.getAttribute('data-pg-deal') === key) return;
+        var pct = Math.round((pc[1]-pc[0]) / pc[1] * 100);
+        var h2 = li.querySelector('h2') || a;
+        var chip = li.querySelector('.pg-save-chip');
+        if (!chip){ chip = document.createElement('span'); chip.className = 'pg-save-chip'; (h2.parentNode||li).insertBefore(chip, h2.nextSibling); }
+        /* '-55%', matching pg-chips' setText on the same element. Two writers
+           with different strings on a 300ms and an 800ms clock would flicker
+           between them; they now agree. See the note in pg-chips for why the
+           string is the badge's only remaining width lever. */
+        chip.textContent = '-' + pct + '%';
+        /* GEOMETRY MATCHED TO pg-chips' STAMP. This list writes inline !important, and
+           so does pg-chips' stamp() -- they were writing DIFFERENT values for the
+           same two properties (12px of side padding and .05em of tracking here
+           against 7px and normal there), so the pill went wide every time this
+           ran and was snapped narrow again on pg-chips' next 300ms tick. The
+           shopper saw it resize under them after every cart change. Fixing it
+           here removes the disagreement rather than winning the race. */
+        ['width:fit-content','max-width:100%','justify-self:start','font-size:12px','line-height:1','padding:6px 7px','letter-spacing:normal','word-spacing:normal','border-radius:999px','min-width:0','flex:none'].forEach(function(kv){
+          var p = kv.split(':'); chip.style.setProperty(p[0], p[1], 'important');
+        });
+        var pr = li.querySelector('p.price') || li.querySelector('[class*="price"]');
+        if (pr){
+          var st = pr.querySelector('s.pg-lwas');
+          if (!st){ st = document.createElement('s'); st.className = 'pg-lwas'; pr.insertBefore(st, pr.firstChild); }
+          st.textContent = money(pc[1] * it.quantity);
+        }
+        li.setAttribute('data-pg-deal', key);
+      });
+      try {
+        pgBar(c); pgTotals(c);
+        var ctn = document.querySelector('#cart .pg-ct-n');
+        if (ctn){
+          var n = 0;
+          (c.items || []).forEach(function(it){ if (it.handle !== 'shipping-protection') n += it.quantity; });
+          var t2 = '(' + n + (n === 1 ? ' item)' : ' items)');
+          if (ctn.textContent !== t2) ctn.textContent = t2;
+        }
+      } catch(e){}
+    }).catch(function(){});
+  }
+  function vsel(li, it){
+    var vars = (PRODVARS && PRODVARS['handheld-game-console']) || [];
+    if (vars.length < 2) return;
+    var sel = li.querySelector('.pg-vsel');
+    if (!sel){
+      var host = li.querySelector('section > p:not(.pg-varp)');
+      if (!host) return;
+      host.classList.add('pg-varp');
+      host.textContent = '';
+      sel = document.createElement('select');
+      sel.className = 'pg-vsel';
+      sel.setAttribute('aria-label', 'Choose version');
+      'height:26px;padding:1px 6px;font-size:12px;line-height:1.2;width:auto;max-width:96px;min-width:0;min-height:0;border-radius:8px;background-color:#fff;color:#555;border:1px solid #ddd;box-shadow:none;margin:0'.split(';').forEach(function(kv){
+        var p = kv.split(':'); sel.style.setProperty(p[0], p[1], 'important');
+      });
+      vars.forEach(function(v){ var o = document.createElement('option'); o.value = v.id; var t = v.t.indexOf('/') > -1 ? v.t.split('/').pop() : v.t; o.textContent = t.replace(/^\s+|\s+$/g, ''); sel.appendChild(o); });
+      /* BEST VALUE, FROM THE PRICES, like the product page's Size picker: the
+         size whose cut against its compare-at is the deepest (whole percents)
+         is marked; a tie marks nothing (by report, 2026-09-11: the cart's
+         picker showed no Best Value while the product page's did). */
+      (function(){
+        var bestId = null, bp = 0, tie = false;
+        vars.forEach(function(v){
+          var pc = VMAP && VMAP[v.id];
+          var p = (pc && pc[1] > pc[0]) ? Math.floor((pc[1] - pc[0]) / pc[1] * 100) : 0;
+          if (p > bp){ bestId = v.id; bp = p; tie = false; }
+          else if (p === bp && bp > 0 && v.id !== bestId) tie = true;
+        });
+        if (bestId !== null && !tie){
+          var bo = sel.querySelector('option[value="' + bestId + '"]');
+          if (bo && bo.textContent.indexOf('(Best Value)') === -1) bo.textContent += ' (Best Value)';
+        }
+      })();
+      host.appendChild(sel);
+      /* SWAP THE LINE, NOT THE VARIANT.
+
+         This used to post /cart/update.js {updates:{<oldVariantId>: 0}}, which
+         is keyed by VARIANT and therefore empties EVERY line holding it, then
+         add one line back at this line's quantity.
+
+         With one console in the cart that is invisible. With a Duo Pack it is
+         the "whole cart glitches" bug: "R36S - 2nd Console 25% Off" is a BXGY,
+         so Shopify puts the two consoles on two separate lines, and changing
+         the size on one of them deleted BOTH and re-added a single console.
+         The pack silently collapsed to one unit and the count normalisers then
+         fought over the wreckage.
+
+         The line's own key is already in hand -- vsel() is called with the
+         cart item -- so it is stamped on the element each render and the swap
+         addresses exactly one line. The key is re-read at change time rather
+         than captured in this closure, because the drawer re-renders on every
+         cart change and a captured key goes stale the moment anything else
+         writes. Properties ride along so a marked line cannot lose its
+         marker. */
+      sel.addEventListener('change', function(){
+        if (VSEL_BUSY) return; VSEL_BUSY = true;
+        var oldId = parseInt(sel.getAttribute('data-cur'), 10);
+        var newId = parseInt(sel.value, 10);
+        var q = parseInt(sel.getAttribute('data-q'), 10) || 1;
+        var key = sel.getAttribute('data-key');
+        var props = sel.getAttribute('data-props');
+        if (!oldId || !newId || oldId === newId){ VSEL_BUSY = false; return; }
+        /* without a key there is no way to know WHICH line this is; doing
+           nothing beats emptying every line of the variant */
+        if (!key){ VSEL_BUSY = false; return; }
+        sel.disabled = true;
+        var line = {id: newId, quantity: q};
+        if (props){ try { var pj = JSON.parse(props); if (pj && Object.keys(pj).length) line.properties = pj; } catch (e){} }
+        fetch('/cart/change.js', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:key,quantity:0})})
+          .then(function(r){ if (!r || !r.ok) throw new Error('change ' + (r && r.status)); return fetch('/cart/add.js', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items:[line]})}); })
+          .then(function(r){ if (!r || !r.ok) throw new Error('add ' + (r && r.status)); return window.pgDrawerRefresh ? window.pgDrawerRefresh() : null; })
+          .then(function(){ VSEL_BUSY = false; if (window.pgGiftSync) window.pgGiftSync(); })
+          .catch(function(){ VSEL_BUSY = false; if (window.pgDrawerRefresh) window.pgDrawerRefresh(); });
+      });
+    }
+    sel.setAttribute('data-cur', it.variant_id);
+    sel.setAttribute('data-q', it.quantity);
+    /* THE KEY COMES OFF THE ROW, NOT OFF THE ITEM.
+
+       A Duo Pack is two rows of the SAME variant with the SAME quantity, and
+       the caller matches rows to cart items by variant, so it hands the first
+       item to both rows -- measured: both selects came back stamped with one
+       key. Swapping either one would then have moved the same line twice and
+       left the other console untouched.
+
+       Each row prints its own remove link, /cart/change?id=<variant>:<key>,
+       which is the only per-row identifier in the drawer that stays correct
+       when two rows are otherwise identical. Read it fresh on every render;
+       the keys rotate whenever a discount re-splits a line. `it.key` stays as
+       the fallback for a row that has no remove link yet.
+
+       Properties are only carried when the row and the item genuinely agree,
+       since a mismatched item's properties belong to a different line. */
+    var rowKey = '';
+    var rm = li.querySelector('a[href*="/cart/change"]');
+    if (rm){
+      var mk = (rm.getAttribute('href') || '').match(/[?&]id=([^&]+)/);
+      if (mk) rowKey = decodeURIComponent(mk[1]);
+    }
+    sel.setAttribute('data-key', rowKey || it.key || '');
+    if (rowKey && it.key && rowKey !== it.key){
+      sel.removeAttribute('data-props');
+    } else if (it.properties && Object.keys(it.properties).length){
+      try { sel.setAttribute('data-props', JSON.stringify(it.properties)); } catch (e){}
+    } else {
+      sel.removeAttribute('data-props');
+    }
+    if (String(sel.value) !== String(it.variant_id)) sel.value = String(it.variant_id);
+  }
+  function pgBar(c){
+    var ul = document.querySelector('#cart .l4ca:not(.in-panel)');
+    if (!ul) return;
+    var bar = document.querySelector('#cart .pg-bar');
+    if (!bar){
+      bar = document.createElement('div');
+      bar.className = 'pg-bar';
+      bar.innerHTML = '<div class="pg-bar-t"></div><div class="pg-bar-track"><i class="pg-bar-fill"></i><b class="pg-bar-dot d1">&#127873;</b><b class="pg-bar-dot d2">&#127991;&#65039;</b></div><div class="pg-bar-lbl"><span class="s1">Free Case</span><span class="s2">10% Off Order</span></div>';
+      ul.parentNode.insertBefore(bar, ul);
+    }
+    var tot = ((c.items_subtotal_price != null ? c.items_subtotal_price : c.total_price) || 0) / 100, T = 120;
+    var hasDev = (c.items || []).some(function(it){ return it.handle === 'handheld-game-console' || it.handle === 'r36s-duo-pack' || it.handle === 'r36s-trio-pack'; });
+    var msg, w;
+    if (tot <= 0){ msg = 'Add a <b>PocketBoy R36</b> to unlock your <b>FREE case</b> &#127873;'; w = 0; }
+    else if (tot < T){
+      msg = hasDev
+        ? '&#127873; FREE case unlocked! Spend <b>$' + (T - tot).toFixed(2) + '</b> more to get <b>10% OFF</b> your whole order'
+        : '&#127873; Add a <b>PocketBoy R36</b> for a FREE case &mdash; spend <b>$' + (T - tot).toFixed(2) + '</b> more for <b>10% OFF</b>';
+      w = 8 + (tot / T) * 92;
+    }
+    else { msg = '&#127881; <b>10% OFF</b> unlocked &mdash; applied automatically at checkout!'; w = 100; }
+    var t = bar.querySelector('.pg-bar-t');
+    if (t.getAttribute('data-m') !== msg){ t.innerHTML = msg; t.setAttribute('data-m', msg); }
+    bar.querySelector('.pg-bar-fill').style.width = w + '%';
+    var d1 = bar.querySelector('.d1'), d2 = bar.querySelector('.d2');
+    d1.style.left = '8%'; d2.style.left = '100%';
+    d1.className = 'pg-bar-dot d1' + (hasDev ? ' on' : '');
+    d2.className = 'pg-bar-dot d2' + (tot >= T ? ' on' : '');
+    bar.querySelector('.s1').className = 's1' + (hasDev ? ' on' : '');
+    bar.querySelector('.s2').className = 's2' + (tot >= T ? ' on' : '');
+  }
+  function pgTotals(c){
+    var tl = document.querySelector('#cart .sticky-in-panel .l4tt');
+    if (!tl) return;
+    var sp = tl.querySelectorAll('li > span');
+    for (var i = 0; i < sp.length; i++){ if (/\(\d+\)/.test(sp[i].textContent)) sp[i].textContent = 'Subtotal'; }
+    var lis = Array.prototype.slice.call(tl.children);
+    lis.forEach(function(li2){
+      if (li2.className.indexOf('pg-trow') > -1) return;
+      if (/Total/i.test(li2.textContent) && !/Subtotal/i.test(li2.textContent) && li2.className.indexOf('pg-tt') === -1) li2.className += ' pg-tt';
+    });
+    var row = tl.querySelector('.pg-trow');
+    if (row) row.remove();
+    lis.forEach(function(li3){
+      if (li3.className.indexOf('pg-tt') > -1 || li3.className.indexOf('pg-drow') > -1) return;
+      if (/(-\$|\(-|% Off)/i.test(li3.textContent)) li3.className += ' pg-drow';
+    });
+  }
+  function pgStepper(){
+    document.querySelectorAll('#cart .l4ca .input-amount').forEach(function(p){
+      if (p.dataset.pgStep) return;
+      var inp = p.querySelector('input');
+      if (!inp) return;
+      p.dataset.pgStep = '1';
+      function mk(txt, delta){
+        var b = document.createElement('span');
+        b.className = 'pg-qbtn';
+        b.textContent = txt;
+        b.setAttribute('role', 'button');
+        b.tabIndex = 0;
+        b.addEventListener('click', function(e){
+          e.preventDefault(); e.stopPropagation();
+          var v = (parseInt(inp.value, 10) || 1) + delta;
+          if (v < 0) v = 0;
+          inp.value = v;
+          inp.dispatchEvent(new Event('change', {bubbles: true}));
+        });
+        return b;
+      }
+      p.insertBefore(mk('−', -1), inp);
+      p.appendChild(mk('+', 1));
+      p.style.setProperty('display', 'inline-flex', 'important');
+      p.style.setProperty('align-items', 'center', 'important');
+      p.style.setProperty('gap', '5px', 'important');
+    });
+  }
+  /* Savings breakdown above the drawer total. Same three figures the cart page
+     shows: compare-at savings across the paid lines, the discounts Shopify has
+     actually applied, and the sum. A row is only drawn when its figure is real,
+     so the drawer never advertises a saving the shopper is not getting. The
+     gift and shipping-protection lines are excluded, matching pg-cart-main. */
+  function savRows(){
+    if (!VMAP) return;
+    if (!document.querySelector('#cart .l4ca > li')) return;
+    var pane = document.querySelector('#cart .sticky-in-panel');
+    if (!pane) return;
+    cartOnce().then(function(c){
+      var sale = 0;
+      (c.items || []).forEach(function(it){
+        if ((it.handle || '').indexOf('shipping-protection') > -1) return;
+        if (it.properties && it.properties._free_gift) return;
+        var v = VMAP[it.variant_id];
+        if (!v) return;
+        if (v[1] > v[0]) sale += (v[1] - v[0]) * it.quantity;
+      });
+      /* the order-level automatic discount (the extra 10%) gets its OWN row,
+         by request - it was lumped invisibly into "Bundle Discount". Read from
+         the cart's own allocations so the figure is Shopify's, to the cent,
+         and the row disappears by itself if the discount is ever retired. */
+      var extra = 0;
+      (c.cart_level_discount_applications || []).forEach(function(d){
+        extra += (d.total_allocated_amount || 0);
+      });
+      extra = extra / 100;
+      var disc = (c.total_discount || 0) / 100 - extra;
+      if (disc < 0) disc = 0;
+      var tot = sale + disc + extra;
+      var box = pane.querySelector('[data-pg-sav]');
+      if (tot <= 0){ if (box) box.parentNode.removeChild(box); return; }
+      var key = sale.toFixed(2) + '|' + disc.toFixed(2) + '|' + extra.toFixed(2);
+      if (box && box.getAttribute('data-pg-sav') === key) return;
+      if (!box){
+        box = document.createElement('div');
+        box.className = 'pg-sav';
+        pane.insertBefore(box, pane.querySelector('.l4tt') || pane.firstChild);
+      }
+      box.setAttribute('data-pg-sav', key);
+      var h = '';
+      if (sale > 0) h += '<div class="pg-sav-r"><span>Sale Savings</span><span>-' + money(sale) + '</span></div>';
+      if (disc > 0) h += '<div class="pg-sav-r"><span>Bundle Discount</span><span>-' + money(disc) + '</span></div>';
+      if (extra > 0) h += '<div class="pg-sav-r"><span>Extra 10% Off</span><span>-' + money(extra) + '</span></div>';
+      h += '<div class="pg-sav-r pg-sav-t"><span>Total Savings</span><span>-' + money(tot) + '</span></div>';
+      box.innerHTML = h;
+    }).catch(function(){});
+  }
+  var ORB = null, ORB_BUSY = false;
+  function orbData(){
+    if (ORB !== null || !PRODVARS) return;
+    var h = null;
+    for (var k in PRODVARS){ if (k.indexOf('pokemon-crystal') > -1) h = k; }
+    if (!h){ ORB = false; return; }
+    ORB = false;
+    fetch('/products/' + h + '.js').then(function(r){ return r.json(); }).then(function(p){
+      ORB = (p.variants || []).map(function(v){ return {id: v.id, t: v.title, img: (v.featured_image && v.featured_image.src) || (p.images && p.images[0]) || ''}; });
+    }).catch(function(){});
+  }
+  function orbRec(){
+    orbData();
+    if (!ORB || !ORB.length) return;
+    var c = document.getElementById('cart');
+    if (!c) return;
+    c.querySelectorAll('.nc-rec, .nc-recs-panel .nc-rec').forEach(function(rec){
+      if (!rec.querySelector('a[href*="crystal"], a[href*="pokemon-crystal"]')) return;
+      if (rec.querySelector('.pg-orbsel')) return;
+      var addBtn = rec.querySelector('.nc-rec-add');
+      if (!addBtn || !addBtn.parentElement) return;
+      if (!window.pgDrop) return;
+      var w = document.createElement('div');
+      w.className = 'pg-orbsel';
+      w.appendChild(window.pgDrop(ORB, ORB[0].id, null));
+      addBtn.parentElement.insertBefore(w, addBtn);
+      rec.dataset.pgOrb = '1';
+    });
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target.closest('.nc-rec-add');
+    if (!btn || ORB_BUSY) return;
+    var rec = btn.closest('.nc-rec');
+    var sel = rec ? rec.querySelector('.pg-orbsel .pg-drop') : null;
+    if (!sel) return;
+    e.preventDefault();
+    e.stopPropagation();
+    ORB_BUSY = true;
+    fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: parseInt(sel.pgValue(), 10), quantity: 1}]})})
+      .then(function(){ ORB_BUSY = false; if (window.pgDrawerRefresh) return window.pgDrawerRefresh(); })
+      .catch(function(){ ORB_BUSY = false; });
+  }, true);
+  function pgPane(){
+    var c2 = document.getElementById('cart');
+    if (!c2) return;
+    if (!c2.querySelector('.pg-cart-top')){
+      var tp = document.createElement('div');
+      tp.className = 'pg-cart-top';
+      tp.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg><span>Your Cart</span><span class="pg-ct-n"></span>';
+      c2.insertBefore(tp, c2.firstChild);
+    }
+    var pane = c2.querySelector('.sticky-in-panel');
+    if (!pane) return;
+    var sp2 = c2.querySelector('[data-pg-sp]');
+    if (sp2 && sp2.parentElement !== pane) pane.insertBefore(sp2, pane.querySelector('.l4tt') || pane.firstChild);
+    var pm = c2.querySelector('.l4pm');
+    if (pm && pm.parentElement !== pane) pane.appendChild(pm);
+    var scEl = null;
+    var cands = c2.querySelectorAll('*');
+    for (var si = 0; si < cands.length; si++){
+      var cs2 = getComputedStyle(cands[si]);
+      if ((cs2.overflowY === 'auto' || cs2.overflowY === 'scroll') && cands[si].scrollHeight > cands[si].clientHeight + 10){ scEl = cands[si]; break; }
+    }
+    if (!scEl && c2.scrollHeight > c2.clientHeight + 10) scEl = c2;
+    /* 34px here put 40px of bare white under CHECKOUT on a phone: the sticky
+       pane sticks to the bottom of this element's CONTENT box, so the gutter
+       sat BELOW the pane rather than inside it. Measured at 375x812: button
+       bottom 772 against an 812 viewport. 6px instead, with the real
+       safe-area-inset moved INTO .sticky-in-panel's own padding (see
+       pg-case-mobile), so a notched phone still clears its home indicator and
+       every other phone gets those pixels back for the line list.
+       Do not fight this value from another script - it is re-asserted every
+       800ms, and pg-cart-mobile's floorOf() reads it to decide whether the
+       checkout button is reachable. Change it HERE. */
+    if (scEl && scEl.style.paddingBottom !== '6px') scEl.style.setProperty('padding-bottom', '6px', 'important');
+  }
+  /* The DOM passes stay on the clock unconditionally -- they are cheap, they
+     touch no network, and they are what keeps the drawer's own furniture in
+     place. Only the two that READ THE CART are held back while the drawer is
+     shut, and they are run immediately when it opens (and whenever the drawer
+     is re-rendered) so nothing is ever a tick late on screen. */
+  setInterval(function(){
+    pgPane(); pgStepper(); orbRec();
+    if (window.pgGiftTag) window.pgGiftTag(document);
+    if (document.hidden || !cartOnScreen()) return;
+    pass(); savRows();
+  }, 800);
+  function cartWork(){ if (!document.hidden) { pass(); savRows(); } }
+  document.addEventListener('pg:cart-updated', cartWork);
+  (function(){
+    var c = document.getElementById('cart');
+    if (!c || !window.MutationObserver) return;
+    var was = /(^|\s)toggle(\s|$)/.test(c.className);
+    new MutationObserver(function(){
+      var now = /(^|\s)toggle(\s|$)/.test(c.className);
+      if (now && !was) cartWork();       /* opened: repaint in this frame */
+      was = now;
+    }).observe(c, {attributes: true, attributeFilter: ['class']});
+  })();
+})();
+</script>
+<script>
+(function(){
+  /* TRASH REMOVES THE WHOLE ITEM. Shopify's BXGY splits one product into a
+     paid line and a free line; the theme's remove link zeroes only the line
+     it sits on, so an item with multiple quantities came back re-split with
+     the rest still in the cart. Intercept the trash click, zero EVERY cart
+     line carrying that variant, then refresh the drawer once. */
+  if (window.pgTrashAll) return; window.pgTrashAll = 1;
+  var busy = false;
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest && e.target.closest('#cart a.remove, body.template-cart a.remove');
+    if (!a || busy) return;
+    var href = a.getAttribute('href') || '';
+    var m = href.match(/id=(\d+):/);
+    if (!m) return;                       /* unexpected shape: let the theme have it */
+    var vid = m[1];
+    e.preventDefault();
+    e.stopPropagation();
+    busy = true;
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(c){
+      var keys = (c.items || []).filter(function(it){ return String(it.variant_id) === vid; }).map(function(it){ return it.key; });
+      var chain = Promise.resolve();
+      keys.forEach(function(k){
+        chain = chain.then(function(){
+          return fetch('/cart/change.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: k, quantity: 0})});
+        });
+      });
+      return chain;
+    }).then(function(){
+      busy = false;
+      if (window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); return; } catch(err){} }
+      if (window.pgOpenCart) window.pgOpenCart();
+    }).catch(function(){ busy = false; });
+  }, true);
+})();
+</script>
+{% schema %}
+{
+  "name": "PG Drawer",
+  "settings": [
+    {"type": "image_picker", "id": "logo_image", "label": "Drawer logo image"},
+    {"type": "text", "id": "keep_match", "label": "Only show recommendations whose URL contains", "default": "data-frog"}
+  ]
+}
+{% endschema %}

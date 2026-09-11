@@ -1,3 +1,74 @@
+# Upsell audit: cart Duo upgrade, cart Best Value, and every add path
+
+## Problem
+Reported after publishing: (1) with one R36S in the cart, tapping the cart's
+"Upgrade to the Duo Pack" card did not work; (2) choosing 128GB in the cart
+showed no "Best Value" the way the product page does; (3) every upsell on the
+site was to be checked.
+
+## What was found (six auditors over every add path, offline, with the real
+## scripts run in jsdom against a fake cart)
+- The Duo upgrade DID write the cart correctly (pack in, console out), but the
+  read straight after was served a pre-write /cart.js snapshot by
+  pg-cart-fast's 500ms memo, so the same Duo card repainted as if nothing had
+  happened; a second tap then added a second pack. A drawer rebuild also reset
+  a 128GB pick to 64GB, and a failed console removal left both lines with no
+  refresh.
+- The cart line's own GB picker (pg-drawer vsel, and pg-cart-variants for
+  other lines) never read prices, so it never marked Best Value.
+- Cart writes from the GB switchers and the stepper had no success checks, and
+  the stepper posted by line INDEX, which every remove-then-add renumbers.
+- pg-drawer converted an accidental second free-case unit into a PAID spare.
+- On phones, tapping the single tile's Size picker while a pack tile was
+  selected deselected everything and hid the only Add to cart button.
+- The orb and wall art "Buy 2, Get 1" tile was repriced to the 3-unit price
+  before its third picker existed, so a fast tap posted 2 units at the 3-unit
+  price; the ladder add and the add-on rider never checked r.ok.
+- The "You may also like" rail offered Duo/Trio cards whose pages just
+  redirect; search and collection grids rendered the $0.00 case, packs and
+  shipping protection as cards.
+- Em dashes in visible copy (banned), and a Math.round pill overstating 30.77%
+  as 31%.
+
+## Fix (draft theme "Upsell fixes (Claude 9-11b)", 163882664164)
+- pg-cart-offer: a post-write read is trusted only once it reflects the write
+  (pack present, removed keys gone, cart changed); a 128GB pick survives a
+  drawer rebuild; a failed removal is retried; the drawer refreshes on failure.
+- pg-cart-fast: a write sequence invalidates in-flight and landing reads.
+- pg-drawer, pg-cart-variants: "(Best Value)" on the deepest-cut size, from
+  live prices, like the product page; r.ok on the swap writes; surplus gift
+  units are capped, never converted into a paid case.
+- pg-landing: "(Best Value)" (dash-free); a tap on a tile's own picker selects
+  that tile.
+- nc-cartfix: stepper and remove post by line key.
+- pg-r36s-mobile: the post-add console trimmer is disarmed (packs are one line
+  of their own product now).
+- pg-theme-css: r.ok on the ladder add and the add-on rider with an on-page
+  error; packs, case and shipping protection out of the YML rail; pgOpenCart
+  waits for the drawer instead of bouncing to /cart.
+- pg-tile-copy: options fetched at boot; the Buy 2 Get 1 tile stays hidden
+  until it carries three pickers; dash-free notes.
+- pg-case-mobile: floor, not round. pg-orb-tiles, pg-cart-timer: dash-free.
+- nc-recs: the dead North Cove recommendation script no longer loads.
+- main-search, main-collection: no card for redirect-template products or
+  shipping protection.
+
+Not changed, flagged for a test checkout: the orb bundle notes promise "plus
+an extra 10% off"; whether Shopify stacks that 10% on the paid units of a
+Buy X Get Y order could not be settled offline.
+
+## Applied to
+Draft theme 163882664164 (duplicate of the published theme) via staged upload
++ themeFilesUpsert; publish it from the admin after checking.
+Files changed: sections/pg-cart-offer.liquid, pg-cart-fast.liquid,
+pg-drawer.liquid, pg-cart-variants.liquid, pg-landing.liquid,
+nc-cartfix.liquid, pg-r36s-mobile.liquid, pg-theme-css.liquid,
+pg-case-mobile.liquid, pg-tile-copy.liquid, pg-orb-tiles.liquid,
+pg-cart-timer.liquid, nc-recs.liquid, main-search.liquid,
+main-collection.liquid
+
+---
+
 # R36S page: Best Deal inside the SAVE pill, side by side, orb-style
 
 ## Problem
