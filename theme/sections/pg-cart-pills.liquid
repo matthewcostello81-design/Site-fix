@@ -80,30 +80,68 @@
   var PERIOD = 8000;   /* the one duration every wave on the site runs */
   var SEL = '#cart .pg-save-chip, #cart .pg-free-tag, #cart .nc-lsave-off, #cart .pg-gift-off, '
           + '#cart .pg-free-note, #cart .pg-unlock-tag, #cart .pg-frameoffer-sv, #cart .nc-dship, #cart .pg-bar-fill, '
-          + '#cart .pg-offer-sv, #cart .pg-offer-add, '
+          + '#cart .pg-offer-add, '
           + '.pgx-atc, .pgst-b, .pgh-atc, .pgh-badge, .pgx-lad-chip, .pgx-duo-ribbon, .pg-r36-atc, .pg-tt-atc';
 
-  /* minus the time since page load, modulo one sweep: an element started now
-     with this delay is at the same point of the sweep as one started at load */
+  /* ONE CLOCK, ENFORCED, NOT ASSUMED. An animation-delay written once at
+     insertion (the first version of this) went stale the moment the drawer
+     re-inserted a node: pg-chips lifts free rows, pg-cart-mobile re-seats the
+     offer slot, a display toggle on open -- every one restarts the CSS
+     animation, and the old delay then put that element at the wrong point
+     of the sweep, which is exactly the drift the owner saw. So every pass now
+     SEEKS each wave animation to the shared phase through the Web Animations
+     API: currentTime = (document time mod 8s), plus the animation's own delay,
+     whenever it is more than 40ms out. Seeking a running animation retimes it
+     without restarting it, whichever writer applied it and however many
+     times the node has been moved. The entrance fade (pgSoftIn) is not a
+     wave and is left alone. Browsers without getAnimations() fall back to
+     the one-shot delay. */
+  var WAVES = {pgWave: 1, pgShift: 1, pgShiftT: 1, pgShiftM: 1};
+  function clock(){
+    var t = (document.timeline && document.timeline.currentTime != null) ? document.timeline.currentTime
+          : ((window.performance && performance.now) ? performance.now() : Date.now());
+    return t;
+  }
+  function seekAll(){
+    var els = document.querySelectorAll(SEL);
+    if (!els.length) return;
+    var want = clock() % PERIOD;
+    els.forEach(function(el){
+      var anims;
+      try { anims = el.getAnimations ? el.getAnimations() : null; } catch (e){ anims = null; }
+      if (!anims || !anims.length) return;
+      anims.forEach(function(a){
+        if (!a || !WAVES[a.animationName] || a.playState !== 'running') return;
+        var ct = a.currentTime;
+        if (ct == null) return;
+        var delay = 0;
+        try { delay = (a.effect && a.effect.getTiming) ? (a.effect.getTiming().delay || 0) : 0; } catch (e){}
+        var have = (((ct - delay) % PERIOD) + PERIOD) % PERIOD;
+        var diff = Math.abs(have - want);
+        if (diff > PERIOD / 2) diff = PERIOD - diff;
+        if (diff > 40){ try { a.currentTime = want + delay; } catch (e){} }
+      });
+    });
+  }
+  /* the fallback for browsers without getAnimations(): minus the time since
+     page load, modulo one sweep, written once per element */
   function phase(){
     var t = (window.performance && performance.now) ? performance.now() : Date.now();
     return '-' + (Math.round(t) % PERIOD) + 'ms';
   }
-
-  function sync(){
+  function delayAll(){
     var els = document.querySelectorAll(SEL);
     if (!els.length) return;
     var v = phase() + ', 0s';   /* the second value keeps pgSoftIn on time */
     els.forEach(function(el){
-      /* written once per element. A writer that re-stamps the animation
-         shorthand (pg-theme-css's paint, pg-home's hover repaint) zeroes the
-         delay and restarts the sweep, and that is the one case written again. */
       var cur = el.style.getPropertyValue('animation-delay');
       if (cur && cur === el.getAttribute('data-pg-phase')) return;
       el.style.setProperty('animation-delay', v, 'important');
       el.setAttribute('data-pg-phase', v);
     });
   }
+  var CAN_SEEK = !!(document.documentElement.getAnimations);
+  function sync(){ if (CAN_SEEK) seekAll(); else delayAll(); }
 
   function boot(){
     sync();
@@ -115,7 +153,9 @@
         setTimeout(function(){ q = false; sync(); }, 60);
       }).observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ['style', 'class']});
     }
-    setInterval(sync, 1500);
+    setInterval(sync, 1000);
+    document.addEventListener('pg:cart-updated', function(){ setTimeout(sync, 30); });
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) sync(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 })();

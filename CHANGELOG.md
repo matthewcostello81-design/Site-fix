@@ -161,9 +161,13 @@ case line take the same moving purple as the product page buttons, at the same
 8s. New `sections/pg-cart-pills.liquid` (header-group) paints every cart pill
 (.pg-save-chip, .pg-free-tag, .nc-lsave-off, .pg-gift-off, .pg-free-note,
 .pg-unlock-tag, .pg-frameoffer-sv) with one gradient and one animation, and a
-small script gives every moving element on the page an animation-delay of
-minus (time since load mod 8s) so chips the drawer recreates stay in step with
-the ones that live on. Two `background:` shorthands marked !important on
+small script keeps every moving element on the page on one clock: each pass
+seeks every wave animation (Web Animations API, currentTime = document time
+mod 8s) whenever it is more than 40ms out, so a chip the drawer recreates,
+moves or re-inserts stays in step with the ones that live on. (A first version
+wrote a one-shot animation-delay, which went stale on every re-insertion; the
+seek replaced it the same day.) The upsell card's own SAVE chip is still, by
+request. Two `background:` shorthands marked !important on
 .nc-lsave-off (pg-drawer:48, nc-cartfix:172) pinned its background-position
 and would have blocked the animation; both are `background-image` now.
 pg-gift-purple, which pinned the gift pill still, is retired (empty section,
