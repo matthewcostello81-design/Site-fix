@@ -1,3 +1,22 @@
+# "Best Value" and "Best Deal" follow the live prices
+
+By request: "based on pricing, not colour". The labels were fixed words; now
+they are worked out from the prices on every load and every picker change,
+so a reprice in the admin moves or removes them by itself. Percentages are
+compared as whole numbers, as the badges print them, so two sizes both at
+"25% OFF" are a tie and neither is labelled.
+
+- `sections/pg-landing.liquid`: the Single tile's storage picker labels the
+  size with the deepest cut against its compare-at "Best Value" (today the
+  128G at 30% against the 64G's 25%).
+- `sections/pg-cart-offer.liquid`: the pack cards' GB picker does the same
+  from the console's live variants.
+- `sections/pg-theme-css.liquid`: the pack whose SAVE % is higher for the
+  sizes picked right now carries "Best Deal" (today the Trio, 38-43%,
+  against the Duo's 32-37%); the Duo carries "Most Popular" when it is not
+  the best deal, the one label that is a claim rather than a calculation; a
+  tie leaves the Trio unlabelled.
+
 # Console pack tiles: "Most Popular" and "Best Deal"; the cart card heals in the same frame
 
 By request ("do it"), on the new theme "128G Best Value (Claude 9-11)":

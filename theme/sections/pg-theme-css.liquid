@@ -201,6 +201,7 @@
      5px 13px; 12px/5px 11px under 600px), the moving purple the chips wear */
   .pgx-duo-ribbon{position:absolute;top:-15px;right:14px;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
   @media (max-width:600px){ .pgx-duo-ribbon{font-size:12px;padding:5px 11px} }
+  .pgx-duo-ribbon:empty{display:none}
   .pgx-duo-head{display:flex;align-items:flex-start;gap:12px}
   .pgx-duo-dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #8B44BE;margin-top:3px;position:relative}
   .pgx-tile.pgx-sel .pgx-duo-dot:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#9B4BC4}
@@ -942,6 +943,27 @@
     });
     return out;
   }
+  /* BEST DEAL, FROM THE PRICES. The pack whose saving against its compare-at
+     is the deeper (for the sizes picked right now, re-read on every change)
+     carries "Best Deal"; the Duo carries "Most Popular" when it is not the
+     best deal (a merchandising claim, the one thing here not computed); a
+     tie labels neither. By request (2026-09-11): "based on pricing". */
+  function labelPacks(){
+    var packs = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile.pgx-duo'));
+    if (!packs.length) return;
+    var best = null, bestPct = 0, tie = false;
+    packs.forEach(function(t){
+      var pc = Math.floor(parseFloat(t.dataset.pgPct || '0') * 100);   /* whole percents, as the SAVE pill prints */
+      if (pc > bestPct){ best = t; bestPct = pc; tie = false; }
+      else if (pc === bestPct && pc > 0 && t !== best) tie = true;
+    });
+    packs.forEach(function(t){
+      var r = t.querySelector('.pgx-duo-ribbon');
+      if (!r) return;
+      var txt = (!tie && t === best) ? 'Best Deal' : (!t.classList.contains('pgx-trio') ? 'Most Popular' : '');
+      if (r.textContent !== txt) r.textContent = txt;
+    });
+  }
   function calc(tile){
     if (!VARS) return;
     /* one picker per console: two on the duo, three on the trio */
@@ -965,6 +987,8 @@
        discount the shopper does not receive. Flooring means the delivered
        percentage always meets or beats the badge, on every configuration. */
     if (dsv && orig > total) dsv.textContent = 'SAVE ' + Math.floor((orig - total) / orig * 100) + '%';
+    tile.dataset.pgPct = orig > total ? String((orig - total) / orig) : '0';
+    labelPacks();
     /* ONE PRICE PER TILE. The per-unit figures went out with the BXGY: there is
        no longer a discounted console and a full-price one, only a pack price,
        so printing a struck price under each unit invented a split that does not
@@ -1012,10 +1036,9 @@
       tile.setAttribute('role', 'radio');
       tile.setAttribute('aria-checked', 'false');
       tile.setAttribute('tabindex', '0');
-      /* one label per pack, opposite the SAVE pill, by request (2026-09-11):
-         the Duo is "Most Popular", the Trio "Best Deal", as the orb ladder
-         already does; the single tile carries none */
-      tile.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon">Most Popular</span>'
+      /* one label per pack, opposite the SAVE pill, by request (2026-09-11);
+         labelPacks() below fills them from the live SAVE % */
+      tile.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon"></span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
         + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
         + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
@@ -1039,7 +1062,7 @@
       trio.setAttribute('aria-checked', 'false');
       trio.setAttribute('tabindex', '0');
       var unit = function(n){ return '<div class="pgx-duo-u"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version ' + n + '">' + opts + '</select></div>'; };
-      trio.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon">Best Deal</span>'
+      trio.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon"></span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
         + '<div class="pgx-duo-t"><b>Trio Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
         + '<div class="pgx-duo-px"><b></b><s></s></div></div>'

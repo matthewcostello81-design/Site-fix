@@ -356,11 +356,12 @@
           <div class="pgx-opt">
             <select data-pgx-size="s1" aria-label="{{ size_opt.name | escape }}">
               {%- for value in size_opt.values -%}
-                {%- comment -%} the 128G is the better buy (twice the storage for $15, and
-                    a deeper cut against its compare-at); the option says so, by request
-                    (2026-09-11). Only this picker: the pack pickers sit three to a row
-                    and a longer option widens every <select> past the tile edge. {%- endcomment -%}
-                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}{% if value contains '128' %} &mdash; Best Value{% endif %}</option>
+                {%- comment -%} labelBest() below appends " -- Best Value" to the size with
+                    the deepest cut against its compare-at, from the live prices, so the
+                    label moves if the pricing does (by request, 2026-09-11). Only this
+                    picker: the pack pickers sit three to a row and a longer option widens
+                    every <select> past the tile edge. {%- endcomment -%}
+                <option value="{{ value | escape }}"{% if value == section.settings.default_size %} selected{% endif %}>{{ value }}</option>
               {%- endfor -%}
             </select>
           </div>
@@ -639,6 +640,30 @@
   function val(name){ var s = sel(name); return s ? s.value : (variants[0] && variants[0].size); }
   function money(c){ return '$' + (c / 100).toFixed(2); }
   var mode = 'single';
+
+  /* BEST VALUE, FROM THE PRICES. The size whose cut against its compare-at is
+     the deepest gets " -- Best Value" on its option in the Single tile's
+     picker; only when it beats every other size outright (a tie labels
+     nothing), and re-read from the live prices on every load, so a reprice
+     in the admin moves or removes the label by itself. */
+  /* whole percents, as the badges print them: two sizes both at "25% OFF"
+     are a tie, whatever the fourth decimal says */
+  function pctOf(v){ return v && v.cap > v.price ? Math.floor((v.cap - v.price) / v.cap * 100) : 0; }
+  function labelBest(){
+    var s1 = sel('s1');
+    if (!s1) return;
+    var best = null, bestPct = 0, tie = false;
+    variants.forEach(function(v){
+      var pc = pctOf(v);
+      if (pc > bestPct){ best = v.size; bestPct = pc; tie = false; }
+      else if (pc === bestPct && pc > 0 && v.size !== best) tie = true;
+    });
+    Array.prototype.forEach.call(s1.options, function(o){
+      var base = o.textContent.replace(/\s+\u2014\s+Best Value$/, '');
+      o.textContent = (!tie && best !== null && o.value === best) ? base + ' \u2014 Best Value' : base;
+    });
+  }
+  labelBest();
 
   function paint(){
     var v1 = bySize(val('s1'));

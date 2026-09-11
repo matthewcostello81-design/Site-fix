@@ -194,9 +194,22 @@
   var SPARE_CASE = 49640879063268;           /* $13.99 "Spare case" */
   var FREE_CASE  = 49640846426340;           /* $0.00 "Free with console" */
   var SIZE_OF = {49622431858916: '64', 49622431826148: '128'};   /* console variant -> GB */
-  /* the 128GB is the better buy (twice the storage for $15 more, a deeper cut
-     against its compare-at): the picker says so, by request (2026-09-11) */
-  var GB_OPTS = [{id: '64', t: '64GB'}, {id: '128', t: '128GB \u2014 Best Value'}];
+  /* the GB picker's options, "Best Value" on the size whose cut against its
+     compare-at is the deepest, from the console's live prices (by request,
+     2026-09-11: from the pricing, not a fixed label); a tie labels nothing */
+  function gbOpts(con){
+    var pct = {};
+    (con ? con.variants : []).forEach(function(v){
+      var sz = SIZE_OF[v.id]; if (!sz) return;
+      pct[sz] = v.cap > v.price ? Math.floor((v.cap - v.price) / v.cap * 100) : 0;   /* whole percents, as printed */
+    });
+    var best = null, bestPct = 0, tie = false;
+    Object.keys(pct).forEach(function(sz){
+      if (pct[sz] > bestPct){ best = sz; bestPct = pct[sz]; tie = false; }
+      else if (pct[sz] === bestPct && bestPct > 0 && sz !== best) tie = true;
+    });
+    return ['64', '128'].map(function(sz){ return {id: sz, t: sz + 'GB' + (!tie && sz === best ? ' \u2014 Best Value' : '')}; });
+  }
   var CASE_IMG = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120';
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
@@ -315,7 +328,7 @@
             title: isDuo ? 'Add a 2nd R36S: the Duo Pack' : 'Add a 3rd R36S: the Trio Pack',
             sub: isDuo ? 'Two consoles, one price' : 'Three consoles, one price',   /* no "+$" figure here, by request */
             was: withPick.cap || withPick.price, now: withPick.price,
-            picks: [{label: 'GB for the new one', options: GB_OPTS, value: pickDefault}],
+            picks: [{label: 'GB for the new one', options: gbOpts(con), value: pickDefault}],
             btn: 'Upgrade to the ' + (isDuo ? 'Duo' : 'Trio') + ' Pack',
             pack: pack
           };
@@ -340,8 +353,8 @@
     }
     /* a Duo Pack (and nothing else on the console side): the Trio holding it plus one */
     if (t.duoUnits === 1 && !t.trioUnits && !t.conUnits){
-      return Promise.all([product(H.duo), product(H.trio)]).then(function(r){
-        var duo = r[0], trio = r[1]; if (!duo || !trio) return null;
+      return Promise.all([product(H.duo), product(H.trio), product(H.con)]).then(function(r){
+        var duo = r[0], trio = r[1], con = r[2]; if (!duo || !trio) return null;
         var line = t.duo[0], sizes = sizesOfPack(line.title || line.product_title || '');
         duo.variants.forEach(function(v){ if (String(v.id) === String(line.variant_id)) sizes = sizesOfPack(v.title); });
         if (sizes.length !== 2) return null;
@@ -353,7 +366,7 @@
           title: 'Add a 3rd R36S: the Trio Pack',
           sub: 'Three consoles, one price',
           was: withPick.cap || withPick.price, now: withPick.price,
-          picks: [{label: 'GB for the new one', options: GB_OPTS, value: pickDefault}],
+          picks: [{label: 'GB for the new one', options: gbOpts(con), value: pickDefault}],
           btn: 'Upgrade to the Trio Pack', pack: trio
         };
       });
