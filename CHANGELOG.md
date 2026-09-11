@@ -23,6 +23,10 @@ console first:
   9-11 a single orb is offered plainly, since no free-orb promise is honest
   there (Buy 5 Get 4 is once per order in the admin).
 
+Follow-ups the same day: the card is more compact (smaller type, 30px
+pickers three to a row, 38px button), the "FREE" picker labels are hot pink,
+and the orb offers carry no sub-line since the title already states the deal.
+
 Pack upgrades take the single line out by key and put the matching pack
 variant in, so the cart charges the pack price the card printed; every write
 checks r.ok and a failed removal never proceeds to an add. Prices and

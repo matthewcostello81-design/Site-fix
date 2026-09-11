@@ -77,8 +77,8 @@
     display:grid !important;
     grid-template-columns:48px minmax(0,1fr);
     grid-auto-flow:row;
-    column-gap:11px;row-gap:9px;align-items:center;
-    margin:8px 0 6px;padding:11px 12px 12px;
+    column-gap:10px;row-gap:7px;align-items:center;
+    margin:6px 0 6px;padding:9px 10px 10px;
     border:1px solid rgba(122,47,162,.3);border-radius:14px;
     background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
     box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
@@ -86,17 +86,17 @@
     box-sizing:border-box;
   }
   #cart#cart#cart#cart .pg-offer > img{
-    grid-column:1;width:48px !important;min-width:48px !important;height:48px !important;
+    grid-column:1;width:44px !important;min-width:44px !important;height:44px !important;
     flex:none;border-radius:11px !important;object-fit:cover !important;background:#efe4f8;display:block !important;
   }
   #cart#cart#cart#cart .pg-offer-t{grid-column:2;min-width:0}
   #cart#cart#cart#cart .pg-offer-t b{
-    display:block;font-size:14px;line-height:1.25;color:#3B1553;font-weight:800;
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800;
     white-space:normal;overflow-wrap:anywhere;
   }
   #cart#cart#cart#cart .pg-offer-px{
     display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;
-    margin-top:3px;font-size:14px;font-weight:800;color:#7A2FA2;line-height:1.3;
+    margin-top:2px;font-size:13.5px;font-weight:800;color:#7A2FA2;line-height:1.3;
   }
   #cart#cart#cart#cart .pg-offer-px s{color:#8a8a8a;font-weight:400;font-size:12px;white-space:nowrap}
   #cart#cart#cart#cart .pg-offer-sv{
@@ -105,27 +105,28 @@
     color:#fff;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
     background-size:240% 240%;animation:pgWave 8s ease-in-out infinite;
   }
-  #cart#cart#cart#cart .pg-offer-t small{display:block;font-size:11.5px;line-height:1.3;color:#6E5C80;margin-top:2px}
+  #cart#cart#cart#cart .pg-offer-t small{display:block;font-size:11px;line-height:1.3;color:#6E5C80;margin-top:2px}
 
   /* the pickers: one per unit, in a row that wraps; the free ones say so */
-  #cart#cart#cart#cart .pg-offer-picks{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  #cart#cart#cart#cart .pg-offer-picks{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:5px;min-width:0}
   #cart#cart#cart#cart .pg-offer-picks:empty{display:none}
   #cart#cart#cart#cart .pg-offer-pick{
-    flex:1 1 calc(33.333% - 4px);min-width:96px;max-width:100%;
-    display:flex;flex-direction:column;gap:2px;min-width:0;
+    flex:1 1 calc(33.333% - 4px);max-width:100%;
+    display:flex;flex-direction:column;gap:1px;min-width:0;
   }
   #cart#cart#cart#cart .pg-offer-pick span{
-    font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7A2FA2;padding-left:2px;
+    font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7A2FA2;padding-left:2px;
   }
-  #cart#cart#cart#cart .pg-offer-pick span.is-free{color:#1F8A5B}
+  /* the free ones pop: hot pink on the lavender card, by request */
+  #cart#cart#cart#cart .pg-offer-pick span.is-free{color:#E6007E}
   #cart#cart#cart#cart .pg-offer-pick select{
     -webkit-appearance:none;-moz-appearance:none;appearance:none;
     width:100% !important;max-width:100% !important;min-width:0 !important;box-sizing:border-box !important;
-    height:34px !important;min-height:0 !important;padding:0 26px 0 9px !important;margin:0 !important;
+    height:30px !important;min-height:0 !important;padding:0 24px 0 8px !important;margin:0 !important;
     border:1.5px solid rgba(122,47,162,.35) !important;border-radius:9px !important;
     background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center !important;
-    color:#3B1553 !important;font-family:inherit !important;font-size:12.5px !important;font-weight:700 !important;
-    line-height:32px !important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
+    color:#3B1553 !important;font-family:inherit !important;font-size:12px !important;font-weight:700 !important;
+    line-height:28px !important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
     box-shadow:none !important;
   }
   #cart#cart#cart#cart .pg-offer-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
@@ -134,13 +135,13 @@
   #cart#cart#cart#cart .pg-offer-add{
     grid-column:1 / -1;display:flex !important;align-items:center;justify-content:center;gap:8px;
     width:100% !important;min-width:0 !important;max-width:none !important;margin:0 !important;
-    min-height:42px !important;padding:0 14px !important;
+    min-height:38px !important;padding:0 12px !important;
     border:0 !important;border-radius:11px !important;
     background-color:#7A2FA2 !important;
     background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
     background-size:240% 240% !important;animation:pgWave 8s ease-in-out infinite !important;
     color:#fff !important;-webkit-text-fill-color:#fff !important;
-    font-family:inherit !important;font-size:13.5px !important;font-weight:800 !important;
+    font-family:inherit !important;font-size:12.5px !important;font-weight:800 !important;
     letter-spacing:.06em !important;text-transform:uppercase !important;line-height:1 !important;
     box-shadow:0 12px 26px -12px rgba(139,68,190,.7) !important;cursor:pointer;
     transition:filter .15s ease,opacity .15s ease;
@@ -154,10 +155,10 @@
   /* iPhone 13 (390) and the compact block pg-cart-timer stamps under 414px:
      a touch tighter, and never narrower than the 34px touch height */
   @media (max-width:414px){
-    #cart#cart#cart#cart .pg-offer{padding:10px 10px 11px;column-gap:10px;row-gap:8px}
-    #cart#cart#cart#cart .pg-offer-t b{font-size:13.5px}
-    #cart#cart#cart#cart .pg-offer-px{font-size:13.5px}
-    #cart#cart#cart#cart .pg-offer-pick{flex-basis:calc(50% - 3px);min-width:88px}
+    #cart#cart#cart#cart .pg-offer{padding:8px 9px 9px;column-gap:9px;row-gap:6px}
+    #cart#cart#cart#cart .pg-offer-t b{font-size:13px}
+    #cart#cart#cart#cart .pg-offer-px{font-size:13px}
+    #cart#cart#cart#cart .pg-offer-pick{flex-basis:calc(33.333% - 4px)}
   }
   /* the pinned pane, if a stale pg-cart-mobile ever seats the slot there */
   #cart#cart#cart#cart .sticky-in-panel .pg-offer{margin:0 0 6px}
