@@ -84,7 +84,9 @@
   .pgh-card-t{font-size:16px;font-weight:500;margin:14px 0 4px;color:#1c1c1c}
   .pgh-card:hover .pgh-card-t{text-decoration:underline;text-underline-offset:4px}
   .pgh-card-p{font-size:16px;font-weight:600;color:var(--p)}
-  .pgh-card-p s{color:#666;font-weight:400;font-size:14px;margin-right:8px}   /* #666, not #8a8a8a: "more visible", by request (2026-09-11) */
+  /* the page is dark (pg-dark, footer-group): .82 white, not a grey, or the
+     struck price vanishes into the card -- "hard to see", by report (2026-09-11) */
+  html body #pgh .pgh-card-p s,.pgh-card-p s{color:rgba(255,255,255,.82) !important;font-weight:500 !important;font-size:14px;margin-right:8px;text-decoration-color:rgba(255,255,255,.7)}
 
   /* Split banner */
   .pgh-split{max-width:1280px;margin:64px auto 0;display:grid;grid-template-columns:44% 1fr;border-radius:20px;overflow:hidden;box-shadow:0 30px 70px -45px rgba(18,4,28,.6)}

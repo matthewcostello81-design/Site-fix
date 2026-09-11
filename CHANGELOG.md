@@ -1,3 +1,28 @@
+# The ADD TO CART wave was pinned by !important background shorthands; home struck price readable
+
+By report: "add to cart buttons on the homepage are not dynamic and the
+crossed out price is hard to see."
+
+In the cascade an !important declaration beats a keyframe animation, and a
+`background:` shorthand marked !important sets background-position along
+with the colour. pgShiftT animates background-position, so every such rule
+on a waving button held its gradient still, whatever was stamped inline
+(inline stamps set the image and size, never the position). Measured in a
+harness carrying the base theme CSS and the full footer group: with pg-dark
+as it was, the home button's background-position sat at 0% 0% across the
+run; with the fix it advances 20% -> 98% over 2.4s, in step with the
+product page's main button.
+
+- `sections/pg-dark.liquid`: the home card button's fallback and hover use
+  background-color, not the shorthand.
+- `sections/pg-dark-atc.liquid`, `sections/pg-landing.liquid`,
+  `sections/pg-theme-css.liquid`: the product page's main ADD TO CART
+  (.pgx-atc) had the same pin from three rules (its base fill, the dark
+  skin's fill, and both hovers); all are longhands or a brightness hover
+  now, so pg-theme-css's inline wave runs on it as on the tiles.
+- `sections/pg-home.liquid`: the card's struck price is .82 white at
+  medium weight (the page is dark; #666 vanished into the card).
+
 # Cart offer: the rate read where this store reports it; two review findings
 
 From an adversarial review of the day's diff (three of its five confirmed
