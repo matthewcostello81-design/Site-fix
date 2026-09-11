@@ -201,26 +201,28 @@
      so a card that printed the catalogue price overstated what the shopper
      would pay; by request (2026-09-11) every card prints the net figure and
      says so on a line of its own ("Extra 10% off included"). The admin's 10%
-     is the DEFAULT. Shopify allocates that discount onto every paid line
-     (line_level_discount_allocations, an automatic percentage over all
-     items), and when a cart shows such a rate it replaces the default, so an
-     admin change to the percentage follows on the next read. Absence never
-     zeroes it: a first cut did that, and the live cart printed the gross
-     $135.98 for a Duo Pack the till then charged $122.38 -- "show the best
-     price in the upsell and state the 10% is included in that", by request.
-     The Buy X Get Y allocations are percentage discounts too, but over the
-     entitled item only, and are not counted. */
+     is the DEFAULT. /cart.js reports that discount under
+     cart_level_discount_applications on this store (pg-drawer's savings row
+     reads it there; a first cut of this looked only at the per-line
+     line_level_discount_allocations, found nothing, zeroed the rate and
+     printed the gross $135.98 for a Duo Pack the till then charged $122.38).
+     Both places are read now, and a rate found in either replaces the
+     default, so an admin change to the percentage follows on the next read.
+     Absence never zeroes it: "show the best price in the upsell and state the
+     10% is included in that", by request. The Buy X Get Y discounts are
+     percentages too, but over the entitled item only, and are not counted. */
   var ADMIN_RATE = 0.10;
   var RATE = ADMIN_RATE;
   function readRate(cart){
     var found = null;
+    function take(d){
+      if (!d || d.type !== 'automatic' || d.value_type !== 'percentage' || d.target_selection !== 'all') return;
+      var v = parseFloat(d.value || 0) / 100;
+      if (v > 0 && v < 0.9 && (found === null || v > found)) found = v;
+    }
+    (cart.cart_level_discount_applications || []).forEach(take);
     (cart.items || []).forEach(function(it){
-      (it.line_level_discount_allocations || []).forEach(function(a){
-        var d = a && a.discount_application;
-        if (!d || d.type !== 'automatic' || d.value_type !== 'percentage' || d.target_selection !== 'all') return;
-        var v = parseFloat(d.value || 0) / 100;
-        if (v > 0 && v < 0.9 && (found === null || v > found)) found = v;
-      });
+      (it.line_level_discount_allocations || []).forEach(function(a){ take(a && a.discount_application); });
     });
     return found === null ? ADMIN_RATE : found;
   }
@@ -541,7 +543,10 @@
     var slot = slotFor(c);
     if (!slot) return;
     var want = {};
-    offers.forEach(function(o){ want[o.key] = o; });
+    /* the node cached on the offer is dropped first: a drawer rebuild throws
+       the cards away, and a repaint from lastOffers that still trusted o.el
+       would reuse the detached node and insert nothing */
+    offers.forEach(function(o){ o.el = null; want[o.key] = o; });
     slot.querySelectorAll('.pg-offer').forEach(function(el){
       var k = el.getAttribute('data-offer');
       if (!want[k] || el.classList.contains('is-done')){ el.parentNode.removeChild(el); return; }
@@ -563,6 +568,7 @@
 
   /* ---------------- watching ---------------- */
   var busy = false, again = false, watch = null, lastSig = null, seenSig = null, force = false;
+  var gen = 0;   /* bumped by every write of ours; a read from before the write is discarded */
   function sig(cart){ return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(','); }
   var healSig = null;
   function read(){
@@ -570,9 +576,11 @@
     var c = document.getElementById('cart');
     if (!c) return;
     busy = true;
+    var g = gen;
     clearTimeout(watch);
     watch = setTimeout(function(){ busy = false; }, 8000);
     fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}}).then(function(r){ return r.json(); }).then(function(cart){
+      if (g !== gen) return;   /* fetched before our write landed: the queued read has the real cart */
       var s = sig(cart);
       if (!c.querySelector('.l4ca:not(.in-panel)')){
         /* the drawer shows no line list. With lines in the cart that is the
@@ -664,7 +672,7 @@
          done, and the fresh read swaps it for the next offer in one paint;
          paint() never reuses a done card. lastOffers is dropped so a drawer
          rebuild in between heals to nothing rather than to the stale card. */
-      adding = false; force = true; lastSig = null; lastOffers = null;
+      adding = false; force = true; lastSig = null; lastOffers = null; gen++;
       el.classList.add('is-done');
       btn.textContent = 'Added \u2713';
       read();

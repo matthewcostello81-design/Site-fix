@@ -1,3 +1,23 @@
+# Cart offer: the rate read where this store reports it; two review findings
+
+From an adversarial review of the day's diff (three of its five confirmed
+findings were the home-page cascade problems already fixed above).
+
+`sections/pg-cart-offer.liquid`
+- The extra 10% is read from cart_level_discount_applications as well as the
+  per-line allocations. On this store /cart.js reports it at cart level
+  (pg-drawer's savings row reads it there), which is why the first cut, which
+  looked only at the lines, found nothing. The admin's 10% stays the default;
+  a rate found in either place replaces it, so a change to 15% in the admin
+  reads "Extra 15% off included" on the next read.
+- paint() drops the node cached on each offer before matching: a drawer
+  rebuild throws the cards away, and a repaint from the last offers that
+  still trusted the cached node reused the detached one and inserted nothing,
+  leaving the cart without a card until it next changed.
+- A read that went out before one of our writes landed is discarded (a
+  generation counter): it could repaint the just-used offer as a live card for
+  a second, a window for a double add.
+
 # Cart offer: the pack card reprices as the GB is picked
 
 By report: "the price is not changing when they choose a different GB in the
