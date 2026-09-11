@@ -1,3 +1,18 @@
+# Home cards: button, badge and price in the titles' type
+
+By report: "that font doesn't match our theme font, like the product titles
+on the homepage." Poppins is the theme's heading font and is loaded at
+400-700 on every page, so the family already matched; what read as a foreign
+font was the styling carried over from the product tiles: uppercase, .06em
+tracking and an 800 weight (which renders as 700, the heaviest loaded)
+beside sentence-case 500 titles.
+
+`sections/pg-home.liquid`: the card button keeps the tiles' fill, size,
+corners, arrow and 8s wave, in the titles' type (Poppins 600, sentence case,
+no tracking); the Sale badge keeps the SAVE badge's colours in the same type;
+the price line is 600 untracked (pg-theme-css stamped it 800 with .01em) and
+the struck price 400.
+
 # The ADD TO CART wave was pinned by !important background shorthands; home struck price readable
 
 By report: "add to cart buttons on the homepage are not dynamic and the
