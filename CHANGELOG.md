@@ -1,3 +1,18 @@
+# Tile labels in the corner the SAVE pill is not in
+
+By report: "now I don't see the SAVE % where it was before." The label pill
+was placed top-right on the assumption that pg-r36s-fix (which seats SAVE
+top-left) was loaded; it is not registered anywhere, so on the live tiles
+SAVE sits top-right and the label covered it. The harness had included that
+section, which is why it looked right there.
+
+`sections/pg-theme-css.liquid`: the label pill sits top-left, on SAVE's
+line; at runtime labelPacks() measures which half of the tile the SAVE pill
+is in and puts the label in the other, so the two never overlap whichever
+section positions SAVE. Rendered without pg-r36s-fix at 390 and 430: SAVE
+top-right on every tile, "Most Popular" top-left on the single, "Best Deal"
+top-left on the Trio, the Duo with SAVE alone.
+
 # "Most Popular" goes where the orders put it, as a theme setting
 
 By request: "only where it's earned". The order book since launch: 14
