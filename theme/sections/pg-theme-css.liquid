@@ -961,12 +961,15 @@
      on 2026-09-11 (14 orders held one console, 11 of them the 128G; 3 held
      two; none three) and moved by hand as sales move. It replaces that
      tile's ranking name, except "Best Deal", which is a price fact and
-     stays. EVERY LABEL RIDES INSIDE THE SAVE PILL, side by side with the
-     percent ("BEST DEAL · SAVE 43%"), the way the orb's biggest pack wears
-     its own (pg-tile-copy): by request, 2026-09-11, "copy how the orb has
-     it, side by side", after a first pass that stacked a second ribbon pill
-     under SAVE. The .pgx-duo-ribbon in the pack markup is kept but left
-     empty (the :empty rule hides it), so nothing on this page stacks. */
+     stays. ONLY THE BEST DEAL IS SHOWN, and it rides INSIDE that tile's
+     SAVE pill, side by side with the percent ("BEST DEAL · SAVE 43%"), the
+     way the orb's biggest pack wears its own (pg-tile-copy): by request,
+     2026-09-11, "copy how the orb has it, side by side", after one pass
+     that stacked a second ribbon pill under SAVE and another that labelled
+     every tile ("looks repetitive"). The other tiles wear a plain "SAVE N%".
+     The ranking below still names Great Value / Good Value / Most Popular,
+     but only Best Deal is painted; the .pgx-duo-ribbon in the pack markup is
+     kept but left empty (the :empty rule hides it), so nothing stacks. */
   var MOST_POPULAR = '{{ section.settings.most_popular | default: "single" }}';
   var RANK_NAMES = ['Best Deal', 'Great Value', 'Good Value'];
   window.pgLabelPacks = labelPacks;
@@ -1003,11 +1006,12 @@
        The first pass moves the attribute off the pill onto the new span and
        carries the pill's current text with it; every later pass only writes
        a label that differs, so the 2.5s beat is silent when nothing changed.
-       The label is uppercased in the text itself (pg-save-badge uppercases
-       the pill visually anyway) so anything that reads the pill's text, such
-       as pg-tile-copy's bottom bar, gets the orb's "BEST DEAL · SAVE 43%".
-       A tile with no pill (no compare-at, so nothing to save) keeps the old
-       ribbon as its fallback. */
+       Only the Best Deal tile gets a label; every other tile's label span
+       stays empty, so its pill reads a plain "SAVE N%" like the orb's other
+       rungs. The label is uppercased in the text itself (pg-save-badge
+       uppercases the pill visually anyway) so anything that reads the pill's
+       text, such as pg-tile-copy's bottom bar, gets the orb's exact
+       "BEST DEAL · SAVE 43%". The ribbon is always left empty. */
     ranked.forEach(function(e){
       var pill = e.t.querySelector('.pgx-lad-badge');
       if (pill){
@@ -1028,10 +1032,10 @@
           lbl.className = 'pgx-pill-lbl';
           pill.insertBefore(lbl, pill.firstChild);
         }
-        var want = e.txt ? e.txt.toUpperCase() + ' \u00B7 ' : '';
+        var want = e.txt === 'Best Deal' ? 'BEST DEAL \u00B7 ' : '';
         if (lbl.textContent !== want) lbl.textContent = want;
       }
-      put(e.t, pill ? '' : e.txt);
+      put(e.t, '');
     });
     function put(t, txt){
       var r = t.querySelector('.pgx-duo-ribbon');
@@ -1672,7 +1676,7 @@
 </script>
 {% schema %}
 {"name": "PG Theme CSS", "settings": [
-  {"type": "select", "id": "most_popular", "label": "'Most Popular' pill (console tiles)", "info": "Set from the order book; the single console led 14 orders to 3 at 2026-09-11. Best Deal is worked out from the prices and never stacks with it.",
+  {"type": "select", "id": "most_popular", "label": "'Most Popular' pill (console tiles)", "info": "Retired 2026-09-11: only the Best Deal label is shown on the console tiles now (inside the SAVE pill, like the orb), so this setting paints nothing. Kept so saved settings stay valid.",
    "options": [{"value": "none", "label": "None"}, {"value": "single", "label": "Single console"}, {"value": "duo", "label": "Duo Pack"}, {"value": "trio", "label": "Trio Pack"}], "default": "single"}
 ]}
 {% endschema %}
