@@ -1,3 +1,47 @@
+# R36S page: Best Deal folded into the SAVE pill, orb-style
+
+## Problem
+On the R36S product page (`/products/handheld-game-console`) the tile with the
+deepest saving (the Trio Pack) wore its "Best Deal" as a second pill stacked
+under the SAVE pill. The owner wants it the way the Crystal Legends Orb page
+shows it: one pill on the tile's top edge reading "BEST DEAL · SAVE 43%".
+
+## Cause
+Two tile builders, two treatments. The orb's tiles come from pgLadder plus
+`sections/pg-tile-copy.liquid`, which writes the label INTO the SAVE pill of the
+biggest pack. The R36S tiles come from the pgDuo script in
+`sections/pg-theme-css.liquid`, whose `labelPacks()` ranks the tiles from their
+live SAVE % and writes every rank name ("Best Deal", "Great Value", "Good
+Value", or the "Most Popular" section setting) into a separate
+`.pgx-duo-ribbon` pill under the SAVE pill.
+
+## Fix (`sections/pg-theme-css.liquid`, pgDuo block only)
+- `labelPacks()`: the tile ranked "Best Deal" now has its SAVE pill rewritten to
+  "BEST DEAL · SAVE N%" (N is the floored percent the pill already showed) and
+  its ribbon left empty, which the existing `:empty` rule hides and `put()`
+  answers by lifting the price block back up. Every other tile keeps its
+  ribbon. A tile that loses the rank on a repricing has the prefix stripped and
+  keeps its number, so the single's pill (rewritten by pg-case-mobile on its
+  own 250ms beat) is never fought over.
+- `build()`: once the tiles exist, the existing 2.5s beat re-runs
+  `labelPacks()` (idempotent: it writes only what differs), and `labelPacks()`
+  runs once more right after the single's SAVE pill is created so every tile
+  carries its label on the first paint.
+
+Verified offline by running the real pgDuo script in jsdom against a mock R36S
+page with the live prices: the trio reads "BEST DEAL · SAVE 38%" at 64x3 and
+"BEST DEAL · SAVE 43%" at 128x3 with no ribbon; the duo keeps "SAVE 32-37%" +
+Great Value; the single keeps "SAVE 25%" + Most Popular. Re-ranking on a
+repricing, prefix stripping, and idempotence across the 2.5s beat all hold.
+The storefront is not reachable from this environment, so no screenshot.
+
+## Applied to
+Shopify draft theme 163875881188 ("128G Best Value (Claude 9-11)") on shop
+`v9fqfa-bd.myshopify.com` via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-theme-css.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
