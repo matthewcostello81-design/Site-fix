@@ -1,3 +1,20 @@
+# "Most Popular" goes where the orders put it, as a theme setting
+
+By request: "only where it's earned". The order book since launch: 14
+orders held one console (11 of them the 128G), 3 held two (two Duo Packs
+and one pair of singles), none held three. The Duo had carried "Most
+Popular" unearned.
+
+`sections/pg-theme-css.liquid`: "Most Popular" is a section setting
+(Customize > footer group > PG Theme CSS > 'Most Popular' pill: none /
+single / Duo / Trio), defaulting to the single console, and moved by hand
+as sales move since the browser cannot see orders. It never stacks with
+"Best Deal", which stays computed from the prices (the Trio today). The
+label is re-seated on every tick, so a tile rebuild by another section
+does not lose it. Tested: single "Most Popular" + Trio "Best Deal" + Duo
+blank on today's prices; Duo takes "Best Deal" and the Trio goes blank if
+its cut is ever the deeper; a tie labels no pack.
+
 # "Best Value" and "Best Deal" follow the live prices
 
 By request: "based on pricing, not colour". The labels were fixed words; now

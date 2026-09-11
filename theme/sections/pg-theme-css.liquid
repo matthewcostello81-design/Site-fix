@@ -882,7 +882,7 @@
     var target = tiles[0];
     if (bs.nextElementSibling !== target && target.parentElement) target.parentElement.insertBefore(bs, target);
   }
-  function tick(){ put(); subWhite(); paint(); paintNews(); killUsdc(); moveQuote(); cardAtc(); titleStars(); tilePaint(); accPaint(); bsFix(); }
+  function tick(){ put(); subWhite(); paint(); paintNews(); killUsdc(); moveQuote(); cardAtc(); titleStars(); tilePaint(); accPaint(); bsFix(); labelPacks(); }
   /* The selected tile's purple border is stamped INLINE by tilePaint, which
      used to run only on the 1600ms interval - so a click showed its highlight
      up to 1.6s late (the stale inline border-color outranked the .pgx-sel
@@ -945,24 +945,40 @@
   }
   /* BEST DEAL, FROM THE PRICES. The pack whose saving against its compare-at
      is the deeper (for the sizes picked right now, re-read on every change)
-     carries "Best Deal"; the Duo carries "Most Popular" when it is not the
-     best deal (a merchandising claim, the one thing here not computed); a
-     tie labels neither. By request (2026-09-11): "based on pricing". */
+     carries "Best Deal"; a tie labels neither. By request (2026-09-11):
+     "based on pricing".
+
+     MOST POPULAR, FROM THE ORDERS. It cannot be computed in the browser, so
+     it is a section setting (Customize > footer > PG Theme CSS), set from
+     the order book and moved by hand as sales move. Set to the single
+     console on 2026-09-11: since launch 14 orders held one console (11 of
+     them the 128G), 3 held two, none held three -- the Duo had carried the
+     label unearned. "Only where it's earned", by request. A tile that is
+     the best deal keeps that label; the two never stack. */
+  var MOST_POPULAR = '{{ section.settings.most_popular | default: "single" }}';
   function labelPacks(){
+    var onR36 = location.pathname.indexOf('/products/handheld-game-console') !== -1;
     var packs = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile.pgx-duo'));
-    if (!packs.length) return;
+    var single = onR36 ? document.querySelector('#pgx .pgx-tile[data-pgx-tile="single"]') : null;
+    if (!packs.length && !single) return;
     var best = null, bestPct = 0, tie = false;
     packs.forEach(function(t){
       var pc = Math.floor(parseFloat(t.dataset.pgPct || '0') * 100);   /* whole percents, as the SAVE pill prints */
       if (pc > bestPct){ best = t; bestPct = pc; tie = false; }
       else if (pc === bestPct && pc > 0 && t !== best) tie = true;
     });
-    packs.forEach(function(t){
+    var mp = null;
+    if (MOST_POPULAR === 'single') mp = single;
+    else if (MOST_POPULAR === 'duo') mp = packs.filter(function(t){ return !t.classList.contains('pgx-trio'); })[0] || null;
+    else if (MOST_POPULAR === 'trio') mp = packs.filter(function(t){ return t.classList.contains('pgx-trio'); })[0] || null;
+    function put(t, txt){
       var r = t.querySelector('.pgx-duo-ribbon');
-      if (!r) return;
-      var txt = (!tie && t === best) ? 'Best Deal' : (!t.classList.contains('pgx-trio') ? 'Most Popular' : '');
+      if (!r && !txt) return;
+      if (!r){ r = document.createElement('span'); r.className = 'pgx-duo-ribbon'; t.insertBefore(r, t.firstChild); }
       if (r.textContent !== txt) r.textContent = txt;
-    });
+    }
+    packs.forEach(function(t){ put(t, (!tie && t === best) ? 'Best Deal' : (t === mp ? 'Most Popular' : '')); });
+    if (single) put(single, mp === single ? 'Most Popular' : '');
   }
   function calc(tile){
     if (!VARS) return;
@@ -1576,7 +1592,10 @@
 })();
 </script>
 {% schema %}
-{"name": "PG Theme CSS", "settings": []}
+{"name": "PG Theme CSS", "settings": [
+  {"type": "select", "id": "most_popular", "label": "'Most Popular' pill (console tiles)", "info": "Set from the order book; the single console led 14 orders to 3 at 2026-09-11. Best Deal is worked out from the prices and never stacks with it.",
+   "options": [{"value": "none", "label": "None"}, {"value": "single", "label": "Single console"}, {"value": "duo", "label": "Duo Pack"}, {"value": "trio", "label": "Trio Pack"}], "default": "single"}
+]}
 {% endschema %}
 
 
