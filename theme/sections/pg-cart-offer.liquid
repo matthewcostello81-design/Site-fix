@@ -259,7 +259,7 @@
             handle: handle, packSizes: sizes, lines: t.con,
             img: thumb(con.image),
             title: isDuo ? 'Add a 2nd R36S: the Duo Pack' : 'Add a 3rd R36S: the Trio Pack',
-            sub: (isDuo ? 'Two consoles, one price' : 'Three consoles, one price') + ' — ' + money(Math.max(0, addOne - extra)) + ' less than adding it alone',
+            sub: isDuo ? 'Two consoles, one price' : 'Three consoles, one price',   /* no "+$" figure here, by request */
             was: withPick.cap || withPick.price, now: withPick.price,
             picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
             btn: 'Upgrade to the ' + (isDuo ? 'Duo' : 'Trio') + ' Pack',
@@ -295,7 +295,7 @@
           kind: 'pack', key: 'pack:' + H.trio + ':' + sizes.join('|'), handle: H.trio, packSizes: sizes, lines: t.duo,
           img: thumb(withPick.img || trio.image),
           title: 'Add a 3rd R36S: the Trio Pack',
-          sub: 'Three consoles, one price — +' + money(withPick.price - line.line_price) + ' for the third',
+          sub: 'Three consoles, one price',
           was: withPick.cap || withPick.price, now: withPick.price,
           picks: [{label: 'GB for the new one', options: [{id: '64', t: '64GB'}, {id: '128', t: '128GB'}], value: pickDefault}],
           btn: 'Upgrade to the Trio Pack', pack: trio
