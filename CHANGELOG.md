@@ -1,3 +1,17 @@
+# Tile labels seated beside the SAVE pill, measured from it
+
+By report: "you stacked the Best Deal and those boxes on top of the %."
+The corner-based placement still collided on the live tiles.
+
+`sections/pg-theme-css.liquid`: the label pill is seated 8px inboard of the
+SAVE pill on its own line, from SAVE's computed offsets, and re-seated every
+tick, so the two cannot overlap whichever section positions SAVE. One trap
+on the way: an absolutely positioned element reports resolved pixels for
+both left and right (never 'auto'), so the side SAVE hangs from is the one
+with the smaller offset. Measured in a harness that loads the sections as
+the page does: no overlap, 8px gap, same line, on the single and the Trio
+at 390 and 430; the Duo carries SAVE alone.
+
 # Tile labels in the corner the SAVE pill is not in
 
 By report: "now I don't see the SAVE % where it was before." The label pill

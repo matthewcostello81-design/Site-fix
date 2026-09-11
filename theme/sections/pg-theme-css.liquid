@@ -196,15 +196,14 @@
      kissing the tile above (measured 0px), so desktop gets 16. Was 26. */
   .pgx-tile.pgx-duo{position:relative;margin-top:16px}
   @media (max-width:600px){ .pgx-tile.pgx-duo{margin-top:12px} }
-  /* the tile label, the SAVE pill's twin in the OTHER top corner: SAVE sits
-     top-right on these tiles (the rule above; pg-r36s-fix, which moved it
-     left, is not registered), so this one sits top-left, on the same line
-     and at the same size (pg-save-badge: 12.5px/800, 5px 13px; 12px/5px 11px
-     under 600px), in the moving purple the chips wear. A first cut put it
-     top-right too and covered the SAVE pill ("now I don't see the save %").
-     labelPacks() re-checks at runtime and flips it if a later section ever
-     moves SAVE to the left. */
-  .pgx-duo-ribbon{position:absolute;top:-13px;left:14px;right:auto;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
+  /* the tile label, BESIDE the SAVE pill: labelPacks() reads the SAVE pill's
+     own top/right (or left) and seats this one 8px inboard of it on the same
+     line, so the two cannot overlap whatever positions SAVE ("you stacked the
+     best deal on top of the %", by report, after a corner-based placement
+     did exactly that). Same size as SAVE (pg-save-badge: 12.5px/800, 5px 13px;
+     12px/5px 11px under 600px), in the moving purple the chips wear. The
+     static corner below only applies while there is no SAVE pill to sit by. */
+  .pgx-duo-ribbon{position:absolute;top:-13px;right:14px;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
   @media (max-width:600px){ .pgx-duo-ribbon{font-size:12px;padding:5px 11px} }
   .pgx-duo-ribbon:empty{display:none}
   .pgx-duo-head{display:flex;align-items:flex-start;gap:12px}
@@ -981,18 +980,31 @@
       if (!r && !txt) return;
       if (!r){ r = document.createElement('span'); r.className = 'pgx-duo-ribbon'; t.insertBefore(r, t.firstChild); }
       if (r.textContent !== txt) r.textContent = txt;
-      /* the corner the SAVE pill is NOT in: measured, so the two never
-         overlap whichever section positions SAVE */
+      /* beside the SAVE pill, 8px inboard of it on its own line: read from
+         SAVE's computed offsets, so the two never overlap whichever section
+         positions SAVE, and re-read every tick */
       var b = t.querySelector('.pgx-lad-badge');
-      if (txt && b){
-        var br = b.getBoundingClientRect(), tr = t.getBoundingClientRect();
-        if (br.width && tr.width){
-          var saveOnRight = (br.left + br.width / 2) > (tr.left + tr.width / 2);
-          var side = saveOnRight ? 'left' : 'right';
-          if (r.dataset.pgSide !== side){
-            r.dataset.pgSide = side;
-            r.style.setProperty(side, '14px', 'important');
-            r.style.setProperty(saveOnRight ? 'right' : 'left', 'auto', 'important');
+      if (txt && b && b.offsetWidth){
+        var cs = getComputedStyle(b), gap = 8, w = b.offsetWidth;
+        var top = cs.top, key;
+        /* an absolutely positioned pill reports resolved pixels for BOTH left
+           and right, never 'auto': the side it hangs from is the smaller one */
+        var offR = parseFloat(cs.right), offL = parseFloat(cs.left);
+        if (!(offR > offL)){                                    /* SAVE hangs from the right */
+          key = 'r:' + Math.round(parseFloat(cs.right) + w + gap) + ':' + top;
+          if (r.dataset.pgSeat !== key){
+            r.dataset.pgSeat = key;
+            r.style.setProperty('right', Math.round(parseFloat(cs.right) + w + gap) + 'px', 'important');
+            r.style.setProperty('left', 'auto', 'important');
+            r.style.setProperty('top', top, 'important');
+          }
+        } else {                                                /* SAVE hangs from the left */
+          key = 'l:' + Math.round(parseFloat(cs.left) + w + gap) + ':' + top;
+          if (r.dataset.pgSeat !== key){
+            r.dataset.pgSeat = key;
+            r.style.setProperty('left', Math.round(parseFloat(cs.left) + w + gap) + 'px', 'important');
+            r.style.setProperty('right', 'auto', 'important');
+            r.style.setProperty('top', top, 'important');
           }
         }
       }
