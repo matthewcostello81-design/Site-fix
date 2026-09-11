@@ -1,0 +1,115 @@
+{%- comment -%}
+  PG Orb ATC: the console page's in-tile ADD TO CART, on the orb page.
+
+  On phones the console page (pg-r36s-mobile) puts an ADD TO CART button
+  inside the selected buy tile and hides the theme's bottom button, so the
+  shopper adds from the tile they just chose. The orb page had only the bottom
+  pill, under all four ladder tiles. By request (2026-09-11) the orb gets the
+  same button: the same look, the same slower 8s wave.
+
+  HOW IT ADDS. The button is a SPAN with role=button (the base theme paints
+  real <button>s with a dark ::before overlay) and does NOT carry .pgx-atc, or
+  the page's handlers would fire from the in-tile button itself and
+  double-post. A tap simply clicks #pgx-atc, exactly as the console's does:
+  the ladder's own handler (pg-theme-css, capture phase on document) reads the
+  selected .pgx-lad tile's pickers and posts them, and pg-landing's handler
+  covers a page with no ladder. Nothing about WHAT is added, or how much,
+  changes here.
+
+  SCOPED BY REGISTRATION. This section lives in templates/product.pg-crystal
+  only, so the console page (which has its own) and the wall art page (not
+  asked for) are untouched, and its CSS is off above 900px, where the orb page
+  keeps the bottom pill exactly as before.
+
+  The CSS is pg-r36s-mobile's in-tile rule restated under its own class name;
+  when one changes, change the other.
+{%- endcomment -%}
+<style>
+  /* off at every width except phones, where the rule below turns it on */
+  #pgx .pgx-tile .pg-orb-atc{display:none}
+
+  @media (max-width:900px){
+    /* ---- an ADD TO CART inside the selected tile ---- */
+    #pgx .pgx-tile.pgx-sel .pg-orb-atc{
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      margin-top:12px;padding:15px 12px;
+      border-radius:10px;
+      /* the same moving purple as every ADD TO CART on the site (pgShiftT is
+         declared in pg-theme-css), at the slower 8s every one of them now runs */
+      background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
+      background-color:#7A2FA2;
+      background-size:240% 240%;
+      animation:pgShiftT 8s ease-in-out infinite;
+      color:#FFFFFF;
+      font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+      font-size:15.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+      text-align:center;cursor:pointer;
+      box-shadow:0 14px 30px -12px rgba(139,68,190,.75);
+      -webkit-user-select:none;user-select:none;
+      transition:filter .15s ease,opacity .15s ease;
+    }
+    #pgx .pgx-tile.pgx-sel .pg-orb-atc:hover{filter:brightness(1.1)}
+    #pgx .pgx-tile.pgx-sel .pg-orb-atc.busy{opacity:.6;cursor:default}
+    #pgx .pgx-tile.pgx-sel .pg-orb-atc:after{content:"\2192";font-size:17px;line-height:1}
+    /* the bottom button duplicates the in-tile one on phones. Browsers without
+       :has() simply keep both, which is harmless. */
+    #pgx .pgx-buy:has(.pgx-tile .pg-orb-atc) > .pgx-atc{display:none !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgOrbAtc) return; window.pgOrbAtc = 1;
+
+  /* ---------------- an ADD TO CART in every tile ---------------- */
+
+  function buttons(){
+    /* every tile in the buy column: pg-landing's own tiles (hidden once the
+       ladder is up) and pg-theme-css's four ladder tiles, which share only
+       .pgx-tile. Only the selected tile shows its button (see the CSS). */
+    document.querySelectorAll('#pgx .pgx-buy > .pgx-tile').forEach(function(tile){
+      if (tile.querySelector('.pg-orb-atc')) return;
+      var b = document.createElement('span');
+      b.className = 'pg-orb-atc';
+      b.setAttribute('role', 'button');
+      b.setAttribute('tabindex', '0');
+      b.textContent = 'Add to cart';
+      b.addEventListener('click', function(){
+        if (b.classList.contains('busy')) return;
+        var atc = document.getElementById('pgx-atc');
+        if (!atc) return;
+        b.classList.add('busy');
+        b.textContent = 'Adding…';
+        /* whichever tile is selected owns the click: the ladder's handler
+           posts that tile's picks, pg-landing's posts the single otherwise */
+        atc.click();
+        setTimeout(function(){ b.classList.remove('busy'); b.textContent = 'Add to cart'; }, 2600);
+      });
+      b.addEventListener('keydown', function(e){
+        if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); b.click(); }
+      });
+      tile.appendChild(b);
+    });
+  }
+
+  function boot(){
+    buttons();
+    /* the ladder tiles are built by pg-theme-css up to a few seconds after
+       load (and rebuilt on its own interval if they ever go missing), so new
+       tiles are watched for rather than assumed present at boot; buttons() is
+       idempotent, so the extra passes cost a query each and nothing more */
+    if (window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; buttons(); }, 80);
+      }).observe(document.documentElement, {childList: true, subtree: true});
+    }
+    setInterval(buttons, 1500);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Orb ATC", "settings": []}
+{% endschema %}

@@ -1,0 +1,966 @@
+{%- assign pg_gift_p = all_products['r36s-protective-case-free-gift'] -%}
+{%- assign pg_gift_v = pg_gift_p.variants | first -%}
+{%- assign pg_gift_was = pg_gift_v.compare_at_price | money -%}
+{%- if pg_gift_v.compare_at_price == nil or pg_gift_v.compare_at_price == 0 -%}{%- assign pg_gift_was = '$13.99' -%}{%- endif -%}
+{%- comment -%}
+  PG Cart Tune: the drawer's small corrections.
+
+  THE UPSELL TILE IS pg-unlock, NOT nc-cro. Rounds of work here went into
+  nc-cro's .nc-rec rows while the tile the owner was pointing at -- "Add a 2nd
+  PocketBoy R36" with its SAVE 25% chip and its spare-case tickbox -- is built
+  by pg-unlock, under entirely different class names. That is why it never
+  changed. Both are styled now; the pg-unlock block is the one that matters on
+  the console page.
+
+  NO "YOU SAVED (57%)" ROW. pg-cart-total renders the summary block as
+  Subtotal / Extra 10% Off / You saved (n%), and the theme's own Total sits
+  right beneath it. Per the owner the saved line comes out: the discount rows
+  above it already say what came off, and repeating it as a percentage next to
+  the real total is noise at the moment of paying.
+
+  SHIPPING PROTECTION, BIGGER. In the sticky panel pg-drawer shrinks the whole
+  box hard -- icon 42px to 28px and its svg 22 to 16, title 14.5 to 12.5px, sub
+  12 to 10.5px, price 14.5 to 12.5px -- and it reads as fine print beside the
+  checkout button. All five are stepped back up, the words, the icon and the
+  price together. The padding stays trimmed because the panel is sticky and
+  height added there pushes checkout down.
+
+  THE nc-cro UPSELL ROWS, AND WHY THEY NEVER MOVED EITHER. Every rule for them
+  was `#cart .nc-rec-*` -- one id, one class. nc-cro styles the same elements as
+  `#cart .nc-recs-panel .nc-rec-*` -- one id, TWO classes -- and it loads last,
+  in footer-group, so it won on specificity and on source order. Re-written at
+  `#cart#cart#cart`, the same trick nc-cartfix already uses against nc-cro.
+
+  THE TOP OF THE DRAWER: THE WHITE BAND AND THE FAINT RULES. Two hairlines stack
+  above the first cart line:
+
+    - pg-drawer's .pg-cart-top is the sticky "Your Cart" header, and it carries
+      `border-bottom:1px solid rgba(122,47,162,.16)` -- a faint PURPLE rule;
+    - nc-cartfix's .nc-drawer-top is the logo + "Free shipping on every order"
+      block, `padding:2px 0 14px`, `margin:0 0 8px`, and its own
+      `border-bottom:1px solid rgba(15,42,51,.08)` sitting directly under that
+      pill -- the second rule, and the band of empty white between them.
+
+  Both borders come off and the block is compressed. .pg-bar's border stays:
+  that one outlines the free-shipping progress card, so it reads as a box.
+
+  THE FREE GIFT LINE'S PRICE CORNER, OWNED OUTRIGHT. It should read like every
+  other line: struck old price, $0.00, and the percentage under them in the
+  bottom-right corner. Two earlier attempts failed for the same reason -- they
+  borrowed the theme's own machinery:
+
+    - pg-drawer's pgDeals, which builds .pg-save-chip and the struck price,
+      returns early on any row whose link contains 'free-gift', so neither is
+      ever created on that line;
+    - pg-drawer then hides .pg-save-chip on it as well;
+    - pg-chips DOES reach the row, but writes the word FREE into a chip it
+      finds and its setWas() only rewrites a struck element it finds -- neither
+      creates one;
+    - and borrowing .nc-lsave meant depending on nc-cro to build the cell,
+      pg-chips to fill it, and pg-drawer's :has() rules to agree about it.
+
+  Three owners for one corner, and the struck price never appeared. So the cell
+  is BUILT here -- one owner, nothing to negotiate -- and the theme's own price
+  node on that line is hidden so the corner can never show two. Its STYLING is
+  another matter: the elements also wear `nc-lsave` / `nc-lsave-was` /
+  `nc-lsave-now`, because several of the theme's price rules are scoped to that
+  container. Measured in a bare cell the struck price came out 13.5px/400 against
+  12px/600 in a real one; wearing the classes it now reports identical on every
+  property. Built here, styled by the theme.
+
+  THE FREE GIFT PILL WAS NEVER MIS-ALIGNED -- IT WAS IN THE WRONG CELL. Asked for
+  many times, answered wrongly every time, because the wrong thing was measured.
+  At 390px against the drawer's own grid the title's box starts at x=13 and the
+  pill's at x=285: 272px to its right, hard against the price column. Where the
+  words sat INSIDE the pill was never the question.
+
+  Restating the grid placement was still playing the grid's game, and still came
+  out wrong on the real drawer. pg-chips hit this with its own plaque and wrote
+  down the way out -- host it inside the <h2>, where it is not a grid item at all
+  and "cannot collide with anything the grid places". So the pill is moved into
+  the title in script and rendered as a block-level flex box that hugs its text,
+  starting at the title's own content edge. Measured after: on its own line,
+  7px in from the R of R36S, against 272px before. The inline geometry ftFix owns
+  (width, text-indent) is still taken back in script -- inline !important cannot
+  be beaten from a stylesheet.
+
+  ONE PURPLE. The SAVE 100% chip's colour is settled in pg-gift-purple, which
+  pins it to the paint the theme's own pills sit at. See that file: the gradient
+  was always identical, and what differed was that pgDeals re-creates its chips
+  on every drawer rebuild (restarting their animation near 0%) while this one is
+  created once and left alone, so it was the only pill actually sweeping.
+
+  THE $0.00 WAS IN THE WRONG FACE. pg-theme-css puts every other line's price in
+  Poppins by naming it: `#cart .nc-lsave-now{font-family:'Poppins',... }`.
+  .pg-gift-now was not in that selector. Rather than copy the declaration and
+  then have to copy the next one, the figures now carry `nc-lsave-was` /
+  `nc-lsave-now` alongside their own classes, so the theme styles them itself.
+
+  A CASE FOR EVERY CONSOLE. Owner's rule: the spare-case offer covers every
+  console in the cart that does not already have a case, the free one included.
+  Three consoles and one free case means TWO spares.
+
+  pg-unlock's accRow() answers a different question -- (totalQty + need) minus
+  PAID cases -- which counts consoles not bought yet and ignores the free case.
+  An earlier version here tried to nudge pg-unlock into recomputing its own
+  figure by removing the row, which cannot help when the formula is the wrong
+  one and costs a visible rebuild on every cart change. That is gone; the row's
+  three stated values (data-q, the label, the price pair) are written directly,
+  each only when it differs.
+
+  THE SPARE CASE LINE, SLIGHTLY BIGGER. Its title steps from the drawer's
+  16.5px/700 to 17.5px/800, scoped to that product's rows and excluding the gift
+  line, which is deliberately the thinner module.
+
+  WHY pg-gift-fix IS GONE. It added the free case itself. So does pg-giftguard,
+  which already owned that job — pg-drawer's own giftSync was disabled in favour
+  of it, with a comment saying exactly why: "re-enabling this add would mean TWO
+  owners racing to add the same gift and a cart that intermittently holds two of
+  them. One owner." pg-gift-fix made a third owner, on its own clock, each
+  refreshing the drawer after its own add. That is the cart glitching, and the
+  second case. Deleted, not patched.
+{%- endcomment -%}
+<style>
+  /* the saved-percent row in the drawer's total block */
+  #cart .pg-tot-r.pg-tot-saved,
+  body.template-cart .pg-tot-r.pg-tot-saved{display:none !important}
+
+  /* SHIPPING PROTECTION, BIGGER — WORDS, ICON AND PRICE. */
+  #cart .sticky-in-panel .pg-sp{padding:8px 11px !important;gap:11px !important}
+  #cart .sticky-in-panel .pg-sp-ic{width:36px !important;height:36px !important}
+  #cart .sticky-in-panel .pg-sp-ic svg{width:21px !important;height:21px !important;stroke-width:2 !important}
+  #cart .sticky-in-panel .pg-sp-t b{font-size:15px !important;line-height:1.2 !important}
+  #cart .sticky-in-panel .pg-sp-t small{font-size:12.5px !important;line-height:1.2 !important;margin-top:1px !important}
+  #cart .sticky-in-panel .pg-sp-price{font-size:15.5px !important;font-weight:800 !important}
+  #cart .pg-sp-ic{width:46px;height:46px}
+  #cart .pg-sp-ic svg{width:25px;height:25px;stroke-width:2}
+  #cart .pg-sp-t b{font-size:16px}
+  #cart .pg-sp-t small{font-size:13px;line-height:1.3}
+  #cart .pg-sp-price{font-size:16px;font-weight:800}
+
+  /* ---------------- nc-cro's .nc-rec upsell rows ---------------- */
+  #cart#cart#cart .nc-recs-panel li.nc-rec{padding:5px 8px !important;min-height:0 !important}
+  #cart#cart#cart .nc-recs-panel ul{gap:7px !important;row-gap:7px !important}
+  #cart#cart#cart .nc-recs-panel .nc-rec-imgw,
+  #cart#cart#cart .nc-recs-panel .nc-rec-imgw img,
+  #cart#cart#cart .nc-rec .nc-rec-imgw{
+    width:64px !important;height:64px !important;min-width:64px !important;flex:0 0 64px !important;
+  }
+  #cart#cart#cart .nc-recs-panel .nc-rec-info{min-width:0 !important;font-size:13.5px !important}
+  #cart#cart#cart .nc-rec-info > h3,
+  #cart#cart#cart .nc-rec-info > h4,
+  #cart#cart#cart .nc-rec-info > b,
+  #cart#cart#cart .nc-rec-info > a,
+  #cart#cart#cart .nc-rec-t,
+  #cart#cart#cart .nc-rec-title{
+    display:block !important;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+    max-width:100% !important;
+  }
+  #cart#cart#cart .nc-rec-price{
+    display:flex !important;align-items:center !important;
+    flex-wrap:nowrap !important;row-gap:0 !important;gap:5px !important;
+    white-space:nowrap !important;min-width:0 !important;margin:1px 0 0 !important;
+  }
+  #cart#cart#cart .nc-rec-price > *{flex:0 0 auto !important;white-space:nowrap !important}
+  #cart#cart#cart .nc-recs-panel .nc-rec-off,
+  #cart#cart#cart .nc-rec-off{
+    white-space:nowrap !important;flex:0 0 auto !important;display:inline-block !important;
+    font-size:11.5px !important;padding:3px 8px !important;line-height:1.3 !important;
+    margin-left:4px !important;letter-spacing:0 !important;
+  }
+  #cart#cart#cart .nc-recs-panel .nc-rec-add,
+  #cart#cart#cart .nc-rec-add{
+    padding:7px 12px !important;font-size:11.5px !important;letter-spacing:.04em !important;
+    border-radius:10px !important;
+  }
+  #cart#cart#cart .nc-recs-panel{margin:0 0 4px !important;padding:0 !important}
+  #cart#cart#cart .nc-recs-panel .nc-recs-h{font-size:14px !important;margin:0 0 4px !important}
+  #cart#cart#cart .cart-upsell h3{font-size:14px !important;margin:0 0 2px !important}
+  #cart#cart#cart .nc-upsell-note{font-size:11px !important;padding:4px 10px !important;margin:2px 0 6px !important}
+  #cart#cart#cart .nc-recs{margin-top:0 !important}
+
+  /* ============ THE REAL IN-CART UPSELL IS pg-unlock, NOT nc-cro ============
+     The tile the owner keeps pointing at -- "Add a 2nd PocketBoy R36",
+     $64.99 / $48.74, SAVE 25%, "Discount applied at checkout", with the
+     "Add a spare case for each console" tickbox under it -- is built by
+     pg-unlock, not by nc-cro's .nc-rec rows.
+
+     NOTE: the wrapping and truncation rules that used to live here for this row
+     were superseded by pg-upsell-fit, which sets them at five ids after
+     measuring the real phone widths. What stays here is the row's size and
+     spacing only. */
+
+  /* the tile: closer to what is above it, and less padding of its own */
+  #cart#cart#cart#cart .pg-unlock{margin:2px 0 4px !important;padding:9px 11px !important;gap:10px !important}
+  #cart#cart#cart#cart .pg-unlock-t{min-width:0 !important}
+  #cart#cart#cart#cart .pg-unlock-t b{font-size:13px !important;line-height:1.25 !important}
+  #cart#cart#cart#cart .pg-unlock-t small{font-size:11px !important;line-height:1.25 !important;margin-top:1px !important}
+  #cart#cart#cart#cart .pg-unlock-px{margin-top:2px !important;line-height:1.2 !important;min-width:0 !important}
+  #cart#cart#cart#cart .pg-unlock-px s{margin-right:0 !important;font-size:11.5px !important}
+  #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{margin:0 !important;font-size:10.5px !important;padding:3px 7px !important}
+  #cart#cart#cart#cart .pg-unlock-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important}
+  #cart#cart#cart#cart .pg-uacc{margin-top:1px !important;padding:5px 8px !important}
+  #cart#cart#cart#cart .pg-uacc-t{font-size:11px !important}
+  #cart#cart#cart#cart .pg-uacc-p{font-size:11.5px !important}
+  /* ---- the standalone case offer, shaped like pg-unlock's own rows ----
+     The container cannot BE .pg-unlock (that file deletes rows it does not
+     recognise), so the box is restated here. Everything inside reuses
+     pg-unlock's class names, whose rules are global, so the type, the price
+     and the button stay identical to the other upsells by construction.
+
+     AND THE DUO PACK UPGRADE ROW IS THE SAME BOX. .pg-duoup (built by duoUp()
+     below) was added with pg-unlock's inner class names, like this row, and
+     with a container and a button class of its own for the same two reasons
+     as here: pg-unlock sweeps containers it does not recognise, and
+     .pg-unlock-add carries pg-unlock's click handler. But neither of its own
+     classes had a single rule, so the row painted as the theme's defaults --
+     thumbnail, copy and a black 120px-minimum <button> stacked as blocks, an
+     italic "+$60.99", no card at all -- directly above a case offer that had
+     all of them (measured on the 9-10c draft, 2026-09-11). Every selector
+     below names both rows, so the two are one design by construction and
+     cannot drift apart again. */
+  #cart .pg-soloff,
+  #cart .pg-duoup{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    margin:10px 0 4px;padding:11px 13px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+  }
+  /* the drawer's own image rules collapse it to width:0 (height still applied,
+     which is how it showed as an empty 46px column), so the box is pinned at
+     four ids with a flex basis rather than a bare width */
+  #cart#cart#cart#cart .pg-soloff img,
+  #cart#cart#cart#cart .pg-duoup img{
+    width:54px !important;min-width:54px !important;height:54px !important;
+    flex:0 0 54px !important;border-radius:11px !important;
+    object-fit:cover !important;background:#efe4f8 !important;display:block !important;
+  }
+  #cart .pg-soloff .pg-soloff-now,
+  #cart .pg-duoup .pg-duoup-now{font-style:normal}
+  /* NOT class pg-unlock-add, and this is why: that class carries pg-unlock's
+     own delegated click handler. Borrowing it for the look meant every tap on
+     this button ALSO ran pg-unlock's add, which read a data-v this row does not
+     have and posted {"id":null,"quantity":1} -- a second, failing cart write on
+     every click, and the drawer refreshing around it. Measured exactly that.
+     Same paint, own class, one handler. */
+  #cart .pg-soloff .pg-soloff-add,
+  #cart .pg-duoup .pg-duoup-add{
+    flex:0 0 auto;
+    display:inline-flex;align-items:center;justify-content:center;
+    min-height:34px;line-height:1;white-space:nowrap;
+    border:0 !important;
+    background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;
+    color:#fff !important;
+    box-shadow:0 10px 22px -12px rgba(139,68,190,.7) !important;
+    border-radius:999px !important;padding:0 16px !important;
+    font-family:inherit;font-weight:800;font-size:12.5px;cursor:pointer;
+    animation:none !important;
+  }
+  /* THE THEME PAINTS ITS OWN DARK OVERLAY ON <button> VIA ::before, WHICH IS
+     WHY THIS RENDERED BLACK. pg-unlock's button carries the identical kill --
+     it was the one line I did not copy across when I stopped borrowing its
+     class. */
+  #cart .pg-soloff .pg-soloff-add::before,
+  #cart .pg-soloff .pg-soloff-add::after,
+  #cart .pg-duoup .pg-duoup-add::before,
+  #cart .pg-duoup .pg-duoup-add::after{display:none !important;content:none !important}
+  #cart .pg-soloff .pg-soloff-add:hover,
+  #cart .pg-duoup .pg-duoup-add:hover{
+    background:linear-gradient(120deg,#9B4BC4,#7A2FA2) !important;color:#fff !important;
+  }
+  #cart .pg-soloff .pg-soloff-add[disabled],
+  #cart .pg-duoup .pg-duoup-add[disabled]{opacity:.65 !important;cursor:default !important}
+  #cart#cart#cart#cart .pg-soloff .pg-soloff-add,
+  #cart#cart#cart#cart .pg-duoup .pg-duoup-add{padding:0 13px !important;min-height:34px !important;font-size:12px !important}
+  #cart#cart#cart#cart .pg-soloff,
+  #cart#cart#cart#cart .pg-duoup{margin:2px 0 4px !important;padding:9px 11px !important;gap:10px !important}
+  /* AND ITS PLACE IN THE SLOT IS PINNED. #pg-unlock-slot is a CSS-ordered flex
+     column (pg-unlock gives its own rows order 0-2, pg-frame-add's case offer
+     99) so that DOM insertion order never decides what a shopper sees. This
+     row and .pg-soloff carried no order, so in the one state where both are
+     up -- one console, the free case not yet placed -- whichever /cart.js read
+     settled first sat on top, and it could flip between loads. The upgrade to
+     the pack leads: it is the bigger decision, and it is the order the owner
+     approved on screen. */
+  #cart #pg-unlock-slot .pg-duoup{order:-1}
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-soloff,
+    #cart#cart#cart#cart .pg-duoup{padding:8px 10px !important;gap:9px !important}
+    #cart#cart#cart#cart .pg-soloff img,
+    #cart#cart#cart#cart .pg-duoup img{width:46px !important;min-width:46px !important;height:46px !important;flex:0 0 46px !important}
+  }
+
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-unlock{padding:8px 10px !important;gap:9px !important}
+    #cart#cart#cart#cart .pg-unlock img{width:46px !important;height:46px !important;min-height:0 !important;align-self:center !important}
+    #cart#cart#cart#cart .pg-unlock-t b{font-size:12.5px !important}
+    #cart#cart#cart#cart .pg-unlock-px{font-size:13.5px !important}
+    #cart#cart#cart#cart .pg-unlock-px s{font-size:11px !important}
+    #cart#cart#cart#cart .pg-unlock-px .pg-unlock-tag{font-size:10px !important;padding:2px 6px !important}
+    #cart#cart#cart#cart .pg-unlock-add{padding:0 11px !important;min-height:32px !important;font-size:11.5px !important}
+  }
+
+  /* ============ THE FREE GIFT LINE'S PRICE CELL ============
+     Built here so it has one owner; styled by the theme because the elements
+     wear its class names (see the note in the header). The layout below is the
+     only thing this section asserts: the corner itself, stacked and right-aligned
+     in the grid's price cell. */
+  #cart#cart#cart#cart .l4ca > li[data-pg-free] .pg-gift-cell,
+  #cart#cart#cart#cart .l4ca > li:has(.pg-free-tag) .pg-gift-cell{
+    grid-area:pr !important;display:flex !important;flex-direction:column !important;
+    align-items:flex-end !important;justify-self:end !important;align-self:end !important;
+    gap:1px !important;margin:0 !important;
+  }
+  /* NO DECLARATIONS OF THEIR OWN. Overriding them here at three ids is what made
+     the struck price differ from every other line's in the first place: the
+     theme's rules for .nc-lsave-was were being outranked by a copy of them that
+     had drifted. The elements carry the theme's class names, so the theme styles
+     them -- colour, size, weight, face, strike -- and stays the one place any of
+     it is defined. Only the line-height is pinned, to keep the three-row corner
+     compact. */
+  #cart#cart#cart .pg-gift-was{line-height:1.2 !important}
+  #cart#cart#cart .pg-gift-now{line-height:1.15 !important}
+  /* NOTHING ELSE MAY PAINT A PRICE ON THAT LINE -- AND IT MUST BE TRUE FROM THE
+     FIRST PAINT. Keyed on :has(.pg-gift-cell) this waited for a cell that
+     SCRIPT builds, so after every swap the theme's own price rendered for a
+     moment and the row measured 13px taller before settling back. Keyed on the
+     free variant in the row's own product link it applies with the markup, so
+     the row never changes height. Both the old and new selectors are kept: the
+     cell may also appear on a row this selector cannot see. */
+  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) section .cols p.price,
+  #cart#cart#cart .l4ca > li:has(.pg-gift-cell) .nc-lsave:not(.pg-gift-cell),
+  #cart#cart#cart .l4ca > li:has(a[href*="variant=49640846426340"]) section .cols p.price,
+  #cart#cart#cart .l4ca > li:has(a[href*="variant=49640846426340"]) .nc-lsave:not(.pg-gift-cell){
+    display:none !important;
+    position:absolute !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+  }
+
+  /* ============ THE FREE GIFT'S STEPPER, HIDDEN FROM THE FIRST PAINT ============
+     The stepper is hidden by `li:has(.pg-free-tag)` rules, and .pg-free-tag is
+     put there by JavaScript AFTER the drawer renders. So on every cart write
+     the gift line paints once as an ordinary line -- with its "- 1 +" stepper
+     sitting in the middle of the row -- and loses it a beat later when the
+     badge pass runs. Caught in two screenshots of the same row seconds apart:
+     stepper present mid-burst, gone once settled. That content appearing and
+     vanishing is the free case "glitching and stuttering" after toggling
+     Shipping Protection, and it happens on every cart change.
+
+     The row does not need JavaScript to be recognised: Shopify renders the
+     line's own product link with the variant in it, in the markup, from the
+     first byte. Keying on the FREE variant means the rule applies in the same
+     paint as the row. The paid spare case is a different variant, so it keeps
+     its stepper.
+
+     NOT display:none. Measured: the stepper carries an INLINE
+     `display:inline-flex !important` written by script, and an inline
+     !important declaration outranks any stylesheet rule, !important or not --
+     the first version of this rule matched the row and changed nothing. These
+     are the four properties nothing stamps (position, visibility, opacity,
+     pointer-events), the same bench nc-linesave uses on the duplicate save
+     chip. position:absolute takes it out of the row's flow so it occupies no
+     space, and the rest make sure it neither paints nor catches a tap. */
+  #cart .l4ca > li:has(a[href*="variant=49640846426340"]) .input-amount,
+  #cart .l4ca > li:has(a[href*="variant=49640846426340"]) .semantic-amount,
+  body.template-cart .l4ca > li:has(a[href*="variant=49640846426340"]) .input-amount,
+  body.template-cart .l4ca > li:has(a[href*="variant=49640846426340"]) .semantic-amount{
+    position:absolute !important;
+    visibility:hidden !important;
+    opacity:0 !important;
+    pointer-events:none !important;
+  }
+
+  /* ============ THE "FREE GIFT" PILL, FROM THE FIRST PAINT ============
+     Same fault as the stepper, opposite direction: the pill is ADDED by script
+     after the drawer renders, so a freshly swapped row has none and it blinks
+     in a moment later. Recorded off the live DOM while toggling Shipping
+     Protection -- `tag[Free Gift]` -> `tag[-]` -> back again.
+
+     The row is identifiable without script (the free variant is in its own
+     product link), so the pill is drawn in CSS and is therefore present in the
+     same paint as the row. The script-made one is benched with the four
+     properties nothing stamps, so the two can never both show. */
+  #cart .l4ca > li:has(a[href*="variant=49640846426340"]) section h2::after{
+    content:"Free Gift" !important;
+    display:inline-flex !important;align-items:center !important;
+    width:-webkit-fit-content !important;width:fit-content !important;
+    margin:5px 0 1px !important;padding:6px 11px !important;
+    border-radius:999px !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;
+    color:#fff !important;-webkit-text-fill-color:#fff !important;
+    font-size:12.5px !important;font-weight:800 !important;line-height:1 !important;
+    letter-spacing:normal !important;text-indent:0 !important;text-transform:none !important;
+  }
+  #cart .l4ca > li:has(a[href*="variant=49640846426340"]) .pg-free-tag,
+  #cart .l4ca > li:has(a[href*="variant=49640846426340"]) .pg-truegift-tag{
+    position:absolute !important;visibility:hidden !important;
+    opacity:0 !important;pointer-events:none !important;
+  }
+
+  /* no hairline above or below the free-shipping pill, and less air with it */
+  #cart .nc-drawer-top{padding:0 0 6px !important;margin:0 0 4px !important;border-bottom:0 !important}
+  #cart .nc-dlogo,#cart .nc-dlogo-txt{margin-bottom:7px !important}
+  #cart .pg-cart-top{border-bottom:0 !important;padding-top:9px !important;padding-bottom:9px !important}
+
+  /* ============ THE FREE GIFT PILL: LEAVE THE GRID ============
+     Restating the placement was still playing
+     the grid's game, and it still came out wrong on the real drawer. pg-chips
+     hit this exact problem with its own plaque and wrote down the way out:
+
+         "Hosted inside the h2 it is not a grid item at all: it renders on its
+          own line under the product title, inside space the title's cell
+          already owns, and cannot collide with anything the grid places."
+
+     So the pill is moved into the <h2> in script, and styled as a block-level
+     flex box that hugs its text. Inside the title it starts at the title's own
+     content edge -- under the R of R36S -- with no placement to negotiate. The
+     grid rules below stay only as a fallback for a row that has no h2. */
+  #cart#cart#cart#cart .l4ca > li section h2 .pg-free-tag,
+  body.template-cart .l4ca > li section h2 .pg-free-tag{
+    display:flex !important;
+    width:-webkit-fit-content !important;width:fit-content !important;
+    max-width:100% !important;
+    justify-content:flex-start !important;
+    align-items:center !important;
+    margin:5px 0 1px !important;
+    text-indent:0 !important;
+    text-align:left !important;
+  }
+  #cart#cart#cart#cart .l4ca > li section > .pg-free-tag,
+  body.template-cart .l4ca > li section > .pg-free-tag{
+    grid-column:1 / -1 !important;
+    justify-self:start !important;
+    place-self:start start !important;
+    margin:4px 0 2px !important;
+    margin-right:auto !important;
+    text-indent:0 !important;
+    text-align:left !important;
+  }
+  /* the gift line's percentage, in the price corner under the two figures --
+     geometry matched to .pg-save-chip so the two read as the same badge on
+     different rows. Its COLOUR is settled in pg-gift-purple. */
+  #cart .pg-gift-off,
+  body.template-cart .pg-gift-off{
+    display:inline-flex !important;align-items:center !important;justify-content:center !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
+    background-size:240% 240%;
+    color:#fff !important;-webkit-text-fill-color:#fff !important;
+    font-size:12px !important;font-weight:700 !important;line-height:1 !important;
+    letter-spacing:normal !important;word-spacing:normal !important;text-indent:0 !important;
+    padding:6px 7px !important;border-radius:999px !important;
+    width:fit-content !important;max-width:100% !important;min-width:0 !important;flex:none !important;
+    margin:2px 0 0 !important;
+    text-transform:uppercase !important;
+  }
+
+  /* the spare (paid) case line: a little bigger and bolder than the drawer's
+     default. The gift line is excluded -- it is the thinner module on purpose */
+  #cart .l4ca > li:has(a[href*="free-gift"]):not([data-pg-free]) section h2,
+  #cart .l4ca > li:has(a[href*="free-gift"]):not([data-pg-free]) section h2 a{
+    font-size:17.5px !important;font-weight:800 !important;line-height:1.28 !important;
+  }
+
+  /* --- nc-cro's rows on the two phone sizes that matter --- */
+  @media (max-width:400px){
+    #cart#cart#cart .nc-recs-panel li.nc-rec{gap:8px !important;padding:5px 7px !important}
+    #cart#cart#cart .nc-recs-panel .nc-rec-imgw,
+    #cart#cart#cart .nc-recs-panel .nc-rec-imgw img,
+    #cart#cart#cart .nc-rec .nc-rec-imgw{width:54px !important;height:54px !important;min-width:54px !important;flex:0 0 54px !important}
+    #cart#cart#cart .nc-rec-t,
+    #cart#cart#cart .nc-rec-title{font-size:13px !important}
+    #cart#cart#cart .nc-rec-price{font-size:13.5px !important;gap:4px !important}
+    #cart#cart#cart .nc-rec-was{font-size:11.5px !important}
+    #cart#cart#cart .nc-recs-panel .nc-rec-off,
+    #cart#cart#cart .nc-rec-off{font-size:10.5px !important;margin-left:2px !important;padding:2px 6px !important}
+    #cart#cart#cart .nc-recs-panel .nc-rec-add,
+    #cart#cart#cart .nc-rec-add{padding:6px 10px !important;font-size:11px !important}
+  }
+  @media (min-width:401px) and (max-width:480px){
+    #cart#cart#cart .nc-recs-panel .nc-rec-imgw,
+    #cart#cart#cart .nc-recs-panel .nc-rec-imgw img,
+    #cart#cart#cart .nc-rec .nc-rec-imgw{width:60px !important;height:60px !important;min-width:60px !important;flex:0 0 60px !important}
+    #cart#cart#cart .nc-rec-t,
+    #cart#cart#cart .nc-rec-title{font-size:13.5px !important}
+    #cart#cart#cart .nc-rec-price{font-size:14px !important}
+    #cart#cart#cart .nc-rec-was{font-size:12px !important}
+    #cart#cart#cart .nc-recs-panel .nc-rec-off,
+    #cart#cart#cart .nc-rec-off{font-size:11px !important;margin-left:3px !important;padding:3px 7px !important}
+    #cart#cart#cart .nc-recs-panel .nc-rec-add,
+    #cart#cart#cart .nc-rec-add{padding:7px 12px !important;font-size:11.5px !important}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgGiftOff) return; window.pgGiftOff = 1;
+
+  function giftRows(){
+    var out = [];
+    document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li')
+      .forEach(function(li){ if (li.querySelector('.pg-free-tag')) out.push(li); });
+    return out;
+  }
+
+  /* $13.99 from the variant's compare-at via Liquid, with a hard fallback: an
+     all_products lookup can come back empty, and an empty struck price is
+     exactly the "you dont have original price above it crossed out" the owner
+     reported. */
+  var WAS = {{ pg_gift_was | json }};
+  if (!/^\$[\d.,]+$/.test(String(WAS || ''))) WAS = '$13.99';
+
+  /* THE PRICE CELL, BUILT AND OWNED HERE. */
+  function cellOf(li){
+    var cell = li.querySelector('.pg-gift-cell');
+    if (cell) return cell;
+    var sect = li.querySelector('section');
+    if (!sect) return null;
+    cell = document.createElement('div');
+    /* `nc-lsave` rides along too: some of the theme's price rules are scoped to
+       that CONTAINER (measured -- the struck price came out 13.5px/400 in a bare
+       cell against 12px/600 in a real one), so wearing the class is the only way
+       to inherit them rather than re-derive them. The cell is still built and
+       owned here; only the styling is borrowed. */
+    cell.className = 'pg-gift-cell nc-lsave';
+    cell.innerHTML = '<s class="pg-gift-was nc-lsave-was"></s>' +
+                     '<b class="pg-gift-now nc-lsave-now"></b>' +
+                     '<span class="pg-gift-off">SAVE 100%</span>';
+    sect.appendChild(cell);
+    return cell;
+  }
+
+  function setText(el, t){ if (el && el.textContent !== t) el.textContent = t; }
+
+  function figures(cell){
+    setText(cell.querySelector('.pg-gift-was'), WAS);
+    setText(cell.querySelector('.pg-gift-now'), '$0.00');
+    setText(cell.querySelector('.pg-gift-off'), 'SAVE 100%');
+  }
+
+  /* THE PILL. Its GRID PLACEMENT is handled in CSS above -- that was the actual
+     bug. What still has to be done from script is the inline geometry pg-drawer's
+     ftFix() pins (width and text-indent, both inline !important, unbeatable from
+     a stylesheet). */
+  function pillLeft(li){
+    var tag = li.querySelector('.pg-free-tag');
+    if (!tag) return;
+    /* OUT OF THE GRID ENTIRELY -- pg-chips' own conclusion for its plaque, and
+       the only placement that cannot be auto-flowed into the wrong cell. */
+    var h2 = li.querySelector('h2');
+    if (h2 && tag.parentNode !== h2) h2.appendChild(tag);
+    if (tag.style.justifyContent !== 'flex-start'){
+      tag.style.setProperty('justify-content', 'flex-start', 'important');
+      tag.style.setProperty('text-align', 'left', 'important');
+      tag.style.setProperty('padding', '6px 11px', 'important');
+    }
+    if (tag.style.width !== 'auto') tag.style.setProperty('width', 'auto', 'important');
+    if (tag.style.textIndent !== '0px') tag.style.setProperty('text-indent', '0', 'important');
+  }
+
+  /* ---------------- a case for every console ----------------
+     Owner's rule, stated plainly: the spare-case offer covers every console in
+     the cart that does not already have a case -- the free one included. Three
+     consoles and one free case means TWO spares, so the third console is not
+     left without.
+
+     pg-unlock's accRow() answers a different question:
+
+         q = (o.totalQty + o.need) - (PAID cases only)
+
+     `need` is however many units the next bundle rung would add, so the count
+     includes consoles the shopper has not bought yet; and excluding the free
+     case means the one console that IS covered still gets counted. Neither is
+     the number the row is asking about.
+
+     An earlier version of this block tried to NUDGE pg-unlock into recomputing
+     its own figure by removing the row. That cannot help when the formula
+     itself is the wrong one, and a row removal on every cart change is a
+     rebuild the shopper can see -- exactly the kind of churn this cart has been
+     reported for. It is gone. What replaces it writes the three things the row
+     states and nothing else: data-q (which pg-unlock's accPost reads when it
+     adds), the label, and the price pair.
+
+     Each is written only when it actually differs, so a settled row is never
+     touched. pg-unlock rewrites the row wholesale whenever its own signature
+     changes, and this simply re-applies on the next pass -- the same
+     arrangement pg-upsell-fit already uses for the R36S rename, and safe for
+     the same reason. */
+  var ACC = {
+    'handheld-game-console': {
+      mark: 'r36s-protective-case', now: 1399, was: 2499,
+      one: 'Add a spare protective case', many: 'Add a spare case for each console'
+    },
+    'lenticular-poster': {
+      mark: '30x40cm-frame', now: 1499, was: 2799,
+      one: 'Add the matching frame', many: 'Add a frame for each print'
+    }
+  };
+
+  function accMoney(c){ return '$' + (c / 100).toFixed(2); }
+
+  function lineQty(li){
+    var inp = li.querySelector('input[type=number]');
+    if (inp) return parseInt(inp.value, 10) || 0;
+    /* nc-cartfix replaces the stepper with <b class="nc-qv">n</b> */
+    var qv = li.querySelector('.nc-qv');
+    if (qv) return parseInt(qv.textContent, 10) || 0;
+    return 1;
+  }
+
+  /* units of a product in the cart, read off the rendered rows -- no network.
+     The free gift line is NOT excluded here: a console that already has the
+     free case does not need a spare, which is the whole point of the rule. */
+  /* A DUO PACK LINE IS TWO CONSOLES. The pack is its own product, so a cart
+     holding one has no console line: this counted zero consoles, `want` came
+     out negative, and the spare-case row was hidden outright -- no way to buy
+     a case for the second console. Counted as two here, and since the pack
+     also brings a free case the row correctly offers exactly one spare. */
+  var DUO_PACK_HANDLE = 'r36s-duo-pack';
+  /* AND A TRIO PACK LINE IS THREE. Same shape as the duo: its own product, no
+     console line, one free case per order, so a trio correctly offers TWO
+     spares. Checked before the duo only because both must be checked before
+     the plain console match; the handles cannot collide. */
+  var TRIO_PACK_HANDLE = 'r36s-trio-pack';
+
+  function unitsOf(mark){
+    var n = 0;
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li')
+      .forEach(function(li){
+        if (li.querySelector('a[href*="' + TRIO_PACK_HANDLE + '"]')){
+          if (mark === 'handheld-game-console') n += lineQty(li) * 3;
+          return;                       /* never also matched as a console */
+        }
+        if (li.querySelector('a[href*="' + DUO_PACK_HANDLE + '"]')){
+          if (mark === 'handheld-game-console') n += lineQty(li) * 2;
+          return;                       /* never also matched as a console */
+        }
+        if (!li.querySelector('a[href*="' + mark + '"]')) return;
+        n += lineQty(li);
+      });
+    return n;
+  }
+
+  function accFit(){
+    document.querySelectorAll('#cart .pg-unlock[data-pg-unlock]').forEach(function(row){
+      var handle = row.getAttribute('data-pg-unlock') || '', cfg = null, k;
+      for (k in ACC){ if (handle.indexOf(k) > -1){ cfg = ACC[k]; break; } }
+      if (!cfg) return;
+      var acc = row.querySelector('.pg-uacc');
+      if (!acc) return;
+
+      var want = unitsOf(k) - unitsOf(cfg.mark);
+      if (want < 1){
+        if (acc.style.display !== 'none') acc.style.setProperty('display', 'none', 'important');
+        return;
+      }
+      if (acc.style.display === 'none') acc.style.removeProperty('display');
+
+      if (acc.getAttribute('data-q') !== String(want)) acc.setAttribute('data-q', String(want));
+
+      var t = acc.querySelector('.pg-uacc-t');
+      var label = want > 1 ? cfg.many : cfg.one;
+      if (t && t.textContent !== label) t.textContent = label;
+
+      var p = acc.querySelector('.pg-uacc-p');
+      var html = '<s>' + accMoney(cfg.was * want) + '</s>' + accMoney(cfg.now * want);
+      if (p && p.innerHTML !== html) p.innerHTML = html;
+    });
+  }
+
+  /* ---------------- THE SPARE-CASE OFFER WITHOUT pg-unlock ----------------
+
+     accFit() above only ever rewrites a .pg-uacc row that pg-unlock already
+     built, and pg-unlock only builds a row for a handle in its LADDERS map.
+     The Duo Pack is its own product and is not in that map, so a cart holding
+     one had NO case offer at all -- the shopper gets two consoles and one free
+     case, and no way to buy a case for the second.
+
+     This renders the same row on its own when there is no pg-unlock to host
+     it, into the same #pg-unlock-slot so pg-cart-mobile still lifts it above
+     the pinned checkout pane on phones. It stands down the moment pg-unlock
+     appears, so the two can never both be on screen. */
+  var SPARE_CASE_VARIANT = 49640879063268;
+  /* THE COUNT MUST HOLD STILL BEFORE IT IS SHOWN.
+
+     want is read off the RENDERED rows, and pg-drawer replaces all of them on
+     every cart write. For the frames where the free-case row has not been
+     re-inserted yet, the case count reads 0 and want jumps by one -- caught on
+     screen: the offer flashed "Add a spare case for each console $49.98 ->
+     $27.98" and settled back to "$13.99" a moment later. A price that changes
+     under the shopper is worse than one that appears a beat late, so a value
+     that disagrees with what is on screen has to be seen twice before it is
+     written. A transient never repeats; a real change repeats immediately on
+     the next pass. */
+  var wantSeen = null, wantShown = null;
+
+  function settledWant(want){
+    if (wantShown !== null && want !== wantShown && want !== wantSeen){
+      wantSeen = want;
+      return null;                       /* first sighting: wait and see */
+    }
+    wantSeen = want;
+    return want;
+  }
+  var CASE_IMG = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120';
+  var soloBusy = false;
+
+  /* DELEGATED, NOT PER-ELEMENT. A listener bound to the row itself never fired:
+     the drawer rebuilds its markup constantly and the node the listener was on
+     is not always the node that ends up on screen. One listener on the
+     document survives every rebuild, which is the same reason pg-tile-copy
+     owns tile selection this way. */
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    if (!e.target.closest('.pg-soloff-add')) return;
+    var row = e.target.closest('.pg-soloff');
+    if (!row) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (soloBusy) return;
+    soloBusy = true;
+    /* the row is left in place and the button reads Adding... until the write
+       lands. Removing the row here, or refreshing more than once, is what made
+       the whole drawer jump: every refresh re-runs every section's stamps. */
+    var btn = row.querySelector('.pg-soloff-add');
+    if (btn){ btn.disabled = true; btn.textContent = 'Adding...'; }
+    var q = parseInt(row.getAttribute('data-q'), 10) || 1;
+    fetch('/cart/add.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({items: [{id: SPARE_CASE_VARIANT, quantity: q}]})
+    }).then(function(){
+      soloBusy = false;
+      if (btn){ btn.disabled = false; btn.textContent = 'Add'; }
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).catch(function(){
+      soloBusy = false;
+      if (btn){ btn.disabled = false; btn.textContent = 'Add'; }
+    });
+  }, true);
+
+  function soloAcc(){
+    var slot = document.querySelector('#pg-unlock-slot');
+    var existing = document.querySelector('#cart .pg-soloff');
+
+    /* pg-unlock is here and owns the offer. Keyed on the ROW, not on its
+       accessory: a pg-unlock row without a .pg-uacc (nothing left to add on)
+       still occupies the slot, and matching only the accessory let this row
+       render beside it -- two upsells stacked at the top of the cart. */
+    if (!slot || document.querySelector('#cart .pg-unlock')){
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+
+    var raw = unitsOf('handheld-game-console') - unitsOf('r36s-protective-case');
+    var want = settledWant(raw);
+    if (want === null) return;           /* mid-render reading: leave the row alone */
+    if (want < 1){
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      wantShown = want;
+      return;
+    }
+
+    var row = existing;
+    if (!row){
+      row = document.createElement('div');
+      row.className = 'pg-soloff';
+      /* the same shape pg-unlock's own rows use -- thumbnail, title, struck
+         price with a SAVE chip, reason line, Add button -- so it reads as one
+         of the cart's upsells rather than a stray tickbox. The inner class
+         names are pg-unlock's on purpose: their styling is global, so this
+         row inherits the type, the price treatment and the button for free
+         and cannot drift from them. The CONTAINER is deliberately not
+         .pg-unlock: that file sweeps `#cart .pg-unlock` every pass and deletes
+         any row whose handle it does not recognise. */
+      row.innerHTML =
+        '<img alt="" width="54" height="54" decoding="sync" src="' + CASE_IMG + '">' +
+        '<div class="pg-unlock-t">' +
+          '<b>Add a spare protective case</b>' +
+          '<span class="pg-unlock-px"><s></s><i class="pg-soloff-now"></i>' +
+            '<span class="pg-unlock-tag">SAVE 44%</span></span>' +
+          '<small>One case already comes free</small>' +
+        '</div>' +
+        '<button type="button" class="pg-soloff-add">Add</button>';
+      slot.appendChild(row);
+    }
+
+    wantShown = want;
+    if (row.getAttribute('data-q') !== String(want)) row.setAttribute('data-q', String(want));
+    var label = want > 1 ? 'Add a spare case for each console' : 'Add a spare protective case';
+    var t = row.querySelector('.pg-unlock-t b');
+    if (t && t.textContent !== label) t.textContent = label;
+    var was = row.querySelector('.pg-unlock-px s');
+    if (was && was.textContent !== accMoney(2499 * want)) was.textContent = accMoney(2499 * want);
+    var now = row.querySelector('.pg-soloff-now');
+    if (now && now.textContent !== accMoney(1399 * want)) now.textContent = accMoney(1399 * want);
+  }
+
+
+  /* ---------------- UPGRADE TO THE DUO PACK, FROM ONE CONSOLE ----------------
+     This replaces pg-unlock's console rung ("Add a 2nd PocketBoy R36 - SAVE
+     25%"), which was suppressed on 2026-09-10: it mirrored the retired
+     "R36S - 2nd Console 25% Off" BXGY and its add put a SECOND SINGLE in the
+     cart, which now earns nothing, so it advertised a price checkout would
+     not honour. This rail does the only honest thing: it SWAPS the single
+     line for the Duo Pack variant that contains that console plus a 64GB one,
+     so the price is the pack's own and the two consoles arrive as one line.
+
+     Shown only when the cart holds exactly one console at quantity one and no
+     pack. Read from /cart.js, not the rows, because the decision needs the
+     line key and the variant id; guarded like soloAcc so a mid-render read
+     cannot flash the row. The duo prices come from the pack product so an
+     admin reprice propagates on its own. */
+  var DUO_OF = {};                          /* console variant -> duo variant holding it plus a 64GB */
+  DUO_OF[49622431858916] = 49831383531748;  /* 64GB  -> 64GB + 64GB  */
+  DUO_OF[49622431826148] = 49831383564516;  /* 128GB -> 64GB + 128GB */
+  var duoPrices = null, duoPricesPending = false;
+  function loadDuoPrices(){
+    if (duoPrices || duoPricesPending) return;
+    duoPricesPending = true;
+    /* watchdog: a stalled read must not leave the prices unloadable for the session */
+    setTimeout(function(){ if (!duoPrices) duoPricesPending = false; }, 8000);
+    fetch('/products/r36s-duo-pack.js').then(function(r){ return r.json(); }).then(function(pr){
+      duoPrices = {};
+      (pr.variants || []).forEach(function(v){ duoPrices[v.id] = {p: v.price, c: v.compare_at_price || 0}; });
+    }).catch(function(){ duoPricesPending = false; });
+  }
+  var CONSOLE_IMG = '';
+  function loadConsoleImg(){
+    if (CONSOLE_IMG) return;
+    CONSOLE_IMG = ' ';
+    fetch('/products/handheld-game-console.js').then(function(r){ return r.json(); }).then(function(pr){
+      var src = (pr.featured_image || (pr.images && pr.images[0]) || '');
+      CONSOLE_IMG = src ? src.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2') : ' ';
+      var im = document.querySelector('#cart .pg-duoup img');
+      if (im && CONSOLE_IMG.trim()) im.src = CONSOLE_IMG;
+    }).catch(function(){ CONSOLE_IMG = ' '; });
+  }
+  var duoUpBusy = false, duoUpRead = null, duoUpSeen = null, duoUpWatch = null;
+  function duoUp(){
+    var slot = document.querySelector('#pg-unlock-slot');
+    var existing = document.querySelector('#cart .pg-duoup');
+    if (!slot || document.querySelector('#cart .pg-unlock')){
+      if (existing && existing.parentNode) existing.parentNode.removeChild(existing);
+      return;
+    }
+    loadDuoPrices(); loadConsoleImg();
+    if (duoUpBusy) return;
+    duoUpBusy = true;
+    /* WITH A WATCHDOG, like giftguard's check() and pg-unlock's render(): a
+       /cart.js read that stalls under throttling would otherwise hold this
+       flag for the rest of the session and the rail would never appear. */
+    clearTimeout(duoUpWatch);
+    duoUpWatch = setTimeout(function(){ duoUpBusy = false; }, 8000);
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        clearTimeout(duoUpWatch); duoUpBusy = false;
+        var consoles = (c.items || []).filter(function(it){ return it.handle === 'handheld-game-console'; });
+        var packs = (c.items || []).filter(function(it){ return it.handle === 'r36s-duo-pack' || it.handle === 'r36s-trio-pack'; });
+        var one = consoles.length === 1 && consoles[0].quantity === 1 && !packs.length ? consoles[0] : null;
+        var duoId = one ? DUO_OF[one.variant_id] : null;
+        var d = duoId && duoPrices ? duoPrices[duoId] : null;
+        /* seen twice before shown, same reasoning as settledWant: a transient
+           read between two writes must never paint a row */
+        var sig = one && d ? (one.key + ':' + duoId) : '';
+        if (sig !== duoUpSeen){ duoUpSeen = sig; return; }
+        var row = document.querySelector('#cart .pg-duoup');
+        if (!sig){ if (row && row.parentNode) row.parentNode.removeChild(row); return; }
+        var extra = d.p - one.price;                 /* what the second console costs inside the pack */
+        var sep = one.price + 7499;                  /* the two singles, sold separately */
+        if (extra <= 0) return;
+        if (!row){
+          row = document.createElement('div');
+          row.className = 'pg-duoup';
+          row.innerHTML =
+            '<img alt="" width="54" height="54" decoding="sync" src="' + (CONSOLE_IMG.trim() || CASE_IMG) + '">' +
+            '<div class="pg-unlock-t">' +
+              '<b>Add a 2nd R36S: upgrade to the Duo Pack</b>' +
+              '<span class="pg-unlock-px"><s></s><i class="pg-duoup-now"></i></span>' +
+              '<small></small>' +
+            '</div>' +
+            '<button type="button" class="pg-duoup-add">Add</button>';
+          slot.appendChild(row);
+        }
+        row.setAttribute('data-key', one.key);
+        row.setAttribute('data-duo', String(duoId));
+        var now = row.querySelector('.pg-duoup-now'), was = row.querySelector('.pg-unlock-px s');
+        var sm = row.querySelector('small');
+        var nowTxt = '+' + accMoney(extra), wasTxt = accMoney(sep), sub = 'Two sold separately ' + accMoney(sep) + '. Duo Pack ' + accMoney(d.p) + '.';
+        if (now && now.textContent !== nowTxt) now.textContent = nowTxt;
+        if (was && was.textContent !== wasTxt) was.textContent = wasTxt;
+        if (sm && sm.textContent !== sub) sm.textContent = sub;
+      })
+      .catch(function(){ clearTimeout(duoUpWatch); duoUpBusy = false; });
+  }
+  var duoUpAdding = false;
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    if (!e.target.closest('.pg-duoup-add')) return;
+    var row = e.target.closest('.pg-duoup');
+    if (!row) return;
+    e.preventDefault(); e.stopPropagation();
+    if (duoUpAdding) return;
+    duoUpAdding = true;
+    var key = row.getAttribute('data-key'), duoId = parseInt(row.getAttribute('data-duo'), 10);
+    var btn = row.querySelector('.pg-duoup-add');
+    if (btn){ btn.disabled = true; btn.textContent = 'Adding...'; }
+    /* remove the single BY LINE KEY, then add the pack: the pack is priced as
+       exactly what the row printed, and nothing is computed at checkout */
+    fetch('/cart/change.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({id: key, quantity: 0})})
+      .then(function(){ return fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: duoId, quantity: 1}]})}); })
+      .then(function(){ duoUpAdding = false; if (row.parentNode) row.parentNode.removeChild(row); duoUpSeen = null; if (window.pgDrawerRefresh) return window.pgDrawerRefresh(); })
+      .catch(function(){ duoUpAdding = false; if (btn){ btn.disabled = false; btn.textContent = 'Add'; } });
+  }, true);
+
+  function pass(){
+    giftRows().forEach(function(li){
+      pillLeft(li);
+      var host = cellOf(li);
+      if (!host) return;
+      figures(host);
+    });
+    accFit();
+    soloAcc();
+    duoUp();
+  }
+
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; pass(); }, 80);
+  }
+
+  if (window.MutationObserver){
+    (function watch(){
+      var c = document.getElementById('cart');
+      if (c){ try { new MutationObserver(soon).observe(c, {childList:true, subtree:true}); } catch(e){} }
+      else setTimeout(watch, 500);
+    })();
+  }
+  /* IN THE SAME FRAME AS THE SWAP, NOT ON THE NEXT TICK.
+
+     pg-drawer replaces every node in the drawer on a cart change and fires
+     pg:cart-updated in the same task. Everything this file owns -- the free
+     gift's price cell, the spare-case counts, the standalone offer -- was
+     rebuilt on its own 1200ms interval instead, so after every change the
+     shopper watched those parts arrive late, one stagger behind the rest.
+     That is the flicker. Running pass() on the event puts them back in the
+     same paint as the rows they belong to; the interval stays as the backstop
+     for anything that changes the cart without going through the drawer. */
+  document.addEventListener('pg:cart-updated', function(){ try { pass(); } catch(e){} });
+
+  /* ftFix's own schedule, plus one after it, so the pill settles on this side */
+  [450, 1550, 3550, 4200].forEach(function(ms){ setTimeout(pass, ms); });
+  setInterval(pass, 1200);
+  pass();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Tune", "settings": [], "presets": [{"name": "PG Cart Tune"}]}
+{% endschema %}

@@ -1,0 +1,1553 @@
+{%- comment -%}
+  PG Theme CSS: sitewide Pocketera purple/black overrides.
+  Rendered from footer-group so it loads on every page. Paints the footer in the
+  logo purple and swaps visible "North Cove" text in the footer to "Pocketera"
+  (shop.name itself is untouched so live-site invoicing/emails are unaffected).
+{%- endcomment -%}
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Nav links: bigger, bolder, slab font */
+  .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{font-family:'Roboto Slab',Georgia,serif !important;font-size:17.5px !important;font-weight:700 !important;color:#4A1C66 !important;letter-spacing:.01em !important}
+  .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover,.pgf-nav a:hover{color:#7A2FA2 !important}
+  #shopify-section-footer#shopify-section-footer,
+  .shopify-section[id$="__footer"].shopify-section[id$="__footer"]{
+    background:#7A2FA2 !important;background-color:#7A2FA2 !important;
+  }
+  #shopify-section-footer#shopify-section-footer [class*="palette-"],
+  #shopify-section-footer#shopify-section-footer .module-color-palette,
+  .shopify-section[id$="__footer"] [class*="palette-"],
+  .shopify-section[id$="__footer"] .module-color-palette{
+    background:transparent !important;background-color:transparent !important;
+  }
+  #shopify-section-footer#shopify-section-footer h1,
+  #shopify-section-footer#shopify-section-footer h2,
+  #shopify-section-footer#shopify-section-footer h3,
+  #shopify-section-footer#shopify-section-footer h4,
+  #shopify-section-footer#shopify-section-footer h5,
+  #shopify-section-footer#shopify-section-footer p,
+  #shopify-section-footer#shopify-section-footer li,
+  #shopify-section-footer#shopify-section-footer span,
+  #shopify-section-footer#shopify-section-footer label,
+  #shopify-section-footer#shopify-section-footer strong,
+  #shopify-section-footer#shopify-section-footer div{color:#fff}
+  #shopify-section-footer#shopify-section-footer a{color:#EBDCF6}
+  #shopify-section-footer#shopify-section-footer a:hover{color:#fff}
+  #shopify-section-footer#shopify-section-footer .nc-foot-h{color:#fff !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links a{color:#EBDCF6 !important}
+  #shopify-section-footer#shopify-section-footer .nc-foot-links a:hover{color:#fff !important}
+  #shopify-section-footer#shopify-section-footer input[type="email"],
+  #shopify-section-footer#shopify-section-footer input[type="text"]{
+    background:#fff !important;background-color:#fff !important;color:#1c1c1c !important;border-color:#4A1C66 !important;
+  }
+  #shopify-section-footer#shopify-section-footer button,
+  #shopify-section-footer#shopify-section-footer [class*="button"]{
+    background:#121212 !important;background-color:#121212 !important;color:#fff !important;border-color:#121212 !important;
+  }
+
+  /* Premium polish, sitewide */
+  body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+  /* Purple gradient canvas on every page (stars float above it) */
+  html,body,body.template-cart,body.template-cart #content,body.template-cart main,#content,main{background:linear-gradient(160deg,#F8F3FD 0%,#EFE2F9 45%,#E2CDF3 100%) !important;background-attachment:fixed !important}
+  /* Full-bleed: the base theme boxes #root in white with 30px side padding */
+  #root{padding-left:0 !important;padding-right:0 !important;background:transparent !important;background-color:transparent !important}
+  #pgh,#pgx,.pgm{background:transparent !important}
+  #pgh .pgh-head,#pgx .pgx-head,.pgc-head{background:rgba(11,7,16,.9) !important;border-bottom:1px solid rgba(168,120,214,.16) !important;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  .pgh-nav a,.pgx-nav a,.pgc-nav a{color:#E4D9F0 !important}
+  .pgh-nav a:hover,.pgx-nav a:hover,.pgc-nav a:hover{color:#C79BEA !important}
+  .pgh-logo img,.pgx-logo img,.pgc-logo img{mix-blend-mode:screen !important;filter:none !important}
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{stroke:#EFE8F7 !important}
+  .pgh-ic a:hover svg,.pgx-ic a:hover svg,.pgc-ic a:hover svg{stroke:#C79BEA !important}
+  .pgh-cart-n{background:#C79BEA !important;color:#1A0B28 !important;border-color:#8B44BE !important}
+  .pgh-head .pg-search,.pgx-head .pg-search,.pgc-head .pg-search{background:rgba(255,255,255,.06) !important;border-color:rgba(168,120,214,.28) !important}
+  .pgh-head .pg-search input,.pgx-head .pg-search input,.pgc-head .pg-search input{color:#EFE8F7 !important}
+  .pgh-head .pg-search input::placeholder,.pgx-head .pg-search input::placeholder,.pgc-head .pg-search input::placeholder{color:#9384A8 !important}
+  .pgh-head .pg-search svg,.pgx-head .pg-search svg,.pgc-head .pg-search svg{stroke:#9384A8 !important}
+  .pgf-head,.pgf-nav{background:rgba(11,7,16,.9) !important;border-bottom-color:rgba(168,120,214,.16) !important}
+  .pgf-head img{mix-blend-mode:screen !important}
+  .pgf-nav a{color:#E4D9F0 !important}
+  /* Logo PNG has a white box baked in; multiply melts it into the tinted bar */
+  .pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{mix-blend-mode:multiply}
+  #pgh .pgh-trust{background:rgba(255,255,255,.65) !important;border-color:rgba(122,47,162,.18) !important}
+  /* Accordions: outlined dark purple boxes */
+  #pgh .pgh-acc{border-top:0 !important}
+  #pgh .pgh-acc details{border:1.5px solid #4A1C66 !important;border-bottom:1.5px solid #4A1C66 !important;border-radius:12px;margin-bottom:12px;padding:0 18px;background:rgba(255,255,255,.78)}
+  #pgh .pgh-acc details[open]{box-shadow:0 12px 28px -20px rgba(74,28,102,.5)}
+  #pgh .pgh-acc summary{padding:18px 2px}
+  ::selection{background:#7A2FA2;color:#fff}
+  button[name="checkout"]{background:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 50%,#4A1C66 100%) !important;background-color:#7A2FA2 !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important;letter-spacing:.05em !important;text-transform:uppercase !important;box-shadow:0 14px 30px -12px rgba(122,47,162,.6) !important}
+  button[name="checkout"]:hover{background:linear-gradient(120deg,#7A2FA2 0%,#4A1C66 100%) !important;background-color:#4A1C66 !important}
+  html body button[name="checkout"]::before,html body button[name="checkout"]::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important}
+
+  /* NC header/tabs are gone everywhere; PG headers or the fallback below replace them */
+  .shopify-section-header,
+  #shopify-section-header,
+  .shopify-section[id*="__header"],
+  .shopify-section[id*="nc_announce"],
+  .shopify-section[id*="nc-announce"]{display:none !important}
+  #content{padding-top:0 !important}
+  .pgf-announce{background:linear-gradient(90deg,#4A1C66,#7A2FA2 50%,#4A1C66);color:#fff;text-align:center;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:11px 16px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pgf-head{background:#fff;border-bottom:1px solid #e9dcf3;text-align:center;padding:14px 16px 6px}
+  .pgf-head img{max-height:88px;width:auto;display:inline-block}
+  .pgf-nav{display:flex;justify-content:center;gap:26px;padding:8px 16px 14px;flex-wrap:wrap;background:#fff;border-bottom:1px solid #e9dcf3;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pgf-nav a{font-size:15px;color:#2b2b2b;text-decoration:none}
+  .pgf-nav a:hover{color:#7A2FA2;text-decoration:underline}
+
+  /* Homepage: centered, balanced layout */
+  #pgh .pgh-eyebrow,#pgh .pgh-h2{text-align:center}
+  /* Hero removed; Best Sellers leads the page */
+  #pgh .pgh-hero{display:none !important}
+  #pgh .pgh-wrap{padding-top:34px}
+  #pgh .pgh-grid{display:flex !important;flex-wrap:wrap;justify-content:center;gap:22px}
+  #pgh .pgh-grid .pgh-card{width:calc(50% - 11px);max-width:100%}
+  #pgh .pgh-card-t,#pgh .pgh-card-p{text-align:center}
+  /* Card ATC: same pill look as the Sale badge, top right of the image */
+  #pgh .pgh-badge{top:12px !important;bottom:auto !important}
+  #pgh .pgh-atc{position:static !important;left:auto !important;right:auto !important;top:auto !important;bottom:auto !important;transform:none !important;display:block !important;width:calc(100% - 24px) !important;margin:10px 12px 14px !important;padding:11px 16px !important;border:none !important;border-radius:999px !important;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-color:#7A2FA2 !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;font-weight:700 !important;font-size:13.5px !important;letter-spacing:.05em !important;text-transform:uppercase !important;line-height:1.2 !important;height:auto !important;min-height:0 !important;box-shadow:0 10px 24px -12px rgba(122,47,162,.7) !important;text-align:center !important}
+  #pgh .pgh-atc:hover{background:#4A1C66 !important;background-color:#4A1C66 !important;color:#fff !important;transform:none !important}
+  /* Banner Shop now button removed per request */
+  #pgh .pgh-split-btn{display:none !important}
+  /* Collections tiles removed per request */
+  #pgh .pgh-wrap:has(.pgh-tiles){display:none !important}
+  @media(max-width:900px){
+    #pgh .pgh-grid .pgh-card{width:calc(50% - 11px)}
+  }
+  .pgx-announce,.pgc-announce{text-transform:uppercase;letter-spacing:.08em;font-size:12px !important;font-weight:600}
+  /* Announcement bar: animated purple gradient sweeping in from both sides */
+  @keyframes pgAnnounceSweep{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{background:linear-gradient(90deg,#2E0E44 0%,#6B2894 22%,#C08BE8 50%,#6B2894 78%,#2E0E44 100%) !important;background-size:220% 100% !important;animation:pgAnnounceSweep 7s ease-in-out infinite}
+  #pgx .pgx-hero{border-radius:16px}
+  #pgx .pgx-thumbs button{border-radius:14px}
+  #pgx .pgx-quote{border-radius:14px}
+  #pgx .pgx-tile{border-radius:14px}
+  #pgx .pgx-tile{background:#fff !important}
+  #pgx .pgx-tile.pgx-sel{box-shadow:0 14px 34px -24px rgba(122,47,162,.55)}
+  /* Review carousel next: purple circle, white arrow */
+  #pgx .pgx-quote-next{width:44px !important;height:44px !important;min-width:44px !important;min-height:0 !important;flex:none !important;border-radius:50% !important;background:#7A2FA2 !important;background-color:#7A2FA2 !important;background-image:none !important;color:#fff !important;border:none !important;font-size:24px !important;line-height:1 !important;padding:0 0 3px !important;margin-left:auto !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 10px 22px -10px rgba(122,47,162,.6) !important;animation:none !important;text-transform:none !important}
+  #pgx .pgx-quote-next:hover{background:#4A1C66 !important;background-color:#4A1C66 !important}
+  #pgx .pgx-atc{display:flex !important;align-items:center !important;justify-content:center !important;text-align:center !important;width:100% !important;max-width:100% !important;margin:16px auto 6px !important;border-radius:999px !important;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;background-color:#7A2FA2 !important;color:#fff !important;box-shadow:0 16px 34px -14px rgba(122,47,162,.65);text-transform:uppercase;letter-spacing:.06em !important;font-weight:700 !important;float:none !important}
+  #pgx .pgx-atc:hover{background:#4A1C66 !important;background-color:#4A1C66 !important}
+  #pgx .pgx-atc span{display:inline-block;width:auto}
+  #pgx .pgx-info{margin:16px auto !important;width:100% !important}
+  #pgx .pgx-tile-opts .pgx-plus{align-self:center !important;margin-top:14px}
+  #pgx .pgx-info{border-radius:16px;border-color:rgba(122,47,162,.35) !important;background:linear-gradient(180deg,#fff,#faf6fd);box-shadow:0 0 0 1px rgba(122,47,162,.08),0 0 28px rgba(122,47,162,.22),0 18px 44px -24px rgba(122,47,162,.5)}
+  #pgx .pgx-info-ic{box-shadow:0 0 16px rgba(122,47,162,.35)}
+  #pgx .pgx-guar{border-radius:12px;justify-content:center !important;text-align:center;font-size:15px !important;font-weight:800 !important;padding:13px 18px !important;background:linear-gradient(120deg,#FFFFFF,#F4EAFB) !important;color:#7A2FA2 !important;letter-spacing:.01em;box-shadow:0 0 0 1px rgba(122,47,162,.3),0 14px 30px -18px rgba(122,47,162,.55)}
+  #pgx .pgx-guar:before{width:11px !important;height:11px !important;background:#7A2FA2 !important}
+  #pgx .pgx-card{border-radius:14px;box-shadow:0 12px 30px -24px rgba(18,4,28,.4)}
+  .pgu-card{box-shadow:0 16px 38px -28px rgba(74,28,102,.5)}
+  /* round 2 batch */
+  /* native multi/bundle tiles retired; single (and lamp ladder) only */
+  #pgx .pgx-tile[data-pgx-tile]:not([data-pgx-tile="single"]):not(.pgx-lad){display:none !important}
+
+  body.template-index .pgf-stars{display:none !important}
+  #pgh .pgh-wrap:has(.pgh-grid) .pgh-eyebrow{font-size:14px !important;letter-spacing:.26em !important}
+  #pgh .pgh-wrap:has(.pgh-grid) .pgh-h2{font-size:46px !important;line-height:1.15 !important}
+  .pgh-tw{position:relative;display:inline-block}
+  .pgh-tw i{position:absolute;display:block;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pgfTwinkle 3.2s ease-in-out infinite;opacity:.7;filter:drop-shadow(0 0 7px rgba(180,120,224,.9));pointer-events:none}
+  /* unified price typography (PocketBoy duo style) */
+  #pgx .pgx-tile-price,#pgx .pgx-tile-price *,.pgx-lad-px b,.pgx-duo-px b,.pgst-p,.pgu-yml-grid .p,#pgh .pgh-card-p,#cart .nc-lsave-now,.pgm-price,.pgm-total{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif !important;font-weight:800 !important;letter-spacing:.01em}
+  #pgx .pgx-tile:not(.pgx-lad):not(.pgx-duo) .pgx-tile-price{font-size:19px !important}
+  #pgx .pgx-tile-price .pgx-sstrike,#pgx .pgx-tile-price s,#pgx .pgx-tile-price .old-price{font-size:12.5px !important;font-weight:400 !important}
+  /* custom image dropdown */
+  .pg-drop{position:relative;display:inline-block;min-width:160px}
+  .pg-drop-h{display:flex;align-items:center;gap:8px;background:#16101F;border:1.5px solid rgba(139,68,190,.75);border-radius:10px;padding:4px 10px 4px 6px;cursor:pointer;color:#fff;font-size:13px;font-weight:600}
+  .pg-drop-h img,.pg-drop-r img{width:30px;height:30px;border-radius:7px;object-fit:cover;flex:none;background:#0D0714}
+  .pg-drop-h b{margin-left:auto;color:#C79BEA;font-size:11px;font-weight:400}
+  .pg-drop-l{display:none;position:absolute;top:calc(100% + 4px);left:0;min-width:100%;max-height:250px;overflow:auto;background:#16101F;border:1.5px solid rgba(139,68,190,.75);border-radius:12px;z-index:60;box-shadow:0 18px 40px -18px rgba(0,0,0,.85)}
+  .pg-drop.on .pg-drop-l{display:block}
+  .pg-drop-r{display:flex;align-items:center;gap:9px;padding:7px 10px;cursor:pointer;color:#fff;font-size:13px;white-space:nowrap}
+  .pg-drop-r:hover{background:rgba(139,68,190,.28)}
+  #cart .pg-drop-h,#cart .pg-drop-l{background:#fff;color:#333;border-color:#ddd}
+  #cart .pg-drop-r{color:#333}
+  #cart .pg-drop-r:hover{background:#f3ebfa}
+  /* Poke Ball tier ladder */
+  .pgx-lad{position:relative}
+  .pgx-lad-badge{position:absolute;top:-13px;right:14px;background:#0D0714;color:#fff !important;font-size:11.5px;font-weight:800;letter-spacing:.04em;padding:5px 14px;border-radius:999px;border:1px solid rgba(139,68,190,.6)}
+  .pgx-lad-head{display:flex;align-items:flex-start;gap:12px}
+  .pgx-lad-t{flex:1;min-width:0}
+  .pgx-lad-t b{font-size:18px;font-weight:800}
+  .pgx-lad-chip{display:inline-block;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;margin-left:8px;vertical-align:2px;white-space:nowrap}
+  .pgx-lad-save{font-size:13.5px;font-weight:700;color:#C79BEA !important;margin-top:3px}
+  .pgx-lad-px{text-align:right}
+  .pgx-lad-px b{display:block;font-size:19px;font-weight:800}
+  .pgx-lad-px s{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400}
+  .pgx-lad-picks{margin-top:12px;display:none}
+  .pgx-tile.pgx-sel .pgx-lad-picks{display:block}
+  .pgx-lad-picks .lbl{font-size:12.5px;color:rgba(255,255,255,.7) !important;margin-bottom:6px}
+  .pgx-lad-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .pgx-lad-row > img{width:44px;height:44px;object-fit:cover;border-radius:8px;flex:none;background:#0D0714}
+  .pgx-lad-selw{display:flex;align-items:center;gap:7px;background:#16101F;border:1.5px solid rgba(139,68,190,.75);border-radius:10px;padding:3px 4px 3px 7px}
+  .pgx-lad-selw img{width:30px;height:30px;border-radius:7px;object-fit:cover;flex:none}
+  /* Duo pack tile */
+  .pgx-bs{display:flex;align-items:center;gap:14px;margin:20px 0 12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;font-size:15px;color:#fff}
+  .pgx-bs:before,.pgx-bs:after{content:"";flex:1;height:2px;background:rgba(139,68,190,.4);border-radius:2px}
+  .pgx-tile[data-pg-singled] .pgx-tile-row{align-items:flex-start}
+  .pgx-storage-lb{font-size:12.5px;color:rgba(255,255,255,.7) !important;margin:12px 0 5px}
+  .pgx-storage{font-size:13px;padding:6px 10px;border-radius:8px;border:1px solid rgba(139,68,190,.5);background:#16101F;color:#fff !important;font-family:inherit}
+  .pgx-sstrike{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400;text-decoration:line-through;text-align:right}
+
+  /* TIGHT, BUT THE BADGE NEVER TOUCHES THE TILE ABOVE. The SAVE badge hangs
+     13px above the tile edge. On phones the theme already leaves 12px under
+     every tile, so 12 here measures 24 tile to tile with the badge 12 clear;
+     on desktop that under-tile margin is absent, and 12 alone left the badge
+     kissing the tile above (measured 0px), so desktop gets 16. Was 26. */
+  .pgx-tile.pgx-duo{position:relative;margin-top:16px}
+  @media (max-width:600px){ .pgx-tile.pgx-duo{margin-top:12px} }
+  .pgx-duo-ribbon{position:absolute;top:-13px;right:14px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 14px;border-radius:999px;box-shadow:0 8px 18px -8px rgba(122,47,162,.8)}
+  .pgx-duo-head{display:flex;align-items:flex-start;gap:12px}
+  .pgx-duo-dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #8B44BE;margin-top:3px;position:relative}
+  .pgx-tile.pgx-sel .pgx-duo-dot:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#9B4BC4}
+  .pgx-duo-t{flex:1;min-width:0}
+  .pgx-duo-t b{display:block;font-size:17px;font-weight:800}
+  .pgx-duo-t small{display:block;font-size:13.5px;font-weight:600;color:#C79BEA !important;margin-top:2px}
+  .pgx-duo-px{text-align:right}
+  .pgx-duo-px b{display:block;font-size:19px;font-weight:800}
+  .pgx-duo-px s{display:block;font-size:12.5px;color:rgba(255,255,255,.55) !important;font-weight:400}
+  .pgx-duo-body{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:1px solid rgba(139,68,190,.4);border-radius:12px;margin-top:14px;overflow:visible}
+  /* Collapsed until the tile is chosen, matching the ladder tiles on the orb
+     and wall-art pages, where the picker only opens on the selected option. */
+  #pgx .pgx-tile.pgx-duo:not(.pgx-sel) .pgx-duo-body{display:none !important}
+  .pgx-duo-u{padding:14px 10px;text-align:center;min-width:0}
+  .pgx-duo-u:first-child{border-right:1px solid rgba(139,68,190,.35)}
+  .pgx-duo-u img{width:74px;height:74px;object-fit:cover;border-radius:10px;display:block;margin:0 auto 8px}
+  .pgx-duo-u .n{font-size:13.5px;font-weight:700;margin-bottom:4px}
+  .pgx-duo-u .pp{font-size:14px;font-weight:800;margin-bottom:8px}
+  .pgx-duo-u .pp s{font-size:11.5px;color:rgba(255,255,255,.5) !important;font-weight:400;margin-left:5px}
+  .pgx-duo-u select{font-size:12.5px;padding:4px 8px;border-radius:8px;border:1px solid rgba(139,68,190,.5);background:#16101F;color:#fff;font-family:inherit}
+  /* ONE NOTE PER TILE, ONLY ON THE SELECTED ONE, RIGHT UNDER THAT TILE. Replaces
+     the single sentence pg-tile-copy printed under Add to cart for every tier
+     at once. The 10% line is the loud one: it is the part the shopper cannot
+     see anywhere on the tile, and it is applied at checkout, not here. */
+  /* the same voice as the orb page's deal note: a white sentence with the
+     phrases that matter in bold lavender (#C79BEA, the tile's own accent) */
+  #pgx .pgx-tier-note{display:none;margin:12px 2px 0;font-size:14.5px;line-height:1.45;color:#fff;font-weight:600;text-align:center}
+  #pgx .pgx-tier-note b{display:inline;font-size:inherit;font-weight:800;color:#C79BEA;letter-spacing:.01em}
+  #pgx .pgx-tile.pgx-sel .pgx-tier-note{display:block}
+  #pgx[data-pg-tiernotes] .pgx-deal-note{display:none !important}
+  .pgx-trio .pgx-duo-body{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pgx-trio .pgx-duo-u{padding:10px 4px}
+  .pgx-trio .pgx-duo-u .n{font-size:12px}
+  .pgx-trio .pgx-duo-u:first-child{border-right:0}
+  .pgx-trio .pgx-duo-u:not(:last-child){border-right:1px solid rgba(139,68,190,.35)}
+  .pgx-trio .pgx-duo-plus.p1{left:33.333%}
+  .pgx-trio .pgx-duo-plus.p2{left:66.667%}
+  .pgx-duo-plus{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:#7A2FA2;color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;box-shadow:0 6px 14px -6px rgba(0,0,0,.6);z-index:2}
+
+  .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{overflow:hidden !important;padding-left:0 !important;padding-right:0 !important}
+  .pg-marq{display:inline-flex !important;flex-wrap:nowrap !important;white-space:nowrap !important;width:max-content !important;animation:pgMarqScroll 45s linear infinite !important;will-change:transform}
+  .pg-marq > span{display:inline-block !important;white-space:nowrap !important;padding:0 20px}
+  @keyframes pgMarqScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+  .shopify-section[id*="__footer"] div.strong:has(form.contact-form){height:auto !important;align-self:start !important;min-height:0 !important}
+  #pgh .pgh-badge{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;font-weight:800 !important;font-size:12.5px !important;padding:6px 14px !important;border-radius:999px !important;letter-spacing:.03em !important;box-shadow:0 8px 20px -10px rgba(122,47,162,.85) !important}
+  .pgh-head-in > .pgh-logo,.pgx-head-in > .pgx-logo,.pgc-head-in > .pgc-logo{grid-column:2 !important;justify-self:center !important}
+  .pgh-head-in > .pgh-ic,.pgx-head-in > .pgx-ic,.pgc-head-in > .pgc-ic{grid-column:3 !important;justify-self:end !important}
+  .shopify-section[id*="__nc_contactcard"],.shopify-section[id*="__nc-contactcard"]{display:none !important;height:0 !important;overflow:hidden !important}
+  @keyframes pgShiftT{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .pgx-nav,.pgh-nav,.pgc-nav{display:flex !important;align-items:center;justify-content:center;gap:26px;flex-wrap:wrap}
+  .pgx-nav .pg-search,.pgh-nav .pg-search,.pgc-nav .pg-search{width:240px;padding:9px 14px;margin-right:6px}
+  #pgx .pgx-pay{flex-wrap:nowrap !important;overflow:hidden !important;gap:6px !important;justify-content:center !important}
+  #pgx .pgx-pay svg{height:21px !important;flex:none}
+  #pgx .pgx-info{border-color:rgba(150,120,180,.3) !important}
+  #pgx .pgx-info-c{border-left-color:rgba(150,120,180,.24) !important}
+  #pgx .pgx-info-h{font-weight:800 !important}
+  #pgh .pgh-trust b{font-weight:800 !important;font-size:17px !important}
+  #pgh .pgh-trust span{font-weight:600 !important;font-size:14.5px !important}
+  @media(min-width:1000px){#pgh .pgh-acc{max-width:1180px !important}}
+  #pgh .pgh-card-p{display:flex;justify-content:center;align-items:baseline;gap:8px;white-space:nowrap}
+  #pgh .pgh-card-p s{margin-right:0}
+  .nc-foot-chip{background:transparent !important;box-shadow:none !important;border:none !important}
+  shopify-chat,#shopify-chat,#ShopifyChat,[id*="shopify-chat"],#tidio-chat,[id*="tidio"],.tidio-chat,iframe[title*="chat" i],iframe[title*="Inbox" i],iframe[id*="chat"]{display:none !important;visibility:hidden !important;pointer-events:none !important}
+  .pg-payrow{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;padding:16px 14px 6px}
+  .pg-payrow svg{width:44px;height:28px;border-radius:5px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  .shopify-section[id*="__footer"] div.strong:has(form.contact-form){background:#fff !important;border:1px solid rgba(122,47,162,.3) !important;border-radius:16px !important;padding:18px !important}
+  .shopify-section[id*="__footer"] div.strong:has(form.contact-form) *{color:#2A1440 !important}
+  .shopify-section[id*="__footer"] div.strong form.contact-form input[type="email"],.shopify-section[id*="__footer"] div.strong form.contact-form input{background:#fff !important;border:1.5px solid rgba(122,47,162,.4) !important;border-radius:10px !important;color:#2A1440 !important;box-shadow:none !important}
+  .shopify-section[id*="__footer"] div.strong form.contact-form button,.shopify-section[id*="__footer"] div.strong form.contact-form [type="submit"]{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important}
+  .shopify-section[id*="__footer"] div.strong form.contact-form button *,.shopify-section[id*="__footer"] div.strong form.contact-form [type="submit"] *{color:#fff !important}
+  .shopify-section-group-footer-group li.sub.has-form{background:#fff !important;border:1px solid rgba(122,47,162,.3) !important;border-radius:16px !important;padding:18px !important}
+  .shopify-section-group-footer-group li.sub.has-form *{color:#2A1440 !important}
+  .shopify-section-group-footer-group li.sub.has-form input[type="email"]{background:#fff !important;border:1.5px solid rgba(122,47,162,.4) !important;border-radius:10px !important;color:#2A1440 !important;box-shadow:none !important}
+  .shopify-section-group-footer-group li.sub.has-form button,.shopify-section-group-footer-group li.sub.has-form [type="submit"]{background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;background-size:240% 240% !important;animation:pgShiftT 8s ease-in-out infinite !important;color:#fff !important;border:none !important;border-radius:999px !important;font-weight:700 !important}
+  .shopify-section-group-footer-group li.sub.has-form button *,.shopify-section-group-footer-group li.sub.has-form [type="submit"] *{color:#fff !important}
+
+  /* Header: full-width bar, larger search + icons pushed to the edges */
+  .pgh-head-in,.pgx-head-in,.pgc-head-in{max-width:none !important;padding-left:40px !important;padding-right:40px !important}
+  .pgh-ic,.pgx-ic,.pgc-ic{gap:24px !important}
+  .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:27px !important;height:27px !important}
+  .pgh-cart-n{min-width:18px !important;height:18px !important;line-height:18px !important;font-size:11px !important}
+
+  /* Kill the theme's dark button overlay pseudo-elements on all PG buttons */
+  html body .pgh-atc::before,html body .pgh-atc::after,
+  html body .pgm-qty button::before,html body .pgm-qty button::after,
+  html body .pgm-del::before,html body .pgm-del::after,
+  html body .pgm-rec-add::before,html body .pgm-rec-add::after,
+  html body .pgm-co::before,html body .pgm-co::after,
+  html body .pgx-quote-next::before,html body .pgx-quote-next::after,
+  html body .pgu-btn::before,html body .pgu-btn::after{display:none !important;content:none !important;background:none !important;animation:none !important;opacity:0 !important}
+
+  /* Side stars: light purple, fading, on every PG page */
+  .pgf-stars{position:absolute;top:0;width:230px;pointer-events:none;z-index:30}
+  body:has(#cart.toggle) .pgf-stars{display:none !important}
+  .pgf-stars.l{left:0}
+  .pgf-stars.r{right:0}
+  .pgf-stars i{position:absolute;display:block;background:#B478E0;clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%);animation:pgfTwinkle 3.2s ease-in-out infinite;opacity:.5;filter:drop-shadow(0 0 6px rgba(155,75,196,.8))}
+  @keyframes pgfTwinkle{0%,100%{opacity:.35;transform:scale(.7)}50%{opacity:1;transform:scale(1.3)}}
+  @media(max-width:1100px){.pgf-stars{display:none}}
+
+  /* Inline header search box with product dropdown (replaces the /search link) */
+  .pg-search{position:relative;display:flex;align-items:center;gap:9px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:12px 18px;width:300px;max-width:46vw;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pg-search:focus-within{border-color:#7A2FA2;box-shadow:0 0 0 3px rgba(122,47,162,.12)}
+  .pg-search svg{width:19px;height:19px;stroke:#555;fill:none;stroke-width:1.8;flex:none}
+  .pg-search input{border:none !important;outline:none !important;background:transparent !important;font-size:14.5px;width:100%;padding:0 !important;margin:0 !important;color:#121212;box-shadow:none !important;min-height:0 !important;height:auto !important}
+  .pg-search-dd{display:none;position:absolute;top:calc(100% + 8px);left:0;width:330px;max-width:82vw;background:#fff;border:1px solid #e9dcf3;border-radius:14px;box-shadow:0 24px 54px -24px rgba(18,4,28,.45);padding:8px;z-index:99}
+  .pg-search-dd.on{display:block}
+  .pg-search-dd a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;text-decoration:none;color:#121212}
+  .pg-search-dd a:hover{background:#f6effb}
+  .pg-search-dd img{width:40px;height:40px;border-radius:8px;object-fit:cover;flex:none;background:#f4f4f4}
+  .pg-search-dd span{flex:1;min-width:0;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pg-search-dd b{font-size:13px;color:#7A2FA2;flex:none}
+  .pg-search-none{padding:12px;font-size:13px;color:#666}
+  @media(max-width:900px){.pg-search{width:150px;padding:8px 12px}.pg-search input{font-size:13px}}
+</style>
+<div id="pg-paytpl" style="display:none">{%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}</div>
+<script>
+  (function(){
+    if (window.pgxBrandFix) return; window.pgxBrandFix = 1;
+    function fix(){
+      var f = document.getElementById('shopify-section-footer') || document.querySelector('.shopify-section[id$="__footer"]');
+      if (!f) return;
+      var w = document.createTreeWalker(f, NodeFilter.SHOW_TEXT);
+      var n;
+      while ((n = w.nextNode())){
+        if (/North Cove/i.test(n.nodeValue)){
+          n.nodeValue = n.nodeValue
+            .replace(/North Cove Wellness LLC/gi, 'PocketEra')
+            .replace(/North Cove Wellness/gi, 'PocketEra')
+            .replace(/North Cove/gi, 'PocketEra');
+        }
+      }
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix); else fix();
+    setTimeout(fix, 800);
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgSearch) return; window.pgSearch = 1;
+    var ALLOW = ['handheld-game-console', 'data-frog-protective-bag-for-r36s-retro-video-game-bags-olig-cover-case-for-rg35xx-r35s', 'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift'];
+    function widget(){
+      document.querySelectorAll('.pgh-head-in > a[aria-label="Search"], .pgx-head-in > a[aria-label="Search"], .pgc-head-in > a[aria-label="Search"]').forEach(function(a){
+        var w = document.createElement('div');
+        w.className = 'pg-search';
+        w.innerHTML = '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>'
+          + '<input type="text" placeholder="Search" aria-label="Search products">'
+          + '<div class="pg-search-dd"></div>';
+        var hostIn = a.closest('.pgh-head-in,.pgx-head-in,.pgc-head-in');
+        var navEl = (hostIn && hostIn.querySelector('nav')) || document.querySelector('.pgx-nav,.pgh-nav,.pgc-nav');
+        if (navEl){ navEl.insertBefore(w, navEl.firstChild); a.remove(); } else { a.replaceWith(w); }
+        var input = w.querySelector('input');
+        var dd = w.querySelector('.pg-search-dd');
+        var t;
+        input.addEventListener('keydown', function(e){
+          if (e.key === 'Enter') e.preventDefault();
+          if (e.key === 'Escape'){ dd.classList.remove('on'); input.blur(); }
+        });
+        input.addEventListener('input', function(){
+          clearTimeout(t);
+          var q = input.value.trim();
+          if (q.length < 2){ dd.classList.remove('on'); dd.innerHTML = ''; return; }
+          t = setTimeout(function(){
+            fetch('/search/suggest.json?q=' + encodeURIComponent(q) + '&resources[type]=product&resources[limit]=10')
+              .then(function(r){ return r.json(); })
+              .then(function(d){
+                var items = ((d.resources && d.resources.results && d.resources.results.products) || []).filter(function(p){
+                  return ALLOW.some(function(h){ return (p.url || '').indexOf(h) > -1; });
+                });
+                if (!items.length){
+                  dd.innerHTML = '<div class="pg-search-none">No matching products</div>';
+                } else {
+                  dd.innerHTML = items.map(function(p){
+                    var img = (p.featured_image && p.featured_image.url) || p.image || '';
+                    return '<a href="' + p.url + '">'
+                      + (img ? '<img src="' + img + '" alt="">' : '')
+                      + '<span>' + p.title + '</span>'
+                      + (p.price ? '<b>$' + p.price + '</b>' : '')
+                      + '</a>';
+                  }).join('');
+                }
+                dd.classList.add('on');
+              }).catch(function(){});
+          }, 250);
+        });
+        document.addEventListener('click', function(e){ if (!w.contains(e.target)) dd.classList.remove('on'); });
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', widget); else widget();
+    setTimeout(widget, 900);
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgStars) return; window.pgStars = 1;
+    var P=[[34,16,0],[62,10,.6],[20,13,1.4],[52,20,2.1],[30,10,.9],[64,15,1.8],[24,11,.3],[50,18,2.6],[34,11,1.1],[58,14,2.9]];
+    var cols=['#B478E0','#C9A6E8','#9B4BC4'];
+    var lastH=0;
+    function docH(){var st=document.querySelectorAll('.pgf-stars'),i;for(i=0;i<st.length;i++)st[i].style.display='none';var b=document.body,e=document.documentElement;var h=Math.max(b.scrollHeight,e.scrollHeight,e.clientHeight);for(i=0;i<st.length;i++)st[i].style.display='';return h;}
+    function build(){
+      var H=docH(); lastH=H;
+      ['l','r'].forEach(function(cls,side){
+        var d=document.querySelector('.pgf-stars.'+cls);
+        if(!d){d=document.createElement('div');d.className='pgf-stars '+cls;d.setAttribute('aria-hidden','true');document.body.appendChild(d);}
+        d.style.height=H+'px';
+        var html='',step=120,n=Math.ceil(H/step);
+        for(var i=0;i<n;i++){
+          var p=P[(i+side*3)%P.length];
+          var top=i*step+((i*37+side*53)%76);
+          var left=p[0]+((i*29)%26)-13; if(left<4)left=4; if(left>76)left=76;
+          html+='<i style="top:'+top+'px;left:'+left+'%;width:'+p[1]+'px;height:'+p[1]+'px;animation-delay:'+(((i%7)*0.45)+(p[2]%1))+'s;background:'+cols[i%3]+'"></i>';
+        }
+        d.innerHTML=html;
+      });
+    }
+    function tick(){var H=docH(); if(Math.abs(H-lastH)>200) build();}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',build);else build();
+    setTimeout(build,900); setInterval(tick,1500);
+    window.addEventListener('resize',function(){setTimeout(build,250);});
+  })();
+</script>
+<script>
+  (function(){
+    if (window.pgFallbackHead) return; window.pgFallbackHead = 1;
+    function head(){
+      if (document.querySelector('.pgh-head,.pgx-head,.pgc-head,[data-pgf-head]')) return;
+      var c = document.getElementById('content') || document.body;
+      var d = document.createElement('div');
+      d.setAttribute('data-pgf-head', '1');
+      d.innerHTML = '<div class="pgf-announce">Free shipping on all orders</div>'
+        + '<div class="pgf-head"><a href="/"><img src="https://cdn.shopify.com/s/files/1/0815/5706/1860/files/Gemini_Generated_Image_utaycgutaycgutay.png" alt="PocketEra"></a></div>'
+        + '<nav class="pgf-nav"><a href="/">Home</a><a href="/pages/track-order">Track your order</a><a href="/pages/contact">Contact</a></nav>';
+      c.insertBefore(d, c.firstChild);
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', head); else head();
+    setTimeout(head, 600);
+  })();
+</script>
+<style>
+  /* 30-day guarantee: beating live dot */
+  @keyframes pgBeatDot{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(122,47,162,.55)}50%{transform:scale(1.35);box-shadow:0 0 0 9px rgba(122,47,162,0)}}
+  @keyframes pgBeatPill{0%,100%{box-shadow:0 0 0 1px rgba(122,47,162,.3),0 0 0 0 rgba(122,47,162,0)}50%{box-shadow:0 0 0 1px rgba(122,47,162,.3),0 12px 30px -12px rgba(122,47,162,.6)}}
+  #pgx .pgx-guar{animation:pgBeatPill 2.4s ease-in-out infinite}
+  #pgx .pgx-guar:before{animation:pgBeatDot 1.6s ease-in-out infinite}
+  /* Bottom sticky buy bar (product pages) */
+  #pg-sticky{position:fixed;left:0;right:0;bottom:0;z-index:55;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-top:1px solid rgba(122,47,162,.22);box-shadow:0 -14px 34px -20px rgba(74,28,102,.45);display:none;padding:10px clamp(14px,4vw,40px)}
+  #pg-sticky,#pg-sticky.on{display:none !important}
+  .pgst-in{display:flex;align-items:center;gap:14px;max-width:1100px;margin:0 auto;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  .pgst-t{font-weight:700;color:#121212;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1 1 auto}
+  .pgst-p{font-weight:800;color:#7A2FA2;font-size:17px;white-space:nowrap}
+  .pgst-p s{color:#8a8a8a;font-weight:400;font-size:13px;margin-right:6px}
+  .pgst-b{flex:0 0 auto;border:0;cursor:pointer;font-family:inherit;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;background-color:#7A2FA2;color:#fff;font-weight:700;font-size:14px;letter-spacing:.06em;text-transform:uppercase;padding:13px 30px;border-radius:999px;box-shadow:0 12px 26px -12px rgba(122,47,162,.65)}
+  .pgst-b:hover{background:#4A1C66 !important;background-color:#4A1C66 !important}
+  html body .pgst-b::before,html body .pgst-b::after{display:none !important;content:none !important;background:none !important;animation:none !important}
+  @media(max-width:700px){.pgst-t{display:none}.pgst-in{gap:10px}.pgst-b{flex:1 1 auto;padding:14px 10px}.pgst-p{font-size:16px}}
+  /* You may also like, under the PDP gallery stack */
+  .pgu-yml{margin:30px 0 10px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;grid-column:1/-1;width:100%}
+  .pgu-yml-eye{color:#7A2FA2;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;text-align:center;margin-bottom:6px}
+  .pgu-yml{margin:48px auto 16px !important;max-width:1120px !important;width:auto !important;padding:0 20px}
+  #pgx .pgx-quote[data-pg-moved]{max-width:640px;margin:44px auto 0 !important}
+  .pgu-yml h3{font-size:22px;font-weight:700;color:#121212;margin:0 0 16px;text-align:center}
+  .pgu-yml-grid{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+  .pgu-yml-grid a{width:min(240px,46%)}
+  .pgu-yml-grid a{display:block;text-decoration:none;color:inherit;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 14px 34px -24px rgba(18,4,28,.5);transition:transform .2s ease}
+  .pgu-yml-grid a:hover{transform:translateY(-3px)}
+  .pgu-yml-grid img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block}
+  .pgu-yml-grid .t{font-size:14px;font-weight:600;color:#1c1c1c;padding:10px 12px 2px}
+  .pgu-yml-grid .p{font-size:14.5px;font-weight:700;color:#7A2FA2;padding:0 12px 12px}
+  .pgu-yml-grid .p s{color:#8a8a8a;font-weight:400;font-size:12.5px;margin-right:6px}
+  /* Mobile pass */
+  @media(max-width:760px){
+    .pgh-head-in,.pgx-head-in,.pgc-head-in{padding-left:14px !important;padding-right:14px !important;gap:8px !important}
+    .pgh-logo img,.pgf-head img{max-height:72px !important}
+    .pgh-logo-text{font-size:30px !important}
+    .pgh-nav{gap:16px !important;padding:6px 10px 12px !important}
+    .pgh-nav a,.pgx-nav a,.pgc-nav a,.pgf-nav a{font-size:15px !important}
+    #pgh .pgh-grid .pgh-card{width:100% !important}
+    .pgh-h2{font-size:26px !important}
+    .pgh-wrap{padding-left:16px !important;padding-right:16px !important}
+    .pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce{font-size:10.5px !important;padding:9px 10px !important}
+    .pgh-ic svg,.pgx-ic svg,.pgc-ic svg{width:24px !important;height:24px !important}
+    .pgu-yml-grid a{width:46%}
+    .pgh-split{grid-template-columns:1fr !important;margin-top:40px !important}
+    .pgh-split-l{padding:36px 24px !important}
+    .pgh-split-l h2{font-size:30px !important}
+  }
+</style>
+<script>
+/* ONE CATALOGUE READ PER PAGE, SHARED BY THIS WHOLE FILE.
+   Two blocks below each download /products.json?limit=50 -- yml() for "You may
+   also like" and pgDuo's build() for the Duo Pack prices -- and each can do it
+   more than once:
+
+     - pgDuo's build() runs on a 2500ms interval and guards on
+       `first.dataset.pgSingled`, where `first` is
+       document.querySelector('#pgx .pgx-tile'). pgLadder inserts its own
+       .pgx-lad tiles BEFORE the theme's first tile, so `first` becomes a ladder
+       tile that never carried the flag and the guard misses on the pass right
+       after the ladder builds.
+     - yml() runs at DOMContentLoaded and again at 1200ms, and its
+       `document.querySelector('.pgu-yml')` guard is tested BEFORE its own fetch
+       resolves, so the second call can start a second download of the same
+       catalogue.
+
+   Measured on the orb page with both blocks live: three downloads of the same
+   50-product payload (t=27ms, 30ms, 1017ms) per product page view, on mobile
+   data. Sharing one in-flight promise takes it to one, with every DOM outcome
+   identical -- ladder tiles, the Bundle & Save label, the "You may also like"
+   grid and the singling all unchanged.
+
+   The guard is NOT re-pointed at '#pgx .pgx-tile:not(.pgx-lad)', which is the
+   more correct reading of `first` and what pgLadder itself uses: that would also
+   MOVE the singling, and today pgDuo strips the radio dot from the first LADDER
+   tile, which is what is on screen. Changing which tile loses its dot is a
+   visible change nobody asked for.
+
+   A FAILED read clears the cache so callers can retry -- caching a rejected
+   promise forever would turn one bad response into a permanently missing Duo
+   Pack and no "You may also like". */
+(function(){
+  if (window.pgCatalog) return;
+  var CACHE = null;
+  window.pgCatalog = function(){
+    if (!CACHE){
+      CACHE = fetch('/products.json?limit=50').then(function(r){ return r.json(); });
+      CACHE.catch(function(){ CACHE = null; });
+    }
+    return CACHE;
+  };
+})();
+</script>
+<script>
+  (function(){
+    if (window.pgWire) return; window.pgWire = 1;
+    /* Pop-out cart: refresh the drawer section markup, then slide it out */
+    window.pgOpenCart = function(){
+      if (window.pgGiftSync) setTimeout(window.pgGiftSync, 60);
+      var done=function(){ if (window.openPanel) { openPanel('cart'); } else { window.location.href='/cart'; } };
+      fetch('/?sections=side-cart').then(function(r){return r.json();}).then(function(j){
+        var html=j['side-cart']||'';
+        var t=document.createElement('div'); t.innerHTML=html;
+        var fresh=t.querySelector('#cart'), cur=document.getElementById('cart');
+        if(fresh&&cur){cur.innerHTML=fresh.innerHTML;}
+        /* SAME CONTRACT AS pgDrawerRefresh. That path announces its swap with
+           pg:cart-updated and every drawer section rebuilds on it -- the
+           storage picker (pg-cart-variants), the spare-case offer and gift
+           cell (pg-cart-tune). This path replaced the same markup silently,
+           so a pack added from the product page arrived in the drawer with
+           no storage dropdown until some later write happened to fire the
+           event. Measured on the Trio Pack: no picker after Add to cart,
+           picker within 2.5s of the event being dispatched by hand. */
+        try { document.dispatchEvent(new CustomEvent('pg:cart-updated')); } catch(e){}
+        done();
+      }).catch(done);
+    };
+    document.addEventListener('click', function(e){
+      var a=e.target.closest&&e.target.closest('a[href$="/cart"],a[href*="/cart?"]');
+      if(!a)return;
+      if(a.closest('#cart'))return;
+      e.preventDefault(); e.stopPropagation();
+      window.pgOpenCart();
+    }, true);
+    /* Bottom sticky buy bar on product pages */
+    function stickyTick(){
+      var atc=document.getElementById('pgx-atc');
+      var bar=document.getElementById('pg-sticky');
+      if(!atc){ if(bar) bar.classList.remove('on'); return; }
+      if(!bar){
+        bar=document.createElement('div'); bar.id='pg-sticky';
+        bar.innerHTML='<div class="pgst-in"><span class="pgst-t"></span><span class="pgst-p"></span><button type="button" class="pgst-b">Add to cart</button></div>';
+        document.body.appendChild(bar);
+        bar.querySelector('.pgst-b').addEventListener('click',function(){ atc.click(); });
+      }
+      var h1=document.querySelector('#pgx h1')||document.querySelector('h1');
+      if(h1) bar.querySelector('.pgst-t').textContent=h1.textContent.replace(/\s+/g,' ').trim();
+      var sel=document.querySelector('.pgx-tile.pgx-sel')||document.querySelector('.pgx-tile');
+      if(sel){
+        var m=(sel.textContent.match(/\$[0-9][0-9.,]*/g)||[]);
+        var pEl=bar.querySelector('.pgst-p');
+        if(m.length){ pEl.innerHTML=(m.length>1?'<s>'+m[1]+'</s>':'')+m[0]; }
+      }
+      var cart=document.getElementById('cart');
+      var open=cart&&/(^|\s)toggle(\s|$)/.test(cart.className);
+      var r=atc.getBoundingClientRect();
+      var out=(r.width===0&&r.height===0)?(window.pageYOffset>500):(r.bottom<0||r.top>window.innerHeight);
+      if(out&&!open){ bar.classList.add('on'); } else { bar.classList.remove('on'); }
+    }
+    /* Bottom sticky buy bar removed by request. The top 10% OFF cart bar
+       (pg-cart-sticky's #pg-cartfab) is the one sticky element that stays.
+       stickyTick is kept but never scheduled, and the CSS above pins
+       #pg-sticky to display:none in case anything else ever builds it. */
+    /* You may also like: every other product, under the gallery stack */
+    function yml(){
+      var gal=document.querySelector('.pgx-gallery');
+      if(!gal||document.querySelector('.pgu-yml'))return;
+      var cur=(location.pathname.match(/\/products\/([^\/?#]+)/)||[])[1];
+      if(!cur)return;
+      window.pgCatalog().then(function(j){
+        var ps=(j.products||[]).filter(function(p){var v=(p.variants&&p.variants[0])||{};return p.handle!==cur&&p.images&&p.images.length&&parseFloat(v.price||0)>0;});
+        if(!ps.length||document.querySelector('.pgu-yml'))return;
+        var d=document.createElement('div'); d.className='pgu-yml';
+        d.innerHTML='<div class="pgu-yml-eye">Keep exploring</div><h3>You may also like</h3><div class="pgu-yml-grid">'+
+          ps.map(function(p){
+            var v=(p.variants&&p.variants[0])||{};
+            var now=parseFloat(v.price||0), was=parseFloat(v.compare_at_price||0);
+            return '<a href="/products/'+p.handle+'"><img loading="lazy" src="'+p.images[0].src+'" alt=""><div class="t">'+p.title+'</div><div class="p">'+(was>now?'<s>$'+was.toFixed(2)+'</s>':'')+'$'+now.toFixed(2)+'</div></a>';
+          }).join('')+'</div>';
+        var main=document.querySelector('#pgx .pgx-main');
+        if(main&&main.parentElement){
+          var qm=document.querySelector('#pgx .pgx-quote[data-pg-moved]');
+          var ref=(qm&&qm.parentElement===main.parentElement)?qm.nextSibling:main.nextSibling;
+          main.parentElement.insertBefore(d,ref);
+        }else{gal.appendChild(d);}
+      }).catch(function(){});
+    }
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',yml);else yml();
+    setTimeout(yml,1200);
+  })();
+</script>
+<script>
+(function(){
+  if (window.pgPayRow) return; window.pgPayRow = 1;
+  window.pgDrop = function(opts, initId, onChange){
+    var w = document.createElement('div'); w.className = 'pg-drop';
+    var head = document.createElement('div'); head.className = 'pg-drop-h';
+    var list = document.createElement('div'); list.className = 'pg-drop-l';
+    var cur = opts.filter(function(o){ return String(o.id) === String(initId); })[0] || opts[0];
+    function setCur(o){
+      cur = o; head.innerHTML = '';
+      var im = new Image(); im.src = o.img;
+      var sp = document.createElement('span'); sp.textContent = o.t;
+      var car = document.createElement('b'); car.innerHTML = '&#9662;';
+      head.appendChild(im); head.appendChild(sp); head.appendChild(car);
+    }
+    opts.forEach(function(o){
+      var r = document.createElement('div'); r.className = 'pg-drop-r';
+      var im = new Image(); im.src = o.img;
+      var sp = document.createElement('span'); sp.textContent = o.t;
+      r.appendChild(im); r.appendChild(sp);
+      r.addEventListener('click', function(e){ e.stopPropagation(); setCur(o); w.classList.remove('on'); if (onChange) onChange(o); });
+      list.appendChild(r);
+    });
+    setCur(cur);
+    head.addEventListener('click', function(e){
+      e.stopPropagation(); e.preventDefault();
+      document.querySelectorAll('.pg-drop.on').forEach(function(d2){ if (d2 !== w) d2.classList.remove('on'); });
+      w.classList.toggle('on');
+    });
+    document.addEventListener('click', function(){ w.classList.remove('on'); });
+    w.appendChild(head); w.appendChild(list);
+    w.pgValue = function(){ return cur.id; };
+    return w;
+  };
+  function put(){
+    if (document.querySelector('.pg-payrow')) return;
+    var tpl = document.getElementById('pg-paytpl'); if (!tpl || !tpl.innerHTML) return;
+    var foot = document.querySelector('.shopify-section-group-footer-group') || document.getElementById('footer') || document.querySelector('footer');
+    if (!foot) return;
+    var row = document.createElement('div'); row.className = 'pg-payrow'; row.innerHTML = tpl.innerHTML;
+    var all = foot.querySelectorAll('*'), cr = null;
+    for (var i = 0; i < all.length; i++){
+      var e = all[i];
+      if (!e.children.length && /(\u00a9|&copy;|Pocket Era)/i.test(e.textContent) && e.textContent.length < 120){ cr = e; break; }
+    }
+    if (cr){ var blk = cr.parentElement || foot; blk.parentElement.insertBefore(row, blk); }
+    else foot.appendChild(row);
+  }
+  function subWhite(){
+    var sel = document.querySelectorAll('#pgx .pgx-tile.pgx-sel .pgx-tile-sub');
+    for (var i = 0; i < sel.length; i++){
+      var tile = sel[i].closest('.pgx-tile'); if (!tile) continue;
+      var m = (getComputedStyle(tile).backgroundColor || '').match(/\d+/g); if (!m) continue;
+      var L = m[0] * .299 + m[1] * .587 + m[2] * .114;
+      sel[i].style.setProperty('color', L < 150 ? '#fff' : '#7A2FA2', 'important');
+    }
+  }
+  function paint(){
+    var A = 'linear-gradient(90deg,#2E0E44 0%,#6B2894 22%,#C08BE8 50%,#6B2894 78%,#2E0E44 100%)';
+    var G = 'linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)';
+    document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(e){
+      if (e.dataset.pgPaint) return; e.dataset.pgPaint = 1;
+      e.style.setProperty('background-image', A, 'important');
+      e.style.setProperty('background-size', '220% 100%', 'important');
+    });
+    /* THE WAVE, SLOWER (2026-09-11, by request: "nice but always too dynamic").
+       These are the ADD TO CART buttons -- the product page's, the sticky bar's,
+       the home cards' and the console tiles' own in pg-r36s-mobile -- and every
+       one of them now runs the same 8s cycle (one pass of the highlight every
+       4s), where this stamp alone ran 3.2s and the stylesheets 5s. The chips,
+       ribbons and badges ("+ FREE Case", the sale badge) run 8s too: the owner
+       noticed the tile's FREE Case pill and its ADD TO CART moving together and
+       asked for slower, not different, so every pgShiftT on the site keeps one
+       duration and they stay in step. */
+    document.querySelectorAll('#pgx .pgx-atc,.pgst-b').forEach(function(e){
+      if (e.dataset.pgPaint) return; e.dataset.pgPaint = 1;
+      e.style.setProperty('background-image', 'linear-gradient(115deg,#C08BE8 0%,#9B4BC4 20%,#7A2FA2 40%,#4A1C66 56%,#7A2FA2 74%,#C08BE8 100%)', 'important');
+      e.style.setProperty('background-size', '320% 320%', 'important');
+      e.style.setProperty('animation', 'pgShiftT 8s ease-in-out infinite', 'important');
+    });
+    document.querySelectorAll('#pgx .pgx-guar').forEach(function(e){
+      if (e.dataset.pgPaint) return; e.dataset.pgPaint = 1;
+      e.style.setProperty('background-image', 'linear-gradient(120deg,#FFFFFF,#F4EAFB)', 'important');
+      e.style.setProperty('color', '#7A2FA2', 'important');
+    });
+  }
+  function paintNews(){
+    var nf = document.querySelector('.shopify-section[id*="__footer"] form.contact-form');
+    if (!nf || nf.dataset.pgPaint) return;
+    nf.dataset.pgPaint = 1;
+    var wrap = nf.parentElement;
+    var bgm = (getComputedStyle(wrap).backgroundColor || '').match(/\d+/g);
+    var lum = bgm ? (bgm[0] * .299 + bgm[1] * .587 + bgm[2] * .114) : 255;
+    var txt = lum < 120 ? '#FFFFFF' : '#2A1440';
+    wrap.querySelectorAll('*').forEach(function(el){
+      if (el.tagName === 'IFRAME' || el.closest('[data-shop-follow]')) return;
+      el.style.setProperty('background-color', 'transparent', 'important');
+      el.style.setProperty('color', txt, 'important');
+    });
+    var em = nf.querySelector('input[type="email"],input:not([type="submit"])');
+    if (em){
+      em.style.setProperty('background', '#fff', 'important');
+      em.style.setProperty('border', '1.5px solid rgba(122,47,162,.4)', 'important');
+      em.style.setProperty('border-radius', '10px', 'important');
+      em.style.setProperty('color', '#2A1440', 'important');
+    }
+    var btn = nf.querySelector('button,[type="submit"]');
+    if (btn){
+      btn.style.setProperty('background-image', 'linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)', 'important');
+      btn.style.setProperty('background-color', '#7A2FA2', 'important');
+      btn.style.setProperty('background-size', '240% 240%', 'important');
+      btn.style.setProperty('animation', 'pgShiftT 8s ease-in-out infinite', 'important');
+      btn.style.setProperty('color', '#fff', 'important');
+      btn.style.setProperty('border', 'none', 'important');
+      btn.style.setProperty('border-radius', '999px', 'important');
+      btn.querySelectorAll('*').forEach(function(k){
+        k.style.setProperty('color', '#fff', 'important');
+        k.style.setProperty('-webkit-text-fill-color', '#fff', 'important');
+      });
+    }
+  }
+  function killUsdc(){
+    document.querySelectorAll('.pgx-pay svg, .pg-payrow svg, #cart .l4pm svg').forEach(function(sv){
+      if (sv.dataset.pgUsdc) return;
+      var t = sv.querySelector('title');
+      if (t && /usdc/i.test(t.textContent)){ sv.dataset.pgUsdc = 1; sv.style.setProperty('display', 'none', 'important'); var li = sv.closest('li'); if (li) li.style.setProperty('display', 'none', 'important'); }
+    });
+  }
+  function moveQuote(){
+    var q=document.querySelector('#pgx .pgx-quote');
+    var main=document.querySelector('#pgx .pgx-main');
+    if(!q||!main||!main.parentElement||q.dataset.pgMoved)return;
+    q.dataset.pgMoved='1';
+    var yl=document.querySelector('.pgu-yml');
+    if(yl&&yl.parentElement===main.parentElement)main.parentElement.insertBefore(q,yl);
+    else main.parentElement.insertBefore(q,main.nextSibling);
+  }
+  function cardAtc(){
+    document.querySelectorAll('#pgh .pgh-card').forEach(function(card){
+      var b = card.querySelector('.pgh-atc');
+      if (!b) return;
+      if (!b.dataset.pgMoved){ b.dataset.pgMoved = '1'; card.appendChild(b); }
+      if (!b.dataset.pgStyled){
+        b.dataset.pgStyled = '1';
+        var G = 'linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%)';
+        ['position:static','left:auto','right:auto','top:auto','bottom:auto','transform:none','display:block','width:calc(100% - 24px)','margin:10px 12px 14px','padding:11px 16px','border:none','border-radius:999px','background-color:#7A2FA2','background-size:240% 240%','color:#fff','font-weight:700','font-size:13.5px','letter-spacing:.05em','text-transform:uppercase','line-height:1.2','height:auto','min-height:0','text-align:center','box-shadow:0 10px 24px -12px rgba(122,47,162,.7)'].forEach(function(kv){
+          var i2 = kv.indexOf(':');
+          b.style.setProperty(kv.slice(0, i2), kv.slice(i2 + 1), 'important');
+        });
+        b.style.setProperty('background-image', G, 'important');
+        b.style.setProperty('animation', 'pgShiftT 8s ease-in-out infinite', 'important');
+      }
+    });
+  }
+  function titleStars(){
+    var h2 = document.querySelector('#pgh .pgh-wrap .pgh-h2');
+    if (!h2 || h2.dataset.pgTw) return;
+    h2.dataset.pgTw = '1';
+    var sp = document.createElement('span');
+    sp.className = 'pgh-tw';
+    while (h2.firstChild) sp.appendChild(h2.firstChild);
+    h2.appendChild(sp);
+    var cols = ['#B478E0', '#C9A6E8', '#9B4BC4'];
+    var P = [['left', -66, -6, 15, 0], ['left', -38, 26, 10, .8], ['left', -96, 16, 12, 1.6], ['left', -50, -28, 9, 2.3], ['right', -66, -6, 15, .4], ['right', -38, 26, 10, 1.2], ['right', -96, 16, 12, 2.0], ['right', -50, -28, 9, 2.7]];
+    P.forEach(function(p, i){
+      var st = document.createElement('i');
+      st.style.cssText = p[0] + ':' + p[1] + 'px;top:' + p[2] + 'px;width:' + p[3] + 'px;height:' + p[3] + 'px;background:' + cols[i % 3] + ';animation-delay:' + p[4] + 's';
+      sp.appendChild(st);
+    });
+  }
+  function tilePaint(){
+    var bss = document.querySelectorAll('#pgx .pgx-bs');
+    for (var bi = 1; bi < bss.length; bi++) bss[bi].remove();
+    document.querySelectorAll('#pgx .pgx-storage-lb').forEach(function(l){ l.remove(); });
+    document.querySelectorAll('#pgx .pgx-tile').forEach(function(t){
+      var key = t.classList.contains('pgx-sel') ? 's' : 'u';
+      if (t.dataset.pgTp === key) return;
+      t.dataset.pgTp = key;
+      t.style.setProperty('background', key === 's' ? '#1C1428' : '#16101F', 'important');
+      t.style.setProperty('border-color', key === 's' ? '#8B44BE' : 'rgba(255,255,255,.14)', 'important');
+      t.querySelectorAll('*').forEach(function(el){
+        /* The add-on row and the pg-drop pickers own their styling. Stamping
+           them here is what made every bundle selection flicker: this wrote
+           58px on picker thumbnails and pg-pick-size wrote 30px right back
+           (231 IMG style mutations measured across three tile clicks), and it
+           blew the add-on row's 24px thumb up to 58px and its purple price to
+           white. */
+        /* the tier note owns its colours too: this stamp wrote color:#fff
+           !important onto its <b>s and flattened the lavender highlights */
+        if (el.closest && (el.closest('.pg-tadd') || el.closest('.pg-drop') || el.closest('.pgx-tier-note'))) return;
+        if (el.tagName === 'IMG'){
+          el.style.setProperty('object-fit', 'cover', 'important');
+          el.style.setProperty('aspect-ratio', '1/1', 'important');
+          el.style.setProperty('width', el.closest('.pgx-trio') ? '56px' : (el.closest('.pgx-duo-u') ? '86px' : '58px'), 'important');
+          el.style.setProperty('height', 'auto', 'important');
+          el.style.setProperty('border-radius', '10px', 'important');
+          return;
+        }
+        if (el.tagName === 'OPTION') return;
+        if (el.tagName === 'SELECT'){
+          if (el.closest('.pgx-lad-selw')){
+            el.style.setProperty('border', 'none', 'important');
+            el.style.setProperty('background-color', 'transparent', 'important');
+            el.style.setProperty('color', '#fff', 'important');
+            el.style.setProperty('height', '28px', 'important');
+            el.style.setProperty('font-size', '12.5px', 'important');
+            return;
+          }
+          if (!el.dataset.pgGb){
+            el.dataset.pgGb = '1';
+            Array.prototype.slice.call(el.options).forEach(function(o){
+              if (o.textContent.indexOf('/') > -1) o.textContent = o.textContent.split('/').pop().replace(/^\s+|\s+$/g, '');
+            });
+          }
+          ['background-color:#16101F','color:#fff','border:1.5px solid rgba(139,68,190,.75)','height:30px','min-height:0','padding:2px 26px 2px 10px','font-size:12.5px','border-radius:8px','width:auto','max-width:140px','line-height:1.2','appearance:none','-webkit-appearance:none','background-repeat:no-repeat','background-position:right 8px center'].forEach(function(kv){
+            var i3 = kv.indexOf(':');
+            el.style.setProperty(kv.slice(0, i3), kv.slice(i3 + 1), 'important');
+          });
+          /* INSIDE A PACK UNIT THE SELECT IS THE COLUMN'S WIDTH, NEVER WIDER.
+             Its intrinsic width comes from its longest option, and a wide
+             option is what pushed three columns to 458px inside a 291px body
+             at 375px. Filling the column and forbidding overflow makes the
+             grid's minmax(0,1fr) actually able to shrink. */
+          if (el.closest('.pgx-duo-u')){
+            el.style.setProperty('width', '100%', 'important');
+            el.style.setProperty('max-width', '100%', 'important');
+            el.style.setProperty('box-sizing', 'border-box', 'important');
+            el.style.setProperty('min-width', '0', 'important');
+            if (el.closest('.pgx-trio')){
+              el.style.setProperty('padding', '2px 18px 2px 6px', 'important');
+              el.style.setProperty('font-size', '11.5px', 'important');
+            }
+          }
+          el.style.setProperty('background-image', 'url("data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 viewBox=%220 0 10 6%22><path d=%22M1 1l4 4 4-4%22 stroke=%22%23C79BEA%22 stroke-width=%221.8%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>")', 'important');
+          return;
+        }
+        var mut = el.tagName === 'S' || /pgx-sstrike|old-price/.test(el.className || '');
+        el.style.setProperty('color', mut ? 'rgba(255,255,255,.55)' : '#fff', 'important');
+      });
+    });
+  }
+  function accPaint(){
+    document.querySelectorAll('#pgx .pgx-acc details[open]').forEach(function(d){
+      if (!d.dataset.pgClosed){ d.dataset.pgClosed = '1'; d.removeAttribute('open'); }
+    });
+    document.querySelectorAll('#pgx .pgx-acc details').forEach(function(d){
+      if (d.dataset.pgAp) return;
+      d.dataset.pgAp = '1';
+      d.style.setProperty('border', '1.5px solid rgba(139,68,190,.5)', 'important');
+      d.style.setProperty('border-radius', '14px', 'important');
+      d.style.setProperty('margin-bottom', '12px', 'important');
+      d.style.setProperty('padding', '0 18px', 'important');
+      d.style.setProperty('background', '#16101F', 'important');
+    });
+  }
+  function bsFix(){
+    var bs = document.querySelector('#pgx .pgx-bs');
+    if (!bs) return;
+    var tiles = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile')).filter(function(t){
+      return getComputedStyle(t).display !== 'none';
+    });
+    if (!tiles.length) return;
+    var target = tiles[0];
+    if (bs.nextElementSibling !== target && target.parentElement) target.parentElement.insertBefore(bs, target);
+  }
+  function tick(){ put(); subWhite(); paint(); paintNews(); killUsdc(); moveQuote(); cardAtc(); titleStars(); tilePaint(); accPaint(); bsFix(); }
+  /* The selected tile's purple border is stamped INLINE by tilePaint, which
+     used to run only on the 1600ms interval - so a click showed its highlight
+     up to 1.6s late (the stale inline border-color outranked the .pgx-sel
+     CSS). Repaint on the click itself, after the handlers have flipped the
+     classes. */
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('#pgx .pgx-tile')){
+      /* setTimeout, not rAF: it must land after the click handlers flip the
+         classes, and it must still fire when the tab is hidden */
+      setTimeout(tilePaint, 0);
+      setTimeout(tilePaint, 60);
+    }
+  }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tick); else tick();
+  setTimeout(tick, 900); setInterval(tick, 1600);
+})();
+</script>
+<script>
+(function(){
+  if (window.pgDuo) return; window.pgDuo = 1;
+  var VARS = null, BUSY = false;
+  function money(n){ return '$' + n.toFixed(2); }
+  /* THE PACK'S OWN PRICE, NEVER A DERIVED ONE.
+
+     This used to compute the duo total as first console + second console minus
+     25% of the left one, mirroring the "R36S - 2nd Console 25% Off" BXGY. That
+     discount was RETIRED on 2026-09-10 and each pack now carries its own tier
+     price, so the derivation went stale the moment the singles were repriced:
+     the tile advertised $131.23 for a pack the till charged $135.98. Showing a
+     price checkout will not honor is the one thing this store must never do,
+     so the figure is read from the pack product itself and the tile and the
+     till cannot disagree again.
+
+     Keyed on the SORTED pair, so 64+128 and 128+64 resolve to one entry. The
+     duo carried a duplicate 128GB+64GB variant priced $2.50 apart from its
+     twin; sorting means a mixed pack can only ever find the survivor. */
+  var PACK = null;
+  function sizeOf(v){ return /128/.test(v.t) ? '128' : '64'; }
+  function packKey(){
+    return Array.prototype.slice.call(arguments).sort().join('|');
+  }
+  function loadPack(j, handle){
+    var dp = (j.products || []).filter(function(x){ return x.handle === handle; })[0];
+    if (!dp) return null;
+    var out = {};
+    (dp.variants || []).forEach(function(v){
+      var sizes = String(v.title).match(/\d+(?=GB)/g);
+      if (!sizes || !sizes.length) return;
+      /* FIRST MATCH WINS. The duo's retired 128GB+64GB duplicate sits after
+         the surviving 64GB+128GB in variant order and keys identically once
+         sorted; an unguarded write let the retired id overwrite the survivor. */
+      if (out[packKey.apply(null, sizes)]) return;
+      out[packKey.apply(null, sizes)] = {
+        p: parseFloat(v.price || 0),
+        c: parseFloat(v.compare_at_price || 0),
+        id: v.id
+      };
+    });
+    return out;
+  }
+  function calc(tile){
+    if (!VARS) return;
+    /* one picker per console: two on the duo, three on the trio */
+    var sels = tile.querySelectorAll('select');
+    var vs = Array.prototype.map.call(sels, function(s){ return VARS.filter(function(v){ return String(v.id) === s.value; })[0]; });
+    if (vs.length < 2 || vs.some(function(v){ return !v; })) return;
+    var pack = PACK ? PACK[packKey.apply(null, vs.map(sizeOf))] : null;
+    var sep = vs.reduce(function(a, v){ return a + v.p; }, 0);      /* the singles at today's live prices */
+    var total = pack ? pack.p : sep;
+    var orig = (pack && pack.c) ? pack.c : vs.reduce(function(a, v){ return a + (v.c || v.p); }, 0);
+    /* NO SURCHARGE ON THE 128GB OPTION. A "+$13.00 each" hint was tried on
+       the picker and pulled the same day: it foregrounds the upgrade as a cost
+       rather than as storage, and the longer option text widened every
+       <select> to 140px, which pushed both pack bodies past the tile edge at
+       375px. The tile total repricing the instant a size changes is the
+       signal, and it needs no copy. */
+    tile.querySelector('.pgx-duo-px b').textContent = money(total);
+    tile.querySelector('.pgx-duo-px s').textContent = money(orig);
+    var dsv = tile.querySelector('[data-pg-duosave]');
+    /* FLOOR, NEVER ROUND. Rounding a 32.5% saving up to 33% advertises a
+       discount the shopper does not receive. Flooring means the delivered
+       percentage always meets or beats the badge, on every configuration. */
+    if (dsv && orig > total) dsv.textContent = 'SAVE ' + Math.floor((orig - total) / orig * 100) + '%';
+    /* ONE PRICE PER TILE. The per-unit figures went out with the BXGY: there is
+       no longer a discounted console and a full-price one, only a pack price,
+       so printing a struck price under each unit invented a split that does not
+       exist and did not add up to the total above it. Each unit keeps its
+       picker and nothing else. */
+    Array.prototype.forEach.call(tile.querySelectorAll('.pgx-duo-u .pp'), function(pp){ pp.innerHTML = ''; });
+    /* ONE REFERENCE PRICE PER TILE. This line used to read "Sold separately
+       $149.98" (the singles' live prices) beside a badge computed against the
+       $199.98 compare-at total: two references, and a shopper doing the maths
+       on the first one got 9%, not the 32% on the badge. The struck total is
+       the one reference now (it is the sum of the $99.99 / $119.99 each single
+       shows struck), so the sub-line carries no second number. */
+    tile.querySelector('.pgx-duo-t small').textContent = (vs.length === 3 ? 'Three consoles, one price' : 'Two consoles, one price');
+  }
+  function build(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m) return;
+    var isR36 = m[1] === 'handheld-game-console';
+    var first = document.querySelector('#pgx .pgx-tile');
+    if (!first || !first.parentElement) return;
+    if (first.dataset.pgSingled && (!isR36 || document.querySelector('.pgx-duo'))) return;
+    window.pgCatalog().then(function(j){
+      var p = (j.products || []).filter(function(x){ return x.handle === m[1]; })[0];
+      if (!p) return;
+      var duoMap = loadPack(j, 'r36s-duo-pack') || {}, trioMap = loadPack(j, 'r36s-trio-pack') || {};
+      PACK = {};
+      Object.keys(duoMap).forEach(function(k){ PACK[k] = duoMap[k]; });
+      Object.keys(trioMap).forEach(function(k){ PACK[k] = trioMap[k]; });
+      var img = (p.images && p.images[0] && p.images[0].src) || '';
+      VARS = (p.variants || []).map(function(v){ return {id: v.id, t: (v.title.indexOf('/') > -1 ? v.title.split('/').pop() : v.title).replace(/^\s+|\s+$/g, ''), p: parseFloat(v.price || 0), c: parseFloat(v.compare_at_price || 0)}; });
+      if (VARS.length < 1) return;
+      /* Default both Duo Pack slots to the 64G variant. Without an explicit
+         selection the browser takes the first option, which is the 128G one,
+         so the pack opened at the dearer configuration. */
+      var duoDef = VARS.filter(function(v){ return /(^|\D)64/.test(v.t); })[0] || VARS[0];
+      var opts = VARS.map(function(v){ return '<option value="' + v.id + '"' + (v.id === duoDef.id ? ' selected' : '') + '>' + v.t + '</option>'; }).join('');
+      /* BOTH SLOTS ARE FREE AGAIN. The lock existed only because Shopify's
+         BXGY decided which unit got the 25% and always picked the cheaper one.
+         The pack is its own product now, priced per configuration, so nothing
+         is decided at checkout and any pairing can be offered honestly. */
+      if (isR36 && !document.querySelector('.pgx-duo')){
+      var tile = document.createElement('div');
+      tile.className = 'pgx-tile pgx-duo';
+      tile.setAttribute('data-pgx-duo', '1');
+      tile.setAttribute('role', 'radio');
+      tile.setAttribute('aria-checked', 'false');
+      tile.setAttribute('tabindex', '0');
+      tile.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span>'
+        + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
+        + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
+        + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
+        + '<div class="pgx-duo-body" style="border:1px solid rgba(139,68,190,.5);border-radius:12px"><span class="pgx-duo-plus">+</span>'
+        + '<div class="pgx-duo-u" style="border-right:1px solid rgba(139,68,190,.45)"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version 1">' + opts + '</select></div>'
+        + '<div class="pgx-duo-u"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version 2">' + opts + '</select></div></div>';
+      first.parentElement.insertBefore(tile, first.nextSibling);
+      calc(tile);
+      }
+      /* THE TRIO PACK: the duo's parts with a third slot. It wears .pgx-duo as
+         well as .pgx-trio so every rule that already keys on the duo -- the
+         collapsed body when unselected, the ribbon, the one pack-owning add
+         handler in pg-r36s-mobile -- applies unchanged; .pgx-trio carries only
+         the differences (three columns, two joiners, two spares). */
+      if (isR36 && !document.querySelector('.pgx-trio')){
+      var after = document.querySelector('#pgx .pgx-tile.pgx-duo') || first;
+      var trio = document.createElement('div');
+      trio.className = 'pgx-tile pgx-duo pgx-trio';
+      trio.setAttribute('data-pgx-trio', '1');
+      trio.setAttribute('role', 'radio');
+      trio.setAttribute('aria-checked', 'false');
+      trio.setAttribute('tabindex', '0');
+      var unit = function(n){ return '<div class="pgx-duo-u"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version ' + n + '">' + opts + '</select></div>'; };
+      trio.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span>'
+        + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
+        + '<div class="pgx-duo-t"><b>Trio Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
+        + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
+        + '<div class="pgx-duo-body" style="border:1px solid rgba(139,68,190,.5);border-radius:12px"><span class="pgx-duo-plus p1">+</span><span class="pgx-duo-plus p2">+</span>'
+        + unit(1) + unit(2) + unit(3) + '</div>';
+      after.parentElement.insertBefore(trio, after.nextSibling);
+      calc(trio);
+      }
+      /* the tier notes, one per tile; the bottom deal note is retired on this page */
+      if (isR36){
+        var noteFor = function(t, html){
+          if (!t || t.querySelector('.pgx-tier-note')) return;
+          var n = document.createElement('div');
+          n.className = 'pgx-tier-note';
+          n.innerHTML = html;
+          /* under the pickers, ahead of the spare-case add-on row pgTileAdd appends later */
+          var body = t.querySelector('.pgx-duo-body'), tadd = t.querySelector('.pg-tadd');
+          if (body && body.parentNode === t) t.insertBefore(n, body.nextSibling);
+          else if (tadd && tadd.parentNode === t) t.insertBefore(n, tadd);   /* the single: above its add-on row too */
+          else t.appendChild(n);
+        };
+        noteFor(first, '<b>One R36S + FREE Case</b>, plus an extra <b>10% off</b> at checkout.');
+        noteFor(document.querySelector('#pgx .pgx-tile.pgx-duo:not(.pgx-trio)'), '<b>Duo Pack + FREE Case</b>, plus an extra <b>10% off</b> at checkout.');
+        noteFor(document.querySelector('#pgx .pgx-tile.pgx-trio'), '<b>Trio Pack + FREE Case</b>, plus an extra <b>10% off</b> at checkout.');
+        var pgx = document.getElementById('pgx');
+        if (pgx) pgx.setAttribute('data-pg-tiernotes', '1');
+      }
+      if (!document.querySelector('.pgx-bs')){
+        var bs = document.createElement('div');
+        bs.className = 'pgx-bs';
+        bs.innerHTML = '<span>Bundle &amp; Save</span>';
+        first.parentElement.insertBefore(bs, first);
+      }
+      if (!first.dataset.pgSingled){
+        first.dataset.pgSingled = '1';
+        var od = first.querySelector('.pgx-duo-dot');
+        if (od) od.remove();
+        if (isR36){
+          var nm = first.querySelector('.pgx-tile-name') || first.querySelector('.pgx-tile-row b, .pgx-tile-row h3');
+          if (nm && !nm.querySelector('.pgx-lad-chip')) nm.insertAdjacentHTML('beforeend', ' <span class="pgx-lad-chip">+ FREE Case</span>');
+          if (!first.querySelector('.pgx-lad-badge') && VARS[0] && VARS[0].c > VARS[0].p){
+            var sb2 = document.createElement('span');
+            sb2.className = 'pgx-lad-badge';
+            sb2.setAttribute('data-pg-singlesave', '1');
+            sb2.textContent = 'SAVE ' + Math.floor((VARS[0].c - VARS[0].p) / VARS[0].c * 100) + '%';
+            first.appendChild(sb2);
+          }
+        }
+        var priceBox = first.querySelector('.pgx-tile-price');
+        if (priceBox && !priceBox.querySelector('.pgx-sstrike') && VARS[0] && VARS[0].c > VARS[0].p){
+          var ss = document.createElement('s');
+          ss.className = 'pgx-sstrike';
+          ss.textContent = money(VARS[0].c);
+          priceBox.appendChild(ss);
+        }
+        var haveSel = first.querySelector('.pgx-tile-opts select');
+        var pills = haveSel ? [] : Array.prototype.slice.call(first.querySelectorAll('.pgx-tile-opts button, .pgx-tile-opts [role="button"], .pgx-tile-opts span'));
+        if (pills.length > 1 && !first.querySelector('.pgx-storage')){
+          var lb = document.createElement('div');
+          lb.className = 'pgx-storage-lb';
+          lb.textContent = 'Storage';
+          var sl = document.createElement('select');
+          sl.className = 'pgx-storage';
+          sl.setAttribute('aria-label', 'Storage');
+          pills.forEach(function(pl, i){
+            var o = document.createElement('option');
+            o.value = String(i);
+            o.textContent = pl.textContent.replace(/^\s+|\s+$/g, '');
+            sl.appendChild(o);
+          });
+          sl.addEventListener('click', function(e){ e.stopPropagation(); });
+          sl.addEventListener('change', function(){
+            var pl = pills[parseInt(sl.value, 10)];
+            if (pl) pl.click();
+            var vv = VARS.filter(function(v){ return v.t === sl.options[sl.selectedIndex].textContent; })[0];
+            var st2 = first.querySelector('.pgx-sstrike');
+            if (vv && st2 && vv.c > vv.p) st2.textContent = money(vv.c);
+            var bd2 = first.querySelector('[data-pg-singlesave]');
+            if (bd2 && vv && vv.c > vv.p) bd2.textContent = 'SAVE ' + Math.floor((vv.c - vv.p) / vv.c * 100) + '%';
+          });
+          var opts2 = first.querySelector('.pgx-tile-opts');
+          opts2.parentElement.insertBefore(lb, opts2);
+          opts2.parentElement.insertBefore(sl, opts2);
+        }
+      }
+      /* ONE WIRING FOR EVERY PACK TILE. The duo and the trio get the same
+         three bindings: storage pickers recalculate their own tile, a tap
+         selects the tile, and a tap on any other tile deselects it. */
+      var wire = function(t){
+        t.querySelectorAll('select').forEach(function(sel){
+          sel.addEventListener('click', function(e){ e.stopPropagation(); });
+          /* THE SLOTS ARE INDEPENDENT. An earlier build copied the changed
+             select's value onto the others, so a mixed pack could not be
+             built at all; calc() reads every picker on its own. */
+          sel.addEventListener('change', function(){ calc(t); });
+        });
+        t.addEventListener('click', function(){
+          document.querySelectorAll('#pgx .pgx-tile.pgx-sel').forEach(function(x){ x.classList.remove('pgx-sel'); x.setAttribute('aria-checked', 'false'); });
+          t.classList.add('pgx-sel');
+          t.setAttribute('aria-checked', 'true');
+        });
+        document.addEventListener('click', function(e){
+          var other = e.target.closest('#pgx .pgx-tile');
+          if (other && other !== t && t.classList.contains('pgx-sel')){
+            t.classList.remove('pgx-sel');
+            t.setAttribute('aria-checked', 'false');
+          }
+        }, true);
+      };
+      if (typeof tile !== 'undefined' && tile) wire(tile);
+      if (typeof trio !== 'undefined' && trio) wire(trio);
+      /* NO ADD-TO-CART HANDLER HERE, ON PURPOSE. This section used to post the
+         two CONSOLE variants the pickers held -- one line at quantity 2, or two
+         lines at 1 -- which bills $149.98 for a pack the tile prices at
+         $135.98. It only ever stayed silent because pg-r36s-mobile takes the
+         click first in the window capture phase and posts the ONE pack line
+         that matches the tile; if that handler ever failed to run, this one
+         would have charged the shopper a price the page never showed. A dead
+         button is the safer failure, so there is one owner and it lives in
+         pg-r36s-mobile. */
+    }).catch(function(){});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+  setTimeout(build, 1000); setInterval(function(){ build(); }, 2500);
+})();
+</script>
+<script>
+(function(){
+  if (window.pgLadder) return; window.pgLadder = 1;
+  var BUSY = false;
+  function money(n){ return '$' + n.toFixed(2); }
+  function build(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    /* Ladder on every product except the console (its own Duo Pack) and the
+       cart-only add-ons. New products get it automatically - but each one
+       needs matching BXGY discounts or the page promises a price checkout
+       will not honour. */
+    /* the packs are sold from the console page; their own pages redirect there
+       (product.redirect-console) and must never grow this ladder, whose tiers
+       mirror discounts the packs do not carry */
+    var NO_LADDER = ['handheld-game-console', 'shipping-protection', 'r36s-protective-case-free-gift', 'r36s-duo-pack', 'r36s-trio-pack'];
+    if (!m || NO_LADDER.indexOf(m[1]) !== -1) return;
+    if (!window.pgDrop) return;
+    if (document.querySelector('.pgx-lad')) return;
+    var first = document.querySelector('#pgx .pgx-tile:not(.pgx-lad)');
+    if (!first || !first.parentElement) return;
+    fetch('/products/' + m[1] + '.js').then(function(r){ return r.json(); }).then(function(p){
+      if (!p || !p.variants || document.querySelector('.pgx-lad')) return;
+      var unit = (p.variants[0].price || 0) / 100;
+      var VOPTS = p.variants.filter(function(v){ return v.available !== false; }).map(function(v){
+        return {id: v.id, t: v.title, img: (v.featured_image && v.featured_image.src) || (p.images && p.images[0]) || ''};
+      });
+      if (!unit || !VOPTS.length) return;
+      var host = first.parentElement;
+      var natives = Array.prototype.slice.call(host.querySelectorAll('.pgx-tile:not(.pgx-lad)'));
+      natives.forEach(function(t){ t.style.setProperty('display', 'none', 'important'); });
+      /* The free LED base ships with the crystal orb only. On any other product
+         — wall art especially — it promised something the order never contains. */
+      var SUB1 = m[1].indexOf('pokemon-crystal') !== -1 ? 'Standard price + FREE LED Base' : 'Standard price';
+      var TIERS = [
+        {n: 1, f: 0, bases: 1, badge: '', title: 'Buy 1', sub: SUB1},
+        {n: 1, f: 0, h: 1, hp: 0.25, bases: 2, badge: 'Most Popular &#128293;', title: 'Duo Pack &mdash; 2nd 25% OFF', sub: ''},
+        {n: 2, f: 0, h: 1, hp: 0.5, bases: 3, badge: '', title: 'Trio Pack &mdash; 3rd 50% OFF', sub: ''},
+        {n: 4, f: 1, bases: 5, badge: 'Best Deal!', title: 'Quad Pack &mdash; +1 FREE', sub: ''}
+      ];
+      var tiles = [];
+      TIERS.forEach(function(T, ti){
+        var half = T.h || 0, hp = (T.hp == null ? 0.5 : T.hp);
+        var pay = (T.n + half * (1 - hp)) * unit, save = (T.f + half * hp) * unit, full = (T.n + T.f + half) * unit;
+        var pct = Math.round(save / full * 100);
+        var tile = document.createElement('div');
+        tile.className = 'pgx-tile pgx-lad' + (ti === 0 ? ' pgx-sel' : '');
+        tile.setAttribute('role', 'radio');
+        tile.setAttribute('aria-checked', ti === 0 ? 'true' : 'false');
+        tile.setAttribute('tabindex', '0');
+        tile.setAttribute('data-pg-tier', String(ti));
+        var chips = T.bases > 1 ? '<span class="pgx-lad-chip">+' + T.bases + (m[1].indexOf('pokemon-crystal') !== -1 ? ' FREE LED Bases' : (m[1].indexOf('wall-art') !== -1 ? ' PRINTS' : ' ITEMS')) + '</span>' : '';
+        /* R36S-style phrasing: name the unit that gets the deal, e.g.
+           "2nd Orb = Extra 25% OFF!" rather than a dollar total. */
+        var NOUN = m[1].indexOf('pokemon-crystal') !== -1 ? 'Orb' : (m[1].indexOf('wall-art') !== -1 ? 'Print' : 'Item');
+        function ord(k){ return k + (k === 1 ? 'st' : k === 2 ? 'nd' : k === 3 ? 'rd' : 'th'); }
+        var note = '';
+        if (half > 0) note = ord(T.n + 1) + ' ' + NOUN + ' = Extra ' + Math.round(hp * 100) + '% OFF!';
+        else if (T.f > 0) note = ord(T.n + 1) + ' ' + NOUN + ' = FREE!';
+        var saveLn = note ? '<div class="pgx-lad-save">' + note + '</div>' : '<div class="pgx-lad-save">' + T.sub + '</div>';
+        tile.innerHTML = (T.badge ? '<span class="pgx-lad-badge">' + T.badge + '</span>' : '')
+          + '<div class="pgx-lad-head"><span class="pgx-duo-dot"></span>'
+          + '<div class="pgx-lad-t"><b>' + T.title + '</b>' + chips + saveLn + '</div>'
+          + '<div class="pgx-lad-px"><b>' + money(pay) + '</b>' + ((T.f > 0 || half > 0) ? '<s>' + money(full) + '</s>' : (unit < ((p.variants[0].compare_at_price || 0) / 100) ? '<s>' + money((p.variants[0].compare_at_price) / 100) + '</s>' : '')) + '</div></div>'
+          + '<div class="pgx-lad-picks"><div class="lbl">' + (m[1].indexOf('pokemon-crystal') !== -1 ? 'Choose your Poke Balls' : (m[1].indexOf('wall-art') !== -1 ? 'Choose your prints' : 'Choose your options')) + '</div></div>';
+        var picks = tile.querySelector('.pgx-lad-picks');
+        var total = T.n + T.f + half;
+        /* One design to choose from means one picker with a x N badge, not
+           N identical dropdowns. */
+        var rows = VOPTS.length > 1 ? total : 1;
+        tile.dataset.pgMul = String(rows === 1 ? total : 1);
+        for (var i = 0; i < rows; i++){
+          var row = document.createElement('div');
+          row.className = 'pgx-lad-row';
+          row.appendChild(window.pgDrop(VOPTS, VOPTS[i % VOPTS.length].id, null));
+          if (rows === 1 && total > 1){
+            var xb = document.createElement('b');
+            xb.textContent = '\u00d7' + total;
+            xb.style.cssText = 'margin-left:10px;font-size:15px;font-weight:700;color:#C79BEA;align-self:center';
+            row.appendChild(xb);
+          }
+          picks.appendChild(row);
+        }
+        host.insertBefore(tile, first);
+        tiles.push(tile);
+        tile.addEventListener('click', function(){
+          tiles.forEach(function(t2){ t2.classList.remove('pgx-sel'); t2.setAttribute('aria-checked', 'false'); t2.dataset.pgTp = ''; });
+          tile.classList.add('pgx-sel');
+          tile.setAttribute('aria-checked', 'true');
+        });
+      });
+      document.addEventListener('click', function(e){
+        var b = e.target.closest('.pgx-atc');
+        if (!b || BUSY) return;
+        var sel = document.querySelector('.pgx-lad.pgx-sel');
+        if (!sel) return;
+        e.preventDefault();
+        e.stopPropagation();
+        BUSY = true;
+        var counts = {};
+        var mul = parseInt(sel.dataset.pgMul || '1', 10) || 1;
+        sel.querySelectorAll('.pgx-lad-picks .pg-drop').forEach(function(d2){
+          var vv = d2.pgValue();
+          counts[vv] = (counts[vv] || 0) + mul;
+        });
+        var items = Object.keys(counts).map(function(k){ return {id: parseInt(k, 10), quantity: counts[k]}; });
+        fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: items})})
+          .then(function(){ BUSY = false; if (window.pgOpenCart) window.pgOpenCart(); })
+          .catch(function(){ BUSY = false; });
+      }, true);
+    }).catch(function(){});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build); else build();
+  setTimeout(build, 1200); setInterval(build, 3000);
+})();
+</script>
+<style>
+  /* ---- In-tile add-on row (frame on the wall art, spare case on the console).
+     A clickable checkbox box that lives INSIDE the selected buy tile, under
+     the pickers, offering the add-on at qty = the units in that tile, with
+     the real compare-at total struck through. Spans, never <button> - the
+     theme paints buttons with a dark ::before overlay. ---- */
+  #pgx .pg-tadd{
+    display:none;
+    align-items:center;gap:8px;
+    margin-top:9px;padding:5px 8px;
+    border:1px solid rgba(168,120,214,.32);border-radius:10px;
+    background:#1C1428;cursor:pointer;
+    -webkit-user-select:none;user-select:none;
+  }
+  /* badge room + anchor: the SAVE pills sit half above the tile edge */
+  #pgx .pgx-tile{position:relative}
+  #pgx .pgx-tile[data-pg-singled]:has(> .pgx-lad-badge){margin-top:20px}
+  #pgx .pgx-tile.pgx-sel .pg-tadd{display:flex}
+  #pgx .pg-tadd.on{border-color:#8B44BE;box-shadow:0 0 0 3px rgba(139,68,190,.18)}
+  #pgx .pg-tadd-ck{
+    flex:none;width:15px;height:15px;border-radius:4px;
+    border:2px solid #8B44BE;background:#0D0714;position:relative;
+  }
+  #pgx .pg-tadd.on .pg-tadd-ck{background:linear-gradient(120deg,#9B4BC4,#7A2FA2 60%,#4A1C66)}
+  #pgx .pg-tadd.on .pg-tadd-ck:after{
+    content:"";position:absolute;left:50%;top:50%;width:4px;height:8px;
+    border:solid #fff;border-width:0 2px 2px 0;
+    /* the tick's visual centre sits below its box centre once rotated, so it
+       is lifted a touch past the geometric middle */
+    transform:translate(-50%,-62%) rotate(45deg);
+  }
+  #pgx .pg-tadd img{width:24px;height:24px;flex:none;border-radius:6px;object-fit:cover;background:#0D0714}
+  #pgx .pg-tadd-t{flex:1;min-width:0;font-size:11.5px;font-weight:700;color:#E4DBEF;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pg-tadd-p{flex:none;font-size:12.5px;font-weight:800;color:#C79BEA;white-space:nowrap}
+  #pgx .pg-tadd-p s{color:rgba(255,255,255,.42);font-weight:400;font-size:10.5px;margin-right:4px}
+  @media (max-width:600px){
+    #pgx .pg-tadd{gap:7px;padding:5px 7px}
+    #pgx .pg-tadd img{width:22px;height:22px}
+    #pgx .pg-tadd-t{font-size:10.5px}
+    #pgx .pg-tadd-p{font-size:11.5px}
+  }
+  /* the frame row runs a size up from the case row, per the owner */
+  #pgx .pg-tadd.pg-tadd-frame{gap:9px;padding:6px 9px}
+  #pgx .pg-tadd.pg-tadd-frame img{width:28px;height:28px;border-radius:7px}
+  #pgx .pg-tadd.pg-tadd-frame .pg-tadd-t{font-size:12.5px}
+  #pgx .pg-tadd.pg-tadd-frame .pg-tadd-p{font-size:13.5px}
+  #pgx .pg-tadd.pg-tadd-frame .pg-tadd-p s{font-size:11px}
+  @media (max-width:600px){
+    #pgx .pg-tadd.pg-tadd-frame{padding:6px 8px}
+    #pgx .pg-tadd.pg-tadd-frame img{width:25px;height:25px}
+    #pgx .pg-tadd.pg-tadd-frame .pg-tadd-t{font-size:11.5px}
+    #pgx .pg-tadd.pg-tadd-frame .pg-tadd-p{font-size:12.5px}
+  }
+  /* the standalone case tile is superseded by the in-tile row - one pitch */
+  #pgx .pgx-case{display:none !important}
+  /* THE REVIEW ROTATOR MUST NOT RESIZE THE PAGE.
+     pg-landing rotates the review inside .pgx-quote on a timer
+     (`setInterval(nextQuote, 6000)`) and the box was sized by whatever review it
+     happened to be showing. Measured at 390px against the wall art's own
+     Judge.me reviews: 94px for a 51-character review, 176px for a 183-character
+     one. An 82px swing, every six seconds, with the shopper touching nothing.
+
+     It lands where it hurts most: pg-mobile's quoteUp() parks this box directly
+     under .pgx-rating, ABOVE the price, the variant picker and ADD TO CART, so
+     the whole buy box slid up and down on a six-second cycle. That is the
+     "the screen keeps adjusting on its own" report.
+
+     The space is RESERVED rather than the rotation slowed: the box takes the
+     height of a three-line review and the text is clamped to three lines, so
+     every quote renders at exactly that height. The clamp alone was not enough
+     -- a long REVIEWER NAME wraps to a second line and still pushed it to 130px
+     -- so the name is held to one line and the height is fixed rather than
+     merely floored. Re-measured across all eight reviews at 390px and 430px:
+     113px for every one, 0px of movement.
+
+     THIS LIVES HERE, not in nc-pgx-style, whose header calls it "PDP polish
+     overrides for pg-landing" and which is the obvious home -- but that section
+     is registered in no section group and in no product template, so it never
+     renders and a rule placed there is dead. pg-theme-css is in footer-group,
+     so it loads on every page, and it already styles .pgx-quote directly above.
+
+     .pgx-quote[data-pg-moved] (line ~433) is the copy moveQuote() drops further
+     down the page; it is a different, non-rotating context and keeps its own
+     sizing, so the fixed height is scoped away from it. */
+  #pgx .pgx-quote:not([data-pg-moved]){height:113px;box-sizing:border-box;overflow:hidden}
+  #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pgx-quote:not([data-pg-moved]) .pgx-quote-txt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+</style>
+<script>
+(function(){
+  if (window.pgTileAdd) return; window.pgTileAdd = 1;
+
+  /* Per-product add-on config. Prices in cents and REAL: unit is what
+     checkout charges, cap is the variant's live compareAtPrice - the struck
+     figure is cap x qty, never invented at render time. If either price
+     moves in admin, move it here too. */
+  var ADDONS = {
+    'lenticular-poster': {
+      cls: 'pg-tadd-frame',
+      variant: 49688364613860,
+      img: 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/blackframe_120x.png?v=1787284280',
+      unit: 1499, cap: 2799,
+      one: 'Add the matching frame',
+      many: 'Add a frame per print'
+    },
+    'handheld-game-console': {
+      variant: 49640879063268,
+      img: 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120',
+      unit: 1399, cap: 2499,
+      one: 'Add a spare protective case',
+      many: 'Add a spare case for each console'
+    }
+  };
+  function cfg(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m) return null;
+    for (var k in ADDONS){ if (m[1].indexOf(k) !== -1) return ADDONS[k]; }
+    return null;
+  }
+  var C = cfg();
+  if (!C) return;
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* units the tile sells: the duo tile is fixed at 2; ladder tiles carry one
+     picker per unit (times data-pg-mul on single-design products); a bare
+     native tile is 1 */
+  function unitsOf(tile){
+    /* SPARES NEEDED, NOT CONSOLES SOLD. The Duo Pack ships two consoles AND a
+       free case, so the shopper needs ONE more case, not two -- this offered
+       "a spare case for each console" at $27.98 next to a pack that already
+       includes one. One case, $13.99. */
+    if (tile.classList.contains('pgx-trio')) return 2;   /* three consoles, one free case */
+    if (tile.classList.contains('pgx-duo')) return 1;
+    var d = tile.querySelectorAll('.pgx-lad-picks .pg-drop').length;
+    var mul = parseInt(tile.dataset.pgMul || '1', 10) || 1;
+    return d ? d * mul : 1;
+  }
+
+  /* one row per tile, appended once and re-priced on every pass - the theme
+     rebuilds tiles, so this settles rather than assumes */
+  function pass(){
+    document.querySelectorAll('#pgx .pgx-tile').forEach(function(tile){
+      if (!tile.getClientRects().length) return;   /* natives hidden by pgLadder */
+      var row = tile.querySelector('.pg-tadd');
+      if (!row){
+        row = document.createElement('div');
+        row.className = 'pg-tadd' + (C.cls ? ' ' + C.cls : '');
+        row.setAttribute('role', 'checkbox');
+        row.setAttribute('aria-checked', 'false');
+        row.setAttribute('tabindex', '0');
+        row.innerHTML = '<span class="pg-tadd-ck" aria-hidden="true"></span>'
+          + '<img alt="" src="' + C.img + '">'
+          + '<span class="pg-tadd-t"></span>'
+          + '<span class="pg-tadd-p"><s></s><b></b></span>';
+        tile.appendChild(row);
+      }
+      var n = unitsOf(tile);
+      var t = row.querySelector('.pg-tadd-t');
+      var txt = n > 1 ? C.many : C.one;
+      /* THE DUO TILE SAYS WHY IT IS ONLY ASKING FOR ONE. The pack ships two
+         consoles and a free case, so the offer covers the second console only.
+         Without saying so the row reads like a mistake next to a two-console
+         pack -- one case, one price, no explanation. */
+      if (tile.classList.contains('pgx-trio')) txt = 'Add 2 spare protective cases';
+      if (tile.classList.contains('pgx-duo')) txt = txt + ' (1 Comes Free)';
+      if (t.textContent !== txt) t.textContent = txt;
+      var s = row.querySelector('.pg-tadd-p s'), b = row.querySelector('.pg-tadd-p b');
+      var sTxt = money(C.cap * n), bTxt = money(C.unit * n);
+      if (s.textContent !== sTxt) s.textContent = sTxt;
+      if (b.textContent !== bTxt) b.textContent = bTxt;
+    });
+  }
+
+  /* toggle. Capture phase and stopPropagation: a click on the row must not
+     fall through to the tile's own click handler chain twice, and must never
+     reach the pickers. Toggling still SELECTS the tile first if it was not,
+     so a tap on an unselected tile's row does both things the shopper meant. */
+  document.addEventListener('click', function(e){
+    var row = e.target && e.target.closest && e.target.closest('#pgx .pg-tadd');
+    if (!row) return;
+    e.stopPropagation();
+    var tile = row.closest('.pgx-tile');
+    if (tile && !tile.classList.contains('pgx-sel')) tile.click();
+    var on = !row.classList.contains('on');
+    row.classList.toggle('on', on);
+    row.setAttribute('aria-checked', on ? 'true' : 'false');
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    var row = e.target && e.target.closest && e.target.closest('#pgx .pg-tadd');
+    if (!row) return;
+    e.preventDefault();
+    row.click();
+  }, true);
+
+  /* ride along with ADD TO CART: the tile handlers (pg-landing, pgLadder,
+     the duo tile) post their own items; this posts the add-on shortly after
+     and refreshes the drawer so the new line is on screen. */
+  var busy = false;
+  document.addEventListener('click', function(e){
+    var b = e.target && e.target.closest && e.target.closest('.pgx-atc');
+    if (!b || busy) return;
+    /* the VISIBLE selected tile: on ladder pages the hidden native single
+       still wears .pgx-sel from its initial render */
+    var sel = Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-tile.pgx-sel'))
+      .filter(function(t){ return t.getClientRects().length; })[0];
+    if (!sel) return;
+    var row = sel.querySelector('.pg-tadd.on');
+    if (!row) return;
+    var qty = unitsOf(sel);
+    busy = true;
+    setTimeout(function(){
+      fetch('/cart/add.js', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        credentials: 'same-origin',
+        body: JSON.stringify({items: [{id: C.variant, quantity: qty}]})
+      }).then(function(){
+        busy = false;
+        if (window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); return; } catch(err){} }
+        if (window.pgOpenCart) window.pgOpenCart();
+      }).catch(function(){ busy = false; });
+    }, 900);
+  }, true);
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass);
+  else pass();
+  setInterval(pass, 800);
+})();
+
+/* The frame and the case are add-ons, not catalogue items: no link anywhere
+   on the site (cart lines included) may open their product pages. Hrefs are
+   stripped as they appear, and a capture-phase blocker catches the window
+   between a drawer rebuild and the next sweep. Their PDPs also carry the
+   redirect template server-side. */
+(function(){
+  if (window.pgNoAddonLinks) return; window.pgNoAddonLinks = 1;
+  var MARKS = ['30x40cm-frame', 'r36s-protective-case'];
+  function strip(){
+    for (var i = 0; i < MARKS.length; i++){
+      document.querySelectorAll('a[href*="' + MARKS[i] + '"]').forEach(function(a){
+        /* href STAYS: pg-drawer, pg-chips and pg-frame-add all identify these
+           lines by it. Only the navigation is disabled. */
+        a.style.setProperty('pointer-events', 'none', 'important');
+        a.style.setProperty('cursor', 'default', 'important');
+        a.style.setProperty('text-decoration', 'none', 'important');
+      });
+    }
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest && e.target.closest('a[href*="30x40cm-frame"], a[href*="r36s-protective-case"]');
+    if (a){ e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  /* A PACK LINE IN THE CART LINKS TO THE CONSOLE PAGE. The href itself is
+     left alone -- pg-cart-tune, pg-drawer and pg-cart-variants all identify a
+     pack row by it -- so only the navigation is redirected. Without this the
+     tap landed on the pack's own product page, which grew the generic
+     four-tier ladder ("five different bundle deals"). The pack pages also
+     carry product.redirect-console server-side, for links this cannot see. */
+  document.addEventListener('click', function(e){
+    var a = e.target && e.target.closest && e.target.closest('a[href*="/products/r36s-duo-pack"], a[href*="/products/r36s-trio-pack"]');
+    if (!a) return;
+    e.preventDefault(); e.stopPropagation();
+    window.location.href = '/products/handheld-game-console';
+  }, true);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', strip);
+  else strip();
+  setInterval(strip, 900);
+})();
+</script>
+{% schema %}
+{"name": "PG Theme CSS", "settings": []}
+{% endschema %}
+
+

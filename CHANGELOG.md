@@ -1,3 +1,84 @@
+# Cart drawer: the "Add a 2nd R36S: upgrade to the Duo Pack" row was unstyled
+
+## Problem
+On the "Duo case wording (Claude 9-10c)" draft, the cart drawer's new Duo Pack
+upgrade row rendered as the theme's raw defaults: thumbnail, copy and a black
+120px-minimum `<button>` stacked as blocks, an italic "+$60.99", no card at all,
+directly above a spare-case offer card that had all of them.
+
+## Cause
+`sections/pg-cart-tune.liquid` (this draft) gained a `duoUp()` builder that
+appends a `.pg-duoup` row into `#pg-unlock-slot`. Like the sibling `.pg-soloff`
+row it reuses pg-unlock's inner class names (`.pg-unlock-t`, `.pg-unlock-px`),
+but its container and button classes are its own (`.pg-duoup`,
+`.pg-duoup-add`, `.pg-duoup-now`) for the same two reasons as `.pg-soloff`:
+pg-unlock sweeps containers it does not recognise, and `.pg-unlock-add` carries
+pg-unlock's click handler. Neither of those classes had a single CSS rule.
+
+## Fix (`sections/pg-cart-tune.liquid`, `<style>` block only)
+Every `.pg-soloff` selector now also names the `.pg-duoup` equivalent
+(container, four-id thumbnail pin, `-now` font-style, `-add` button incl. the
+`::before`/`::after` overlay kill, hover, disabled, size overrides and the
+max-width:414px block), so the two rows are one design by construction. The
+row's slot order is pinned (`order:-1`) so it can never swap with `.pg-soloff`
+on a timing race. No JS changed; `.pg-soloff`'s own declarations are unchanged.
+
+Verified in headless Chromium with the theme's real stylesheets (screen.css +
+every drawer section's `<style>` in load order) at 390/430px, in and out of
+`.sticky-in-panel`: before = the broken stack from the screenshot, after = the
+same card as the case offer. Three adversarial reviewers (cascade, JS
+lifecycle, visual) found no rule or script that undoes it.
+
+---
+
+# Add-to-cart wave: slower, and in step everywhere
+
+By request the moving purple highlight on the buttons was "too dynamic". Every
+`pgShiftT` animation now runs one 8s cycle (was 5s in the stylesheets and 3.2s
+on the inline stamp pg-theme-css paints onto the product page button):
+
+- `sections/pg-theme-css.liquid`: `#pgx .pgx-atc`, `#pgh .pgh-atc`, `.pgst-b`,
+  the `paint()` and `cardAtc()` inline stamps, and -- so the "+ FREE Case" chip,
+  duo ribbon, sale badge and newsletter buttons stay in step with the button
+  next to them, as the owner noticed they were -- every other `pgShiftT` too.
+- `sections/pg-r36s-mobile.liquid`: the console tiles' in-tile ADD TO CART.
+
+---
+
+# Orb page: the console's in-tile ADD TO CART button
+
+On phones the console page puts an ADD TO CART inside the selected buy tile
+(pg-r36s-mobile) and hides the bottom button; the orb page only had the bottom
+pill. New `sections/pg-orb-atc.liquid`, registered in
+`templates/product.pg-crystal.json`: the same button (pg-r36s-mobile's rule
+restated, 8s wave), one per tile, shown only on the selected tile, phones only;
+a tap clicks `#pgx-atc` so the ladder's existing add-to-cart posts exactly what
+it did before. Rendered side by side with the console's in Chromium: identical.
+
+---
+
+# Orb strike-through pricing (product data, not theme)
+
+The Crystal Legends Orb's compare-at was $70.00 against a $34.99 price, so the
+ladder read SAVE 50 / 66 / 72%. Set to $46.99 on all 36 variants (the console's
+ratio: $74.99 vs $99.99 = 25%), so the ladder now reads SAVE 25 / 50 / 58% with
+the prices and free orbs unchanged. This is live product data (it is not scoped
+to a draft theme); the badges and struck figures derive from it at render time,
+so no theme code changed for it.
+
+## Applied to
+Shopify draft theme `163849208036` ("Duo case wording (Claude 9-10c)") on
+thepocketera.com via the Admin API (themeFilesUpsert).
+
+Files changed:
+- sections/pg-cart-tune.liquid (Duo row CSS)
+- sections/pg-theme-css.liquid (8s wave)
+- sections/pg-r36s-mobile.liquid (8s wave)
+- sections/pg-orb-atc.liquid (new)
+- templates/product.pg-crystal.json (registers pg-orb-atc)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
