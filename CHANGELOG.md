@@ -1,3 +1,40 @@
+# Home page buttons and badges match the tiles; the 10% stated in every cart card; Single tile picker beside "25% OFF today"
+
+By request: "add to cart on the homepage for each item should have that same
+dynamic add to cart button", "the Sale in the top left corner of the products
+on the homepage should be the same colour as the SAVE % in each bundle", "I
+don't like where you moved the GB on the single R36S -- put it next to the
+25% off today thing", "all the upsells should include the extra 10% and state
+it in the upsell, and make sure the save % is accurate".
+
+`sections/pg-home.liquid`
+- The three product cards' ADD TO CART is the product tiles' button restated
+  (pg-r36s-mobile's .pg-r36-atc): 15px/12px padding, 10px corners,
+  15.5px/800 uppercase with the arrow, the same five-stop moving purple at
+  the same 8s. It was a slimmer 13.5px pill. Hover brightens instead of
+  swapping in a still dark fill (which also stuck after a tap on phones).
+  The pgShiftT keyframes are restated in the section so the buttons never
+  depend on pg-theme-css (footer-group) being present.
+- The Sale badge wears pg-save-badge's .pgx-lad-badge look: the deep purple
+  gradient (#8B44BE -> #7A2FA2 -> #4A1C66), pale text, 12.5px/800 uppercase.
+  Its percentage is Liquid's floor of compare-at vs price (25 / 25 / 56) and
+  matches the price printed under it.
+- The card's struck price is #666, not #8a8a8a.
+
+`sections/pg-cart-offer.liquid`: every card carries its own "Extra 10% off
+included" line (purple, under the sub-line) instead of one note under the
+cards; the case card's sub-line is shorter ("One per console; the 1st is
+free"). The SAVE chip measures the struck figure against the net price, so
+it is what the shopper actually keeps: Duo upgrade 38%, Trio upgrade 44%,
+two cases 49%, "Buy 1 more, get 1 FREE" 55%, a lone orb 32%.
+
+`sections/pg-r36s-mobile.liquid`: the Single tile's GB picker sits in a row
+with "25% OFF today" (a .pg-r36-subrow the script builds around the sub),
+not under the price. pg-case-mobile parks the "+ FREE Case" chip right after
+the sub on every tick, so the chip lands inside that row; it is CSS-ordered
+last, after a full-width break, so it keeps its own line and the two scripts
+never fight over the DOM.
+
 # Cart offer: the extra 10% in every price, cases for every console; struck prices brighter
 
 By request: "auto include the 10% off in the upsell price and say that

@@ -175,17 +175,24 @@
     #pgx .pgx-buy:has(.pgx-tile .pg-r36-atc) > .pgx-atc{display:none !important}
   }
 
-  /* ---- the Single tile's GB dropdown sits under the price, not on a row of
-     its own. pg-landing renders it in .pgx-tile-opts below the head row,
-     indented to the copy; by request (2026-09-11) the script below moves that
-     block into .pgx-tile-price, and these rules right-align it there. All
-     widths: it is the same tile on desktop. ---- */
-  #pgx .pgx-tile[data-pgx-tile="single"] .pgx-tile-price{display:flex;flex-direction:column;align-items:flex-end}
-  #pgx .pgx-tile[data-pgx-tile="single"] .pgx-tile-price .pgx-tile-opts{
-    display:flex !important;justify-content:flex-end !important;
-    margin:6px 0 0 !important;padding:0 !important;gap:0 !important;width:auto !important;
+  /* ---- the Single tile's GB dropdown sits BESIDE "25% OFF today", not on a
+     row of its own under the head. pg-landing renders it in .pgx-tile-opts
+     below the head row, indented to the copy; the script below seats that
+     block in a row with .pgx-tile-sub ("next to the 25% off today thing", by
+     request 2026-09-11; a first cut put it under the price, which was not
+     liked). pg-case-mobile (footer-group) moves the "+ FREE Case" chip to
+     directly after the sub on every tick, so the chip lands INSIDE this row:
+     it is ordered last, after a full-width break, so it keeps its own line
+     under the pair and the two scripts never fight over the DOM. All widths:
+     it is the same tile on desktop. ---- */
+  #pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow{display:flex;flex-wrap:wrap;align-items:center;column-gap:10px;row-gap:5px;margin-top:2px}
+  #pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow .pgx-tile-sub{order:0;margin:0 !important}
+  #pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow .pgx-tile-opts{
+    order:1;display:flex !important;margin:0 !important;padding:0 !important;gap:0 !important;width:auto !important;
   }
-  #pgx .pgx-tile[data-pgx-tile="single"] .pgx-tile-price .pgx-tile-opts .pgx-opt{margin:0 !important}
+  #pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow .pgx-tile-opts .pgx-opt{margin:0 !important}
+  #pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow::after{content:"";flex-basis:100%;height:0;order:2}
+  #pgx#pgx .pgx-tile[data-pgx-tile="single"] .pg-r36-subrow .pgx-lad-chip{order:3;margin:0 !important}
 
   @keyframes pgGtNudge{
     0%,100%{transform:translateX(0);opacity:.55}
@@ -324,22 +331,31 @@
     });
   }
 
-  /* ---- the Single tile's storage picker, up beside the price ---- */
-  function storageUp(){
+  /* ---- the Single tile's storage picker, in a row with "25% OFF today" ---- */
+  function pickerBySub(){
     var tile = document.querySelector('#pgx .pgx-tile[data-pgx-tile="single"]');
     if (!tile) return;
-    var opts = tile.querySelector('.pgx-tile-opts'), price = tile.querySelector('.pgx-tile-price');
-    if (!opts || !price || !opts.querySelector('select')) return;
+    var opts = tile.querySelector('.pgx-tile-opts'), sub = tile.querySelector('.pgx-tile-sub');
+    if (!opts || !sub || !sub.parentNode || !opts.querySelector('select')) return;
     /* pg-theme-css's single-tile pass may build a .pgx-storage select and a
        "Storage" label ahead of this block; both ride along, label dropped */
     var lb = tile.querySelector('.pgx-storage-lb');
     if (lb && lb.parentNode) lb.parentNode.removeChild(lb);
     var st = tile.querySelector('select.pgx-storage');
     if (st && st.parentNode !== opts) opts.appendChild(st);
-    if (opts.parentNode !== price) price.appendChild(opts);
+    var row = sub.parentNode;
+    if (!row.classList.contains('pg-r36-subrow')){
+      row = document.createElement('div');
+      row.className = 'pg-r36-subrow';
+      sub.parentNode.insertBefore(row, sub);
+      row.appendChild(sub);
+    }
+    /* appended, never re-seated: pg-case-mobile parks the chip right after
+       the sub, and the CSS order above, not DOM order, sets the layout */
+    if (opts.parentNode !== row) row.appendChild(opts);
   }
 
-  function pass(){ gallery(); buttons(); storageUp(); }
+  function pass(){ gallery(); buttons(); pickerBySub(); }
 
   /* ================= THE DUO PACK ADDS EXACTLY TWO =================
      Reported: adding the Duo Pack puts THREE in the cart and the drawer starts
