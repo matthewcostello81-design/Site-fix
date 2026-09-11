@@ -17,14 +17,24 @@
   of them, pg-unlock, also carries the drawer's duplicate-line repair, which
   must not be switched off), and this section paints the offers instead.
 
-  ONE CARD PER FAMILY, at most two, console first:
+  ONE CARD, for the product the shopper added LAST (by request, 2026-09-11:
+  "limit it to 1 upsell max; it should go off the product they added, but if
+  they max out that product with all item combos then move to the next
+  item"). /cart.js lists lines newest first, so the first line whose handle
+  is known names the family (the free case counts as the console's). That
+  family's deal is offered; when it has none left -- every console has a case,
+  or the orbs are past the ladder with no free unit to promise -- the other
+  families in the cart are tried, newest first; only when no family has a
+  deal is a plain "add another" (or, with no orbs held, a Crystal Legends Orb)
+  offered, so the cart is never without a card. The deals, per family:
 
     consoles   1 single ............ Add a 2nd: the Duo Pack (GB picker)
                2 singles ........... Switch to the Duo Pack (same consoles, less)
                Duo Pack ............ Add a 3rd: the Trio Pack (GB picker)
                3 singles ........... Switch to the Trio Pack
-               anything else ....... Add a spare case, until every console has
-                                     one; then a Crystal Legends Orb
+               anything else ....... one card for the cases still missing
+                                     (the free gift is one per order, so a
+                                     Trio wants two); then the family is done
     orbs       the next rung of the ladder the product page sells --
                Buy 2 Get 1 (repeats), Buy 5 Get 4 (once) -- phrased as the
                shopper experiences it: "Add 2 more, get 1 FREE", "Add your
@@ -32,8 +42,8 @@
                designs not already in the cart. Past the ladder's top the
                repeating Buy 2 Get 1 is offered again once it beats the
                Buy 5 Get 4 already earned (from 12 orbs); between 9 and 11
-               a single orb is offered plainly, since no free-orb promise is
-               honest there.
+               no free-orb promise is honest, so the family is done and the
+               single orb it can still offer is the plain fallback.
     wall art   the repeating Buy 2 Get 1, the same way.
 
   THE MATHS IS THE DISCOUNTS'. Read from the admin on 2026-09-11:
@@ -349,7 +359,7 @@
         };
       });
     }
-    return orbOffer(t, true);
+    return Promise.resolve(null);   /* every console has a case: this family is done */
   }
 
   /* the orb (and wall art) ladder, phrased as the shopper experiences it */
@@ -370,7 +380,7 @@
       if (cross && !n){
         var one = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
         return {
-          kind: 'add', key: 'cross:' + handle, handle: handle, need: 1, single: one.length < 2 ? one[0] : null,
+          kind: 'add', key: 'cross:' + handle, handle: handle, need: 1, single: one.length < 2 ? one[0] : null, plain: true,
           img: thumb(pr.image), title: 'Add a Crystal Legends ' + L.name, sub: 'Buy 2, Get 1 FREE',
           was: cap || unit, now: unit, btn: 'Add to cart',
           picks: one.length > 1 ? [{label: L.name, free: false, options: one, value: one[0].id}] : []
@@ -392,7 +402,7 @@
         var m = 3 * (freeNow + 1);
         if (m - n <= 3){ tier = L.rungs[0]; need = m - n; freeAdded = 1; paidAdded = need - 1; }
       }
-      var title, sub, was, now, btn;
+      var title, sub, was, now, btn, plain = false;
       if (tier && need > 0){
         if (paidAdded === 0){
           title = 'Add your FREE ' + nths(n + 1, n + need) + ' ' + L.name + (need > 1 ? 's' : '');
@@ -404,7 +414,7 @@
         was = unit * need; now = unit * paidAdded;
         btn = 'Add ' + need + ' to cart' + (freeAdded ? ' — ' + freeAdded + ' FREE' : '');
       } else {
-        need = 1; paidAdded = 1; freeAdded = 0;
+        need = 1; paidAdded = 1; freeAdded = 0; plain = true;   /* no free unit to promise: the family is done */
         title = cross ? 'Add a Crystal Legends ' + L.name : 'Add another ' + L.name;
         sub = '';   /* the note under the cards names the extra 10% */
         was = cap || unit; now = unit; btn = 'Add to cart';
@@ -422,24 +432,50 @@
       }
       return {
         kind: 'add', key: 'ladder:' + handle + ':' + n + ':' + need, handle: handle, need: need, single: opts.length < 2 ? opts[0] : null,
-        img: thumb(pr.image), title: title, sub: sub, was: was, now: now, picks: picks, btn: btn
+        img: thumb(pr.image), title: title, sub: sub, was: was, now: now, picks: picks, btn: btn, plain: plain
       };
     });
   }
   function orbOffer(t, cross){ return ladderOffer(H.orb, t.orbUnits, t.orb, t.held, !!cross); }
 
+  /* the families in the cart, the one the shopper added last first. /cart.js
+     lists lines newest first; a line of an unknown handle names no family */
+  var FAMILY = {};
+  FAMILY[H.con] = FAMILY[H.duo] = FAMILY[H.trio] = FAMILY[H.kase] = 'console';
+  FAMILY[H.orb] = 'orb'; FAMILY[H.wall] = 'wall';
+  function familiesByRecency(cart){
+    var out = [];
+    (cart.items || []).forEach(function(it){
+      var f = FAMILY[it.handle || ''];
+      if (f && out.indexOf(f) === -1) out.push(f);
+    });
+    return out;
+  }
+  function familyOffer(f, t){
+    if (f === 'console') return consoleOffer(t);
+    if (f === 'orb') return orbOffer(t, false);
+    if (f === 'wall') return ladderOffer(H.wall, t.wallUnits, t.wall, t.held, false);
+    return Promise.resolve(null);
+  }
   function offersFor(cart){
     RATE = readRate(cart);
     var t = tally(cart);
-    var jobs = [];
-    if (t.consoles) jobs.push(consoleOffer(t));
-    if (t.orbUnits) jobs.push(orbOffer(t, false));
-    if (t.wallUnits) jobs.push(ladderOffer(H.wall, t.wallUnits, t.wall, t.held, false));
-    if (!jobs.length) return Promise.resolve([]);
-    return Promise.all(jobs).then(function(list){
-      var out = [], seen = {};
-      list.forEach(function(o){ if (o && !seen[o.key]){ seen[o.key] = 1; out.push(o); } });
-      return out.slice(0, 2);
+    var fams = familiesByRecency(cart);
+    if (!fams.length) return Promise.resolve([]);
+    return Promise.all(fams.map(function(f){ return familyOffer(f, t); })).then(function(list){
+      /* ONE CARD. The newest family's deal; failing that, the next family's;
+         a plain "add another" only when no family has a deal left; and with no
+         orbs held, a Crystal Legends Orb as the last resort. */
+      var deal = null, plain = null;
+      list.forEach(function(o){
+        if (!o) return;
+        if (!o.plain && !deal) deal = o;
+        if (o.plain && !plain) plain = o;
+      });
+      if (deal) return [deal];
+      if (plain) return [plain];
+      if (!t.orbUnits) return orbOffer(t, true).then(function(o){ return o ? [o] : []; });
+      return [];
     });
   }
 
@@ -498,7 +534,7 @@
     var prev = null;
     offers.forEach(function(o, i){
       var el = o.el || card(o);
-      el.style.order = String(-10 + i);   /* ahead of the hidden rows, console first */
+      el.style.order = String(-10 + i);   /* ahead of the hidden rows */
       if (!o.el){
         if (prev && prev.nextSibling) slot.insertBefore(el, prev.nextSibling);
         else if (prev) slot.appendChild(el);

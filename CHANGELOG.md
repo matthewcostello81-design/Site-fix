@@ -1,3 +1,19 @@
+# Cart offer: one card, for the product added last
+
+By request: "limit it to 1 upsell max. It should go off the product they
+added, but if they max out that product with all item combos then move to
+the next item."
+
+`sections/pg-cart-offer.liquid`: at most one card. /cart.js lists lines
+newest first, so the first line with a known handle names the family (the
+free case counts as the console's). That family's deal is offered; when it
+has none left (every console has a case; orbs between 9 and 11, where no
+free-orb promise is honest), the other families in the cart are tried,
+newest first. A plain "Add another Orb / Print" is shown only when no family
+has a deal, and a Crystal Legends Orb cross-sell only when nothing else can
+be offered, so the cart is never without a card. The console family no
+longer falls through to the orb cross-sell on its own.
+
 # Home page buttons and badges match the tiles; the 10% stated in every cart card; Single tile picker beside "25% OFF today"
 
 By request: "add to cart on the homepage for each item should have that same
