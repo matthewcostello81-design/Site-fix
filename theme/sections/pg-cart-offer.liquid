@@ -563,6 +563,22 @@
     return slot;
   }
 
+  /* A PICK LIVES ON THE OFFER, WITH ITS PRICE. The drawer is rebuilt by every
+     refresh (the free case landing, a Shipping Protection toggle, a size
+     switch), which throws the card away; heal() repaints it from the offer
+     object, so the shopper's GB or design pick, and the price line that goes
+     with it, must be stored there or the card comes back at the default
+     (and a pack card came back printing the default pack's price with the
+     picked GB selected, a figure the till would not charge). */
+  function applyPick(o, i, val){
+    var p = o && o.picks && o.picks[i]; if (!p) return;
+    if (p.options && !p.options.some(function(op){ return String(op.id) === String(val); })) return;
+    p.value = val;
+    if (o.kind === 'pack' && o.pack){
+      var v = packBySizes(o.pack, o.packSizes.concat([val]));
+      if (v){ o.was = v.cap || v.price; o.now = v.price; if (v.img) o.img = thumb(v.img); }
+    }
+  }
   function paint(offers){
     var c = document.getElementById('cart');
     if (!c) return;
@@ -577,6 +593,7 @@
       var k = el.getAttribute('data-offer');
       if (!want[k] || el.classList.contains('is-done')){ el.parentNode.removeChild(el); return; }
       want[k].el = el;   /* same offer: keep it, and whatever the shopper picked */
+      el.querySelectorAll('.pg-offer-pick select').forEach(function(s, i){ if (s.value) applyPick(want[k], i, s.value); });
     });
     var prev = null;
     offers.forEach(function(o, i){
@@ -687,7 +704,8 @@
      fix, rather than a cart with neither. */
   function removeLine(key, tries){
     return post('/cart/change.js', {id: key, quantity: 0}).catch(function(e){
-      if (tries <= 0 || /write 404/.test(String(e && e.message))) throw e;   /* gone already: nothing to retry */
+      if (/write 404/.test(String(e && e.message))) return;   /* already gone (a removal whose reply was lost): nothing left to do */
+      if (tries <= 0) throw e;
       return new Promise(function(r){ setTimeout(r, 500); }).then(function(){ return removeLine(key, tries - 1); });
     });
   }
@@ -752,7 +770,10 @@
     var el = sel.closest('.pg-offer'), o = el && el.pgOffer;
     if (!o) return;
     var pi = parseInt(sel.getAttribute('data-i'), 10);
-    if (o.picks && o.picks[pi]) o.picks[pi].value = sel.value;   /* survives a drawer rebuild: heal() repaints from this object */
+    applyPick(o, pi, sel.value);
+    /* el.pgOffer and lastOffers diverge after a re-read keeps the card (paint()
+       keeps the element, not the object): write the pick to both */
+    (lastOffers || []).forEach(function(x){ if (x !== o && x.key === o.key) applyPick(x, pi, sel.value); });
     if (o.kind !== 'pack' || !o.pack) return;
     var v = packBySizes(o.pack, o.packSizes.concat([sel.value]));
     var px = el.querySelector('.pg-offer-px');
