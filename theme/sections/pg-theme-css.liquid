@@ -196,7 +196,11 @@
      kissing the tile above (measured 0px), so desktop gets 16. Was 26. */
   .pgx-tile.pgx-duo{position:relative;margin-top:16px}
   @media (max-width:600px){ .pgx-tile.pgx-duo{margin-top:12px} }
-  .pgx-duo-ribbon{position:absolute;top:-13px;right:14px;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:5px 14px;border-radius:999px;box-shadow:0 8px 18px -8px rgba(122,47,162,.8)}
+  /* the pack label, the SAVE pill's twin on the right: same line (top:-15px,
+     pg-r36s-fix seats SAVE there), same size (pg-save-badge: 12.5px/800,
+     5px 13px; 12px/5px 11px under 600px), the moving purple the chips wear */
+  .pgx-duo-ribbon{position:absolute;top:-15px;right:14px;z-index:2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;animation:pgShiftT 8s ease-in-out infinite;color:#fff !important;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;padding:5px 13px;border-radius:999px;border:1px solid rgba(139,68,190,.85);box-shadow:0 6px 14px -10px rgba(0,0,0,.85)}
+  @media (max-width:600px){ .pgx-duo-ribbon{font-size:12px;padding:5px 11px} }
   .pgx-duo-head{display:flex;align-items:flex-start;gap:12px}
   .pgx-duo-dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #8B44BE;margin-top:3px;position:relative}
   .pgx-tile.pgx-sel .pgx-duo-dot:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#9B4BC4}
@@ -1008,7 +1012,10 @@
       tile.setAttribute('role', 'radio');
       tile.setAttribute('aria-checked', 'false');
       tile.setAttribute('tabindex', '0');
-      tile.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span>'
+      /* one label per pack, opposite the SAVE pill, by request (2026-09-11):
+         the Duo is "Most Popular", the Trio "Best Deal", as the orb ladder
+         already does; the single tile carries none */
+      tile.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon">Most Popular</span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
         + '<div class="pgx-duo-t"><b>Duo Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
         + '<div class="pgx-duo-px"><b></b><s></s></div></div>'
@@ -1032,7 +1039,7 @@
       trio.setAttribute('aria-checked', 'false');
       trio.setAttribute('tabindex', '0');
       var unit = function(n){ return '<div class="pgx-duo-u"><img src="' + img + '" alt=""><div class="n">R36S</div><div class="pp"></div><select aria-label="Version ' + n + '">' + opts + '</select></div>'; };
-      trio.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span>'
+      trio.innerHTML = '<span class="pgx-lad-badge" data-pg-duosave></span><span class="pgx-duo-ribbon">Best Deal</span>'
         + '<div class="pgx-duo-head"><span class="pgx-duo-dot"></span>'
         + '<div class="pgx-duo-t"><b>Trio Pack <span class="pgx-lad-chip">+ FREE Case</span></b><small></small></div>'
         + '<div class="pgx-duo-px"><b></b><s></s></div></div>'

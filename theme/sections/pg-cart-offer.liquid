@@ -720,21 +720,26 @@
     if (v.img){ var im = el.querySelector('img'); if (im) im.src = thumb(v.img); }
   }, true);
 
+  /* the standing card, put straight back after a drawer rebuild: no fetch,
+     no frame without it */
+  function heal(){
+    var c = document.getElementById('cart');
+    if (!c || !lastOffers || !lastOffers.length) return;
+    if (!c.querySelector('.pg-offer') && c.querySelector('.l4ca:not(.in-panel)')) paint(lastOffers);
+  }
   function boot(){
     read();
-    document.addEventListener('pg:cart-updated', function(){ schedule(120); });
+    /* pg-drawer fires this synchronously right after it swaps the drawer's
+       HTML, so healing here lands in the same frame as the rebuild; the
+       observer below is a beat later, and the re-read confirms */
+    document.addEventListener('pg:cart-updated', function(){ heal(); schedule(120); });
     if (window.MutationObserver){
       var mo = null;
       var hook = function(){
         var c = document.getElementById('cart');
         if (!c || c.pgOfferObs) return;
         c.pgOfferObs = 1;
-        new MutationObserver(function(){
-          /* a drawer rebuild replaces #cart's innerHTML wholesale: put the
-             standing card straight back, no fetch first, then re-read */
-          if (lastOffers && lastOffers.length && !c.querySelector('.pg-offer') && c.querySelector('.l4ca:not(.in-panel)')) paint(lastOffers);
-          schedule(150);
-        }).observe(c, {childList: true, subtree: true});
+        new MutationObserver(function(){ heal(); schedule(150); }).observe(c, {childList: true, subtree: true});
       };
       hook();
       mo = new MutationObserver(hook);

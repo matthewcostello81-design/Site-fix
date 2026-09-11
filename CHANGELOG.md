@@ -1,3 +1,20 @@
+# Console pack tiles: "Most Popular" and "Best Deal"; the cart card heals in the same frame
+
+By request ("do it"), on the new theme "128G Best Value (Claude 9-11)":
+
+`sections/pg-theme-css.liquid`: the Duo tile carries "Most Popular" and the
+Trio "Best Deal", as a second pill in the top-right corner on the tile
+border, opposite the SAVE % pill and on its line (top -15px, the size
+pg-save-badge gives SAVE: 12.5px/800, 12px under 600px), in the moving
+purple the chips wear (.pgx-duo-ribbon, a style that was declared and never
+used). The Single tile carries none. Measured at 390 (iPhone 13) and 430
+(16 Pro Max): both pills on one line with room between.
+
+`sections/pg-cart-offer.liquid`: the standing card is put back on
+pg:cart-updated, which pg-drawer fires synchronously right after it swaps
+the drawer's HTML, so the heal lands in the same frame as the rebuild
+instead of a beat later from the observer.
+
 # 128G as the better buy: deeper compare-at, "Best Value" on the pickers
 
 By request ("do 1 and 2"), on a fresh theme duplicated from the live one,
