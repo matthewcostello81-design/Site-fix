@@ -509,7 +509,9 @@
     var el = document.createElement('div');
     el.className = 'pg-offer';
     el.setAttribute('data-offer', o.key);
-    var T = o.handle === H.orb ? tc : function(x){ return x; };   /* the orb card: Every Word Capitalised */
+    /* the TITLE of every card is Title Case ("the title of the upsell in
+       cart, every word", by request); the orb card is Title Case throughout */
+    var T = o.handle === H.orb ? tc : function(x){ return x; };
     var picks = '';
     (o.picks || []).forEach(function(p, i){
       picks += '<label class="pg-offer-pick"><span' + (p.free ? ' class="is-free"' : '') + '>' + esc(T(p.label)) + '</span><select data-i="' + i + '">';
@@ -520,7 +522,7 @@
     var inc = RATE > 0 ? 'Extra ' + Math.round(RATE * 100) + '% off included' : '';
     el.innerHTML =
       '<img alt="" width="48" height="48" decoding="sync" src="' + esc(o.img || '') + '">' +
-      '<div class="pg-offer-t"><b>' + esc(T(o.title)) + '</b>' +
+      '<div class="pg-offer-t"><b>' + esc(tc(o.title)) + '</b>' +
         '<span class="pg-offer-px">' + priceHtml(o.was, o.now) + '</span>' +
         (o.sub ? '<small>' + esc(T(o.sub)) + '</small>' : '') +
         (inc ? '<small class="pg-offer-inc">' + T(inc) + '</small>' : '') + '</div>' +

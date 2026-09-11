@@ -1,3 +1,11 @@
+# Cart offer: every card's title in Title Case
+
+By request: "the title of the upsell in cart, every word" starts with a
+capital. The title of every card (console, case, orb, wall art) is Title
+Case now: "Add A 2nd R36S: The Duo Pack", "Switch To The Duo Pack", "Add 2
+Protective Cases", "Buy 1 More, Get 1 FREE". The orb card stays Title Case
+on every line, as before.
+
 # Cart offer: the orb card in Title Case
 
 By request: "for the add-on upsell in the cart every word should start with
