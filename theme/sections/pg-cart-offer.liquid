@@ -362,10 +362,10 @@
       if (tier && need > 0){
         if (paidAdded === 0){
           title = 'Add your FREE ' + nths(n + 1, n + need) + ' ' + L.name + (need > 1 ? 's' : '');
-          sub = 'You already qualify — costs nothing';
+          sub = '';   /* the title already says it, by request */
         } else {
           title = 'Buy ' + paidAdded + ' more, get ' + freeAdded + ' FREE';
-          sub = 'Buy ' + tier.paid + ', Get ' + tier.free + ' FREE — the free one' + (freeAdded > 1 ? 's come' : ' comes') + ' off at checkout';
+          sub = '';
         }
         was = unit * need; now = unit * paidAdded;
         btn = 'Add ' + need + ' to cart' + (freeAdded ? ' — ' + freeAdded + ' FREE' : '');
@@ -425,7 +425,7 @@
       '<div class="pg-offer-t"><b>' + esc(o.title) + '</b>' +
         '<span class="pg-offer-px">' + (o.was > o.now ? '<s>' + money(o.was) + '</s>' : '') + (o.now === 0 ? 'FREE' : money(o.now)) +
           (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '') + '</span>' +
-        '<small>' + esc(o.sub) + '</small></div>' +
+        (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') + '</div>' +
       '<div class="pg-offer-picks">' + picks + '</div>' +
       '<button type="button" class="pg-offer-add">' + esc(o.btn) + '<span class="arr">→</span></button>';
     el.pgOffer = o;
