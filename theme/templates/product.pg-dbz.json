@@ -2,64 +2,6 @@
   "sections": {
     "pg_landing": {
       "type": "pg-landing",
-      "blocks": {
-        "rev1": {
-          "type": "review",
-          "settings": {
-            "name": "Marcus",
-            "stars": 5,
-            "text": "The Kamehameha beam actually glows, looks unreal on my desk at night"
-          }
-        },
-        "rev2": {
-          "type": "review",
-          "settings": {
-            "name": "Jenna",
-            "stars": 5,
-            "text": "Got the Vegeta one for my brother's birthday, he would not stop talking about it"
-          }
-        },
-        "rev3": {
-          "type": "review",
-          "settings": {
-            "name": "Devon",
-            "stars": 5,
-            "text": "Way more detailed than I expected for the price, the paint on Goku is clean"
-          }
-        },
-        "rev4": {
-          "type": "review",
-          "settings": {
-            "name": "Priya",
-            "stars": 5,
-            "text": "One tap of the button and the whole room turns blue, great night light"
-          }
-        },
-        "rev5": {
-          "type": "review",
-          "settings": {
-            "name": "Luis",
-            "stars": 5,
-            "text": "Arrived fast and packed well, base and figure both perfect"
-          }
-        },
-        "rev6": {
-          "type": "review",
-          "settings": {
-            "name": "Kayla",
-            "stars": 5,
-            "text": "Bought two, blue and orange side by side look incredible on the shelf"
-          }
-        }
-      },
-      "block_order": [
-        "rev1",
-        "rev2",
-        "rev3",
-        "rev4",
-        "rev5",
-        "rev6"
-      ],
       "settings": {
         "product": "dragon-ball-z-legends-lamp",
         "show_sellout": true,
@@ -71,14 +13,14 @@
         "logo_text": "PocketEra",
         "rating_value": "5.0",
         "rating_label": "Trusted by over 10,000 customers",
-        "review_total": 6,
+        "review_total": 29,
         "default_size": "Goku (Blue Energy)",
         "gallery_video_url": "https://cdn.shopify.com/videos/c/vp/b8d78151de9e4048ab47eb277409d757/b8d78151de9e4048ab47eb277409d757.HD-720p-3.0Mbps-94088727.mp4",
         "show_bundle": false,
         "bundle_title": "Bundle Deal: 2x Dragon Ball Z Legends Lamps",
         "bundle_pct": 25,
         "features_text": "<p>3D sculpted Goku or Vegeta figure captured mid-attack, painted in series-accurate colors<br>Hand-shaped LED energy beam that lights up in blue or orange<br>Matte black base with a metal beam post and a one-touch power button<br>USB-C rechargeable, no cords once charged<br>Three characters to collect: Goku (Blue Energy), Goku (Orange Energy) and Majin Vegeta<br>Bundle pricing on 2 or 3 lamps, applied automatically at checkout</p>",
-        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
       }
     },
     "pg_picksize": {
