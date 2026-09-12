@@ -28,10 +28,19 @@ ever land a cent under the tile).
 Handle changed to `dragon-ball-z-legends-lamp` (old handle redirected),
 template suffix `pg-dbz`, SEO title and description set. Left in DRAFT.
 
+## Reviews (2026-09-12)
+Judge.me syncs only the first page of reviews plus the photo reviews into
+the product metafield, so the bottom grid stopped at 12 cards. New
+`sections/pg-dbz-reviews.liquid` fetches Judge.me's public widget feed on
+load, walks every page and rebuilds the grid with all reviews in
+pg-landing's own card markup. Placeholder review blocks removed; the
+shipping accordion no longer mentions the supplier.
+
 ## Applied to
 Theme "Extra 5% off (Claude 9-11e)" (also present on "Duo case wording
 (Claude 9-10c)", where they were first written by mistake). Files added:
-sections/pg-dbz-tiles.liquid, templates/product.pg-dbz.json
+sections/pg-dbz-tiles.liquid, sections/pg-dbz-reviews.liquid,
+templates/product.pg-dbz.json
 
 ---
 

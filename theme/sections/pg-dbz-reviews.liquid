@@ -1,0 +1,106 @@
+{%- comment -%}
+  PG DBZ Reviews: every Judge.me review in the grid at the bottom of the
+  Dragon Ball Z Legends Lamp page, not just the handful Judge.me syncs.
+
+  WHAT PG-LANDING SHOWS. The review grid (.pgx-cards inside #pg-reviews) is
+  rendered from the judgeme.review_widget_data metafield. Judge.me writes only
+  the FIRST PAGE of reviews (five) plus the photo reviews into that metafield,
+  so the grid topped out at 12 cards while the header counted 29.
+
+  WHERE THE REST COME FROM. Judge.me's own widget feed,
+  reviews_for_widget, is what its "load more" button calls from the
+  storefront: public, CORS-open, and it returns the same review objects the
+  metafield carries (name, rating, body, pictures_urls) for any page size.
+  Fetched once on load, every page walked, then the grid is rebuilt from the
+  full set in pg-landing's own card markup -- so the cards inherit every
+  style pg-landing, pg-theme-css and pg-dark already give them.
+
+  The Liquid-rendered cards stay on screen until the fetch lands and are only
+  replaced by a strictly larger set; if the feed fails, nothing changes.
+  Newest first, as the feed orders them. The quote carousel under the tiles
+  is pg-landing's and is left alone.
+
+  Registered in templates/product.pg-dbz.json only.
+{%- endcomment -%}
+{%- if product -%}
+<script>
+(function(){
+  if (window.pgDbzReviews) return; window.pgDbzReviews = 1;
+
+  var SHOP = {{ shop.permanent_domain | json }};
+  var PID = {{ product.id | json }};
+  var PER = 30;
+
+  function esc(t){
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function textOf(r){
+    if (r.body) return String(r.body).trim();
+    var d = document.createElement('div');
+    d.innerHTML = r.body_html || '';
+    return (d.textContent || '').trim();
+  }
+  function stars(n){
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += i <= n ? '★' : '☆';
+    return s;
+  }
+  function url(page){
+    return 'https://judge.me/reviews/reviews_for_widget?url=' + encodeURIComponent(SHOP)
+      + '&shop_domain=' + encodeURIComponent(SHOP) + '&platform=shopify'
+      + '&page=' + page + '&per_page=' + PER + '&product_id=' + PID;
+  }
+
+  function card(r){
+    var rating = parseInt(r.rating, 10) || 0;
+    var text = textOf(r);
+    var pics = (r.pictures_urls || []).slice(0, 3).map(function(p){
+      var src = p.small || p.compact || p.original;
+      return src ? '<img src="' + esc(src) + '" alt="Customer photo" loading="lazy">' : '';
+    }).join('');
+    return '<div class="pgx-card" data-pg-dbz-uuid="' + esc(r.uuid) + '">'
+      + '<div class="pgx-card-name">' + esc(r.reviewer_name || 'Verified buyer') + '</div>'
+      + '<span class="pgx-stars pgx-pur">' + stars(rating) + '</span>'
+      + '<div class="pgx-card-txt">' + esc(text) + '</div>'
+      + (pics ? '<div class="pgx-card-pics">' + pics + '</div>' : '')
+      + '</div>';
+  }
+
+  function render(all){
+    var grid = document.querySelector('#pg-reviews .pgx-cards, #pgx .pgx-rev .pgx-cards');
+    if (!grid) return;
+    var seen = {}, out = [];
+    all.forEach(function(r){
+      if (!r || !r.uuid || seen[r.uuid]) return;
+      if (!textOf(r)) return;
+      seen[r.uuid] = 1;
+      out.push(r);
+    });
+    /* only ever grow the grid: the Liquid cards are the fallback */
+    if (out.length <= grid.querySelectorAll('.pgx-card').length) return;
+    grid.innerHTML = out.map(card).join('');
+  }
+
+  function load(){
+    if (!document.querySelector('#pg-reviews, #pgx .pgx-rev')) return;
+    var all = [];
+    function page(n){
+      return fetch(url(n), {headers: {'Accept': 'application/json'}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if (!j) return;
+          (j.reviews || []).forEach(function(r){ all.push(r); });
+          var pg = j.pagination || {};
+          if (pg.total_pages && n < pg.total_pages && n < 10) return page(n + 1);
+        });
+    }
+    page(1).then(function(){ if (all.length) render(all); }).catch(function(){});
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();
+</script>
+{%- endif -%}
+{% schema %}
+{"name": "PG DBZ Reviews", "settings": []}
+{% endschema %}

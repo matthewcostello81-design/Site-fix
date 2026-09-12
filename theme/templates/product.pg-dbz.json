@@ -46,12 +46,17 @@
     "pg_r36stitle": {
       "type": "pg-r36s-title",
       "settings": {}
+    },
+    "pg_dbzreviews": {
+      "type": "pg-dbz-reviews",
+      "settings": {}
     }
   },
   "order": [
     "pg_landing",
     "pg_picksize",
     "pg_dbztiles",
+    "pg_dbzreviews",
     "pg_revlink",
     "pg_r36smobile",
     "pg_selloutlast",
