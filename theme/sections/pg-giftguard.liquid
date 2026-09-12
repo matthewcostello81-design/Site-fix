@@ -1,0 +1,365 @@
+{%- comment -%}
+  PG Gift Guard: owns the free case. It now RIDES ALONG with the console's own
+  add-to-cart instead of chasing it, and it no longer fights pg-case-mobile
+  over the gift line.
+
+  ================================================================
+  1. THE GIFT ARRIVES WITH THE CONSOLE, IN ONE REQUEST   (2026-09-12)
+
+  Reported: "whenever I add an R36 to cart it takes a minute to load in the
+  free gift." It did, and the shape of this file was the reason.
+
+  Placement used to hang off the POLL below. The whole chain, measured:
+
+      tap ADD TO CART   ->  POST /cart/add.js            (console lands)
+      drawer opens                                        (console only)
+      up to 2000ms      ->  the next check() tick
+                        ->  GET /cart.js                  (is a gift needed?)
+                        ->  GET /cart.js again            ("one more read")
+                        ->  POST /cart/add.js             (the gift)
+                        ->  pgDrawerRefresh()             (>=700ms floor in
+                                                           pg-cart-fast, then a
+                                                           full GET of `/`)
+      drawer's innerHTML is REPLACED                      (console + gift)
+
+  So the gift could not appear in under about a second and a half even on a
+  fast connection, and on a phone whose /cart.js reads were being throttled it
+  was far worse -- the note further down records a console sitting for 15s with
+  no case. Worse than the wait: that last step replaces the drawer's markup
+  wholesale, so every stamping script on the page (pg-case-mobile, nc-linesave,
+  pg-chips, pg-drawer) re-runs against brand new nodes while the shopper is
+  looking at them. A second cart mutation a beat after the first IS the
+  re-render the shopper sees as the cart "glitching".
+
+  THE FIX IS TO NOT MAKE A SECOND REQUEST. window.fetch is wrapped, and a POST
+  to /cart/add.js carrying a console, Duo Pack or Trio Pack variant gets the
+  free case appended to ITS OWN items array. One round trip, and the server's
+  answer already contains both lines -- so the drawer's first paint has the
+  gift in it, there is no follow-up write, and there is no second render.
+
+  The wrapper is deliberately narrow. It rewrites nothing unless:
+    - the method is POST and the URL is /cart/add.js,
+    - the body is a string of JSON (every add path in this theme posts that),
+    - an item in it is a known gift-earning variant,
+    - and this file KNOWS the cart has no gift yet (giftIn === false).
+  Anything else is passed through untouched. It composes with pg-cart-fast's
+  wrapper, which is installed later (footer-group) and therefore calls this
+  one; its cache invalidation still sees the same URL and still fires.
+
+  The earning variant ids are seeded below AND re-learned from the products
+  themselves on load, so a new console or pack variant cannot silently stop
+  earning a case.
+
+  THE POLL STAYS, as the safety net it should always have been: an add made by
+  a path the wrapper does not see (a form POST, a Shopify quick-add) still gets
+  its gift within a tick, and every write now nudges a check 250ms later rather
+  than waiting out the full 2s interval.
+
+  ================================================================
+  2. THE 250ms TUG-OF-WAR OVER data-pg-free   (2026-09-12)
+
+  Reported: "the free gift text and the $0 price glitch up and down
+  repeatedly." Two intervals were writing and deleting one attribute on the
+  same line, four times a second.
+
+      pg-case-mobile asGift()   every 250ms:  li.dataset.pgFree = '1'
+      pg-giftguard   apply()    every 250ms:  delete li.dataset.pgFree
+
+  apply()'s release clause read "marked as handled but wearing no badge, so
+  release it" -- and it looked for .pg-free-tag. pg-case-mobile deliberately
+  stopped using that class (it benches it and renders .pg-truegift-tag instead,
+  "one writer, no race"), so the clause matched the gift line on EVERY pass and
+  deleted an attribute pg-case-mobile put back a quarter-second later, forever.
+
+  That attribute is not cosmetic. pg-drawer styles the whole gift module from
+  it:
+
+      li[data-pg-free] > section > p      display:none   (the variant text)
+      li[data-pg-free] > section          grid-template-rows changes
+      li[data-pg-free] figure img         height:110px, width:auto
+
+  So the thumbnail resized, the variant line appeared and vanished, and the row
+  grew and shrank -- dragging the pill and the $0.00 with it. That is the
+  up-and-down, and it is why it looked worst on the free case specifically.
+
+  Two changes end it:
+
+    - the release clause counts .pg-truegift-tag as a badge, so a line
+      pg-case-mobile has stamped is left alone;
+    - the unearned branch no longer WRITES data-pg-free at all. It only ever
+      set it as a private "handled" marker, but the attribute is pg-drawer's
+      layout switch, so stamping it on a paid spare case turned that row into a
+      gift module and put pg-case-mobile's asPaid() (which deletes it, every
+      250ms) into the same fight. Ownership of the attribute is pg-case-mobile's
+      alone now; this file reads it and never writes it.
+
+  ================================================================
+  background (unchanged)
+
+  The case product carries two real variants:
+
+      49640846426340  $0.00   "Free with console"   -> the gift
+      49640879063268  $13.99  "Spare case"          -> the paid upsell
+
+  The gift is free because it is priced at zero, which leaves Shopify's single
+  automatic-discount slot free for the bundle ladders.
+
+  ONE GIFT, NEVER TWO. Detection is BY VARIANT, never by a property: a line can
+  be rebuilt, merged or re-added by another section and lose the marker while
+  still being the free case sitting in the cart. An add is followed by a
+  cooldown and re-checked against a fresh read. The gift line is capped at one
+  unit by REMOVAL -- pg-drawer and pg-case-mobile both answer a surplus by
+  selling it as a $13.99 spare, and taking it off first leaves them nothing to
+  sell. A unit that arrived by accident is not an upsell.
+{%- endcomment -%}
+<script>
+(function(){
+  if (window.pgGiftGuard) return; window.pgGiftGuard = 1;
+
+  var CASE_LINK = 'free-gift';               /* the case handle ends in -free-gift */
+  var CONSOLE_HANDLE = 'handheld-game-console';
+  /* The Duo and Trio Packs are their own products, so a cart holding one
+     contains no console line at all. Either handle earns the gift. */
+  var DUO_HANDLE = 'r36s-duo-pack';
+  var TRIO_HANDLE = 'r36s-trio-pack';
+  function earnsGift(it){
+    return it.handle === CONSOLE_HANDLE || it.handle === DUO_HANDLE || it.handle === TRIO_HANDLE;
+  }
+  var FREE_VARIANT = 49640846426340;         /* $0.00 "Free with console" */
+  var LINES = '#cart .l4ca > li, body.template-cart .form-cart .l4ca > li';
+  /* null = not checked yet. The badge is only ever removed on an explicit
+     false, so a failed or pending /cart.js never blanks a legitimate gift. */
+  var earned = null;
+  var busy = false;
+  var adding = false;
+  /* No add may follow another inside this window, however many reads come back
+     saying the cart is empty of gifts. 8s comfortably outlasts a throttled
+     response and every drawer refresh it can trigger. */
+  var COOLDOWN = 8000;
+  var lastAdd = 0;
+  var capping = false;
+
+  /* ============================================================
+     THE RIDE-ALONG: the gift goes in the console's own add request
+     ============================================================ */
+
+  /* Seeded, then re-learned from the products below. A hardcoded list alone
+     would quietly stop earning the gift the day a variant is added. */
+  var EARNING_VARIANTS = {
+    49622431858916: 1, 49622431826148: 1,                                       /* R36S 64G / 128G */
+    49831383531748: 1, 49831383564516: 1, 49831383597284: 1, 49831405846756: 1, /* Duo Pack */
+    49835591270628: 1, 49835591565540: 1, 49835591598308: 1, 49835591631076: 1  /* Trio Pack */
+  };
+  /* null = unknown. The wrapper only ever injects on an explicit false, so a
+     page whose first cart read has not landed yet simply falls back to the
+     poll rather than risking a second gift. */
+  var giftIn = null;
+
+  function learnVariants(){
+    [CONSOLE_HANDLE, DUO_HANDLE, TRIO_HANDLE].forEach(function(h){
+      fetch('/products/' + h + '.js', {headers: {'Accept': 'application/json'}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(p){
+          if (p && p.variants) p.variants.forEach(function(v){ EARNING_VARIANTS[v.id] = 1; });
+        })
+        .catch(function(){});
+    });
+  }
+
+  /* Returns a rewritten body, or null to leave the request alone. */
+  function withGift(bodyStr){
+    if (giftIn !== false) return null;
+    if (Date.now() - lastAdd < 1500) return null;   /* one already in flight */
+    var b;
+    try { b = JSON.parse(bodyStr); } catch (e){ return null; }
+    if (!b || typeof b !== 'object') return null;
+    var items = Array.isArray(b.items) ? b.items : (b.id ? [b] : null);
+    if (!items || !items.length) return null;
+    var earns = false, already = false;
+    items.forEach(function(it){
+      var id = parseInt(it && it.id, 10);
+      if (EARNING_VARIANTS[id]) earns = true;
+      if (id === FREE_VARIANT) already = true;
+    });
+    if (!earns || already) return null;
+    /* keep every other top-level key the caller sent (sections, form_type,
+       attributes); only the item list is replaced */
+    var out = {};
+    for (var k in b){
+      if (k === 'id' || k === 'quantity' || k === 'properties' || k === 'items') continue;
+      out[k] = b[k];
+    }
+    out.items = items.concat([{id: FREE_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]);
+    giftIn = true;          /* the request on its way carries it */
+    lastAdd = Date.now();   /* and the fallback add must not race it */
+    return JSON.stringify(out);
+  }
+
+  var soonTimer = null, soonTimer2 = null;
+  function soon(){
+    clearTimeout(soonTimer); clearTimeout(soonTimer2);
+    soonTimer = setTimeout(check, 250);
+    soonTimer2 = setTimeout(check, 1200);
+  }
+
+  function wrapFetch(){
+    var next = window.fetch;
+    if (typeof next !== 'function') return;
+    window.fetch = function(input, init){
+      var url = typeof input === 'string' ? input
+              : (input && typeof input.url === 'string' ? input.url : '');
+      var method = String((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+      var isWrite = method === 'POST' && /\/cart\/(add|change|update|clear)(\.js)?(\?|$)/.test(url);
+
+      if (method === 'POST' && /\/cart\/add(\.js)?(\?|$)/.test(url) &&
+          typeof input === 'string' && init && typeof init.body === 'string'){
+        var body = withGift(init.body);
+        if (body){
+          var ni = {};
+          for (var k in init) ni[k] = init[k];
+          ni.body = body;
+          var pr = next.call(this, input, ni);
+          /* a rejected or failed add did NOT place the gift: forget the
+             optimistic flag so the poll can put one in */
+          if (pr && typeof pr.then === 'function'){
+            pr.then(function(r){ if (!r || !r.ok) giftIn = null; }, function(){ giftIn = null; });
+          }
+          soon();
+          return pr;
+        }
+      }
+
+      var p = next.apply(this, arguments);
+      if (isWrite) soon();
+      return p;
+    };
+  }
+
+  /* ============================================================
+     the badge
+     ============================================================ */
+
+  function caseLines(){
+    var out = [];
+    document.querySelectorAll(LINES).forEach(function(li){
+      if (li.querySelector('a[href*="' + CASE_LINK + '"]')) out.push(li);
+    });
+    return out;
+  }
+
+  /* READS data-pg-free, NEVER WRITES IT -- see note 2 at the top. Its owner is
+     pg-case-mobile, which sets it on the $0.00 line and clears it on the paid
+     one, by variant, every 250ms. */
+  function apply(){
+    var lis = caseLines();
+    if (!lis.length) return;
+    if (earned === false){
+      /* the legacy pill only: .pg-truegift-tag belongs to pg-case-mobile,
+         which already takes it off the paid line by variant, and removing it
+         here would be the same fight in a different costume */
+      lis.forEach(function(li){
+        li.querySelectorAll('.pg-free-tag').forEach(function(el){
+          if (el.parentNode) el.parentNode.removeChild(el);
+        });
+      });
+    }
+  }
+
+  /* The gift line, BY VARIANT. */
+  function giftLine(cart){
+    var found = null;
+    (cart.items || []).forEach(function(it){
+      if (it.variant_id === FREE_VARIANT) found = it;
+    });
+    return found;
+  }
+
+  /* THE FALLBACK PLACEMENT. The ride-along above is the normal path; this
+     covers an add this page never saw. Guarded three ways -- an in-flight add,
+     a cooldown, and a fresh read taken at the moment of the decision. */
+  function ensureGift(cart){
+    if (adding) return;
+    if (Date.now() - lastAdd < COOLDOWN) return;
+    var items = cart.items || [];
+    if (!items.some(earnsGift)) return;
+    if (giftLine(cart)) return;
+    adding = true;
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(fresh){
+        if (giftLine(fresh) || !(fresh.items || []).some(earnsGift)){
+          adding = false;
+          return;
+        }
+        lastAdd = Date.now();
+        return fetch('/cart/add.js', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({items: [{id: FREE_VARIANT, quantity: 1, properties: {_free_gift: 'yes'}}]})
+        }).then(function(r){
+          adding = false;
+          if (!r.ok) return;
+          giftIn = true;
+          if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+        });
+      })
+      .catch(function(){ adding = false; });
+  }
+
+  /* One free case, never more. Removal only, and only ever of the $0.00
+     variant -- a spare the shopper actually chose is a different variant and
+     is never touched. */
+  function capGift(cart){
+    if (capping || adding) return;
+    var gift = giftLine(cart);
+    if (!gift || gift.quantity <= 1) return;
+    capping = true;
+    fetch('/cart/change.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({id: gift.key, quantity: 1})
+    }).then(function(){
+      capping = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+    }).catch(function(){ capping = false; });
+  }
+
+  /* WITH A WATCHDOG: one stuck flag must never disable the gift for the rest
+     of a session. */
+  var busyTimer = null;
+  function check(){
+    if (busy) return;
+    busy = true;
+    clearTimeout(busyTimer);
+    busyTimer = setTimeout(function(){ busy = false; }, 8000);
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+      .then(function(r){ return r.json(); })
+      .then(function(c){
+        /* the flag the wrapper reads. It is only ever lowered by a read taken
+           well clear of an add: a cached answer issued before an injected add
+           landed must not be allowed to license a second gift. */
+        if (giftLine(c)) giftIn = true;
+        else if (Date.now() - lastAdd > 1500) giftIn = false;
+        earned = (c.items || []).some(function(it){
+          return earnsGift(it) || (it.properties && it.properties._free_gift);
+        });
+        clearTimeout(busyTimer); busy = false;
+        apply();
+        capGift(c);
+        ensureGift(c);
+      })
+      .catch(function(){ clearTimeout(busyTimer); busy = false; });
+  }
+
+  wrapFetch();
+  learnVariants();
+  /* apply() is cheap and runs often so a stale badge never lingers between
+     cart reads; check() re-reads on a slower beat, because /cart.js is shared
+     with five other sections (pg-cart-fast memoises it for them all). */
+  setInterval(apply, 250);
+  setInterval(check, 2000);
+  check();
+})();
+</script>
+{% schema %}
+{"name": "PG Gift Guard", "settings": []}
+{% endschema %}
