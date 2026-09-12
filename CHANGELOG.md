@@ -39,7 +39,7 @@ shipping accordion no longer mentions the supplier.
 ## Applied to
 Theme "Extra 5% off (Claude 9-11e)" (also present on "Duo case wording
 (Claude 9-10c)", where they were first written by mistake). Files added:
-sections/pg-dbz-tiles.liquid, sections/pg-dbz-reviews.liquid,
+sections/pg-dbz-tiles.liquid, sections/pg-dbz-reviews.liquid, sections/pg-dbz-labels.liquid,
 templates/product.pg-dbz.json
 
 ---

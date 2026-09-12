@@ -1,0 +1,163 @@
+{%- comment -%}
+  PG DBZ Labels: the character's name on the photo, the way the orb page
+  shows "PIKACHU" on its gallery (pg-gallery-tweaks' .pg-gt-name pill).
+
+  The lamp sells three characters and carries several photos of each, so a
+  shopper swiping the gallery needs to know which lamp they are looking at.
+  The name is read from each image's ALT TEXT, written as
+  "Dragon Ball Z Legends Lamp - Goku (Blue Energy)": the part after the
+  dash is the label, the same convention the orb's media uses. The media
+  list is rendered into the page by Liquid, so the first paint has it and
+  nothing is fetched.
+
+  MATCHED ON FILENAME, never on position. pg-r36s-mobile rebuilds the phone
+  gallery (a copy of the hero as slide one, the video as slide two, then the
+  strip), so an index would drift; each <img>'s own src filename is matched
+  against the media list instead, and a photo with no match simply gets no
+  label. The video slide gets none.
+
+  TWO SURFACES. On phones the pill sits at the top of the swipe strip and
+  follows the slide in view, repainted on every scroll frame like the orb's
+  counter. On desktop pg-landing shows one big hero photo driven by the
+  thumbnail clicks, so the pill sits on the hero and follows its src.
+
+  Registered in templates/product.pg-dbz.json only.
+{%- endcomment -%}
+{%- if product and product.media.size > 0 -%}
+<script type="application/json" id="pg-dbz-names">
+[{%- for m in product.media -%}{%- unless forloop.first -%},{%- endunless -%}{"a":{{ m.alt | default: '' | json }},"s":{{ m.preview_image.src | split: '?' | first | split: '/' | last | json }}}{%- endfor -%}]
+</script>
+{%- endif -%}
+<style>
+  /* the orb page's name pill, restated (pg-gallery-tweaks is registered on
+     the orb template only, so the class cannot collide here) */
+  #pgx .pgx-thumbwrap,#pgx .pgx-hero{position:relative}
+  #pgx .pg-dbz-name{
+    position:absolute;
+    top:10px;left:50%;transform:translateX(-50%);
+    z-index:4;
+    max-width:calc(100% - 24px);
+    padding:8px 18px;
+    border-radius:999px;
+    background:rgba(13,7,20,.94);
+    border:1.5px solid rgba(199,155,234,.95);
+    box-shadow:0 6px 18px -6px rgba(0,0,0,.85), 0 0 16px rgba(139,68,190,.5);
+    color:#FFFFFF;
+    text-shadow:0 1px 2px rgba(0,0,0,.6);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    font-size:14px;font-weight:800;
+    letter-spacing:.06em;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    text-align:center;
+    pointer-events:none;
+  }
+  @media (max-width:430px){
+    #pgx .pg-dbz-name{font-size:12.5px;padding:6px 14px}
+  }
+  /* on phones the hero is hidden and the strip is the gallery; on desktop
+     the strip is a row of thumbnails under the hero, which needs no pill */
+  @media (max-width:900px){ #pgx .pgx-hero .pg-dbz-name{display:none} }
+  @media (min-width:901px){ #pgx .pgx-thumbwrap .pg-dbz-name{display:none} }
+</style>
+<script>
+(function(){
+  if (window.pgDbzLabels) return; window.pgDbzLabels = 1;
+
+  var NAMES = null;
+  function trimName(alt){
+    if (!alt) return '';
+    var parts = String(alt).split(/\s[-–—]\s/);
+    return parts.length > 1 ? parts.pop().trim() : '';
+  }
+  function names(){
+    if (NAMES) return NAMES;
+    var tag = document.getElementById('pg-dbz-names');
+    if (!tag) return null;
+    var arr;
+    try { arr = JSON.parse(tag.textContent); } catch (e){ return null; }
+    NAMES = {};
+    (arr || []).forEach(function(m){
+      var n = trimName(m && m.a);
+      if (n && m.s) NAMES[m.s] = n;
+    });
+    return NAMES;
+  }
+  function stem(file){ return file.replace(/\.(png|jpg|jpeg|webp|gif)$/i, ''); }
+  function nameFor(img){
+    var N = names();
+    if (!N || !img) return '';
+    var file = ((img.getAttribute('src') || '').split('/').pop() || '').split('?')[0];
+    if (N[file]) return N[file];
+    var st = stem(file);
+    for (var k in N){
+      var ks = stem(k);
+      if (st === ks || st.indexOf(ks) === 0 || ks.indexOf(st) === 0) return N[k];
+    }
+    return '';
+  }
+  function pill(host, text){
+    var tag = host.querySelector(':scope > .pg-dbz-name');
+    if (!text){ if (tag) tag.parentNode.removeChild(tag); return; }
+    if (!tag){
+      tag = document.createElement('div');
+      tag.className = 'pg-dbz-name';
+      tag.setAttribute('aria-hidden', 'true');
+      host.appendChild(tag);
+    }
+    if (tag.textContent !== text) tag.textContent = text;
+  }
+
+  /* the phone strip: the slide nearest the centre */
+  function paintStrip(){
+    var wrap = document.querySelector('#pgx .pgx-thumbwrap');
+    if (!wrap) return;
+    var strip = wrap.querySelector('.pgx-thumbs');
+    if (!strip || !strip.children.length) return;
+    var kids = strip.children;
+    var mid = strip.scrollLeft + strip.clientWidth / 2;
+    var best = null, bestD = Infinity;
+    for (var i = 0; i < kids.length; i++){
+      var d = Math.abs((kids[i].offsetLeft + kids[i].offsetWidth / 2) - mid);
+      if (d < bestD){ bestD = d; best = kids[i]; }
+    }
+    var img = best && best.querySelector && best.querySelector('img');
+    pill(wrap, img ? nameFor(img) : '');
+  }
+  /* the desktop hero: whatever the thumbnails last put in it */
+  function paintHero(){
+    var hero = document.querySelector('#pgx .pgx-hero');
+    if (!hero) return;
+    pill(hero, nameFor(hero.querySelector('img')));
+  }
+  function paint(){ paintStrip(); paintHero(); }
+
+  function boot(){
+    if (!document.getElementById('pgx')) return;
+    paint();
+    var raf = 0;
+    document.addEventListener('scroll', function(e){
+      var t = e.target;
+      if (!t || !t.classList || !t.classList.contains('pgx-thumbs')) return;
+      if (!raf) raf = requestAnimationFrame(function(){ raf = 0; paintStrip(); });
+    }, {capture: true, passive: true});
+    document.addEventListener('click', function(e){
+      if (e.target && e.target.closest && e.target.closest('#pgx [data-pgx-thumb]')) setTimeout(paintHero, 30);
+    }, true);
+    var root = document.getElementById('pgx');
+    if (root && window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; paint(); }, 80);
+      }).observe(root, {childList: true, subtree: true});
+    }
+    window.addEventListener('resize', paint, {passive: true});
+    [300, 900, 2000, 4000].forEach(function(t){ setTimeout(paint, t); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG DBZ Labels", "settings": []}
+{% endschema %}

@@ -50,6 +50,10 @@
     "pg_dbzreviews": {
       "type": "pg-dbz-reviews",
       "settings": {}
+    },
+    "pg_dbzlabels": {
+      "type": "pg-dbz-labels",
+      "settings": {}
     }
   },
   "order": [
@@ -57,6 +61,7 @@
     "pg_picksize",
     "pg_dbztiles",
     "pg_dbzreviews",
+    "pg_dbzlabels",
     "pg_revlink",
     "pg_r36smobile",
     "pg_selloutlast",
