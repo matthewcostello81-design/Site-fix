@@ -1,0 +1,200 @@
+{%- comment -%}
+  PG DBZ Tiles: the Dragon Ball Z Legends Lamp page's bundle tiles, worded and
+  priced the way the R36S page's are.
+
+  WHERE THE TILES COME FROM. pg-theme-css (window.pgLadder) builds a four-rung
+  ladder on every product page that is not in its NO_LADDER list, from a TIERS
+  array whose first three rungs are exactly the offers this product sells:
+
+      tier 0  Buy 1
+      tier 1  Duo Pack  -- 2nd 25% OFF     (pay 1.75 x unit)
+      tier 2  Trio Pack -- 3rd 50% OFF     (pay 2.5 x unit)
+      tier 3  Quad Pack -- +1 FREE         (no such offer on the lamp)
+
+  So, like pg-tile-copy on the orb, this file edits the ladder after it is
+  built rather than touching the 100KB shared file: it removes tier 3, rewords
+  tiers 0-2 for a lamp, restates each price in whole cents so the tile can
+  never quote a figure a cent above what the cart charges, and gives every
+  tile the R36S's one-line tier note under its pickers.
+
+  THE CHECKOUT SIDE. A tile promises a price only a matching automatic
+  discount can honour. Both exist on the store, created with this page:
+
+      DBZ Lamp - 2nd Lamp 25% Off   BXGY, buy 1 get 1 at 25%, repeats
+      DBZ Lamp - 3rd Lamp 50% Off   BXGY, buy 2 get 1 at 50%, repeats
+
+  Both combine with product discounts, like the orb's and the wall art's, so
+  a mixed cart (orbs + lamps) keeps every product's own offer. On a single
+  cart line only one product discount can apply and Shopify takes the one
+  that saves the shopper more; on a three-lamp cart split across three
+  variant lines the two may both land, which leaves the cart UNDER the tile,
+  never over it. Every lamp variant is the same price, so which unit the
+  discount lands on does not matter (the reason the R36S moved to pack
+  products, its two storage prices, does not apply here). The standing
+  "Extra 5% off entire order" is order-class and stacks on top.
+
+  PRICES ARE DERIVED IN CENTS. pgLadder prints money(2.5 * 59.99), and
+  (149.975).toFixed(2) is "149.97" in JavaScript while Shopify rounds the
+  29.995 discount to 30.00 and charges 149.97 -- a tie today, but a coin
+  flip. The duo rounds to the nearest cent (matches Shopify's rounding of the
+  25% off one unit) and the trio rounds UP, so a rounding disagreement can
+  only ever leave the cart a cent under the tile.
+
+  Idempotent, on an observer and a slow interval, because pgDuo (also in
+  pg-theme-css) keeps running its own passes over the first tile and would
+  otherwise strip what this writes: it only ever writes what is missing or
+  differs. The radio dot on tier 0 is restored under its own class, the same
+  trick pg-orb-tiles uses, because pgDuo removes .pgx-duo-dot from whichever
+  tile is first in the buy column.
+
+  Registered in templates/product.pg-dbz.json only.
+{%- endcomment -%}
+<style>
+  /* the radio dot pgDuo strips from the first tile, restated under a class its
+     pass does not touch, styled exactly like .pgx-duo-dot */
+  #pgx .pg-dbz-dot{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid #8B44BE;margin-top:3px;position:relative}
+  #pgx .pgx-tile.pgx-sel .pg-dbz-dot:after{content:"";position:absolute;inset:3px;border-radius:50%;background:#9B4BC4}
+  /* the chip sits under the title on its own line, the console's order:
+     name, chip, then the discount line */
+  #pgx .pgx-lad .pgx-lad-t > .pgx-lad-chip{margin-left:0;margin-top:5px;display:inline-block}
+  #pgx .pgx-lad .pgx-lad-t > b{display:block}
+</style>
+<script>
+(function(){
+  if (window.pgDbzTiles) return; window.pgDbzTiles = 1;
+
+  var NOUN = 'Lamp';
+  var TIERS = {
+    '0': {title: 'Single Lamp', chip: '', save: 'Standard price',
+          note: '<b>One Dragon Ball Z lamp</b> at the standard price, plus an extra <b>5% off</b> at checkout.'},
+    '1': {title: 'Duo Pack', chip: '2 Lamps', save: '2nd ' + NOUN + ' = 25% OFF!', badge: 'MOST POPULAR &middot; SAVE {pct}%',
+          note: '<b>Duo Pack</b> &mdash; your 2nd lamp is <b>25% off</b>, applied automatically at checkout, plus an extra <b>5% off</b>.'},
+    '2': {title: 'Trio Pack', chip: '3 Lamps', save: '3rd ' + NOUN + ' = 50% OFF!', badge: 'BEST DEAL &middot; SAVE {pct}%',
+          note: '<b>Trio Pack</b> &mdash; your 3rd lamp is <b>50% off</b>, applied automatically at checkout, plus an extra <b>5% off</b>.'}
+  };
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function put(el, text){ if (el && el.textContent !== text) el.textContent = text; }
+  function putHtml(el, html){ if (el && el.pgDbz !== html){ el.pgDbz = html; el.innerHTML = html; } }
+
+  /* the unit price in cents, from the variant data pg-landing prints */
+  var unitC = 0;
+  function unit(){
+    if (unitC) return unitC;
+    var el = document.getElementById('pgx-vdata');
+    if (!el) return 0;
+    try {
+      var vs = JSON.parse(el.textContent || '[]');
+      if (vs && vs[0] && vs[0].price) unitC = vs[0].price;
+    } catch (e){}
+    return unitC;
+  }
+
+  /* what each rung pays and what it is measured against, in cents */
+  function priceOf(tier, u){
+    if (tier === '1') return {pay: Math.round(u * 1.75), full: u * 2};
+    if (tier === '2') return {pay: Math.ceil(u * 2.5), full: u * 3};
+    return null;
+  }
+  function pctOff(pay, full){ return full > pay ? Math.floor((full - pay) / full * 100) : 0; }
+
+  function pass(){
+    var pgx = document.getElementById('pgx');
+    if (!pgx) return;
+    var tiles = pgx.querySelectorAll('.pgx-lad');
+    if (!tiles.length) return;                    /* pgLadder has not built yet */
+    var u = unit();
+
+    tiles.forEach(function(t){
+      var tier = t.getAttribute('data-pg-tier');
+
+      /* 1. the offer that does not exist on this product */
+      if (tier === '3'){
+        var wasSel = t.classList.contains('pgx-sel');
+        if (t.parentNode) t.parentNode.removeChild(t);
+        if (wasSel){
+          var first = pgx.querySelector('.pgx-lad[data-pg-tier="0"]');
+          if (first){ first.classList.add('pgx-sel'); first.setAttribute('aria-checked', 'true'); }
+        }
+        return;
+      }
+      var T = TIERS[tier];
+      if (!T) return;
+
+      /* 2. the radio dot, whenever pgDuo has taken the ladder's own */
+      var head = t.querySelector('.pgx-lad-head');
+      if (head && !head.querySelector('.pgx-duo-dot, .pg-dbz-dot')){
+        var dot = document.createElement('span');
+        dot.className = 'pg-dbz-dot';
+        dot.setAttribute('aria-hidden', 'true');
+        head.insertBefore(dot, head.firstChild);
+      }
+
+      /* 3. wording: title, chip, discount line, picks label */
+      var tt = t.querySelector('.pgx-lad-t');
+      if (tt){
+        put(tt.querySelector('b'), T.title);
+        var chip = tt.querySelector('.pgx-lad-chip');
+        if (T.chip){
+          if (!chip){
+            chip = document.createElement('span');
+            chip.className = 'pgx-lad-chip';
+            var sv0 = tt.querySelector('.pgx-lad-save');
+            if (sv0) tt.insertBefore(chip, sv0); else tt.appendChild(chip);
+          }
+          put(chip, T.chip);
+        } else if (chip && chip.parentNode){
+          chip.parentNode.removeChild(chip);
+        }
+        put(tt.querySelector('.pgx-lad-save'), T.save);
+      }
+      put(t.querySelector('.pgx-lad-picks .lbl'), tier === '0' ? 'Choose your character' : 'Choose your characters');
+
+      /* 4. price and badge, in cents */
+      var pr = u ? priceOf(tier, u) : null;
+      if (pr){
+        put(t.querySelector('.pgx-lad-px b'), money(pr.pay));
+        put(t.querySelector('.pgx-lad-px s'), money(pr.full));
+        if (T.badge){
+          var badge = t.querySelector('.pgx-lad-badge');
+          if (!badge){
+            badge = document.createElement('span');
+            badge.className = 'pgx-lad-badge';
+            t.insertBefore(badge, t.firstChild);
+          }
+          putHtml(badge, T.badge.replace('{pct}', pctOff(pr.pay, pr.full)));
+        }
+      }
+
+      /* 5. the tier note, under the pickers and above the in-tile ADD TO CART
+            pg-r36s-mobile appends on phones */
+      var n = t.querySelector('.pgx-tier-note');
+      if (!n){
+        n = document.createElement('div');
+        n.className = 'pgx-tier-note';
+        var atc = t.querySelector('.pg-r36-atc');
+        if (atc) t.insertBefore(n, atc); else t.appendChild(n);
+      }
+      putHtml(n, T.note);
+    });
+    if (!pgx.hasAttribute('data-pg-tiernotes')) pgx.setAttribute('data-pg-tiernotes', '1');
+  }
+
+  function boot(){
+    pass();
+    if (window.MutationObserver){
+      var q = false;
+      new MutationObserver(function(){
+        if (q) return;
+        q = true;
+        setTimeout(function(){ q = false; pass(); }, 80);
+      }).observe(document.documentElement, {childList: true, subtree: true});
+    }
+    setInterval(pass, 1200);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG DBZ Tiles", "settings": []}
+{% endschema %}
