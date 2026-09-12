@@ -14,7 +14,8 @@
   gallery (a copy of the hero as slide one, the video as slide two, then the
   strip), so an index would drift; each <img>'s own src filename is matched
   against the media list instead, and a photo with no match simply gets no
-  label. The video slide gets none.
+  label. The video slide has no image to match, so it carries the name from
+  the section's "Video label" setting (the clip shows the blue Goku).
 
   TWO SURFACES. On phones the pill sits at the top of the swipe strip and
   follows the slide in view, repainted on every scroll frame like the orb's
@@ -64,6 +65,7 @@
   if (window.pgDbzLabels) return; window.pgDbzLabels = 1;
 
   var NAMES = null;
+  var VIDEO_LABEL = {{ section.settings.video_label | default: '' | json }};
   function trimName(alt){
     if (!alt) return '';
     var parts = String(alt).split(/\s[-–—]\s/);
@@ -121,7 +123,9 @@
       if (d < bestD){ bestD = d; best = kids[i]; }
     }
     var img = best && best.querySelector && best.querySelector('img');
-    pill(wrap, img ? nameFor(img) : '');
+    if (img) pill(wrap, nameFor(img));
+    else if (best && best.querySelector && best.querySelector('video')) pill(wrap, VIDEO_LABEL);
+    else pill(wrap, '');
   }
   /* the desktop hero: whatever the thumbnails last put in it */
   function paintHero(){
@@ -159,5 +163,7 @@
 })();
 </script>
 {% schema %}
-{"name": "PG DBZ Labels", "settings": []}
+{"name": "PG DBZ Labels", "settings": [
+  {"type": "text", "id": "video_label", "label": "Video label (the character the clip shows)", "default": "Goku (Blue Energy)"}
+]}
 {% endschema %}

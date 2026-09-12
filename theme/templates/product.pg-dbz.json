@@ -53,7 +53,9 @@
     },
     "pg_dbzlabels": {
       "type": "pg-dbz-labels",
-      "settings": {}
+      "settings": {
+        "video_label": "Goku (Blue Energy)"
+      }
     }
   },
   "order": [
