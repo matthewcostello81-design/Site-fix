@@ -29,7 +29,8 @@ Handle changed to `dragon-ball-z-legends-lamp` (old handle redirected),
 template suffix `pg-dbz`, SEO title and description set. Left in DRAFT.
 
 ## Applied to
-Theme "Duo case wording (Claude 9-10c)". Files added:
+Theme "Extra 5% off (Claude 9-11e)" (also present on "Duo case wording
+(Claude 9-10c)", where they were first written by mistake). Files added:
 sections/pg-dbz-tiles.liquid, templates/product.pg-dbz.json
 
 ---
