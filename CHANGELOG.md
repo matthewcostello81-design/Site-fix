@@ -1,3 +1,36 @@
+# Power Ball PDP: title follows the product, not a hardcoded setting
+
+## Problem
+The product was renamed to "Legends Power Bank Ball" in Shopify admin, but the
+PDP kept showing "Legends Power Ball".
+
+## Cause
+`pg-landing` renders the heading as
+`{{ section.settings.display_title | default: prod.title }}`, and
+`templates/product.pg-powerball.json` had `display_title` hardcoded to
+"Legends Power Ball", so the section setting beat the real product title. The
+same setting also names the first bundle tile (`.pgx-tile-name`). The product
+handle did not change with the rename, so the section's product reference was
+never broken.
+
+## Fix
+Cleared `display_title` in `templates/product.pg-powerball.json`. Liquid's
+`default` filter treats an empty string as missing, so both the heading and the
+tile name now read `prod.title` — this rename and any future one shows without
+a theme edit. Typing a name into the setting still overrides it.
+
+Not touched: the copy that uses "Power Ball" as a noun rather than a title —
+"Choose your Power Balls" and the tile text in `pg-powerball-tiles`, the chip
+copy in `pg-tile-copy`, and the "Power Ball - Buy 2 Get 1 Free" rung name in
+`pg-cart-offer`, which has to match the discount as named in the Shopify admin.
+
+## Applied to
+Files changed: `templates/product.pg-powerball.json`.
+
+Pushed to the unpublished theme **Case $17.99 (Claude 9-14c)** (164001612004).
+
+---
+
 # Legends Power Ball: show 20 reviews instead of 5
 
 ## Problem
