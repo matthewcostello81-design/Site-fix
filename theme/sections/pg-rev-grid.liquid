@@ -1,0 +1,129 @@
+{%- comment -%}
+  PG Review Grid: fill the review grid at the bottom of a pg-landing PDP up to
+  N reviews instead of the handful Judge.me syncs into the product metafield.
+
+  WHAT PG-LANDING SHOWS. The grid (.pgx-cards inside #pg-reviews) is rendered
+  from judgeme.review_widget_data. Judge.me writes only the FIRST PAGE of
+  reviews into that metafield -- five on the Legends Power Ball -- plus any
+  photo reviews, so the grid showed 5 cards while the header counted 56.
+
+  WHERE THE REST COME FROM. Judge.me's own widget feed, reviews_for_widget, is
+  what its "load more" button calls from the storefront: public, CORS-open, and
+  it returns the same review objects the metafield carries (reviewer_name,
+  rating, body, pictures_urls) for any page size. Pages are walked until enough
+  usable reviews are in hand, then the grid is rebuilt from that set in
+  pg-landing's own card markup -- so the cards inherit every style pg-landing,
+  pg-theme-css, pg-dark and pg-reviews-text already give them.
+
+  The Liquid-rendered cards stay on screen until the fetch lands and are only
+  replaced by a strictly larger set; if the feed fails or returns less, nothing
+  changes. Newest first, as the feed orders them. The header count, histogram
+  and the quote carousel in the buy column are pg-landing's and are left alone.
+
+  Same mechanism as pg-dbz-reviews, which does this for the Dragon Ball Z lamp,
+  but with a settings-driven ceiling so a page can show a fixed number rather
+  than every review on file.
+{%- endcomment -%}
+{%- if product -%}
+{%- assign pg_rg_want = section.settings.count | default: 20 -%}
+<script>
+(function(){
+  if (window.pgRevGrid) return; window.pgRevGrid = 1;
+
+  var SHOP = {{ shop.permanent_domain | json }};
+  var PID  = {{ product.id | json }};
+  var WANT = {{ pg_rg_want }};
+  var PER  = 30;   /* feed page size */
+  var MAXP = 5;    /* never walk more pages than this */
+
+  function esc(t){
+    return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function textOf(r){
+    if (r.body) return String(r.body).trim();
+    var d = document.createElement('div');
+    d.innerHTML = r.body_html || '';
+    return (d.textContent || '').trim();
+  }
+  function stars(n){
+    var s = '';
+    for (var i = 1; i <= 5; i++) s += i <= n ? '★' : '☆';
+    return s;
+  }
+  function url(page){
+    return 'https://judge.me/reviews/reviews_for_widget?url=' + encodeURIComponent(SHOP)
+      + '&shop_domain=' + encodeURIComponent(SHOP) + '&platform=shopify'
+      + '&page=' + page + '&per_page=' + PER + '&product_id=' + PID;
+  }
+
+  function card(r){
+    var rating = parseInt(r.rating, 10) || 0;
+    var pics = (r.pictures_urls || []).slice(0, 3).map(function(p){
+      var src = p.small || p.compact || p.original;
+      return src ? '<img src="' + esc(src) + '" alt="Customer photo" loading="lazy">' : '';
+    }).join('');
+    return '<div class="pgx-card" data-pg-rev-uuid="' + esc(r.uuid) + '">'
+      + '<div class="pgx-card-name">' + esc(r.reviewer_name || 'Verified buyer') + '</div>'
+      + '<span class="pgx-stars pgx-pur">' + stars(rating) + '</span>'
+      + '<div class="pgx-card-txt">' + esc(textOf(r)) + '</div>'
+      + (pics ? '<div class="pgx-card-pics">' + pics + '</div>' : '')
+      + '</div>';
+  }
+
+  function usable(all){
+    var seen = {}, out = [];
+    all.forEach(function(r){
+      if (!r || !r.uuid || seen[r.uuid]) return;
+      if (!textOf(r)) return;
+      seen[r.uuid] = 1;
+      out.push(r);
+    });
+    return out;
+  }
+
+  function render(all){
+    var grid = document.querySelector('#pg-reviews .pgx-cards, #pgx .pgx-rev .pgx-cards');
+    if (!grid) return;
+    var out = usable(all).slice(0, WANT);
+    /* only ever grow the grid: the Liquid cards are the fallback */
+    if (out.length <= grid.querySelectorAll('.pgx-card').length) return;
+    grid.innerHTML = out.map(card).join('');
+  }
+
+  function load(){
+    if (!document.querySelector('#pg-reviews, #pgx .pgx-rev')) return;
+    var all = [];
+    function page(n){
+      return fetch(url(n), {headers: {'Accept': 'application/json'}})
+        .then(function(r){ return r.ok ? r.json() : null; })
+        .then(function(j){
+          if (!j) return;
+          (j.reviews || []).forEach(function(r){ all.push(r); });
+          if (usable(all).length >= WANT) return;
+          var pg = j.pagination || {};
+          if (pg.total_pages && n < pg.total_pages && n < MAXP) return page(n + 1);
+        });
+    }
+    page(1).then(function(){ if (all.length) render(all); }).catch(function(){});
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+})();
+</script>
+{%- endif -%}
+{% schema %}
+{
+  "name": "PG Review Grid",
+  "settings": [
+    {
+      "type": "range",
+      "id": "count",
+      "label": "Reviews to show",
+      "min": 5,
+      "max": 60,
+      "step": 5,
+      "default": 20
+    }
+  ]
+}
+{% endschema %}

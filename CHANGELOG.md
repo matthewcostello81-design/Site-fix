@@ -1,3 +1,48 @@
+# Legends Power Ball: show 20 reviews instead of 5
+
+## Problem
+The Legends Power Ball PDP header reads "56 Reviews", but the review grid at
+the bottom of the page rendered only 5 cards.
+
+## Cause
+The page is `templates/product.pg-powerball.json` → `sections/pg-landing.liquid`,
+whose grid (`.pgx-cards` inside `#pg-reviews`) is built in Liquid from the
+`judgeme.review_widget_data` metafield. Judge.me writes only the **first page**
+of reviews into that metafield plus any photo reviews — for this product that is
+5 reviews and an empty photo gallery — while `number_of_reviews` (56) and the
+histogram come from the same metafield and stay correct. So the count was right
+and the grid was short.
+
+## Fix
+Added `sections/pg-rev-grid.liquid` and registered it in
+`templates/product.pg-powerball.json` (`pg_revgrid`, count 20).
+
+It walks Judge.me's public `reviews_for_widget` feed — the same endpoint the
+app's own "load more" button calls, CORS-open from the storefront — until it has
+enough usable reviews, then rebuilds the grid from the first 20 in pg-landing's
+own card markup, so the cards inherit the styling pg-landing, pg-theme-css,
+pg-dark and pg-reviews-text already give them.
+
+Same mechanism as the existing `pg-dbz-reviews` (Dragon Ball Z lamp), with a
+settings-driven ceiling instead of "every review on file", so the count is a
+theme-editor range setting (5–60, default 20).
+
+Safety: the Liquid-rendered cards stay on screen until the fetch lands and are
+only replaced by a **strictly larger** set — a failed or short feed response
+changes nothing. Reviews are deduped by uuid, empty-body reviews are dropped,
+and all feed text is escaped before it is written into the DOM.
+
+## Applied to
+Files changed: `sections/pg-rev-grid.liquid` (new),
+`templates/product.pg-powerball.json`.
+
+Pushed to the unpublished theme **Case $17.99 (Claude 9-14c)** (164001612004),
+which is the current working copy of the live theme. The Shopify API used here
+refuses writes to the published theme, so the change goes live when that theme
+is published.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
