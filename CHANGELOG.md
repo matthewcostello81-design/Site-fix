@@ -1,3 +1,47 @@
+# R36 Pro 2 PDP: show the imported Judge.me reviews, linked review count
+
+## Problem
+The R36 Pro 2 page (`templates/product.pg-pro2.json`, Pocket Era) showed
+"5.0 · Trusted by over 10,000 customers" as plain text under the title and no
+customer reviews, while the R36S page showed "5.0 · 421 verified reviews" as a
+link that jumps to the review block at the bottom.
+
+## Cause
+Not a template bug. `sections/pg-landing.liquid` reads the product's Judge.me
+metafield (`judgeme.review_widget_data`) and, when it has a count, prints
+"<n> reviews" in the rating line and renders the review block from the synced
+reviews; `sections/pg-rev-link.liquid` then rewrites "<n> reviews" into a
+"<n> verified reviews" link to `#pg-reviews`. When the page was screenshotted
+the Pro 2 product had no Judge.me data yet, so pg-landing fell back to the
+template's `rating_label` prose, which pg-rev-link deliberately skips because
+it is not a count.
+
+Judge.me finished syncing the imported reviews onto the Pro 2 product at
+2026-09-17 01:51:55 UTC (143 reviews, 4.63 average, 13 with text, 10 with
+customer photos). The metafield definition is storefront-readable, so the
+existing Liquid now renders them without any section change.
+
+## Fix (`templates/product.pg-pro2.json` only)
+Made the fallback on this template behave the same way, so the page shows a
+linked count whether or not Judge.me is reachable:
+- `rating_label`: "Trusted by over 10,000 customers" -> "143 reviews". It is
+  count-shaped, so pg-rev-link's `^\s*([\d.,]+)\s+reviews?\s*$` match
+  upgrades it to a "143 verified reviews" link exactly like the Judge.me path.
+- `review_total`: 12 -> 143 and `rating_value`: "5.0" -> "4.6", so the
+  fallback review-block header matches the real numbers.
+- The 8 theme-editor `review` blocks (fallback cards) were copied from the
+  R36S template; replaced with 8 of the actually imported Pro 2 reviews so the
+  fallback shows this product's reviews, not the R36S's.
+
+`sections/pg-landing.liquid` and `sections/pg-rev-link.liquid` are untouched.
+
+## Applied to
+Shopify draft theme 164085727460 ("Copy of Power Ball 12k (Claude 9-15b)") on
+shop `v9fqfa-bd.myshopify.com` via the Admin API (themeFilesUpsert).
+Files changed: templates/product.pg-pro2.json
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
