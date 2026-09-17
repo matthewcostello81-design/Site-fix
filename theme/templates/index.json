@@ -1,0 +1,115 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_home": {
+      "type": "pg-home",
+      "blocks": {
+        "prod1": {
+          "type": "product",
+          "settings": {
+            "product": "handheld-game-console",
+            "label": ""
+          }
+        },
+        "prod2": {
+          "type": "product",
+          "settings": {
+            "product": "pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift",
+            "label": ""
+          }
+        },
+        "prod3": {
+          "type": "product",
+          "settings": {
+            "product": "anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame",
+            "label": ""
+          }
+        },
+        "prod5": {
+          "type": "product",
+          "settings": {
+            "product": "legends-power-ball",
+            "label": ""
+          }
+        },
+        "prod6": {
+          "type": "product",
+          "settings": {
+            "product": "pocket-era-r36-pro-2",
+            "label": ""
+          }
+        },
+        "acc1": {
+          "type": "accordion",
+          "settings": {
+            "title": "About Us",
+            "text": "<p>PocketEra brings the golden age of gaming back to your pocket. We are a small US-based team of retro gamers on a mission to make the classics playable anywhere.</p>"
+          }
+        },
+        "acc2": {
+          "type": "accordion",
+          "settings": {
+            "title": "Delivery Time",
+            "text": "<p>Orders are processed within 1 to 2 business days. Estimated delivery, including processing, is 8 to 16 business days to the United States and 10 to 20 business days to Canada and the United Kingdom. Tracking is emailed as soon as your order ships.</p>"
+          }
+        },
+        "acc3": {
+          "type": "accordion",
+          "settings": {
+            "title": "Reviews",
+            "text": "<p>See what customers are saying about their orders. <a href=\"/products/handheld-game-console#pg-reviews\">Read the reviews here</a>.</p>"
+          }
+        },
+        "acc4": {
+          "type": "accordion",
+          "settings": {
+            "title": "Customer Service",
+            "text": "<p>Call us at (402) 979-6583 or email thepocketera@gmail.com with questions or order concerns. If we miss your call, we will call you back as soon as possible.</p>"
+          }
+        }
+      },
+      "block_order": [
+        "prod1",
+        "prod5",
+        "prod2",
+        "prod3",
+        "prod6",
+        "acc1",
+        "acc2",
+        "acc3",
+        "acc4"
+      ],
+      "settings": {
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "announce_text": "Free shipping on all orders",
+        "shop_url": "/#pg-shop",
+        "hero_image": "shopify://shop_images/pg-hero-4k.png",
+        "hero_eyebrow": "Retro Gaming, Reimagined",
+        "hero_title": "Special Offers on New Arrivals",
+        "hero_cta": "Shop Now",
+        "hero_url": "/#pg-shop",
+        "grid_eyebrow": "Most Loved",
+        "grid_title": "Best Sellers",
+        "split_title": "Built for real gamers.",
+        "split_line1": "Your favorite classics. Now in your pocket.",
+        "split_line2": "15,000+ retro games, ready to play anywhere.",
+        "split_cta": "Shop now",
+        "split_image": "shopify://shop_images/hf_20260811_214719_7b5c24e8-d5f1-49f4-9d94-0cbd91c147de.png",
+        "tiles_eyebrow": "Explore",
+        "tiles_title": "Collections"
+      }
+    }
+  },
+  "order": [
+    "pg_home"
+  ]
+}

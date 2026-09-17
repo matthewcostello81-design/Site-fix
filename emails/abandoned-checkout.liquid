@@ -1,0 +1,298 @@
+{%- comment -%}
+  ============================================================================
+  Pocket Era | Abandoned checkout email (Shopify notification template)
+  ----------------------------------------------------------------------------
+  WHERE IT GOES
+    Shopify admin > Settings > Notifications > Customer notifications >
+    Abandoned checkout > Edit code. Replace the whole editor with this file,
+    Save, then use "Send test email" and open it on a phone.
+    Suggested subject line (Liquid is allowed in the subject field):
+      {{ shop.name }}: your cart is saved. Free shipping when you come back.
+
+  WHY THE OLD EMAIL RENDERED IN HALF THE SCREEN ON PHONES
+    A fixed-width layout (a 600px table with no max-width, or an image or
+    column with a hard pixel width) makes phone mail apps zoom out, so the
+    email lands in half of the screen. This template is fluid: the content
+    table is width 100% with max-width 600px, images scale with the column,
+    and a media query stacks the layout under 480px. Outlook desktop gets a
+    ghost 600px table through the MSO comments.
+
+  KEEP IN SYNC
+    * The "deals" card quotes the store's live automatic discounts (the extra
+      5% off the whole order, and buy 2 get 1 free on Crystal Legends Orbs and
+      Holo Legends Wall Art). If a discount ends, delete its line here. Never
+      promise money that checkout will not take off.
+    * Brand tokens mirror the theme's pg-* layer: Poppins, purple #7A2FA2 and
+      #4A1C66, ink #121212, lavender #E9DCF3 / #F4EEF9, dark footer #16101F.
+    * The logo fallback below is the header logo the homepage uses. If a logo
+      is set under Settings > Notifications > Customize, that one wins.
+  ============================================================================
+{%- endcomment -%}
+{%- assign first_name = customer.first_name -%}
+{%- if first_name == blank -%}{%- assign first_name = checkout.billing_address.first_name -%}{%- endif -%}
+{%- if first_name == blank -%}{%- assign first_name = checkout.shipping_address.first_name -%}{%- endif -%}
+{%- assign item_count = checkout.line_items | size -%}
+{%- assign logo_width = shop.email_logo_width | default: 120 -%}
+{%- if logo_width > 180 -%}{%- assign logo_width = 180 -%}{%- endif -%}
+{%- capture email_title -%}
+  {%- if first_name != blank -%}{{ first_name }}, your cart is saved.{%- else -%}Your cart is saved.{%- endif -%}
+{%- endcapture -%}
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="format-detection" content="telephone=no, date=no, address=no, email=no">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>{{ email_title | strip }}</title>
+  <!--[if mso]>
+  <xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+  <style>table,td,div,p,a{font-family:Arial,Helvetica,sans-serif !important}</style>
+  <![endif]-->
+  <!--[if !mso]><!-->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!--<![endif]-->
+  <style>
+    html,body{margin:0 !important;padding:0 !important;width:100% !important;min-width:100% !important;background:#F4EEF9;}
+    body{-webkit-text-size-adjust:100%;-ms-text-size-adjust:100%;}
+    table{border-collapse:collapse !important;mso-table-lspace:0pt;mso-table-rspace:0pt;}
+    img{border:0;outline:none;text-decoration:none;-ms-interpolation-mode:bicubic;}
+    a{color:#7A2FA2;}
+    .pe-font{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;}
+    @media only screen and (max-width:480px){
+      .pe-outer{padding:0 !important;}
+      .pe-card{border-radius:0 !important;}
+      .pe-pad{padding-left:20px !important;padding-right:20px !important;}
+      .pe-h1{font-size:24px !important;line-height:1.25 !important;}
+      .pe-btn{width:100% !important;}
+      .pe-btn a{display:block !important;padding-left:12px !important;padding-right:12px !important;text-align:center !important;}
+      .pe-ann{font-size:11px !important;letter-spacing:.04em !important;padding:10px 12px !important;}
+      .pe-img{width:64px !important;height:64px !important;}
+      .pe-imgcell{width:76px !important;}
+      .pe-price{font-size:14px !important;}
+    }
+  </style>
+</head>
+<body style="margin:0;padding:0;background-color:#F4EEF9;">
+  <div style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">Your cart is saved and shipping is free. Finish checkout in about a minute.&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F4EEF9" style="width:100%;min-width:100%;background-color:#F4EEF9;">
+    <tr>
+      <td align="center" class="pe-outer" style="padding:24px 12px;">
+        <!--[if mso]><table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" align="center"><tr><td><![endif]-->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="pe-card" style="width:100%;max-width:600px;margin:0 auto;background-color:#ffffff;border-radius:14px;overflow:hidden;">
+
+          <!-- Announcement strip (mirrors the site's purple bar) -->
+          <tr>
+            <td align="center" class="pe-ann pe-font" bgcolor="#5E2585" style="background-color:#5E2585;background-image:linear-gradient(90deg,#4A1C66,#7A2FA2 50%,#4A1C66);color:#ffffff;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:11px 16px;line-height:1.4;">
+              Free shipping on all orders &nbsp;&#10022;&nbsp; 30-day money-back guarantee
+            </td>
+          </tr>
+
+          <!-- Logo -->
+          <tr>
+            <td align="center" class="pe-pad" style="padding:30px 32px 6px;">
+              <a href="{{ shop.url }}" style="text-decoration:none;">
+                {%- if shop.email_logo_url -%}
+                  <img src="{{ shop.email_logo_url }}" alt="{{ shop.name }}" width="{{ logo_width }}" style="display:block;width:{{ logo_width }}px;max-width:100%;height:auto;margin:0 auto;">
+                {%- else -%}
+                  <img src="https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png?v=1786488994&width=240" alt="{{ shop.name }}" width="120" style="display:block;width:120px;max-width:100%;height:auto;margin:0 auto;">
+                {%- endif -%}
+              </a>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" class="pe-font" style="padding:0 32px 22px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#6B6478;">Retro gaming, pocket-sized.</td>
+          </tr>
+
+          <!-- Headline -->
+          <tr>
+            <td align="center" class="pe-pad pe-font" style="padding:0 32px 8px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#7A2FA2;">You left something behind</td>
+          </tr>
+          <tr>
+            <td align="center" class="pe-pad pe-h1 pe-font" style="padding:0 32px 12px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:30px;line-height:1.2;font-weight:700;letter-spacing:-.3px;color:#121212;">{{ email_title | strip }}</td>
+          </tr>
+          <tr>
+            <td align="center" class="pe-pad pe-font" style="padding:0 32px 26px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#2B2B2B;">
+              We kept your picks exactly as you left them. Checkout takes about a minute, shipping is on us, and every order is covered by our 30-day money-back guarantee.
+            </td>
+          </tr>
+          {%- if custom_message != blank -%}
+          <tr>
+            <td class="pe-pad" style="padding:0 32px 22px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pe-font" style="padding:16px 18px;background-color:#F4EEF9;border-left:4px solid #7A2FA2;border-radius:0 10px 10px 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#2B2B2B;">{{ custom_message }}</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {%- endif -%}
+
+          <!-- Primary button -->
+          <tr>
+            <td align="center" class="pe-pad" style="padding:0 32px 30px;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="{{ url }}" style="height:50px;v-text-anchor:middle;width:280px;" arcsize="16%" strokecolor="#7A2FA2" fillcolor="#7A2FA2">
+                <w:anchorlock/>
+                <center style="color:#ffffff;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;">Complete my order</center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" class="pe-btn" style="margin:0 auto;">
+                <tr>
+                  <td align="center" bgcolor="#7A2FA2" style="background-color:#7A2FA2;border-radius:8px;box-shadow:0 12px 28px -14px rgba(74,28,102,.7);">
+                    <a href="{{ url }}" class="pe-font" style="display:inline-block;padding:15px 40px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15.5px;font-weight:600;line-height:1.2;color:#ffffff;text-decoration:none;border-radius:8px;">Complete my order</a>
+                  </td>
+                </tr>
+              </table>
+              <!--<![endif]-->
+            </td>
+          </tr>
+
+          <!-- Cart contents -->
+          <tr>
+            <td class="pe-pad pe-font" style="padding:0 32px 4px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#7A2FA2;">
+              In your cart{% if item_count > 0 %} ({{ item_count }} {% if item_count == 1 %}item{% else %}items{% endif %}){% endif %}
+            </td>
+          </tr>
+          {%- for line in checkout.line_items -%}
+          {%- assign line_title = line.product.title | default: line.title -%}
+          <tr>
+            <td class="pe-pad" style="padding:0 32px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border-bottom:1px solid #E9DCF3;">
+                <tr>
+                  <td class="pe-imgcell" width="84" valign="top" style="width:84px;padding:16px 12px 16px 0;">
+                    {%- if line.image -%}
+                    <img class="pe-img" src="{{ line | img_url: 'compact_cropped' }}" alt="{{ line_title | escape }}" width="72" height="72" style="display:block;width:72px;height:72px;border-radius:10px;background-color:#F6F6F6;">
+                    {%- else -%}
+                    <div class="pe-img" style="width:72px;height:72px;border-radius:10px;background-color:#F4EEF9;"></div>
+                    {%- endif -%}
+                  </td>
+                  <td valign="middle" class="pe-font" style="padding:16px 8px 16px 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.4;color:#121212;">
+                    <div style="font-weight:600;">{{ line_title }}</div>
+                    {%- if line.variant.title != blank and line.variant.title != 'Default Title' -%}
+                    <div style="color:#6B6478;font-size:13.5px;margin-top:2px;">{{ line.variant.title }}</div>
+                    {%- endif -%}
+                    <div style="color:#6B6478;font-size:13.5px;margin-top:2px;">Qty {{ line.quantity }}</div>
+                  </td>
+                  <td align="right" valign="middle" width="84" class="pe-font pe-price" style="width:84px;padding:16px 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:600;color:#121212;white-space:nowrap;">
+                    {%- if line.original_line_price > line.final_line_price -%}
+                    <span style="display:block;color:#9384A8;font-weight:400;font-size:13px;text-decoration:line-through;">{{ line.original_line_price | money }}</span>
+                    {%- endif -%}
+                    {{ line.final_line_price | money }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          {%- endfor -%}
+          <tr>
+            <td class="pe-pad" style="padding:0 32px 26px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td class="pe-font" style="padding:14px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;color:#2B2B2B;">Subtotal</td>
+                  <td align="right" class="pe-font" style="padding:14px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;font-weight:700;color:#121212;white-space:nowrap;">{{ checkout.subtotal_price | money }}</td>
+                </tr>
+                <tr>
+                  <td colspan="2" class="pe-font" style="padding:6px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.5;color:#6B6478;">Shipping is free. Taxes, if any, show at checkout.</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Deals card: live automatic discounts only. Delete a line the day its discount ends. -->
+          <tr>
+            <td class="pe-pad" style="padding:0 32px 26px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#5E2585" style="background-color:#5E2585;background-image:linear-gradient(120deg,#4A1C66,#7A2FA2 60%,#8B44BE);border-radius:14px;">
+                <tr>
+                  <td class="pe-font" style="padding:22px 22px 6px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#E9D5F7;">Applied automatically at checkout</td>
+                </tr>
+                <tr>
+                  <td class="pe-font" style="padding:0 22px 10px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.5;font-weight:600;color:#ffffff;">An extra 5% off your whole order. No code needed.</td>
+                </tr>
+                <tr>
+                  <td class="pe-font" style="padding:0 22px 22px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#F1E6FA;">Buy 2, get 1 free on Crystal Legends Orbs and Holo Legends Wall Art.</td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Trust list (mirrors the homepage trust row) -->
+          <tr>
+            <td class="pe-pad" style="padding:0 32px 30px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#F4EEF9" style="background-color:#F4EEF9;border-radius:14px;">
+                <tr>
+                  <td class="pe-font" style="padding:20px 22px 8px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#7A2FA2;">Why shop with Pocket Era</td>
+                </tr>
+                <tr>
+                  <td style="padding:0 22px 6px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="24" valign="top" class="pe-font" style="width:24px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#7A2FA2;">&#10022;</td>
+                        <td class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#2B2B2B;"><b>Free tracked shipping</b> to the US, Canada and the UK. Orders ship within 1 to 2 business days.</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 22px 6px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="24" valign="top" class="pe-font" style="width:24px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#7A2FA2;">&#10022;</td>
+                        <td class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#2B2B2B;"><b>30-day money-back guarantee</b> on every order.</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 22px 20px;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="24" valign="top" class="pe-font" style="width:24px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;line-height:1.55;color:#7A2FA2;">&#10022;</td>
+                        <td class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.55;color:#2B2B2B;"><b>US-based support.</b> Call (402) 979-6583 or reply to this email and a real person answers.</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Secondary link -->
+          <tr>
+            <td align="center" class="pe-pad pe-font" style="padding:0 32px 34px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:14.5px;line-height:1.5;color:#2B2B2B;">
+              Changed your mind about something? <a href="{{ url }}" style="color:#7A2FA2;font-weight:600;text-decoration:underline;">Edit your cart</a> before you check out.
+            </td>
+          </tr>
+
+          <!-- Footer (dark, like the site footer) -->
+          <tr>
+            <td align="center" bgcolor="#16101F" class="pe-pad" style="background-color:#16101F;padding:28px 32px 30px;">
+              <div class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:18px;font-weight:700;color:#F1EDF7;">{{ shop.name }}</div>
+              <div class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:#A296B4;margin-top:4px;">Retro gaming, pocket-sized.</div>
+              <div class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;line-height:2;margin-top:14px;">
+                <a href="{{ shop.url }}/apps/track123" style="color:#C79BEA;text-decoration:none;">Track order</a>
+                <span style="color:#4A3C5C;">&nbsp;&#183;&nbsp;</span>
+                <a href="{{ shop.url }}/pages/shipping-policy" style="color:#C79BEA;text-decoration:none;">Shipping</a>
+                <span style="color:#4A3C5C;">&nbsp;&#183;&nbsp;</span>
+                <a href="{{ shop.url }}/pages/refund-policy" style="color:#C79BEA;text-decoration:none;">Returns</a>
+                <span style="color:#4A3C5C;">&nbsp;&#183;&nbsp;</span>
+                <a href="{{ shop.url }}/pages/contact" style="color:#C79BEA;text-decoration:none;">Contact</a>
+              </div>
+              <div class="pe-font" style="font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;line-height:1.7;color:#8E82A3;margin-top:14px;">
+                Questions? Call (402) 979-6583 or email <a href="mailto:{{ shop.email }}" style="color:#C79BEA;text-decoration:none;">{{ shop.email }}</a>.<br>
+                You are receiving this because you started a checkout at {{ shop.name }}.
+              </div>
+            </td>
+          </tr>
+        </table>
+        <!--[if mso]></td></tr></table><![endif]-->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
