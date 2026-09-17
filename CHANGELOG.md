@@ -1,3 +1,34 @@
+# R36 Pro 2 PDP: title matches the Shopify product title
+
+## Problem
+The R36 Pro 2 page heading read "R36 Pro 2" while the product in Shopify is
+titled "Pocket Era R36S Pro 2".
+
+## Cause
+`templates/product.pg-pro2.json` set pg-landing's `display_title` override to
+"R36 Pro 2". pg-landing renders the h1 as
+`{{ section.settings.display_title | default: prod.title }}`, so the override
+won over the real title.
+
+## Fix (`templates/product.pg-pro2.json` only)
+`display_title`: "R36 Pro 2" -> "" so the h1 falls back to `prod.title` and
+tracks whatever the product is called in Shopify, the same as the R36S
+template (`product.pg-landing.json`, `display_title: ""`).
+
+Checked that nothing rewrites the h1 afterwards: the only script that reads
+`#pgx h1` is pg-theme-css's sticky buy bar, which is disabled. pg-r36s-title /
+pg-orb-title only style it.
+
+Not changed: pg-pro2-tiles' tier notes still say "One R36 Pro 2 (64GB) ...";
+those are tile copy, not the title.
+
+## Applied to
+Shopify draft theme 164085727460 ("Copy of Power Ball 12k (Claude 9-15b)")
+via the Admin API (themeFilesUpsert).
+Files changed: templates/product.pg-pro2.json
+
+---
+
 # R36 Pro 2 PDP: show the imported Judge.me reviews, linked review count
 
 ## Problem
