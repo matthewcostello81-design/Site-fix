@@ -1,3 +1,72 @@
+# Footer currency/language picker on phones: black screen
+
+## Problem
+On a phone, tapping the country (currency) or language picker in the site's
+bottom bar covered the screen with a black sheet, about 360px wide, with
+nothing on it and no way to close it. Reported as "whenever I switch the
+currency at the bottom of the website ... black screen".
+
+## Cause
+Theme (Xtra) behaviour, not a pg-* regression. The footer's picker renders a
+phone-only link `<a class="mobile-only" href="./" aria-controls="nav">`
+(`snippets/language-country-selector.liquid`, origin: footer), because the
+theme means to show the country list inside its mobile menu drawer `#nav`.
+`assets/custom-async.js` binds `nav_burger()` to every `a[aria-controls="nav"]`
+and its document click handler matches the footer picker links by that same
+attribute. `nav_burger()` adds `has-nav` then `m2a` to `<html>`, which fades in
+`#root > .panel-1`, the drawer's dark backdrop (screen.css: fixed/absolute,
+width 100%, max-width 360px, full height; async-menu.css: visible under
+`.m2a`).
+
+This store has no menu-bar menu, so `sections/header.liquid` renders
+`<div id="nav" class="hidden">` (display:none) and no burger. The backdrop
+still fades in, the drawer it is for is 0 x 0, and the shopper is left looking
+at the empty sheet. The 360px panel against a 390px phone leaves the ~30px
+sliver of page visible at the right edge of the screenshot.
+
+## Fix (`sections/pg-currency-sheet.liquid`, header-group; rewritten)
+An earlier version of this section only intercepted the tap. This version
+does not rely on a single mechanism; three independent layers:
+
+1. Disarm: `aria-controls="nav"` is stripped from the footer's
+   `li.sub.currency > a.mobile-only` / `li.sub.lang > a.mobile-only` links as
+   soon as they are parsed (MutationObserver from the header-group script,
+   which runs before the deferred theme scripts and before custom-async.js is
+   loaded via runWhenIdle), so the theme never binds the drawer to them and
+   its footer click handler no longer matches. `href="./"` becomes `#`
+   (the old value walked up a directory if a tap ever slipped through).
+2. Own the tap: a capture-phase click listener on `window` runs ahead of any
+   theme listener, cancels the event and opens the section's own bottom sheet
+   listing the countries from the footer's real `form.localization-form`
+   (current one ticked). Tapping a row submits that form with the row's own
+   submit button as submitter (`requestSubmit`, hidden-input fallback), so
+   Shopify switches country/currency exactly as the desktop dropdown does.
+   Rows re-enable after 6s if the page has not left.
+3. Backstop: if `m2a`/`has-nav` ever land on `<html>` while `#nav` has no
+   client rects (display:none), they are removed immediately, so the empty
+   drawer sheet cannot stay up whatever opened it. A page with a displayable
+   menu is left alone.
+
+Desktop is untouched (its link is `a.toggle.mobile-hide`).
+
+## Verification
+No storefront access from this sandbox (egress blocked), so the mechanics were
+tested in jsdom against a copy of the theme's real handlers (element-level
+`nav_burger` binding + document footer click handler): strip happens before the
+theme binds (0 links bound); tap opens the sheet, is cancelled, no
+`m2a`/`has-nav`; adversarial order (theme bound first) still blocked by the
+capture listener; row tap submits `country_code=CA` on the footer form; guard
+removes drawer classes with `#nav.hidden` and leaves a displayable nav alone;
+unrelated clicks untouched. 20/20 checks. Needs one real tap on a phone
+against the theme preview to confirm.
+
+## Applied to
+Shopify draft theme 164114661604 ("Wall art + cart upsells (Claude 9-17b)")
+via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-currency-sheet.liquid
+
+---
+
 # R36 Pro 2 PDP: title matches the Shopify product title
 
 ## Problem

@@ -1,0 +1,213 @@
+{%- comment -%}
+  PG Currency Sheet (2026-09-17, hardened the same evening). By report:
+  "whenever I switch the currency at the bottom of the website the screen goes
+  black".
+
+  WHY IT GOES BLACK. The footer's country and language pickers each render a
+  phone-only link, <a class="mobile-only" href="./" aria-controls="nav">,
+  because on a phone the theme means to show the country list inside its menu
+  drawer (#nav). Two theme handlers key off that attribute (custom-async.js):
+  every a[aria-controls="nav"] gets nav_burger() bound to click, and a document
+  click handler matches `.shopify-section-footer li.currency a[aria-controls=
+  "nav"]` and clicks the matching toggle inside #nav. nav_burger() adds has-nav
+  and then m2a to <html>, which is what fades in `#root > .panel-1` -- the
+  drawer's dark sheet, 100% wide up to 360px, as tall as the page.
+
+  This store has no menu-bar menu, so the header renders #nav as
+  <div id="nav" class="hidden"> (display:none) and never draws a burger. The
+  sheet still fades in, #nav stays 0 x 0, and the shopper gets a black panel
+  with nothing on it and nothing to close it with. That is the screenshot.
+
+  WHAT THIS DOES, IN THREE LAYERS THAT DO NOT DEPEND ON EACH OTHER
+  1. Disarm. aria-controls="nav" is stripped from those two footer links the
+     moment they are parsed (a MutationObserver from this header-group script,
+     which runs before the deferred theme scripts and long before
+     custom-async.js loads via runWhenIdle). With the attribute gone the theme
+     never binds nav_burger() to the links and its footer click handler no
+     longer matches them. href="./" becomes "#": the old value walked up a
+     directory if a tap ever slipped through without JavaScript.
+  2. Own the tap. A capture-phase click listener on window runs ahead of any
+     theme listener, cancels the event, and opens this file's own bottom sheet
+     with one row per country, read from the footer's real
+     form.localization-form, the current one ticked. Tapping a row submits that
+     form through its own submit button (requestSubmit with the button as
+     submitter, hidden-input fallback), so Shopify switches country and currency
+     exactly as the desktop dropdown does and returns to the same page.
+  3. Backstop. If m2a / has-nav ever land on <html> while #nav is not
+     displayable (no client rects), they are removed on the spot, so the empty
+     drawer sheet cannot stay up whatever opened it. A page with a real,
+     displayable menu is left alone.
+
+  Desktop is untouched: its link is a.toggle.mobile-hide, not a.mobile-only.
+  Registered in sections/header-group.json.
+{%- endcomment -%}
+<style>
+  .pg-cur-back{position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;background:rgba(4,2,10,.66);opacity:0;visibility:hidden;
+    transition:opacity .2s ease,visibility 0s linear .2s;-webkit-tap-highlight-color:transparent;touch-action:none}
+  .pg-cur-back.is-on{opacity:1;visibility:visible;transition:opacity .2s ease}
+  .pg-cur-sheet{position:fixed;left:0;right:0;bottom:0;z-index:2147483001;box-sizing:border-box;max-height:80vh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;
+    margin:0 auto;max-width:520px;padding:10px 16px calc(16px + env(safe-area-inset-bottom));background:#140D1E;color:#fff;
+    border:1px solid rgba(199,155,234,.3);border-bottom:0;border-radius:22px 22px 0 0;box-shadow:0 -26px 60px -22px rgba(0,0,0,.85);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;transform:translateY(105%);visibility:hidden;
+    transition:transform .26s cubic-bezier(.2,.8,.2,1),visibility 0s linear .26s}
+  .pg-cur-sheet.is-on{transform:none;visibility:visible;transition:transform .26s cubic-bezier(.2,.8,.2,1)}
+  .pg-cur-grab{width:42px;height:4px;margin:0 auto 12px;border-radius:4px;background:rgba(255,255,255,.22)}
+  .pg-cur-head{display:flex;align-items:center;justify-content:space-between;margin:0 2px 12px}
+  .pg-cur-title{font-size:17px;font-weight:800;letter-spacing:-.01em;color:#fff}
+  .pg-cur-x{display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;
+    font-size:20px;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  .pg-cur-row{display:flex;align-items:center;justify-content:space-between;gap:12px;box-sizing:border-box;width:100%;min-height:52px;margin:0 0 8px;padding:0 16px;
+    border:1px solid rgba(199,155,234,.2);border-radius:14px;background:rgba(255,255,255,.04);color:#fff;font-size:15px;font-weight:600;line-height:1.25;
+    cursor:pointer;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none}
+  .pg-cur-row:last-child{margin-bottom:0}
+  .pg-cur-row:active{background:rgba(155,75,196,.2)}
+  .pg-cur-row i{font-style:normal;font-weight:500;color:#CDBBE0;white-space:nowrap}
+  .pg-cur-row.is-cur{border-color:#9B4BC4;background:rgba(155,75,196,.2);cursor:default}
+  .pg-cur-row.is-cur i:after{content:"\2713";margin-left:10px;color:#fff;font-weight:800}
+  .pg-cur-sheet.is-busy .pg-cur-row{opacity:.45;pointer-events:none}
+  .pg-cur-sheet.is-busy .pg-cur-row.is-go{opacity:1}
+</style>
+<script>
+(function(){
+  if (window.pgCurrencySheet) return; window.pgCurrencySheet = 2;
+  var html = document.documentElement;
+  var TRIG = 'li.sub.currency > a.mobile-only, li.sub.lang > a.mobile-only';
+
+  /* ---- 1. disarm the theme's drawer hook on the footer links ---- */
+  function disarm(root){
+    var links = (root || document).querySelectorAll(TRIG), n = 0;
+    for (var i = 0; i < links.length; i++){
+      var a = links[i];
+      n++;
+      if (a.hasAttribute('aria-controls')) a.removeAttribute('aria-controls');
+      if (!a.hasAttribute('data-pg-cur')){
+        a.setAttribute('data-pg-cur', '1');
+        a.setAttribute('href', '#');
+        a.setAttribute('role', 'button');
+        a.setAttribute('aria-haspopup', 'dialog');
+      }
+    }
+    return n;
+  }
+  var found = disarm();
+  if (window.MutationObserver){
+    /* the footer is parsed after this script; stop watching once it is done */
+    var dom = new MutationObserver(function(){
+      if (disarm() && document.readyState !== 'loading'){ dom.disconnect(); dom = null; }
+    });
+    dom.observe(html, {childList: true, subtree: true});
+  }
+  document.addEventListener('DOMContentLoaded', function(){ disarm(); });
+  document.addEventListener('shopify:section:load', function(){ disarm(); });
+
+  /* ---- 3. backstop: never leave the theme's empty drawer sheet up ---- */
+  function navShown(){
+    var nav = document.getElementById('nav');
+    return !!(nav && nav.getClientRects().length);
+  }
+  function guard(){
+    var c = html.classList;
+    if (!c.contains('m2a') && !c.contains('has-nav')) return;
+    if (navShown()) return;                           /* a real menu: the theme's business */
+    c.remove('m2a', 'm2a-delay', 'has-nav', 'nav-hover');
+    try { if (typeof window.close_mobile_nav === 'function') window.close_mobile_nav(); } catch (err){}
+  }
+  if (window.MutationObserver){
+    new MutationObserver(guard).observe(html, {attributes: true, attributeFilter: ['class']});
+  }
+
+  /* ---- the sheet ---- */
+  var curBack = null, curSheet = null, busyTimer = 0;
+  function curClose(){
+    if (!curSheet) return;
+    curBack.classList.remove('is-on');
+    curSheet.classList.remove('is-on');
+  }
+  function curGo(form, btn, row){
+    curSheet.classList.add('is-busy');
+    row.classList.add('is-go');
+    /* if the page has not left in a few seconds (offline, blocked), hand the rows back */
+    clearTimeout(busyTimer);
+    busyTimer = setTimeout(function(){ curSheet.classList.remove('is-busy'); row.classList.remove('is-go'); }, 6000);
+    try { if (form.requestSubmit){ form.requestSubmit(btn); return; } } catch (e){}
+    var name = btn.getAttribute('name'), i = form.querySelector('input[type="hidden"][name="' + name + '"]');
+    if (!i){ i = document.createElement('input'); i.type = 'hidden'; i.name = name; form.appendChild(i); }
+    i.value = btn.value;
+    form.submit();
+  }
+  function curOpen(li){
+    var form = li.querySelector('form.localization-form');
+    var btns = form ? form.querySelectorAll('ul button') : [];
+    if (!btns.length) return false;
+    if (!curSheet){
+      curBack = document.createElement('div');
+      curBack.className = 'pg-cur-back';
+      curSheet = document.createElement('div');
+      curSheet.className = 'pg-cur-sheet';
+      curSheet.setAttribute('role', 'dialog');
+      curSheet.setAttribute('aria-modal', 'true');
+      document.body.appendChild(curBack);
+      document.body.appendChild(curSheet);
+      curBack.addEventListener('click', curClose);
+      document.addEventListener('keydown', function(e){ if (e.key === 'Escape') curClose(); });
+    }
+    curSheet.className = 'pg-cur-sheet';
+    curSheet.textContent = '';
+    var title = li.getAttribute('data-title') || 'Country/region';
+    curSheet.setAttribute('aria-label', title);
+    var grab = document.createElement('div'); grab.className = 'pg-cur-grab';
+    var head = document.createElement('div'); head.className = 'pg-cur-head';
+    var t = document.createElement('div'); t.className = 'pg-cur-title'; t.textContent = title;
+    var x = document.createElement('div'); x.className = 'pg-cur-x'; x.setAttribute('role', 'button'); x.setAttribute('tabindex', '0');
+    x.setAttribute('aria-label', 'Close'); x.textContent = '×';
+    x.addEventListener('click', curClose);
+    head.appendChild(t); head.appendChild(x);
+    curSheet.appendChild(grab); curSheet.appendChild(head);
+    Array.prototype.forEach.call(btns, function(b){
+      var cur = b.disabled || b.classList.contains('active');
+      var sp = b.querySelector('span');
+      var money = sp ? (sp.textContent || '').replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '') : '';
+      var name = '';
+      Array.prototype.forEach.call(b.childNodes, function(k){ if (k.nodeType === 3) name += k.textContent; });
+      name = name.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '') || (b.textContent || '').replace(/\s+/g, ' ');
+      var row = document.createElement('div');
+      row.className = 'pg-cur-row' + (cur ? ' is-cur' : '');
+      row.setAttribute('role', 'button');
+      row.setAttribute('tabindex', '0');
+      if (cur) row.setAttribute('aria-current', 'true');
+      var n = document.createElement('span'); n.textContent = name;
+      var m = document.createElement('i'); m.textContent = money;
+      row.appendChild(n); row.appendChild(m);
+      if (!cur){
+        var go = function(e){ if (e) e.preventDefault(); curGo(form, b, row); };
+        row.addEventListener('click', go);
+        row.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') go(e); });
+      }
+      curSheet.appendChild(row);
+    });
+    /* a forced layout first, so the slide starts from off screen */
+    void curSheet.offsetHeight;
+    curBack.classList.add('is-on');
+    curSheet.classList.add('is-on');
+    return true;
+  }
+
+  /* ---- 2. own the tap: window, capture, ahead of every theme listener ---- */
+  window.addEventListener('click', function(e){
+    var t = e.target;
+    var a = t && t.closest ? t.closest(TRIG + ', li.sub > a[data-pg-cur]') : null;
+    if (!a) return;
+    var li = a.closest('li.sub');
+    if (!li || !li.querySelector('form.localization-form ul button')) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    disarm(li);
+    curOpen(li);
+    /* belt and braces on top of layer 1: if anything still flipped the drawer on, flip it off */
+    setTimeout(guard, 0); setTimeout(guard, 150); setTimeout(guard, 600);
+  }, true);
+})();
+</script>
+{% schema %}
+{"name": "PG Currency Sheet", "settings": [], "presets": [{"name": "PG Currency Sheet"}]}
+{% endschema %}
