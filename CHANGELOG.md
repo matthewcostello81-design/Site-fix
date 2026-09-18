@@ -1,3 +1,54 @@
+# Crystal orb: Buy 5 Get 4 tile kept the USD price in other currencies
+
+## Problem
+On the Crystal Legends Orb page, with the store switched to CAD, GBP, EUR or
+AUD, every tile converted except the top rung ("Buy 5, Get 4 FREE"), which
+went on showing the USD figure ($174.95) - and, measured against a converted
+struck-through price, a wrong SAVE % and "each" price with it.
+
+## Cause
+`sections/pg-tile-copy.liquid` builds that tile from a table whose price was
+a fixed number of USD cents:
+
+    {tier: '5', units: 9, free: 4, pay: 17495, ...}   // 5 x $34.99
+
+Everything else on the ladder is derived at render time from `#pgx-vdata`,
+the variant prices pg-landing prints with Liquid, which Shopify localises to
+the buyer's market currency (CAD 50.00, GBP 27.00, EUR 30.95, AUD 50.00 for
+this orb). The one hardcoded figure was the one that did not follow.
+
+## Fix (`sections/pg-tile-copy.liquid`)
+- The table entry now says how many orbs are charged (`paid: 5`) and
+  `extraTile()` prices the rung as `paid x unit` from vdata, so the price,
+  the SAVE % and the per-unit pill all follow the currency (and any admin
+  price change). USD is unchanged to the cent: 5 x 3499 = 17495.
+- The Single tile on one-price products now takes its price and compare-at
+  from the same vdata figure (it was pgLadder's product-JSON figure), so all
+  three rungs are priced from one presentment-currency source.
+- The desktop sticky bar's bundle picker keeps the amount once pg-money has
+  swapped the $ for EUR/GBP (its dollar regex found nothing after that).
+
+Symbols are unchanged: prices are still built as "$" and `snippets/pg-money`
+rewrites them for non-dollar currencies (EUR/GBP) as before; CAD/AUD keep
+the plain $ by that snippet's design.
+
+## Verification
+No storefront access from this sandbox, so the script was run in jsdom
+against a simulated orb page with pgLadder-built tiles, stubbed pgDrop/fetch
+and Liquid-style vdata: CAD (5000/10000) -> Buy 5 $250.00, struck $900.00,
+BEST DEAL · SAVE 72%, $27.78 each, Buy 2 $100.00/$300.00, Single $50.00/
+$100.00; USD (3499/6999) -> $174.95 / $629.91 / 72% / $19.44 each, identical
+to the old hardcoded output; GBP page with USD product JSON -> Single follows
+vdata ($27.00) and Buy 5 = $135.00. 15/15 checks. One look at the orb page in
+CAD on the preview is still worth doing.
+
+## Applied to
+Shopify draft theme 164124426468 ("Copy of Wall art + cart upsells (Claude
+9-17b)") via the Admin API (themeFilesUpsert).
+Files changed: sections/pg-tile-copy.liquid
+
+---
+
 # Footer currency/language picker on phones: black screen
 
 ## Problem
