@@ -1,3 +1,40 @@
+# R36S Pro 2: no in-cart upsells
+
+## Request
+"hide the in cart upsells on the r36s pro 2" (draft "Advance SP Product Page
++ Other Fixes").
+
+## Where they came from
+`sections/pg-cart-addons.liquid` (header group) paints the cart's Pro 2
+cards -- Upgrade to the Max Bundle, Add a 2nd console (Duo Max), Switch to
+the Duo Max Bundle -- and, while one is up, claims the cart's single upsell
+seat (`#pg-unlock-slot.pg-one-mine`) so pg-cart-offer's card is hidden.
+pg-cart-offer itself has no family for the Pro 2 and paints nothing for a
+cart that names no family, so with these cards off a Pro 2 cart carries no
+upsell at all.
+
+## Change (`sections/pg-cart-addons.liquid`)
+A switch, `PRO2_UPSELL = false`; `pro2Offer()` returns null while it is
+false. Nothing else in the file changes: the wall-art frame offer, the
+line-photo correction and the one-seat rule keep running, and a cart holding
+a Pro 2 plus another product still shows that product's card (pg-cart-offer's,
+since this file no longer takes the seat). `true` brings the three Pro 2
+cards back exactly as they were; the code is kept whole.
+
+## Verification
+jsdom, against a `#cart` with a Pro 2 line and stubbed /cart.js + product
+JSON: switch off -> no `.pg-addon` painted, seat not claimed, pg-cart-offer's
+card left alone (Pro 2 only, and Pro 2 + orb); switch on (control) -> the Max
+Bundle upgrade card is painted and the seat claimed, so the harness exercises
+the real path. 6/6.
+
+## Applied to
+Shopify draft theme 164128784612 ("Advance SP Product Page + Other Fixes")
+via the Admin API (themeFilesUpsert, body from the pushed branch).
+Files changed: sections/pg-cart-addons.liquid
+
+---
+
 # Crystal orb: Buy 5 Get 4 tile kept the USD price in other currencies
 
 ## Problem

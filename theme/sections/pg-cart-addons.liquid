@@ -1,0 +1,779 @@
+{%- comment -%}
+  PG Cart Add-ons (2026-09-17): the cart upsells pg-cart-offer does not carry.
+
+  pg-cart-offer paints ONE card for the newest product family in the cart and
+  hides every other upsell row (the frame row included). Two gaps, by report:
+
+  1. HOLO LEGENDS WALL ART. The Buy 2 Get 1 card shows and works, but the
+     matching frame was never offered in the cart again, because its row is one
+     of the rows pg-cart-offer hides. This file offers the frame in a smaller
+     card while the cart holds more prints than frames (WHEN it gets the seat
+     is in 5: the cart shows one upsell, never two). One tap adds a frame for
+     every print that has none. Price and compare-at are read live from the
+     frame product.
+
+  2. R36 PRO 2 -- SWITCHED OFF 2026-09-18, by request: "hide the in cart
+     upsells on the R36S Pro 2". PRO2_UPSELL below is false, so pro2Offer()
+     answers null and none of the three cards in this note is painted. A cart
+     holding only a Pro 2 shows no upsell (pg-cart-offer has no family for the
+     Pro 2 and offers nothing when the cart names no family); a cart holding a
+     Pro 2 and something else shows that other product's card, as before. The
+     frame offer (1), the line pictures (3) and the one-seat rule (5) are
+     unchanged. To bring the Pro 2 offers back, set PRO2_UPSELL to true; the
+     code below is kept whole for that.
+
+     What it did: the product has no family in pg-cart-offer, so a cart holding
+     only a Pro 2 showed no upsell at all. Every Pro 2 offer is a VARIANT of
+     the one product (Bundle x Color x Second Console Color), so an upsell
+     here is a swap to a bigger variant and the till charges exactly what the
+     card prints. No discount is promised that checkout does not apply.
+       two Max Bundles in the cart .. Switch to the Duo Max Bundle (same two
+                                      consoles, lower price)
+       one Single Device ............. Upgrade to the Max Bundle (same color)
+       two Single Devices ............ Upgrade to the Duo Max Bundle (the same
+                                      two colors). 2026-09-17, by request: "if
+                                      they add 1 console, upsell the max
+                                      bundle, if they add 2 console upsell duo
+                                      max bundle". It used to offer two Max
+                                      Bundles, or upgrade only the first color
+                                      of a two color Duo Pack.
+       one Max Bundle ................ Add a 2nd console: the Duo Max Bundle,
+                                      with a color picker for console 2
+     One Pro 2 card at a time, in that order.
+     THE CARDS NAME WHAT IS IN THE KIT (2026-09-17, by report: "what do you
+     mean both cases in the upsell? Name them both"): soft rubber case,
+     hardshell case, screen protector and joystick caps, the same four names
+     the Max tile lists on the product page.
+
+  3. THE LINE PICTURE FOLLOWS THE COLOR. /cart.js gives every line the image
+     of the variant it holds. Each rendered line is checked against it and the
+     picture is corrected when they differ, so changing a color or design with
+     the in-cart picker always ends on the matching photo.
+
+  4. THE UPSELL CARD HOLDS STILL WHEN THE LINE CHANGES COLOR (2026-09-17, by
+     report: "when you change color on the cart it shouldn't change color in
+     upsell"). Each Pro 2 card was keyed by the variant in the cart and drew
+     that variant's photo, so picking Blue on the line threw the purple card
+     away and built a blue one: the offer blinked and changed colour under a
+     shopper who had only touched the line. Now:
+       - a card's key names the OFFER (upgrade, second console, switch), not
+         the colour, so a colour change re-uses the card that is on screen;
+       - its picture is the first one shown for that offer on this page and
+         stays that one, whatever the line does next;
+       - the re-used card is handed the new offer (el.pgAddon), so the button
+         still upgrades the colour the line holds NOW, and the words and price
+         are refreshed only when they differ;
+       - a colour picked for console 2 on the Duo card survives the change.
+
+  5. ONE UPSELL IN THE CART, EVER (2026-09-17, by report: "there should only
+     ever be 1 max upsell in cart, I have 2 right now"). This file used to put
+     its card UNDER pg-cart-offer's, so a cart holding a Pro 2 and an orb, or
+     any print at all (Buy 2 Get 1 plus the frame), showed two. The two files
+     now share the one seat, by pg-cart-offer's own rule ("go off the product
+     they added last"):
+       - the Pro 2 was added last, or nothing else in the cart has a card:
+         the Pro 2 card shows and pg-cart-offer's is hidden (its script keeps
+         running, the card is display:none through a class on the slot);
+       - a print was added last and the prints make whole sets of three, so
+         Buy 2 Get 1 has nothing free to hand over right now: the frame takes
+         the seat until every print has one, then Buy 2 Get 1 is back;
+       - anything else: pg-cart-offer's card has the seat and nothing is
+         painted here, unless after a grace period it turns out to have no
+         card at all.
+     A changed answer has to be read twice before it replaces a card that is
+     on screen, so a read caught between two cart writes never flashes a wrong
+     offer, and a stray second copy of a card is removed on every pass.
+
+  6. THE UPGRADE BUTTON KNOWS ABOUT THE DUO PACK DISCOUNT (2026-09-17). The
+     admin now takes $5.00 off each Single Device from two up ("R36 Pro 2 -
+     Duo Pack Savings", the Duo Pack switch on the product page). The button
+     on "Upgrade to the Max Bundle" printed the difference between list
+     prices, which is wrong as soon as that discount is in the cart: the
+     singles being upgraded stop earning it, and upgrading one of two leaves
+     the other under the minimum, so it loses its $5.00 as well. Both sides
+     are now priced as the till prices them. Nothing about the discount is
+     hard-coded here: what it takes off is read from the lines' own
+     line_level_discount_allocations in /cart.js, so a change in the admin is
+     followed on the next read.
+
+  HOW THE SWAP IS WRITTEN (the lessons are pg-cart-offer's): the new variant
+  goes IN first and the old one comes OUT after, so the cart is never empty in
+  between; and the old line is taken out by VARIANT ID through /cart/update.js,
+  never by a remembered line key, because a line key on this store changes on
+  every cart write.
+
+  The cards use their own class (.pg-addon). pg-cart-offer removes any .pg-offer
+  in the slot that it did not paint, and its heal() treats a surviving .pg-offer
+  as its own card. They sit in #pg-unlock-slot so pg-cart-mobile lifts them
+  above the pinned checkout pane with the rest. The button is a span with
+  role=button: the base theme paints real buttons with a dark overlay.
+
+  Registered in sections/header-group.json.
+{%- endcomment -%}
+<style>
+  #cart#cart#cart#cart .pg-addon{
+    display:grid !important;
+    grid-template-columns:44px minmax(0,1fr);
+    column-gap:10px;row-gap:7px;align-items:center;
+    margin:0 0 6px;padding:9px 10px 10px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    box-sizing:border-box;
+  }
+  #cart#cart#cart#cart .pg-addon > img{
+    grid-column:1;width:44px !important;min-width:44px !important;height:44px !important;
+    border-radius:11px !important;object-fit:cover !important;background:#efe4f8;display:block !important;
+  }
+  #cart#cart#cart#cart .pg-addon-t{grid-column:2;min-width:0}
+  #cart#cart#cart#cart .pg-addon-t b{
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800;
+    white-space:normal;overflow-wrap:anywhere;
+  }
+  #cart#cart#cart#cart .pg-addon-px{
+    display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;
+    margin-top:2px;font-size:13.5px;font-weight:800;color:#7A2FA2;line-height:1.3;
+  }
+  #cart#cart#cart#cart .pg-addon-px s{color:#666;font-weight:400;font-size:12.5px;white-space:nowrap}
+  #cart#cart#cart#cart .pg-addon-sv{
+    display:inline-block;padding:3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:800;text-transform:uppercase;font-style:normal;
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);
+  }
+  #cart#cart#cart#cart .pg-addon-t small{display:block;font-size:11px;line-height:1.3;color:#6E5C80;margin-top:2px}
+  #cart#cart#cart#cart .pg-addon-t small.pg-addon-inc{color:#7A2FA2;font-weight:600}
+  #cart#cart#cart#cart .pg-addon-pick{grid-column:1 / -1;display:flex;flex-direction:column;gap:1px;min-width:0}
+  #cart#cart#cart#cart .pg-addon-pick span{
+    font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7A2FA2;
+    padding-left:2px;margin-left:0;height:14px;line-height:14px;
+  }
+  #cart#cart#cart#cart .pg-addon-pick select{
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+    width:100% !important;max-width:100% !important;min-width:0 !important;box-sizing:border-box !important;
+    height:32px !important;min-height:0 !important;padding:0 24px 0 8px !important;margin:0 !important;
+    border:1.5px solid rgba(122,47,162,.35) !important;border-radius:9px !important;
+    background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center !important;
+    color:#3B1553 !important;font-family:inherit !important;font-size:12.5px !important;font-weight:700 !important;
+    line-height:30px !important;box-shadow:none !important;
+  }
+  #cart#cart#cart#cart .pg-addon-btn{
+    grid-column:1 / -1;display:flex !important;align-items:center;justify-content:center;gap:8px;
+    width:100%;box-sizing:border-box;margin:0;min-height:38px;padding:0 12px;
+    border-radius:11px;
+    background-color:#7A2FA2;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);
+    background-size:240% 240%;
+    color:#fff !important;-webkit-text-fill-color:#fff;
+    font-size:12.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;line-height:1;
+    text-align:center;cursor:pointer;
+    box-shadow:0 12px 26px -12px rgba(139,68,190,.7);
+    -webkit-user-select:none;user-select:none;
+    transition:filter .15s ease,opacity .15s ease;
+  }
+  #cart#cart#cart#cart .pg-addon-btn:hover{filter:brightness(1.08)}
+  #cart#cart#cart#cart .pg-addon-btn.busy{opacity:.65;cursor:default}
+  #cart#cart#cart#cart .pg-addon-btn .arr{font-size:16px;line-height:1}
+  /* the frame is the second pitch in its cart: a quieter, one-row card */
+  #cart#cart#cart#cart .pg-addon[data-tone="quiet"]{
+    grid-template-columns:44px minmax(0,1fr) auto;
+    background:#FBF8FD;box-shadow:none;row-gap:0;
+  }
+  #cart#cart#cart#cart .pg-addon[data-tone="quiet"] .pg-addon-btn{
+    grid-column:3;width:auto;min-height:34px;padding:0 14px;white-space:nowrap;
+  }
+  #cart#cart#cart#cart .pg-addon[data-tone="quiet"] .pg-addon-btn .arr{display:none}
+  /* 5. one upsell: while this file holds the seat, pg-cart-offer's card is out */
+  #cart#cart#cart#cart #pg-unlock-slot.pg-one-mine .pg-offer{display:none !important}
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-addon{padding:8px 9px 9px;column-gap:9px}
+    #cart#cart#cart#cart .pg-addon-t b{font-size:13px}
+    #cart#cart#cart#cart .pg-addon-px{font-size:13px}
+    #cart#cart#cart#cart .pg-addon[data-tone="quiet"] .pg-addon-btn{padding:0 11px;font-size:11.5px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartAddons) return; window.pgCartAddons = 1;
+
+  var H = {
+    wall:  'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame',
+    frame: '30x40cm-frame-black-and-white-wood-grain-photo-frame-can-be-hung-on-the-wall-with-certificate-poster-canvas-painting-decoration',
+    pro2:  'pocket-era-r36-pro-2'
+  };
+  var FRAME_VARIANT = 49688364613860;
+  /* 2. the Pro 2 upgrade cards are off (2026-09-18, by request); see the note
+     at the top. true brings all three back exactly as they were. */
+  var PRO2_UPSELL = false;
+  /* the products pg-cart-offer has a card for (its own H table) */
+  var THEIRS = {
+    'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift': 'orb',
+    'handheld-game-console': 'console', 'r36s-duo-pack': 'console', 'r36s-trio-pack': 'console',
+    'r36s-protective-case-free-gift': 'console',
+    'dragon-ball-z-legends-lamp': 'lamp', 'legends-power-ball': 'ball'
+  };
+  THEIRS[H.wall] = 'wall';
+  var B = {single: 'Single Device (64GB)', max: 'Max Bundle (128GB)', duo: 'Duo Max Bundle (2x 128GB)'};
+
+  /* the admin's "Extra 5% off entire order" is in every printed price, the
+     same way pg-cart-offer reads and applies it (the till floors the cut) */
+  var ADMIN_RATE = 0.05, RATE = ADMIN_RATE;
+  function readRate(cart){
+    var found = null;
+    function take(d){
+      if (!d || d.type !== 'automatic' || d.value_type !== 'percentage' || d.target_selection !== 'all') return;
+      var v = parseFloat(d.value || 0) / 100;
+      if (v > 0 && v < 0.9 && (found === null || v > found)) found = v;
+    }
+    (cart.cart_level_discount_applications || []).forEach(take);
+    (cart.items || []).forEach(function(it){
+      (it.line_level_discount_allocations || []).forEach(function(a){ take(a && a.discount_application); });
+    });
+    return found === null ? ADMIN_RATE : found;
+  }
+  function net(c){ return c - Math.floor(c * RATE); }
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function pct(was, now){ return was > now ? Math.floor((was - now) / was * 100) : 0; }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  function sized(src, w){
+    if (!src) return '';
+    var s = String(src);
+    return s + (s.indexOf('?') > -1 ? '&' : '?') + 'width=' + w;
+  }
+
+  /* ---------------- product data ---------------- */
+  var P = {}, PBUSY = {};
+  function product(handle){
+    if (P[handle]) return Promise.resolve(P[handle]);
+    if (PBUSY[handle]) return PBUSY[handle];
+    PBUSY[handle] = fetch('/products/' + handle + '.js').then(function(r){ return r.ok ? r.json() : null; }).then(function(pr){
+      PBUSY[handle] = null;
+      if (!pr) return null;
+      var out = {handle: handle, image: pr.featured_image || (pr.images && pr.images[0]) || '', variants: []};
+      (pr.variants || []).forEach(function(v){
+        out.variants.push({
+          id: v.id, o1: v.option1, o2: v.option2, o3: v.option3,
+          price: v.price, cap: v.compare_at_price || 0, avail: v.available !== false,
+          img: (v.featured_image && v.featured_image.src) || ''
+        });
+      });
+      P[handle] = out;
+      return out;
+    }).catch(function(){ PBUSY[handle] = null; return null; });
+    return PBUSY[handle];
+  }
+
+  /* ---------------- the offers ---------------- */
+  function frameOffer(cart){
+    var prints = 0, frames = 0;
+    (cart.items || []).forEach(function(it){
+      if (it.handle === H.wall) prints += it.quantity;
+      else if (it.handle === H.frame) frames += it.quantity;
+    });
+    var need = prints - frames;
+    if (need < 1) return Promise.resolve(null);
+    return product(H.frame).then(function(pr){
+      if (!pr) return null;
+      var v = null;
+      pr.variants.forEach(function(x){ if (String(x.id) === String(FRAME_VARIANT)) v = x; });
+      if (!v) v = pr.variants[0];
+      if (!v || !v.avail) return null;
+      return {
+        key: 'frame:' + need, kind: 'add', tone: 'quiet',
+        img: sized(v.img || pr.image, 120),
+        title: need > 1 ? 'Add a Frame for Each Print' : 'Add the Matching Frame',
+        sub: '30x40cm black wood grain',
+        was: (v.cap || v.price) * need, now: v.price * need,
+        btn: need > 1 ? 'Add ' + need : 'Add',
+        items: [{id: v.id, quantity: need}]
+      };
+    });
+  }
+
+  /* the first picture an offer is shown with is the one it keeps */
+  var KEPT = {};
+  function keep(family, img){
+    if (!KEPT[family] && img) KEPT[family] = img;
+    return KEPT[family] || img;
+  }
+  function pro2Offer(cart){
+    if (!PRO2_UPSELL) return Promise.resolve(null);   /* 2. off by request, 2026-09-18 */
+    var lines = (cart.items || []).filter(function(it){ return it.handle === H.pro2; });
+    if (!lines.length) return Promise.resolve(null);
+    return product(H.pro2).then(function(pr){
+      if (!pr) return null;
+      var byId = {};
+      pr.variants.forEach(function(v){ byId[String(v.id)] = v; });
+      function find(b, c1, c2){
+        var hit = null;
+        pr.variants.forEach(function(v){ if (!hit && v.o1 === b && v.o2 === c1 && v.o3 === c2) hit = v; });
+        return hit;
+      }
+      var maxUnits = [], single = null, singleUnits = [];
+      /* 6. every single in the cart, and what a product discount on them (the
+         Duo Pack Savings) is taking off right now. The store-wide extra 5% is
+         an "all" discount and is left to net(). */
+      var sUnits = 0, sOff = 0;
+      lines.forEach(function(it){
+        var v = byId[String(it.variant_id)];
+        if (!v) return;
+        if (v.o1 === B.max){ for (var i = 0; i < it.quantity; i++) maxUnits.push(v); }
+        else if (v.o1 === B.single){
+          if (!single) single = {v: v, q: it.quantity};
+          sUnits += it.quantity;
+          for (var j = 0; j < it.quantity; j++) singleUnits.push(v);
+          (it.line_level_discount_allocations || []).forEach(function(a){
+            var d = a && a.discount_application;
+            if (d && d.target_selection !== 'all') sOff += parseInt(a.amount, 10) || 0;
+          });
+        }
+      });
+
+      /* two Max Bundles: the same two consoles cost less as a Duo */
+      if (maxUnits.length >= 2){
+        var a = maxUnits[0], b2 = maxUnits[1];
+        var duo = find(B.duo, a.o2, b2.o2);
+        if (duo && duo.avail && duo.price < a.price + b2.price){
+          var take = {};
+          take[String(a.id)] = (take[String(a.id)] || 0) + 1;
+          take[String(b2.id)] = (take[String(b2.id)] || 0) + 1;
+          var wasNet = net(a.price) + net(b2.price), nowNet = net(duo.price);
+          return {
+            key: 'p2switch', kind: 'swap',
+            img: keep('p2switch', sized(duo.img || pr.image, 200)),
+            title: 'Switch to the Duo Max Bundle',
+            sub: 'Same two consoles (' + a.o2 + ' + ' + b2.o2 + '), one lower price',
+            wasNet: wasNet, nowNet: nowNet,
+            btn: 'Switch and save ' + money(wasNet - nowNet),
+            target: function(){ return duo; }, addQty: 1, take: take
+          };
+        }
+      }
+
+      /* two Single Devices: the Duo Max Bundle in the same two colors */
+      if (singleUnits.length >= 2){
+        var s1 = singleUnits[0], s2 = singleUnits[1];
+        var upDuo = find(B.duo, s1.o2, s2.o2);
+        if (upDuo && upDuo.avail){
+          var takeD = {};
+          takeD[String(s1.id)] = (takeD[String(s1.id)] || 0) + 1;
+          takeD[String(s2.id)] = (takeD[String(s2.id)] || 0) + 1;
+          /* 6. the true difference: singles left behind keep the pack discount
+             only while two or more of them remain */
+          var perD = Math.round(sOff / sUnits), leftD = sUnits - 2, sumAll = 0;
+          singleUnits.forEach(function(u){ sumAll += u.price; });
+          var beforeD = sumAll - sOff;
+          var afterD = (sumAll - s1.price - s2.price) - (leftD >= 2 ? leftD * perD : 0) + upDuo.price;
+          return {
+            key: 'p2upduo:' + s1.id + ':' + s2.id, kind: 'swap',
+            img: keep('p2upduo', sized(upDuo.img || pr.image, 200)),
+            title: 'Upgrade to the Duo Max Bundle',
+            sub: (s1.o2 === s2.o2 ? 'Both ' + s1.o2 + ' consoles' : 'Both consoles (' + s1.o2 + ' + ' + s2.o2 + ')') + ' at 128GB with 40,000+ games, plus two of each: soft rubber case, hardshell case, screen protector and joystick caps',
+            was: upDuo.cap || upDuo.price, now: upDuo.price,
+            btn: 'Upgrade both for +' + money(Math.max(0, net(afterD) - net(beforeD))),
+            target: function(){ return upDuo; }, addQty: 1, take: takeD
+          };
+        }
+      }
+
+      /* one Single Device: the Max Bundle in the same color */
+      if (single){
+        var up = find(B.max, single.v.o2, 'None');
+        if (up && up.avail){
+          var q = single.q, takeS = {};
+          takeS[String(single.v.id)] = q;
+          /* 6. the true difference: the singles that stay keep the discount
+             only while two or more of them are left */
+          var perUnit = sUnits >= 2 ? Math.round(sOff / sUnits) : 0;
+          var left = Math.max(0, sUnits - q);
+          var before = sUnits * single.v.price - sOff;
+          var after = left * single.v.price - (left >= 2 ? left * perUnit : 0) + up.price * q;
+          return {
+            key: 'p2up:' + q, kind: 'swap',
+            img: keep('p2up', sized(up.img || pr.image, 200)),
+            title: 'Upgrade to the Max Bundle',
+            sub: '128GB, 40,000+ games, soft rubber case, hardshell case, screen protector and joystick caps',
+            was: (up.cap || up.price) * q, now: up.price * q,
+            btn: 'Upgrade for +' + money(Math.max(0, net(after) - net(before))),
+            target: function(){ return up; }, addQty: q, take: takeS
+          };
+        }
+      }
+
+      /* one Max Bundle: a second console makes it the Duo */
+      if (maxUnits.length === 1){
+        var m = maxUnits[0], opts = [];
+        pr.variants.forEach(function(v){
+          if (v.o1 === B.duo && v.o2 === m.o2 && v.avail) opts.push({id: v.o3, t: v.o3});
+        });
+        if (opts.length){
+          var first = find(B.duo, m.o2, opts[0].id), takeM = {};
+          takeM[String(m.id)] = 1;
+          return {
+            key: 'p2duo', kind: 'swap',
+            img: keep('p2duo', sized(first.img || pr.image, 200)),
+            title: 'Add a 2nd Console: Duo Max Bundle',
+            sub: 'Two consoles, everything in the Max Bundle twice',
+            was: first.cap || first.price, now: first.price,
+            btn: 'Make it a duo for +' + money(net(first.price) - net(m.price)),
+            pick: {label: 'Console 2 color', options: opts, value: opts[0].id},
+            target: function(val){ return find(B.duo, m.o2, val || opts[0].id); }, addQty: 1, take: takeM
+          };
+        }
+      }
+      return null;
+    });
+  }
+
+  /* 5. WHO HOLDS THE ONE SEAT. sure: this file's card shows and
+     pg-cart-offer's is hidden. Not sure: pg-cart-offer's card has the seat and
+     ours is only a stand-in should it have none. */
+  function gross(it){ return it.original_line_price != null ? it.original_line_price : it.line_price; }
+  function choose(cart, pro2, frame){
+    var newest = null, theirs = false, prints = 0;
+    (cart.items || []).forEach(function(it){
+      if (!gross(it)) return;                       /* free lines name no family, as in pg-cart-offer */
+      var f = it.handle === H.pro2 ? 'pro2' : (THEIRS[it.handle] || null);
+      if (!f) return;
+      if (!newest) newest = f;                      /* /cart.js lists lines newest first */
+      if (f !== 'pro2') theirs = true;
+      if (it.handle === H.wall) prints += it.quantity;
+    });
+    if (pro2 && (newest === 'pro2' || !theirs)) return {offer: pro2, sure: true};
+    if (frame && newest === 'wall' && prints % 3 === 0) return {offer: frame, sure: true};
+    return {offer: pro2 || frame || null, sure: false};
+  }
+  function pickFor(cart){
+    RATE = readRate(cart);
+    return Promise.all([pro2Offer(cart), frameOffer(cart)]).then(function(r){
+      return choose(cart, r[0], r[1]);
+    });
+  }
+
+  /* ---------------- the card ---------------- */
+  function priceHtml(o){
+    var was = o.wasNet != null ? o.wasNet : o.was;
+    var now = o.nowNet != null ? o.nowNet : net(o.now);
+    var save = pct(was, now);
+    return (was > now ? '<s>' + money(was) + '</s>' : '') + money(now) +
+      (save ? '<i class="pg-addon-sv">Save ' + save + '%</i>' : '');
+  }
+  function card(o){
+    var el = document.createElement('div');
+    el.className = 'pg-addon';
+    el.setAttribute('data-addon', o.key);
+    if (o.tone) el.setAttribute('data-tone', o.tone);
+    var pick = '';
+    if (o.pick){
+      pick = '<label class="pg-addon-pick"><span>' + esc(o.pick.label) + '</span><select>';
+      o.pick.options.forEach(function(op){
+        pick += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(o.pick.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>';
+      });
+      pick += '</select></label>';
+    }
+    var inc = RATE > 0 ? 'Extra ' + Math.round(RATE * 100) + '% off included' : '';
+    el.innerHTML =
+      '<img alt="" width="44" height="44" decoding="sync" src="' + esc(o.img || '') + '">' +
+      '<div class="pg-addon-t"><b>' + esc(o.title) + '</b>' +
+        '<span class="pg-addon-px">' + priceHtml(o) + '</span>' +
+        (o.sub ? '<small>' + esc(o.sub) + '</small>' : '') +
+        (inc && !o.tone ? '<small class="pg-addon-inc">' + inc + '</small>' : '') + '</div>' +
+      pick +
+      '<span class="pg-addon-btn" role="button" tabindex="0">' + esc(o.btn) + '<span class="arr">&rarr;</span></span>';
+    el.pgAddon = o;
+    el.pgSig = sigOf(o);
+    return el;
+  }
+
+  /* a card that stays on screen for a new offer of the same kind: new target,
+     same picture, and the words only when they differ */
+  function sigOf(o){ return [o.title, o.sub || '', o.btn, priceHtml(o)].join('|'); }
+  function refresh(el, o){
+    el.pgAddon = o;
+    var sig = sigOf(o);
+    if (el.pgSig === sig) return;
+    el.pgSig = sig;
+    var b = el.querySelector('.pg-addon-t b'); if (b) b.textContent = o.title;
+    var px = el.querySelector('.pg-addon-px'); if (px) px.innerHTML = priceHtml(o);
+    var sm = el.querySelector('.pg-addon-t small:not(.pg-addon-inc)'); if (sm && o.sub) sm.textContent = o.sub;
+    var btn = el.querySelector('.pg-addon-btn');
+    if (btn && !btn.classList.contains('busy')) btn.innerHTML = esc(o.btn) + '<span class="arr">&rarr;</span>';
+  }
+
+  function slotFor(c){
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return null;
+    var slot = c.querySelector('#pg-unlock-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'pg-unlock-slot';
+      list.parentNode.insertBefore(slot, list);
+    }
+    return slot;
+  }
+
+  function paint(offers){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var want = {};
+    /* the node cached on an offer may be from before a drawer rebuild: only a
+       card that is in the drawer NOW is re-used */
+    offers.forEach(function(o){ o.el = null; want[o.key] = o; });
+    c.querySelectorAll('.pg-addon').forEach(function(el){
+      var k = el.getAttribute('data-addon');
+      /* not wanted, spent, or a second copy of a card already kept */
+      if (!want[k] || want[k].el || el.classList.contains('is-done')){ if (el.parentNode) el.parentNode.removeChild(el); return; }
+      want[k].el = el;
+    });
+    if (!offers.length) return;
+    var slot = slotFor(c);
+    if (!slot) return;
+    var added = false;
+    offers.forEach(function(o, i){
+      var el = o.el || card(o);
+      if (el === o.el) refresh(el, o);
+      /* after pg-cart-offer's cards (-10 and up), ahead of the hidden rows */
+      if (el.style.order !== String(-4 + i)) el.style.order = String(-4 + i);
+      if (el.parentNode !== slot){ slot.appendChild(el); added = true; }
+      o.el = el;
+    });
+    /* only on a real insert: placeUnlock re-seats the slot, which is itself a
+       mutation, and calling it on every pass would keep the observer spinning */
+    if (added && window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch (e){} }
+  }
+
+  /* ---------------- 3. the line picture follows the variant ---------------- */
+  function fileOf(u){
+    var s = String(u || '').split('?')[0].split('/').pop() || '';
+    return s.replace(/_(\d+x\d*|x\d+|pico|icon|thumb|small|compact|medium|large|grande|master)(@\dx)?(?=\.[a-z]+$)/i, '').toLowerCase();
+  }
+  var IMG = {};   /* variant id -> the image /cart.js gave that line, kept between reads */
+  function noteImages(cart){
+    (cart.items || []).forEach(function(it){ if (it.image) IMG[String(it.variant_id)] = it.image; });
+  }
+  function syncImages(){
+    var by = IMG;
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li').forEach(function(li){
+      if (li.closest('.nc-recs, .nc-recs-panel, .pg-unlock')) return;
+      var a = li.querySelector('a[href*="/products/"][href*="variant="]');
+      var img = li.querySelector('figure img, picture img, img');
+      if (!a || !img) return;
+      var m = (a.getAttribute('href') || '').match(/[?&]variant=(\d+)/);
+      var want = m && by[m[1]];
+      if (!want) return;
+      if (fileOf(img.currentSrc || img.getAttribute('src')) === fileOf(want)) return;
+      var url = sized(want, 360);
+      var pic = img.closest('picture');
+      if (pic) pic.querySelectorAll('source').forEach(function(s){ s.setAttribute('srcset', url); });
+      img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
+      img.setAttribute('src', url);
+    });
+  }
+
+  /* ---------------- watching ----------------
+     THE DRAWER IS NEVER QUIET: the countdown rewrites its text node every
+     second and a dozen sections restyle the lines, so a read on every mutation
+     would be a /cart.js request a second on every page of the site. The lines
+     are fingerprinted from the DOM instead (variant x quantity, no request) and
+     /cart.js is only fetched when that fingerprint moves or the drawer says the
+     cart changed. Everything else a mutation can need -- the cards put back
+     after a rebuild, the pictures re-checked -- is done from what the last
+     read left behind. */
+  var reading = false, again = false, timer = null, seenSig = null;
+  function domSig(){
+    var out = [];
+    document.querySelectorAll('#cart .l4ca:not(.in-panel) > li').forEach(function(li){
+      var a = li.querySelector('a[href*="variant="]');
+      var m = a && (a.getAttribute('href') || '').match(/[?&]variant=(\d+)/);
+      var inp = li.querySelector('input[type=number], .input-amount input');
+      out.push((m ? m[1] : '?') + 'x' + (inp ? inp.value : '1'));
+    });
+    return out.join(',');
+  }
+  /* 5. the one seat. lastPick is what the last trusted read chose; show() is
+     cheap, writes nothing when nothing changed, and runs on every pass so a
+     drawer rebuild, or pg-cart-offer's card turning up late, is answered
+     without a request. */
+  var lastPick = null, pickAt = 0, GRACE = 2600;
+  var shownKs = null, pendKs = null, force = false;
+  function ksOf(pick){ return pick && pick.offer ? pick.offer.key + (pick.sure ? '!' : '?') : ''; }
+  function show(){
+    var c = document.getElementById('cart');
+    if (!c || busy) return;
+    /* our own write is in: the spent card goes, and who holds the seat is
+       left as it is until the read that follows has answered */
+    if (force){ paint([]); return; }
+    var pick = lastPick, mine = null;
+    if (pick && pick.offer && c.querySelector('.l4ca:not(.in-panel) > li')){
+      if (pick.sure) mine = pick.offer;
+      else if (Date.now() - pickAt >= GRACE && !c.querySelector('#pg-unlock-slot .pg-offer:not(.is-done)')) mine = pick.offer;
+    }
+    paint(mine ? [mine] : []);
+    var slot = c.querySelector('#pg-unlock-slot');
+    if (slot){
+      var on = !!(mine && pick.sure);
+      if (slot.classList.contains('pg-one-mine') !== on) slot.classList.toggle('pg-one-mine', on);
+    }
+  }
+  function read(){
+    if (reading){ again = true; return; }
+    if (!document.querySelector('#cart .l4ca:not(.in-panel) > li')){
+      lastPick = null; shownKs = null; pendKs = null; force = false; show(); return;
+    }
+    reading = true;
+    var failed = false;
+    fetch('/cart.js', {credentials: 'same-origin', headers: {'Accept': 'application/json'}})
+      .then(function(r){ return r.json(); })
+      .then(function(cart){
+        noteImages(cart);
+        try { syncImages(); } catch (e){}
+        return pickFor(cart);
+      })
+      .then(function(pick){
+        var ks = ksOf(pick);
+        /* a changed answer is read twice before it replaces what is on screen:
+           a read caught between two cart writes must not flash a wrong offer */
+        if (!force && shownKs && ks !== shownKs && ks !== pendKs){ pendKs = ks; again = true; return; }
+        pendKs = null; force = false;
+        var o = pick.offer, old = lastPick && lastPick.offer;
+        if (o && o.pick && old && old.pick && old.key === o.key){
+          var ok = o.pick.options.some(function(op){ return String(op.id) === String(old.pick.value); });
+          if (ok) o.pick.value = old.pick.value;
+        }
+        if (ks !== shownKs) pickAt = Date.now();
+        lastPick = pick; shownKs = ks;
+        show();
+        if (pick.offer && !pick.sure) setTimeout(show, GRACE + 60);
+      })
+      .catch(function(){ failed = true; })
+      .then(function(){
+        reading = false;
+        if (failed && force){ force = false; show(); }
+        if (again){ again = false; schedule(300); }
+      });
+  }
+  function schedule(ms){
+    if (timer) return;
+    timer = setTimeout(function(){ timer = null; read(); }, ms || 200);
+  }
+  function check(){
+    var s = domSig();
+    if (s !== seenSig){ seenSig = s; schedule(200); return; }
+    show();
+    try { syncImages(); } catch (e){}
+  }
+
+  /* ---------------- acting ---------------- */
+  var busy = false;
+  function post(url, body){
+    return fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', body: JSON.stringify(body)})
+      .then(function(r){ if (!r || !r.ok) throw new Error('write'); return r; });
+  }
+  function perform(o, el){
+    if (o.kind === 'add') return post('/cart/add.js', {items: o.items});
+    var sel = el.querySelector('.pg-addon-pick select');
+    var v = o.target(sel ? sel.value : null);
+    if (!v || !v.avail) return Promise.reject(new Error('sold out'));
+    return post('/cart/add.js', {items: [{id: v.id, quantity: o.addQty}]})
+      .then(function(){ return fetch('/cart.js', {credentials: 'same-origin'}); })
+      .then(function(r){ return r.json(); })
+      .then(function(cart){
+        var updates = {}, any = false;
+        Object.keys(o.take).forEach(function(vid){
+          var have = 0;
+          (cart.items || []).forEach(function(it){ if (String(it.variant_id) === vid) have += it.quantity; });
+          if (!have) return;
+          updates[vid] = Math.max(0, have - o.take[vid]);
+          any = true;
+        });
+        if (!any) return null;
+        return post('/cart/update.js', {updates: updates});
+      });
+  }
+  function act(btn){
+    var el = btn.closest('.pg-addon'), o = el && el.pgAddon;
+    if (!o || busy) return;
+    busy = true;
+    btn.classList.add('busy');
+    var old = btn.innerHTML;
+    btn.textContent = 'Adding...';
+    perform(o, el).then(function(){
+      el.classList.add('is-done');
+      btn.textContent = 'Added';
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch (e){}
+      } else {
+        window.location.reload();
+      }
+    }).then(function(){
+      busy = false;
+      lastPick = null; shownKs = null; pendKs = null; force = true;
+      seenSig = null;
+      show();
+      schedule(150);
+    }).catch(function(err){
+      busy = false;
+      btn.classList.remove('busy');
+      btn.textContent = (err && err.message === 'sold out') ? 'Sold out in that color' : 'Try again';
+      setTimeout(function(){ btn.innerHTML = old; }, 2200);
+    });
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    var btn = e.target.closest('#cart .pg-addon-btn');
+    if (btn){
+      e.preventDefault(); e.stopPropagation();
+      act(btn);
+      return;
+    }
+    if (e.target.closest('#cart .pg-addon-pick')) e.stopPropagation();
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    var btn = e.target && e.target.closest && e.target.closest('#cart .pg-addon-btn');
+    if (!btn) return;
+    e.preventDefault();
+    act(btn);
+  }, true);
+  /* the Duo card's price button follows the picked color's variant */
+  document.addEventListener('change', function(e){
+    var sel = e.target && e.target.closest && e.target.closest('#cart .pg-addon-pick select');
+    if (!sel) return;
+    var el = sel.closest('.pg-addon'), o = el && el.pgAddon;
+    if (!o || !o.pick) return;
+    o.pick.value = sel.value;
+    var cur = lastPick && lastPick.offer;
+    if (cur && cur !== o && cur.key === o.key && cur.pick) cur.pick.value = sel.value;
+  }, true);
+
+  function boot(){
+    seenSig = domSig();
+    read();
+    document.addEventListener('pg:cart-updated', function(){ show(); seenSig = domSig(); schedule(150); });
+    if (window.MutationObserver){
+      var queued = false;
+      var hook = function(){
+        var c = document.getElementById('cart');
+        if (!c || c.pgAddonObs) return;
+        c.pgAddonObs = 1;
+        new MutationObserver(function(){
+          if (queued) return;
+          queued = true;
+          setTimeout(function(){ queued = false; check(); }, 120);
+        }).observe(c, {childList: true, subtree: true});
+      };
+      hook();
+      if (!document.getElementById('cart')){
+        var mo = new MutationObserver(function(){ hook(); if (document.getElementById('cart')) mo.disconnect(); });
+        mo.observe(document.documentElement, {childList: true, subtree: true});
+      }
+    }
+    setInterval(check, 5000);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Add-ons", "settings": [], "presets": [{"name": "PG Cart Add-ons"}]}
+{% endschema %}
