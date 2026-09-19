@@ -1,0 +1,126 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {
+          "type": "review",
+          "settings": {
+            "name": "Emely Jacobs",
+            "stars": 5,
+            "text": "Shipped way faster than i thought! box and handheld were in perfect condition. was a breeze to install games and start playing. highly highly recommend to fans of gba games."
+          }
+        },
+        "rev2": {
+          "type": "review",
+          "settings": {
+            "name": "Meghann Hoppe",
+            "stars": 5,
+            "text": "So good. perfect screen for gba. lightweight. great buttons. and excellent sleep function especially with nextui."
+          }
+        },
+        "rev3": {
+          "type": "review",
+          "settings": {
+            "name": "Latrisha Grimes",
+            "stars": 5,
+            "text": "Arrived fairly quickly in perfect condition. works really well. make sure to choose ra game instead of game rooms because it seems to run better"
+          }
+        },
+        "rev4": {
+          "type": "review",
+          "settings": {
+            "name": "Elfreda Adams",
+            "stars": 5,
+            "text": "Excellent. lots of custom firmware options to play around with"
+          }
+        },
+        "rev5": {
+          "type": "review",
+          "settings": {
+            "name": "Sherrell Mosciski",
+            "stars": 5,
+            "text": "The device is really cool, takes me back to my younger years. Definitely not better times 🤣 Shipping was fast and the item is in excellent condition. Thanks again!"
+          }
+        },
+        "rev6": {
+          "type": "review",
+          "settings": {
+            "name": "Erin Altenwerth",
+            "stars": 5,
+            "text": "A true gem, it's quite nostalgic to hold it in your hands, the screen is spectacular with tones and brightness that far surpass those of a DS, the performance has no complaints, it's sufficient for what it was designed for, but as soon as you can, replace the micro SD with a more reliable one."
+          }
+        }
+      },
+      "block_order": [
+        "rev1",
+        "rev2",
+        "rev3",
+        "rev4",
+        "rev5",
+        "rev6"
+      ],
+      "settings": {
+        "product": "pocket-era-flip-sp",
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "4.7",
+        "rating_label": "118 reviews",
+        "review_total": 118,
+        "default_size": "",
+        "gallery_video_url": "",
+        "show_bundle": false,
+        "bundle_title": "",
+        "bundle_pct": 0,
+        "features_text": "<p>5,000+ classic games preloaded, spanning 30+ retro systems from NES and SNES to Game Boy, GBA and PS1<br>Flip-open clamshell with a magnetic lid: closes to protect the screen, sleeps when shut and wakes when opened<br>Bright 3.5 inch laminated IPS screen (640x480) with classic D-pad and face buttons<br>H700 quad-core chip and 1GB RAM for smooth emulation<br>Add your own games: the library lives on the microSD card, so you can plug it into a computer and drag and drop your own game files into the matching system folder<br>Second card slot expandable up to 512GB<br>Built-in Wi-Fi and Bluetooth for controllers, plus HD TV output<br>3300mAh battery for up to 8 hours of play</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+      }
+    },
+    "pg_revlink": {
+      "type": "pg-rev-link",
+      "settings": {}
+    },
+    "pg_r36smobile": {
+      "type": "pg-r36s-mobile",
+      "settings": {}
+    },
+    "pg_selloutlast": {
+      "type": "pg-sellout-last",
+      "settings": {}
+    },
+    "pg_r36stitle": {
+      "type": "pg-r36s-title",
+      "settings": {}
+    },
+    "pg_flipsptiles": {
+      "type": "pg-flipsp-tiles",
+      "settings": {
+        "duo_off": "10.00"
+      }
+    },
+    "pg_picksize": {
+      "type": "pg-pick-size",
+      "settings": {}
+    }
+  },
+  "order": [
+    "pg_landing",
+    "pg_picksize",
+    "pg_revlink",
+    "pg_r36smobile",
+    "pg_selloutlast",
+    "pg_r36stitle",
+    "pg_flipsptiles"
+  ]
+}

@@ -1,3 +1,64 @@
+# Flip SP: show all the imported reviews (13 -> 23)
+
+## Request
+"just imported reviews for the pocketera flip sp. make them all show. make
+sure at least 20 of them show at the bottom of the page."
+
+## Problem
+Judge.me had synced 118 reviews onto the Flip SP (4.66 average,
+2026-09-19 03:38Z), but the product page rendered 13 review cards.
+
+## Cause
+Judge.me writes the reviews into THREE product metafields and each holds a
+different slice of the same set:
+
+    judgeme.review_widget_data.reviews ......... page 1 only, 5 reviews
+    judgeme.review_widget_data.photo_gallery ... 10 reviews, the ones with photos
+    judgeme.review_widget_json_ld.review ....... 19, the set Google is shown
+
+`sections/pg-landing.liquid` read only the first two, so a product rendered
+about 13 distinct cards however many reviews were actually imported. The
+review count on the page was always right (it comes from
+`number_of_reviews`); only the cards were short.
+
+Judge.me does not put all 118 into Shopify -- the rest live behind its own
+paginated API -- so 23 is every review the storefront can reach without
+calling out to Judge.me at runtime.
+
+## Fix (`sections/pg-landing.liquid`)
+- Reads `judgeme.review_widget_json_ld` as a third source.
+- The dedupe key was the Judge.me `uuid`, which the JSON-LD does not carry,
+  so it is now the reviewer's name plus the opening of the body, with the
+  HTML entities one source escapes and the other does not folded back first
+  (photo_gallery had "Bridget O&#39;Hara" against the JSON-LD's "Bridget
+  O'Hara", which would otherwise have rendered that review twice).
+- The same two sources feed the rotating quote carousel in the buy column.
+- Additive only: a product with no JSON-LD metafield (the R36S) renders
+  exactly what it rendered before. The Pro 2 has one, so its page gains
+  reviews too.
+
+## Fix (`templates/product.pg-flipsp.json`)
+The template had been copied from the Pro 2 and still carried its numbers and
+its reviews: `rating_value` 4.6, `rating_label` "143 reviews",
+`review_total` 143, and six theme-editor fallback blocks quoting R36S
+customers. Now 4.7 / "118 reviews" / 118, and six real Flip SP reviews. These
+only render if the Judge.me data ever goes missing, but they were wrong.
+
+## Verification
+No storefront access from this sandbox. The patched Liquid's dedupe was
+reimplemented in Python against the product's real metafield values:
+34 raw rows -> 23 cards, matching an exact-set dedupe (so the `contains`
+substring test causes no false merges), 23 distinct reviewers, 19 with
+photos, ratings 18x5 / 2x4 / 3x1. Liquid tag balance and the section schema
+JSON were checked. Worth one look at the live preview.
+
+## Applied to
+Shopify draft theme 164128784612 ("Advance SP Product Page + Other Fixes")
+via the Admin API (themeFilesUpsert, body pulled from the pushed branch).
+Files changed: sections/pg-landing.liquid, templates/product.pg-flipsp.json
+
+---
+
 # R36S Pro 2: no in-cart upsells
 
 ## Request
