@@ -1,3 +1,52 @@
+# Cart add-ons: retarget the "flip" family to the R36S Ultra
+
+## Problem
+The Pocket Era Flip SP was rewritten in place into the **Pocket Era R36S
+Ultra** (same product record, so its 110 Judge.me reviews carry over). That
+moved five product handles and renamed the Bundle option values, which
+`sections/pg-cart-addons.liquid` hardcodes. Left alone, the whole Flip/Ultra
+family would silently drop out of the cart upsell: no case rows, no screen
+protector row, no Protection Kit beside a Max bundle.
+
+## Cause
+Three things in that file were pinned to the old listing:
+
+- **The handle table `H`** named `pocket-era-flip-sp` and the three
+  `flip-sp-*` accessory handles plus `flip-sp-max-kit`. Shopify 301s the
+  storefront URLs, but the file matches `cart.items[].handle` and fetches
+  `/products/<handle>.js`, so stale handles just stop matching.
+- **`FB`** held the Flip SP's bundle labels (`Single Device`, `Max Package`).
+  The Ultra uses the R36 Pro 2's labels (`Single Device (64GB)`,
+  `Max Bundle (128GB)`) so both consoles read the same.
+- **Option order.** The Flip SP was `o1 = Color, o2 = Bundle`. The Ultra
+  matches the Pro 2 at `o1 = Bundle, o2 = Color`, so the `flip` family's
+  `single` / `max` / `colour` accessors were reading the wrong option.
+
+## Fix
+`sections/pg-cart-addons.liquid`, four edits, no behaviour change beyond the
+retarget:
+
+- `H.flip`, `H.fsil`, `H.fhard`, `H.fprot`, `H.fkit` point at the
+  `pocket-era-r36s-ultra` / `r36s-ultra-*` handles.
+- `FB` now carries the `(64GB)` / `(128GB)` labels.
+- The `flip` family reads `v.o1` for the bundle and `v.o2` for the colour.
+- The block comment above `FAMS` describes the Ultra's option order.
+
+The `flip` / `fsil` / `fhard` / `fprot` / `fkit` **keys keep their short
+names** so the rest of the file (`FLIPS`, `flipOffer`, `flipUpgrade`, the
+`fduo` / `fswitch` key tests) is untouched. All six variant IDs
+(`FSIL_VARIANT`, `FHARD_VARIANT`, `FPROT_VARIANT`, `FKIT_VARIANT` and the
+Pro 2 pair) are unchanged — only SKUs moved on those products, so every
+add-to-cart call still resolves.
+
+## Applied to
+Files changed: sections/pg-cart-addons.liquid
+
+Not yet pushed to the live theme — the Ultra is in DRAFT pending photos, so
+nothing is broken for customers until it goes live.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
