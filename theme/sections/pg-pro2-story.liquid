@@ -1,0 +1,720 @@
+{%- comment -%}
+  PG Pro2 Story (2026-09-17): the selling sections of the R36S Pro page, by
+  request, modelled on the layout of a competitor's page but in our own words,
+  colors and claims. Registered in templates/product.pg-pro2.json only.
+
+  THE PIECES, EACH SEATED BY THE SCRIPT AT THE BOTTOM:
+    1. BENEFITS (.pg-p2s-ben): four pain points answered, icon plus one line,
+       directly under the title and stars. No paragraph, by request. The third
+       is battery life (it was "Save Anywhere"; swapped by request, and saving
+       is still covered in the chart).
+       THE FOURTH IS "ADD YOUR OWN GAMES" (2026-09-17, by request: replace the
+       30 day returns one "with something describing how you can put any games
+       you want on the system", and say it in Under the hood and the chart
+       too). It took the place of "30-Day Returns", which the guarantee bar
+       and the info box under the bundles still say. Under the hood: it
+       replaced "Pick Up Where You Left Off" (saving keeps its chart row). The
+       chart has a row for it. The wording is "your own game files" throughout
+       and names no game.
+       THE NUMBER OF GAMES RIDES WITH THE FIRST ICON (2026-09-17). On a phone
+       the icons show their bold labels only, so "Up to 40K" had dropped off
+       the top of the page. It was first put back as a line of its own under
+       the title, which is not what was meant ("undo that and put it with the
+       icon"): the first label now reads "Up to 40K" on its own line over
+       "Games Preloaded". White like the rest of the label; it was lavender
+       for a few hours ("doesnt need to be in purple"). "Up to", because the
+       Single Device carries 15,000+.
+    2. BUYER PHOTOS (.pg-p2s-shots): a swipeable strip of the photo reviews
+       Judge.me holds for this product, under the rotating review card at the
+       foot of the buy column. Headed "Buyer Reviews" by request. It is built
+       from judgeme.review_widget_data and renders nothing when there are no
+       photo reviews. NOTE (2026-09-17): the photos in that feed are served
+       from ae-pic-a1.aliexpress-media.com, so these are imported supplier
+       reviews, not reviews collected by this store. Raised with the owner.
+       THE WHOLE CONSOLE LEADS (2026-09-17: "only show the good photos first,
+       like showing the whole item"). The feed opened on a circuit board and an
+       open battery bay. Every photo was looked at: the four that show the
+       whole console front on come first (lead_keys, in that order), the open
+       back and circuit board shots go to the end, and last of all the two
+       whose screens show a recognisable game (last_keys). A photo is named by
+       the file id in its URL and placed with flex order, so nothing is
+       removed and a new photo review lands in the middle until it is sorted.
+    3. THE STORY (#pg-p2s): nostalgia headline, the used-handheld price
+       comparison, four feature blocks, the comparison chart and a button back
+       up to the bundles. Moved in above the bottom review grid.
+
+  EVERY CLAIM IS ONE THE PRODUCT PAGE ALREADY MAKES (description / specs):
+  15,000+ and 40,000+ games, 21+ systems, RK3326 1.5GHz + 1GB RAM, 3.5 inch IPS
+  640x480, 3200mAh for around 6 hours, microSD up to 256GB. The starting price
+  is printed from product.price_min, so it follows the admin.
+  The used-handheld figure is a SETTING, because it is a market price and it
+  moves: on 2026-09-17 PriceCharting listed a loose Game Boy Advance SP
+  (AGS-101) at about $146 to $152, so the default says "about $150". A plain
+  Game Boy Advance is cheaper (about $50 to $85 loose), which is why the line
+  names the SP. Re-check it now and then.
+  The chart compares against a VINTAGE HANDHELD, not "knockoffs": every row is
+  true of any original handheld, and nothing is claimed about a competitor
+  that cannot be shown.
+
+  WHERE THINGS SIT ON A PHONE. pg-r36s-mobile makes .pgx-buy a flex column under
+  900px and gives every child an order (title 1, stars 2, BUNDLE & SAVE 3,
+  tiles 4, add to cart 5, sellout 6 to 9, info 10, payment 11, guarantee 12,
+  accordions 13). The benefits take 2, so they land right after the stars.
+  pg-mobile re-seats the review card after the stars every 1.5s; order, not
+  DOM position, is what keeps the benefits above it on a phone.
+
+  THE TRUST MODULES COME STRAIGHT AFTER THE BUNDLES (2026-09-17, by request:
+  "move these modules right below the last bundle"). The shipping row, the
+  payment icons, the guarantee bar and the Description / Features accordions
+  used to sit under the review card AND the photo strip, a long way below the
+  button. The review card now takes order 14 and the photo strip 15, so a phone
+  reads tiles | add to cart | sellout | info | payment | guarantee | accordions
+  | review card | buyer photos. On desktop there is no flex order, so the photo
+  strip is seated at the END of the buy column for the same result.
+  THE PHOTO STRIP MOVED UP UNDER THE BUNDLES (2026-09-17, by request: "the
+  scrollable buyer reviews module should be right under the duo max bundle").
+  On a phone it takes order 5, so the run is tiles | buyer reviews | sellout |
+  accordions | info | payment | guarantee | review card. On a desktop it is
+  seated after the Add to cart button, not between the bundles and the button,
+  so the button does not drop 400px down the column.
+  THE ACCORDIONS LEAD THAT BLOCK (2026-09-17, by request: "move the description
+  features shipping buttons right below the sellout risk module"). On a phone
+  they take the sellout slot's order (6) and follow it in the DOM, so the run
+  is tiles | sellout | accordions | info | payment | guarantee. On desktop the
+  sellout box sits above the Add to cart button, and nothing is put between
+  the bundles and that button, so there the accordions come straight after the
+  button, ahead of the info box: they are moved in the DOM to just before
+  .pgx-info. pg-acc-place only re-seats them when they have left the buy
+  column, so the two do not fight.
+
+  YOU MAY ALSO LIKE GOES NEAR THE BOTTOM. pg-theme-css builds that block late
+  (after a catalog fetch) and drops it right under the product, which put it
+  ahead of this whole story. The script here keeps the lower page in the order
+  product | story | you may also like | reviews. It re-checks when the parent's
+  children change (that is how the late block is caught) and does nothing once
+  the order is right. pg-yml-last does the same job on the other pages but is
+  NOT used here: it and this file would both claim the seat before the reviews.
+
+  ONE MODULE, FOUR CHAPTERS. The story began as headings and text on one
+  continuous dark ground and read as a single block ("make each section more
+  distinct"); it became four separate rounded panels; those were joined into
+  one long panel ("make the modules flow more together"), split into cards
+  again ("I like the rounded corners and how it was before"), and joined once
+  more (2026-09-17: "reconnect all those modules instead of individual
+  cards"). What settled it is the glow: the sections are JOINED, the first
+  carries the rounded top and the last the rounded bottom, a hairline divides
+  them with the purple bar sitting on it, and EVERY section opens with the
+  soft purple glow at its top ("at the top add that purple glow so people know
+  it's a new section"), fading out on its own.
+  The reviews open with a "Customer Reviews" HEADING (a CSS label, scoped to
+  this template). It was the small pill the story sections wear, which works
+  inside a panel but floated on its own between You may also like and the
+  left-aligned 4.6 block ("looks awkward there"): it is a plain centred title
+  now, the size of the page's other section titles. The rule that ran across
+  the page above it is gone by request ("take out lines"). You may also like had a panel too for a few hours
+  and lost it again by request ("doesn't need to be in a module"): it is the
+  theme's plain block, heading and cards.
+
+  NOTHING WRAPS BY ACCIDENT ON A PHONE (2026-09-17, by report, with
+  screenshots from a 393px iPhone). Inside a panel the text column is about
+  313 to 331px, and three things broke badly there: the price cards ("Used,
+  one system, no / games", and "CHOOSE YOUR BUNDLE" with its arrow alone on a
+  second line), the lead under them (a last line of just "it."), and the
+  headline (the purple sentence split "Without a / Single Game.").
+    - the price cards say what they say in two fixed lines each, none of which
+      can wrap, and the link is "See bundles" (measured: the widest line is
+      116px in a 118px column at 360px, the tightest common phone);
+    - headlines are balanced and the purple sentence is its own line under
+      900px (27px type, 25px under 380px: it fits on one line from 360px up);
+    - leads use text-wrap:pretty, and their last two words are tied together
+      with a non-breaking space for browsers without it.
+  THE ICONS ARE BIGGER (same report, then again: "the 4 icons under title are
+  so tiny"). The first answer kept the two-by-two layout and took the icons
+  from 32px to 46px, which on the owner's 440px iPhone was still small marks in
+  a wide, mostly empty row. They are FOUR ACROSS now, icon above label, the
+  way the page this was modelled on shows them: the icon is 84% of its column
+  up to 74px (74px at 440px wide, 69px at 393px, 65px at 375px), so it grows
+  with the phone instead of stopping at a fixed size. On a phone only the bold
+  label shows (two short lines); the second line comes back from 601px up,
+  where a column has room for it. Under the hood went from 50px to 64px on a
+  phone and 58px to 72px on a desktop; then, by request ("make white icons
+  within purple circle bigger"), the white drawing inside went from half the
+  circle to about 62% of it (40px in 64px on a phone, 44px in 72px on desktop).
+  THE FOUR UNDER THE TITLE MATCH THEM (2026-09-17: "make the icons under the
+  title like the ones further down, they're brighter white"). They were a
+  translucent purple disc with a lavender ring and a lavender drawing. They are
+  the same solid purple gradient disc and pure white drawing as Under the hood.
+  A LITTLE SMALLER, WITH BIGGER LABELS (same day: "make the 4 purple circles a
+  little smaller, not too much ... maybe adjust font so it's bigger and easier
+  to read"). The disc is 74% of its column up to 64px (it was 84% up to 74px)
+  and the label is 13.5px on a phone, 14px above that (it was 12.5px); 12.5px
+  from 370px down, where a column is about 80px and "Preloaded" has to fit.
+
+  THE NOSTALGIA SECTION HAS A PICTURE. The product carries three photos whose
+  alt text contains "lifestyle". The third (console on the living room floor
+  beside an old system) sits in "Your childhood, upgraded"; the second goes
+  beside the price comparison, so the two sections do not show near-identical
+  shots. Both can be replaced in the theme editor.
+
+  THE PRICE CARD IS A BUTTON. The highlighted "$74.99" card in "Do the math"
+  looks like the thing to tap, so it is one: it scrolls up to the bundles, the
+  same as the button at the foot of the story.
+{%- endcomment -%}
+{%- if product -%}
+{%- comment -%} the three accessory cards show the ADD-ON PRODUCTS' own pictures (2026-09-21: the case renders were redone with one unit each; a fixed file name in Files kept showing the old two-case shot, "look this still shows 2"); the Files render stays as the fallback {%- endcomment -%}
+{%- assign p2_sil = all_products['r36-pro-2-silicone-case'] -%}
+{%- assign p2_hard = all_products['r36-pro-2-hard-shell-case'] -%}
+{%- assign p2_prot = all_products['r36-pro-2-screen-protector'] -%}
+{%- if p2_sil.featured_image -%}{%- assign p2_sil_img = p2_sil.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_sil_img = 'pe-r36pro2-silicone.jpg' | file_url -%}{%- endif -%}
+{%- if p2_hard.featured_image -%}{%- assign p2_hard_img = p2_hard.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_hard_img = 'pe-r36pro2-travel.jpg' | file_url -%}{%- endif -%}
+{%- if p2_prot.featured_image -%}{%- assign p2_prot_img = p2_prot.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_prot_img = 'pe-r36pro2-protector.jpg' | file_url -%}{%- endif -%}
+{%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
+{%- assign jm_all = '' | split: '' -%}
+{%- if jm -%}
+  {%- if jm.photo_gallery -%}{%- assign jm_all = jm_all | concat: jm.photo_gallery -%}{%- endif -%}
+  {%- if jm.reviews -%}{%- assign jm_all = jm_all | concat: jm.reviews -%}{%- endif -%}
+{%- endif -%}
+{%- assign life_n = 0 -%}
+{%- for image in product.images -%}
+  {%- if image.alt contains 'lifestyle' -%}
+    {%- assign life_n = life_n | plus: 1 -%}
+    {%- case life_n -%}
+      {%- when 1 -%}{%- assign life1 = image -%}
+      {%- when 2 -%}{%- assign life2 = image -%}
+      {%- when 3 -%}{%- assign life3 = image -%}
+    {%- endcase -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- assign hero_img = section.settings.hero_image | default: life3 | default: life1 | default: product.featured_image -%}
+{%- comment -%} the photo under the price comparison: the black-gloves Mario Kart shot, by name (2026-09-17, "use one w black gloves playing Mario Kart"; the featured render was rejected there, "that photo is used for everything else"), then the lifestyle shots {%- endcomment -%}
+  {%- assign mk_img = nil -%}
+  {%- for image in product.images -%}{%- if image.src contains 'Mario_Kart_2_FINISHED' -%}{%- assign mk_img = image -%}{%- endif -%}{%- endfor -%}
+  {%- assign story_img = section.settings.story_image | default: mk_img | default: life2 | default: life1 | default: product.featured_image -%}
+<style>
+  /* ---------------- 1. benefits ---------------- */
+  /* four across, icon over label; the icon scales with its column */
+  #pgx .pg-p2s-ben{list-style:none !important;margin:6px 0 18px !important;padding:0 !important;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  #pgx .pg-p2s-ben li{list-style:none !important;display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;margin:0 !important;padding:0 !important;min-width:0;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;line-height:1.3;color:#CFC4DE}
+  #pgx .pg-p2s-ben li:before{content:none !important}
+  #pgx .pg-p2s-ben .ic{flex:none;width:74%;max-width:64px;aspect-ratio:1/1;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#9B4BC4,#4A1C66);border:0;
+    box-shadow:0 14px 30px -14px rgba(155,75,196,.9)}
+  #pgx .pg-p2s-ben .ic svg{width:56%;height:56%;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  #pgx .pg-p2s-ben li > span:last-child{display:block;min-width:0;max-width:100%}
+  #pgx .pg-p2s-ben b{display:block;margin-bottom:2px;font-size:12px;line-height:1.2;font-weight:800;color:#fff;text-wrap:balance}
+  /* the number of games: its own line, white like the rest of the label */
+  #pgx .pg-p2s-ben b i{display:block;font-style:normal;color:#fff;white-space:nowrap}
+  /* the stars and review count lead the title (2026-09-17). A phone's buy
+     column is a flex column, so the rating takes order 0 ahead of the title's
+     1; a desktop's is block, so the rating is lifted to the column's top and
+     the title makes room for it (pg-mobile's quoteUp keeps the review card
+     after the rating in the DOM, which now sits under the title on screen).
+     The title balances its two lines. */
+  #pgx#pgx .pgx-buy > .pgx-title{text-wrap:balance}
+  @media (max-width:900px){
+    /* the stars hug the photo above and stand off the title (2026-09-18: "too close to title") */
+    /* UNDER the title since 2026-09-19 evening, the way the orb page has it (owner: "do the verified reviews thing like 110 verified reviews under the titles for the consoles like the orb has it") */
+    #pgx#pgx .pgx-buy > .pgx-rating{order:1;margin:2px 0 14px}
+  }
+  @media (min-width:901px){
+    #pgx#pgx .pgx-buy{position:relative}
+    #pgx#pgx .pgx-buy > .pgx-rating{position:static;margin:4px 0 14px}
+    #pgx#pgx .pgx-buy > .pgx-title{padding-top:0}
+  }
+
+  /* ---------------- 2. buyer photos ---------------- */
+  #pgx .pg-p2s-shots{margin:16px 0 4px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  #pgx .pg-p2s-shots-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 9px}
+  #pgx .pg-p2s-shots-h b{font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff}
+  #pgx .pg-p2s-shots-h span{font-size:12px;font-weight:600;color:#C79BEA;white-space:nowrap}
+  /* the "loved by" header over the photo rail (2026-09-18, after a competitor's
+     "Loved By Gamers / Just Like You" block): our purple pill with the page's
+     own rating and review count, the purple gradient second line, one plain
+     sentence. No invented customer counts. */
+  #pgx .pg-p2s-loved{text-align:center;margin:30px 0 6px}
+  /* under the headline the caption keeps only its "Swipe" hint, right-aligned
+     ("keep the swipe thing so they know"); the BUYER REVIEWS words read as a
+     second title and are gone */
+  #pgx .pg-p2s-shots-h b{display:none}
+  #pgx .pg-p2s-shots-h{justify-content:flex-end}
+  #pgx .pg-p2s-loved-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:linear-gradient(120deg,#7A2FA2,#9B4BC4 55%,#B478E0);color:#fff;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1;box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
+  #pgx .pg-p2s-loved-pill .st{font-size:13px;letter-spacing:.08em}
+  #pgx .pg-p2s-loved h3{margin:12px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:27px;line-height:1.1;font-weight:800;letter-spacing:-.01em;color:#fff}
+  #pgx .pg-p2s-loved h3 span{display:block;background:linear-gradient(100deg,#D9B3F5,#9B4BC4);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  #pgx .pg-p2s-loved p{margin:8px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.5;color:#CFC4DE}
+  #pgx .pg-p2s-rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;-ms-overflow-style:none;margin:0 -2px;padding:0 2px 4px}
+  #pgx .pg-p2s-rail::-webkit-scrollbar{display:none}
+  #pgx .pg-p2s-shot{flex:0 0 46%;max-width:210px;scroll-snap-align:start;display:block;text-decoration:none !important;
+    background:#16101F;border:1px solid rgba(255,255,255,.09);border-radius:14px;overflow:hidden;color:#F1EDF7}
+  #pgx .pg-p2s-shot img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#0D0714}
+  #pgx .pg-p2s-cap{padding:8px 10px 10px}
+  #pgx .pg-p2s-cap .st{color:#C79BEA;font-size:12.5px;letter-spacing:.06em;line-height:1}
+  #pgx .pg-p2s-cap .nm{display:block;margin-top:4px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pg-p2s-cap .tx{margin:3px 0 0;font-size:12px;line-height:1.4;color:#CFC4DE;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+  /* ---------------- 3. the story ---------------- */
+  .pg-p2s{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:#F1EDF7;background:#0B0710}
+  /* inside #pgx the page's own dark gradient shows through; the solid fill is
+     only for the moment before the script seats it there */
+  #pgx .pg-p2s{background:transparent}
+  .pg-p2s *{box-sizing:border-box}
+  #pgx .pg-p2s{padding:26px 0 6px}
+  /* one module, four chapters: the sections are joined, the first carries the
+     rounded top and the last the rounded bottom, a hairline divides them, and
+     every one opens with the purple glow at its top */
+  .pg-p2s-sec{position:relative;width:calc(100% - 48px);max-width:1120px;margin:0 auto;padding:58px 44px 54px;text-align:center;overflow:hidden;
+    border:1px solid rgba(199,155,234,.22);border-bottom-width:0;border-radius:0;
+    background:radial-gradient(90% 62% at 50% 0%,rgba(155,75,196,.22),rgba(155,75,196,0) 72%),rgba(255,255,255,.03)}
+  .pg-p2s-sec + .pg-p2s-sec{border-top-color:rgba(199,155,234,.14)}
+  .pg-p2s-sec:first-child{border-radius:28px 28px 0 0}
+  .pg-p2s-sec:last-child{border-bottom-width:1px;border-radius:0 0 28px 28px;margin-bottom:28px;box-shadow:0 34px 80px -60px rgba(139,68,190,.95)}
+  .pg-p2s-sec:before{content:"";position:absolute;left:50%;top:0;width:96px;height:3px;margin-left:-48px;border-radius:0 0 4px 4px;
+    background:linear-gradient(90deg,#9B4BC4,#D9B3F5)}
+  .pg-p2s-eye{display:inline-block;margin:0 0 16px;padding:7px 14px;border-radius:999px;
+    border:1px solid rgba(199,155,234,.42);background:rgba(155,75,196,.16);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:1.2;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#C79BEA}
+  /* the reviews open with a real title, centred, and no rule across the page */
+  #pgx #pg-reviews{border-top:0;margin-top:8px;padding-top:34px}
+  #pgx #pg-reviews:before{content:"Customer Reviews";display:block;margin:0 0 28px;text-align:center;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.01em;color:#fff}
+  .pg-p2s h2{margin:0 auto 14px;max-width:820px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:40px;line-height:1.12;font-weight:800;letter-spacing:-.01em;color:#fff;text-wrap:balance}
+  .pg-p2s h2 span{background:linear-gradient(100deg,#D9B3F5,#9B4BC4);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  .pg-p2s-lead{margin:0 auto;max-width:640px;font-size:16.5px;line-height:1.6;color:#CFC4DE;text-wrap:pretty}
+  .pg-p2s-lead b{color:#fff}
+
+  .pg-p2s-split{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;text-align:left}
+  .pg-p2s-split h2,.pg-p2s-split .pg-p2s-lead{margin-left:0;margin-right:0}
+  .pg-p2s-photo{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.09);background:#16101F;box-shadow:0 30px 70px -40px rgba(139,68,190,.8)}
+  .pg-p2s-photo img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover}
+  /* the gloves-and-Mario-Kart shot is taller than square: the desktop crop favours its lower half, where the hands are */
+  .pg-p2s-sec:not(.pg-p2s-hero) .pg-p2s-photo img{object-position:50% 68%}
+  .pg-p2s-hero .pg-p2s-photo{order:-1}
+  .pg-p2s-math{display:flex;gap:12px;margin:22px 0 0}
+  .pg-p2s-math div{flex:1;min-width:0;padding:14px 16px;border-radius:14px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
+  .pg-p2s-math small,.pg-p2s-math em,.pg-p2s-math .go{white-space:nowrap}
+  .pg-p2s-math div.us{border-color:rgba(199,155,234,.55);background:linear-gradient(140deg,#1D1230,#16101F);cursor:pointer;
+    -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+  .pg-p2s-math div.us:hover,.pg-p2s-math div.us:focus-visible{border-color:#C79BEA;box-shadow:0 14px 30px -18px rgba(155,75,196,.95);transform:translateY(-2px);outline:0}
+  .pg-p2s-math div.us:active{transform:translateY(0)}
+  .pg-p2s-math .go{display:block;margin-top:9px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C79BEA}
+  /* the top bar is pinned, so a jump to the bundles stops short of it */
+  #pgx .pgx-bs{scroll-margin-top:76px}
+  .pg-p2s-math small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#B9AECB}
+  .pg-p2s-math strong{display:block;margin-top:4px;font-size:26px;font-weight:800;color:#fff;line-height:1.1}
+  .pg-p2s-math em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:#CFC4DE}
+
+  .pg-p2s-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:34px 0 0}
+  .pg-p2s-feat{padding:24px 16px 22px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
+  .pg-p2s-feat .ic{width:72px;height:72px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#9B4BC4,#4A1C66);box-shadow:0 14px 30px -14px rgba(155,75,196,.9)}
+  .pg-p2s-feat .ic svg{width:44px;height:44px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .pg-p2s-feat h3{margin:0 0 7px;font-family:inherit;font-size:16.5px;line-height:1.25;font-weight:800;color:#fff}
+  .pg-p2s-feat p{margin:0;font-size:13.5px;line-height:1.55;color:#CFC4DE}
+
+  /* the accessories chapter (2026-09-19, asked for after the Flip SP's cases
+     module: "copy that module for the hard shell and daily case ... for the
+     r36s pro one too, but with that one they have to upgrade to max to get
+     it, there are no add-ons"): four cards, photo left, name / one line
+     right, an "Included" tag on each, a chapter of the same joined module
+     between Under the hood and Side by side. The photos are Gemini renders
+     in the store's purple studio style (Files: pe-r36pro2-*.jpg). The joystick
+     caps card was removed 2026-09-19 ("no joystick caps anywhere"). */
+  .pg-p2s-cases{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:1000px;margin:30px auto 0;text-align:left}
+  /* three cards since 2026-09-19 ("no joystick caps anywhere"): three across on a desktop, a column on phones */
+  .pg-p2s-case{grid-template-columns:104px minmax(0,1fr);gap:13px;padding:14px}
+  .pg-p2s-case img{width:104px;height:104px}
+  .pg-p2s-case{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;align-items:center;padding:16px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
+  .pg-p2s-case img{display:block;width:124px;height:124px;border-radius:14px;object-fit:cover;background:#0D0714}
+  .pg-p2s-case .tag{display:inline-block;margin:0 0 7px;padding:4px 9px;border-radius:999px;background:rgba(155,75,196,.2);border:1px solid rgba(199,155,234,.4);font-size:10.5px;line-height:1.2;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#C79BEA}
+  .pg-p2s-case h3{margin:0 0 5px;font-family:inherit;font-size:16px;line-height:1.25;font-weight:800;color:#fff}
+  .pg-p2s-case p{margin:0;font-size:13px;line-height:1.5;color:#CFC4DE}
+  .pg-p2s-tbl{max-width:720px;margin:34px auto 0;text-align:left}
+  .pg-p2s-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+  .pg-p2s-row > div{display:flex;align-items:center;justify-content:center;padding:14px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;line-height:1.3}
+  .pg-p2s-row > div:first-child{justify-content:flex-start;padding-left:4px;font-weight:600;color:#F1EDF7}
+  .pg-p2s-row > div.us{background:#1A1129;border-left:1px solid rgba(199,155,234,.45);border-right:1px solid rgba(199,155,234,.45)}
+  .pg-p2s-row.hd > div{border-bottom:0;padding:16px 8px;font-size:13.5px;font-weight:800;text-align:center;color:#fff}
+  .pg-p2s-row.hd > div.us{border-top:1px solid rgba(199,155,234,.45);border-radius:16px 16px 0 0}
+  .pg-p2s-row.hd > div.them{color:#B9AECB;font-weight:700}
+  .pg-p2s-row:last-child > div{border-bottom:0}
+  .pg-p2s-row:last-child > div.us{border-bottom:1px solid rgba(199,155,234,.45);border-radius:0 0 16px 16px}
+  .pg-p2s-tbl .y,.pg-p2s-tbl .n{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .pg-p2s-tbl .y{background:linear-gradient(135deg,#9B4BC4,#7A2FA2)}
+  .pg-p2s-tbl .n{background:#2A2236}
+  .pg-p2s-tbl .y svg,.pg-p2s-tbl .n svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .pg-p2s-tbl .n svg{stroke:#8E829F}
+
+  .pg-p2s-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin:36px 0 0;padding:16px 34px;border-radius:12px;cursor:pointer;
+    background-color:#7A2FA2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;
+    color:#fff !important;font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none !important;
+    box-shadow:0 16px 34px -14px rgba(139,68,190,.8);-webkit-user-select:none;user-select:none}
+  .pg-p2s-cta:hover{filter:brightness(1.08)}
+  @media (max-width:900px){
+    #pgx .pgx-buy > .pg-p2s-ben{order:2}
+    /* a little air between the white guarantee bar and the review card under
+       it. It goes on the BAR: pg-mobile stamps margin:0 0 16px !important
+       inline on the review card every 1.5s, so the card's own top margin
+       cannot be set from a stylesheet. */
+    /* 2026-09-18, "move the 30 day money back guarantee module above the picture
+       carousel": the guarantee bar joins the order-5 run after the payment icons,
+       so the photo strip (6) follows it */
+    #pgx#pgx .pgx-buy > .pgx-guar{order:5;margin-bottom:18px !important}
+    /* the accordions follow the sellout slot (order 6, earlier in the DOM) */
+    /* 2026-09-18: the accordions sit right under the sellout card, ahead of the trust row */
+    #pgx#pgx .pgx-buy > .pgx-acc{order:5;margin-top:0 !important}
+    /* two ids: pg-r36s-mobile gives the review card order 8 at one */
+    /* the rotating review card sits right under the bundles, ahead of the
+       sellout card (2026-09-18: above the bundles it pushed Add to cart down,
+       "add to cart gets too low"). Order 5, and it leads that run because it
+       comes first in the DOM. */
+    #pgx#pgx .pgx-buy > .pgx-quote{order:5}
+    /* the photo strip: straight after the tiles (4), ahead of the sellout
+       slot and the accordions (6) */
+    /* 2026-09-17, "put the sellout risk module above the buyer review photos":
+       the sellout card takes order 5 too and precedes the strip in the DOM, so
+       it lands first; the strip then closes the block above the accordions */
+    #pgx#pgx .pgx-buy > .pg-sell-slot{order:5;margin-top:0 !important;margin-bottom:8px !important}
+    /* 2026-09-18, "the ships by, easy returns and credit card icons need to be
+       moved up": the trust row and the payment icons follow the sellout card,
+       ahead of the photo strip; the strip (6, before the accordions in the DOM)
+       then leads the accordions */
+    #pgx#pgx .pgx-buy > .pgx-info{order:5;margin-top:14px}
+    #pgx#pgx .pgx-buy > .pgx-pay{order:5}
+    #pgx#pgx .pgx-buy > .pg-p2s-shots{order:6;margin:6px 0 18px}
+    #pgx .pg-p2s{padding-top:18px}
+    .pg-p2s-sec{width:calc(100% - 24px);padding:36px 18px 32px}
+    .pg-p2s-sec:first-child{border-radius:22px 22px 0 0}
+    .pg-p2s-sec:last-child{border-radius:0 0 22px 22px;margin-bottom:16px}
+    #pgx #pg-reviews{margin-top:4px;padding-top:28px}
+    #pgx #pg-reviews:before{font-size:26px;margin-bottom:22px}
+    /* on a phone the words come first and the picture closes the panel */
+    .pg-p2s-hero .pg-p2s-photo{order:0}
+    .pg-p2s-hero .pg-p2s-photo img{aspect-ratio:4/5}
+    .pg-p2s h2{font-size:27px;line-height:1.15}
+    /* the purple sentence starts its own line, and fits on one */
+    .pg-p2s h2 span{display:block}
+    .pg-p2s-lead{font-size:15px}
+    .pg-p2s-split{grid-template-columns:1fr;gap:24px;text-align:center}
+    .pg-p2s-split h2,.pg-p2s-split .pg-p2s-lead{margin-left:auto;margin-right:auto}
+    .pg-p2s-math{text-align:left;gap:10px}
+    .pg-p2s-math div{padding:14px 12px}
+    .pg-p2s-math small{font-size:10.5px;letter-spacing:.06em}
+    .pg-p2s-math em{font-size:12px}
+    .pg-p2s-math .go{font-size:11px;letter-spacing:.06em}
+    .pg-p2s-grid{grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
+    .pg-p2s-feat{padding:18px 12px 16px;border-radius:16px}
+    .pg-p2s-feat .ic{width:64px;height:64px;margin-bottom:13px}
+    .pg-p2s-feat .ic svg{width:40px;height:40px}
+    .pg-p2s-feat h3{font-size:14.5px}
+    .pg-p2s-feat p{font-size:12.5px;line-height:1.5}
+    .pg-p2s-cases{grid-template-columns:1fr;gap:12px;margin-top:22px}
+    .pg-p2s-case{grid-template-columns:96px minmax(0,1fr);gap:13px;padding:13px}
+    .pg-p2s-case img{width:96px;height:96px}
+    .pg-p2s-case h3{font-size:15px}
+    .pg-p2s-case p{font-size:12.5px}
+    .pg-p2s-tbl{margin-top:26px}
+    .pg-p2s-row > div{font-size:13px;padding:12px 6px}
+    .pg-p2s-row.hd > div{font-size:12.5px;padding:13px 6px}
+    .pg-p2s-cta{display:flex;width:100%;margin-top:28px;padding:16px 12px}
+  }
+  /* phones: the bold label only, in two short lines under a big icon. The
+     second line is a bare text node, so it is hidden by zeroing the span's
+     type and giving the label its size back. */
+  @media (max-width:600px){
+    #pgx .pg-p2s-ben{gap:6px}
+    #pgx .pg-p2s-ben li{gap:8px}
+    #pgx .pg-p2s-ben li > span:last-child{font-size:0;line-height:0}
+    #pgx .pg-p2s-ben b{margin:0;font-size:11.5px;line-height:1.22}
+  }
+  @media (max-width:370px){
+    #pgx .pg-p2s-ben b{font-size:10.5px}
+  }
+  @media (max-width:380px){
+    .pg-p2s h2{font-size:25px}
+    .pg-p2s-math strong{font-size:22px}
+  }
+  /* the very narrow phones */
+  @media (max-width:340px){
+    #pgx .pg-p2s-ben b{font-size:10px}
+    .pg-p2s-math small{font-size:9.5px;letter-spacing:.03em}
+    .pg-p2s-math em{font-size:11px}
+  }
+</style>
+
+<div id="pg-p2s-src" hidden>
+  <ul class="pg-p2s-ben" data-p2s="ben">
+    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M7.4 6h9.2a5 5 0 0 1 4.9 6l-.8 4.6a2.8 2.8 0 0 1-5 1.2L14.4 16H9.6l-1.3 1.8a2.8 2.8 0 0 1-5-1.2L2.5 12a5 5 0 0 1 4.9-6z" fill="rgba(255,255,255,.16)"/><path d="M7.6 9.5v4.2M5.5 11.6h4.2"/><circle cx="15.2" cy="10.2" r=".95" fill="#fff" stroke="none"/><circle cx="17.9" cy="11.9" r=".95" fill="#fff" stroke="none"/><circle cx="15.2" cy="13.6" r=".95" fill="#fff" stroke="none"/><circle cx="12.5" cy="11.9" r=".95" fill="#fff" stroke="none"/><path d="M8 6V5.2a1 1 0 0 1 1-1h1.2M16 6V5.2a1 1 0 0 0-1-1h-1.2"/></svg></span><span><b><i>Up to 40K</i> Games</b>Ready out of the box</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M2.5 9a14.5 14.5 0 0 1 19 0"/><path d="M5.7 12.2a10 10 0 0 1 12.6 0"/><path d="M8.9 15.4a5.4 5.4 0 0 1 6.2 0"/><circle cx="12" cy="18.8" r="1.3" fill="#fff" stroke="none"/><path d="M4 4.5l16 15" stroke-width="2.1"/></svg></span><span><b>No WiFi<br>Needed</b>Just power it on</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="7.2" width="17.5" height="9.6" rx="2.4" fill="rgba(255,255,255,.14)"/><path d="M21.7 10.4v3.2"/><rect x="4.6" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="8.3" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="12" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="15.7" y="9.4" width="2.5" height="5.2" rx=".7" stroke-width="1.2"/></svg></span><span><b>6-Hour<br>Battery</b>On a single charge</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M8.2 3h7.6L19 6.2V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8.6L8.2 3z" fill="rgba(255,255,255,.14)"/><path d="M9 3v2.8M11.4 3v2.8M13.8 3v2.8M16.2 3.6v2.2" stroke-width="1.4"/><circle cx="12" cy="14.2" r="3.7" fill="#fff" stroke="none"/><path d="M12 12.2v4M10 14.2h4" stroke="#6B2A99" stroke-width="1.8"/></svg></span><span><b>Add Your<br>Own Games</b>Drag and drop by microSD</span></li>
+  </ul>
+
+  {%- assign lead_keys = 'A2d8030f4b71641e7871f65757ac5b8fdW|A1c1565fef7d04cdf8c749830e70d6854o|Abdd113fcc7f6437c803df1e0b975c969U|Aed0de4e96a22478199add5e8f1ed8a2fs' | split: '|' -%}
+  {%- assign last_keys = 'A369c836cd7ce4340aa718121c1c1c4cdY|Afbf8c368ee5944cdb66de8a124877addK|Ac4b26074951740be8853d2741b582d9b5|A167472bd06f5437da0fcdc9c0215e652h|Ad03e22378241491aa51f507d3b2dbfe0R|A72c7028e97ea40c1939d19d33e6e5ed1x' | split: '|' -%}
+  {%- assign shots = 0 -%}
+  {%- capture shots_html -%}
+    {%- assign seen = '|' -%}
+    {%- for r in jm_all -%}
+      {%- assign key = '|' | append: r.uuid | append: '|' -%}
+      {%- if r.pictures_urls.size > 0 and shots < 12 -%}
+        {%- unless seen contains key -%}
+          {%- assign seen = seen | append: r.uuid | append: '|' -%}
+          {%- assign shots = shots | plus: 1 -%}
+          {%- assign pic = r.pictures_urls.first -%}
+          {%- if r.body != blank -%}{%- assign r_text = r.body -%}{%- else -%}{%- assign r_text = r.body_html | strip_html | strip -%}{%- endif -%}
+          {%- assign r_stars = r.rating | plus: 0 -%}
+          {%- assign pic_url = pic.compact | default: pic.huge | default: pic.original | default: pic.small -%}
+          {%- assign ord = 50 -%}
+          {%- for k in lead_keys -%}{%- if pic_url contains k -%}{%- assign ord = forloop.index -%}{%- endif -%}{%- endfor -%}
+          {%- for k in last_keys -%}{%- if pic_url contains k -%}{%- assign ord = forloop.index | plus: 80 -%}{%- endif -%}{%- endfor -%}
+          <a class="pg-p2s-shot" href="#pg-reviews" style="order:{{ ord }}">
+            <img src="{{ pic_url }}" alt="Customer photo from {{ r.reviewer_name | default: 'a verified buyer' | escape }}" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="400" height="500">
+            <span class="pg-p2s-cap">
+              <span class="st">{%- for s in (1..5) -%}{%- if s <= r_stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+              <span class="nm">{{ r.reviewer_name | default: 'Verified buyer' | escape }}</span>
+              {%- if r_text != blank -%}<span class="tx">{{ r_text | escape }}</span>{%- endif -%}
+            </span>
+          </a>
+        {%- endunless -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if shots > 2 -%}
+  <div class="pg-p2s-shots" data-p2s="shots">
+    <div class="pg-p2s-loved"><span class="pg-p2s-loved-pill"><span class="st" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span data-p2s-loved="pill">Rated 4.6/5 &middot; 143 reviews</span></span><h3>Loved by Gamers<span>Just Like You</span></h3></div>
+    <div class="pg-p2s-shots-h"><b>Buyer Reviews</b><span>Swipe &rarr;</span></div>
+    <div class="pg-p2s-rail">{{ shots_html }}</div>
+  </div>
+  {%- endif -%}
+</div>
+
+<div class="pg-p2s" id="pg-p2s">
+  <section class="pg-p2s-sec pg-p2s-hero">
+    <div class="pg-p2s-split">
+      <div>
+        <span class="pg-p2s-eye">Your childhood, upgraded</span>
+        <h2>Every Console You Grew Up With. <span>One Pocket.</span></h2>
+        <p class="pg-p2s-lead">Saturday mornings on the living room floor. Road trips with a handheld and a worm light. Sleepovers with one more level. <b>Up to 40,000 games across 21+ classic systems</b>, ready the second you power&nbsp;on.</p>
+      </div>
+      {%- if hero_img != blank -%}
+      <div class="pg-p2s-photo">
+        <img src="{{ hero_img | image_url: width: 900 }}" srcset="{{ hero_img | image_url: width: 600 }} 600w, {{ hero_img | image_url: width: 900 }} 900w" sizes="(max-width: 900px) 92vw, 520px" alt="{{ hero_img.alt | default: product.title | escape }}" loading="lazy" decoding="async" width="900" height="1125">
+      </div>
+      {%- endif -%}
+    </div>
+  </section>
+
+  <section class="pg-p2s-sec">
+    <div class="pg-p2s-split">
+      <div>
+        <span class="pg-p2s-eye">Do the math</span>
+        <h2>A Used {{ section.settings.gba_model }} Still Runs About ${{ section.settings.gba_price }}. <span>Without a Single Game.</span></h2>
+        <p class="pg-p2s-lead">Then you track down the cartridges, one at a time. The R36S Pro shows up with the library already on&nbsp;it.</p>
+        <div class="pg-p2s-math">
+          <div><small data-p2s-cmp="veye">Vintage handheld</small><strong data-p2s-cmp="vprice" data-p2s-vmax="{{ section.settings.gba_price_max | default: 190 }}">~${{ section.settings.gba_price }}</strong><em><span data-p2s-cmp="vline1">Used, one system</span><br><span data-p2s-cmp="vline2">No games</span></em></div>
+          <div class="us" role="button" tabindex="0" data-p2s-cta aria-label="R36S Pro, {{ product.price_min | money_without_trailing_zeros }}. Choose your bundle"><small data-p2s-cmp="eye">R36S Pro</small><strong data-p2s-cmp="price">{{ product.price_min | money_without_trailing_zeros }}</strong><em><span data-p2s-cmp="line1">New, 21+ systems</span><br><span data-p2s-cmp="games">15,000+ games</span></em><span class="go">See bundles &rarr;</span></div>
+        </div>
+      </div>
+      {%- if story_img != blank -%}
+      <div class="pg-p2s-photo">
+        <img src="{{ story_img | image_url: width: 900 }}" srcset="{{ story_img | image_url: width: 600 }} 600w, {{ story_img | image_url: width: 900 }} 900w" sizes="(max-width: 900px) 92vw, 520px" alt="{{ story_img.alt | default: product.title | escape }}" loading="lazy" decoding="async" width="900" height="900">
+      </div>
+      {%- endif -%}
+    </div>
+  </section>
+
+  <section class="pg-p2s-sec">
+    <span class="pg-p2s-eye">Under the hood</span>
+    <h2>Quick, Smooth and <span>Made to Be Played.</span></h2>
+    <p class="pg-p2s-lead">The parts that matter once you are deep in a game.</p>
+    <div class="pg-p2s-grid">
+      <div class="pg-p2s-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><h3>Quad-Core Processor</h3><p>An RK3326 quad-core chip runs 8-bit classics through PS1 games smoothly.</p></div>
+      <div class="pg-p2s-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 17v3.5"/></svg></span><h3>Bright 3.5 Inch Screen</h3><p>A bright 3.5 inch IPS display at 640x480 keeps every pixel crisp and clear.</p></div>
+      <div class="pg-p2s-feat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h7.5L19 7.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9.5 3v3.5M12.5 3v3.5"/><path d="M12.5 11.5v6M9.5 14.5h6"/></svg></span><h3>Add Your Own Games</h3><p>Pop the microSD card into a computer and drag and drop any game file onto it.</p></div>
+      <div class="pg-p2s-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="16.5" height="8.5" rx="2"/><path d="M21.5 11v2.5M11.5 9.8l-2.4 2.9h3.2l-2.2 2.6"/></svg></span><h3>3200mAh Battery</h3><p>A 3200mAh battery gives you 6 hours of play on one charge.</p></div>
+    </div>
+  </section>
+
+  <section class="pg-p2s-sec">
+    <span class="pg-p2s-eye">In the Max Bundle</span>
+    <h2>Three Accessories. <span>Every One Included.</span></h2>
+    <p class="pg-p2s-lead">All three come in the Max Bundle and the Duo Max Bundle, or add any of them to the Single&nbsp;Device.</p>
+    <div class="pg-p2s-cases">
+      <div class="pg-p2s-case"><img src="{{ p2_sil_img }}" alt="R36S Pro silicone daily case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Silicone Daily Case</h3><p>A soft silicone sleeve with a lanyard that stays on the console. Grippy in the hand, shrugs off scratches and drops.</p></div></div>
+      <div class="pg-p2s-case"><img src="{{ p2_hard_img }}" alt="R36S Pro hard shell travel case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Hard Shell Travel Case</h3><p>A zip-up hard shell for the bag. Holds the console, its cable and your microSD cards, and takes the knocks so the console does not.</p></div></div>
+      <div class="pg-p2s-case"><img src="{{ p2_prot_img }}" alt="R36S Pro tempered glass screen protector" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Tempered Glass Screen Protector</h3><p>Real glass over the 3.5 inch screen, with a cloth and a wipe to fit it clean.</p></div></div>
+    </div>
+    <span class="pg-p2s-cta" role="button" tabindex="0" data-p2s-cta data-p2s-max>Get the Max Bundle <span>&rarr;</span></span>
+  </section>
+
+  <section class="pg-p2s-sec pg-p2s-end">
+    <span class="pg-p2s-eye">Side by side</span>
+    <h2>Why the R36S Pro <span>Stands Out.</span></h2>
+    <div class="pg-p2s-tbl" role="table" aria-label="R36S Pro compared with a vintage handheld">
+      <div class="pg-p2s-row hd" role="row"><div role="columnheader"></div><div class="us" role="columnheader">R36S Pro</div><div class="them" role="columnheader">Vintage Handheld</div></div>
+      {%- assign rows = 'Games included in the box|21+ systems in one device|Add your own games by microSD|Save anywhere, even mid-level|Expandable storage, up to 256GB|Brand new with a 30-day guarantee' | split: '|' -%}
+      {%- for row in rows -%}
+      <div class="pg-p2s-row" role="row"><div role="cell">{{ row }}</div><div class="us" role="cell"><span class="y" aria-label="Yes"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div><div role="cell"><span class="n" aria-label="No"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span></div></div>
+      {%- endfor -%}
+    </div>
+    <span class="pg-p2s-cta" role="button" tabindex="0" data-p2s-cta>Choose Your Bundle <span>&rarr;</span></span>
+  </section>
+</div>
+
+<script>
+(function(){
+  if (window.pgPro2Story) return; window.pgPro2Story = 1;
+
+  function seat(){
+    var src = document.getElementById('pg-p2s-src');
+    var buy = document.querySelector('#pgx .pgx-buy');
+    if (src && buy){
+      var ben = src.querySelector('[data-p2s="ben"]');
+      if (ben){
+        var after = buy.querySelector(':scope > .pgx-rating') || buy.querySelector(':scope > .pgx-title');
+        if (after) buy.insertBefore(ben, after.nextSibling); else buy.insertBefore(ben, buy.firstChild);
+      }
+      /* the photo strip follows the bundles: after the Add to cart button and
+         its error line where they are still in the column (a desktop), after
+         the last tile otherwise. On a phone its flex order does the placing. */
+      var shots = src.querySelector('[data-p2s="shots"]') || buy.querySelector(':scope > [data-p2s="shots"]');
+      if (shots){
+        var after = buy.querySelector(':scope > #pgx-err') || buy.querySelector(':scope > #pgx-atc');
+        if (!after){
+          var ts = buy.querySelectorAll(':scope > .pgx-tile');
+          after = ts.length ? ts[ts.length - 1] : null;
+        }
+        if (after){ if (after.nextElementSibling !== shots) buy.insertBefore(shots, after.nextSibling); }
+        else if (shots.parentNode !== buy) buy.appendChild(shots);
+      }
+    }
+    trust();
+    lower();
+    loved();
+  }
+
+  /* the loved-by pill reads the page's own rating line, so it follows Judge.me */
+  function loved(){
+    var pill = document.querySelector('#pgx [data-p2s-loved="pill"]');
+    var r = document.querySelector('#pgx .pgx-rating strong');
+    var l = document.querySelector('#pgx .pgx-rating .pgx-revlink');
+    if (!pill || !r || !l) return;
+    var n = parseInt((l.textContent || '').replace(/[^\d]/g, ''), 10);
+    var txt = 'Rated ' + (r.textContent || '').trim() + '/5' + (n ? ' \u00b7 ' + n + ' reviews' : '');
+    if (pill.textContent !== txt) pill.textContent = txt;
+  }
+  /* the accordions lead the trust block: just before the info box. Skipped
+     while they are outside the buy column (pg-acc-place brings them back). */
+  function trust(){
+    var buy = document.querySelector('#pgx .pgx-buy');
+    var acc = document.getElementById('pgx-desc');
+    if (!buy || !acc || acc.parentNode !== buy) return;
+    var info = buy.querySelector(':scope > .pgx-info');
+    if (info && acc.nextElementSibling !== info) buy.insertBefore(acc, info);
+  }
+
+  /* product | story | you may also like | reviews. Safe to call any number of
+     times: every move is skipped when the node is already in its seat. */
+  function lower(){
+    var story = document.getElementById('pg-p2s');
+    var rev = document.querySelector('#pgx #pg-reviews, #pgx .pgx-rev');
+    if (!story || !rev || !rev.parentNode) return;
+    var host = rev.parentNode;
+    var yml = document.querySelector('.pgu-yml');
+    var anchor = rev;
+    if (yml){
+      if (yml.parentNode !== host || yml.nextElementSibling !== rev) host.insertBefore(yml, rev);
+      anchor = yml;
+    }
+    if (story.parentNode !== host || story.nextElementSibling !== anchor) host.insertBefore(story, anchor);
+    watch(host);
+    var main = document.querySelector('#pgx .pgx-main');
+    if (main && main.parentNode) watch(main.parentNode);
+  }
+  var queued = false;
+  function watch(node){
+    if (!node || node.pgP2sObs || !window.MutationObserver) return;
+    node.pgP2sObs = 1;
+    new MutationObserver(function(){
+      if (queued) return;
+      queued = true;
+      setTimeout(function(){ queued = false; try { lower(); } catch (e){} }, 60);
+    }).observe(node, {childList: true});
+  }
+
+  function toBundles(){
+    var t = document.querySelector('#pgx .pgx-bs') || document.querySelector('#pgx .pgx-tile') || document.querySelector('#pgx .pgx-buy');
+    if (!t) return;
+    try { t.scrollIntoView({behavior: 'smooth', block: 'start'}); } catch (e){ t.scrollIntoView(); }
+  }
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('[data-p2s-cta]')) {
+      e.preventDefault();
+      /* the accessories chapter's button also selects the Max tile */
+      if (e.target.closest('[data-p2s-max]')){ var mt = document.querySelector('#pgx .pgx-buy > .pg-p2[data-p2="max"]'); if (mt) mt.click(); }
+      toBundles();
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if ((e.key === 'Enter' || e.key === ' ') && e.target && e.target.closest && e.target.closest('[data-p2s-cta]')){ e.preventDefault(); toBundles(); }
+  });
+
+  /* THE PRICE COMPARISON FOLLOWS THE SELECTED TILE (2026-09-17, "make this
+     change based on if they have max bundle or single selected"): the R36
+     card's label, price and games line read the tile selected in the buy box,
+     so a shopper on the Max Bundle compares $119.99 and 40K games, not the
+     single's $74.99. Two consoles say "each". Polled, like the rest of the
+     page: the tiles repaint on their own beat and rebuilds are common. */
+  function cmpSet(k, v){
+    var el = document.querySelector('#pg-p2s [data-p2s-cmp="' + k + '"]');
+    if (el && el.textContent !== v) el.textContent = v;
+  }
+  function compare(){
+    var t = document.querySelector('#pgx .pgx-buy > .pgx-tile.pg-p2.pgx-sel');
+    if (!t) return;
+    var kind = t.getAttribute('data-p2');
+    var two = kind === 'duo' || (kind === 'single' && t.getAttribute('data-p2-qty') === '2');
+    var big = kind === 'max' || kind === 'duo';
+    var now = t.querySelector('[data-p2-now]');
+    var price = now ? (now.textContent || '').replace(/^\s+|\s+$/g, '') : '';
+    cmpSet('eye', kind === 'max' ? 'R36S Pro Max' : kind === 'duo' ? 'R36S Pro Duo Max' : two ? 'R36S Pro Duo' : 'R36S Pro');
+    /* the first line tells the bundles apart (2026-09-17, "something that differentiates it from the first one") */
+    cmpSet('line1', kind === 'max' ? 'One Max console' : kind === 'duo' ? 'Two Max consoles' : two ? 'Two new consoles' : 'New, 21+ systems');
+    if (price) cmpSet('price', price);
+    cmpSet('games', (big ? '40K games' : '15,000+ games') + (two ? ' each' : ''));
+    /* the vintage card keeps pace (2026-09-18, "put up the competitor price
+       accordingly too"): two consoles double the used-handheld figure from the
+       section setting; the Max points out the kit the used one lacks */
+    if (!window.__p2sVbase){
+      var vp = document.querySelector('#pg-p2s [data-p2s-cmp="vprice"]');
+      window.__p2sVbase = (vp && parseInt((vp.textContent || '').replace(/[^\d]/g, ''), 10)) || 150;
+      window.__p2sVmax = (vp && parseInt(vp.getAttribute('data-p2s-vmax') || '', 10)) || Math.round(window.__p2sVbase * 1.27);
+    }
+    /* the Max is matched against a used handheld PLUS a case (2026-09-18, "update pricing on left if max was selected"); the Duo doubles it */
+    var vb = big ? window.__p2sVmax : window.__p2sVbase;
+    cmpSet('veye', two ? 'Vintage handhelds' : 'Vintage handheld');
+    cmpSet('vprice', '~$' + (two ? vb * 2 : vb));
+    cmpSet('vline1', two ? (big ? 'Two used, two cases' : 'Two used, no games') : (big ? 'Used, plus a case' : 'Used, one system'));
+    cmpSet('vline2', two ? (big ? 'No games' : 'One system each') : 'No games');
+  }
+  function boot(){ seat(); setTimeout(seat, 500); setTimeout(function(){ trust(); lower(); }, 1600); setTimeout(lower, 3200); compare(); setInterval(compare, 500); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{%- endif -%}
+{% schema %}
+{
+  "name": "PG Pro2 Story",
+  "settings": [
+    {"type": "text", "id": "gba_model", "label": "Vintage handheld named in the price comparison", "default": "Game Boy Advance SP"},
+    {"type": "text", "id": "gba_price", "label": "Its typical used price, whole dollars (check PriceCharting)", "default": "150"},
+    {"type": "text", "id": "gba_price_max", "label": "Used price plus a case, shown against the Max Bundle, whole dollars", "default": "190"},
+    {"type": "image_picker", "id": "hero_image", "label": "Photo in Your childhood, upgraded (optional)"},
+    {"type": "image_picker", "id": "story_image", "label": "Photo beside the price comparison (optional)"}
+  ],
+  "presets": [{"name": "PG Pro2 Story"}]
+}
+{% endschema %}
