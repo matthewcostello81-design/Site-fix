@@ -655,7 +655,13 @@
     });
     rail.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hold(1e9); });
     rail.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') release(400); });
-    rail.addEventListener('focusin', function(){ hold(1e9); });
+    /* keyboard focus only: tapping or clicking a photo also focuses its link
+       in Chrome, and that pause would never end */
+    rail.addEventListener('focusin', function(e){
+      var kb = true;
+      try { kb = e.target.matches(':focus-visible'); } catch (x){}
+      if (kb) hold(1e9);
+    });
     rail.addEventListener('focusout', function(){ release(400); });
     if (window.IntersectionObserver){
       new IntersectionObserver(function(es){ onScreen = es[es.length - 1].isIntersecting; }).observe(rail);
