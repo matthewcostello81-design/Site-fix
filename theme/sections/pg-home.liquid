@@ -88,7 +88,7 @@
   .pgh-card-p{font-size:16px;font-weight:600;color:var(--p)}
   /* THE STAR RATING ON EVERY CARD (2026-09-22, by request: "on each homepage
      card you should have the stars rated of the product somewhere visually
-     clean so people can see"). A pill on the product photo, bottom left
+     clean so people can see"). A pill on the product photo, bottom centre (over the title, by request)
      (moved there and made bigger by request: "add the stars into the product
      photos"): five stars filled to the real average, the average, and the
      review count (the count drops on phones, where cards are two a row). The numbers are the product's own reviews.rating and
@@ -96,7 +96,7 @@
      never shows a rating its product page does not have. The stars are
      the theme's purple (see the note at .pgh-stars-on). A product with no reviews yet wears a
      "New arrival" pill instead; it never borrows another product's stars. */
-  #pgh#pgh .pgh-card-r{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;align-items:center;gap:7px;
+  #pgh#pgh .pgh-card-r{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:2;display:flex;align-items:center;gap:7px;
     padding:7px 12px 7px 10px;border-radius:999px;font-size:15px;line-height:1;white-space:nowrap;color:#E6DFF2;
     background:rgba(11,7,16,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
     border:1px solid rgba(199,155,234,.38);box-shadow:0 10px 24px -12px rgba(0,0,0,.85)}
@@ -116,7 +116,7 @@
   #pgh#pgh .pgh-card-new{padding:8px 14px;color:#F1E2FF;font-weight:700;letter-spacing:.02em}
   /* two cards a row on a phone: the count gives way so the pill fits */
   @media (max-width:600px){
-    #pgh#pgh .pgh-card-r{left:8px;bottom:8px;gap:5px;padding:6px 10px 6px 8px;font-size:13.5px}
+    #pgh#pgh .pgh-card-r{bottom:8px;gap:5px;padding:6px 10px 6px 8px;font-size:13.5px}
     #pgh#pgh .pgh-stars{font-size:17px;letter-spacing:.5px}
     #pgh#pgh .pgh-card-rn{display:none}
     #pgh#pgh .pgh-card-new{padding:7px 12px;font-size:12.5px}
