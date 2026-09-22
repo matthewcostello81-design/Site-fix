@@ -1,3 +1,16 @@
+# R36H Mystic Purple photo: upscaled to 2048px
+
+The Mystic Purple hero shot (MediaImage 73382859276516, r36h-purple-vivid2.jpg)
+was a 1024px, 128KB JPEG. It was upscaled x4 with Real-ESRGAN x4plus by the
+`Upscale images` GitHub Action (tools/upscale), downsized to 2048px, and the
+blurry floor reflection was blended back from the original because the model
+drew stripes into it. Replaced in place with fileUpdate, so the media ID, alt
+text, gallery position and the Mystic Purple variant links are unchanged; the
+homepage card finds it by alt text. The original is kept at
+tools/upscale/orig/r36h-purple-vivid2.jpg for a revert.
+
+---
+
 # Orb page: chart compares against a 3rd party seller
 
 ## Change (sections/pg-orb-story.liquid)
