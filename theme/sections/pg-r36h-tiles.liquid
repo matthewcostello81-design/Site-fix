@@ -1,0 +1,769 @@
+{%- comment -%}
+  PG R36H Pro Tiles (2026-09-16): the R36H Pro page's offer tiles, in the same
+  design as the R36S page's Single / Duo Pack / Trio Pack tiles, with the
+  orb page's image dropdowns (window.pgDrop, pg-theme-css) for the colour
+  pickers.
+
+  Registered in templates/product.pg-r36h.json only. The R36S page's tiles are
+  built by pgDuo (pg-theme-css) from two separate pack PRODUCTS and are hard
+  wired to the handheld-game-console handle. This product carries every offer
+  as its own VARIANT (Bundle x Color x Second Console Color), so the tiles here
+  are rendered from the product's variants in Liquid, and Add to cart posts the
+  exact variant the shopper configured. Nothing is computed at checkout, so the
+  cart charges what the tile prints.
+
+  THE MARKUP IS THE PACK TILES' MARKUP (.pgx-tile.pgx-duo, .pgx-duo-head,
+  .pgx-duo-t, .pgx-duo-px, .pgx-lad-badge, .pgx-lad-chip, .pgx-tier-note) and
+  the ladder tiles' picker block (.pgx-lad-picks > .lbl + .pgx-lad-row, one
+  pgDrop per console), so pg-theme-css, pg-dark, pg-save-badge, pg-pick-size
+  and pg-r36s-mobile style and behave on these exactly as they do on the R36S
+  and the orb: dark tile, purple SAVE pill on the top edge, the picker block
+  that opens on the selected tile, the tier note under it, the in-tile ADD TO
+  CART on phones.
+
+  WHAT IS STOOD DOWN ON THIS PAGE, AND WHY:
+    - pgLadder (pg-theme-css) builds a Buy 2 Get 1 ladder on every product it
+      does not list by name; that ladder mirrors discounts this product does
+      not carry. window.pgLadder is claimed here first (this section renders
+      in the template, the footer group after it), so its guard returns.
+    - pgDuo (pg-theme-css) would only decorate the first native tile and add a
+      SAVE pill computed from the first variant. Claimed the same way.
+    - pg-landing's own Single tile ([data-pgx-tile="single"]) is hidden by CSS
+      and its #pgx-atc handler never runs: the window-capture listener below
+      takes every Add to cart click first, the same mechanism pg-r36s-mobile
+      uses for the pack tiles.
+    - pg-tile-copy's generic .pgx-deal-note is hidden by the same
+      data-pg-tiernotes flag pgDuo sets on the R36S; each tile carries its own
+      note instead.
+
+  THE SINGLE DEVICE CAN BE BOUGHT AS A PAIR (2026-09-17, by request: "for the
+  single bundle add option for duo pack ... they can choose color too ... it
+  should auto change within that tile ... the wording should change
+  accordingly"). The Single Device tile carries a two-way switch, 1 Console /
+  Duo Pack. On Duo Pack the tile renames itself (Duo Pack, 2x 64GB, "15,000+
+  games each"), a second colour picker appears and the tags read Console 1
+  / Console 2, and the price, the struck price, the SAVE pill and the note
+  under the pickers all follow.
+  THE DUO PACK IS $5.00 OFF EACH CONSOLE, AND THE TILL DOES IT (2026-09-17). It
+  was first priced as two singles, $149.98 against $199.98, the same 25% the
+  single shows. The owner then asked for 30% off and chose, asked directly,
+  "$139.98 for two": 30% under the $199.98 the two are struck at, the same
+  measure every SAVE pill on this page uses. There is still no Duo variant.
+  The admin carries an automatic discount, "R36H Pro - Duo Pack Savings":
+  $5.00 off each Single Device (64GB) variant, minimum quantity 2, applies to
+  each item, combines with order, product and shipping discounts (the same
+  shape as the DBZ lamp packs, and the Extra 5% stacks on it). Add to cart
+  posts the two Single Device variants that were picked (one line of two when
+  the colours match) and checkout takes the $10.00 off, so fulfilment is
+  untouched. THE TILE MIRRORS THAT DISCOUNT, IT DOES NOT MAKE IT: the amount
+  is the section setting "duo_off" (5.00). Change the discount in the admin
+  and this setting together, or the tile prints a price the till will not
+  charge. pg-cart-addons reads the same discount off /cart.js for its
+  upgrade button.
+  A "30% off" pill at the OLD price was asked about first and not built:
+  $149.98 is 25% under $199.98, so it would have needed a struck price the
+  consoles were never sold at.
+  tilePaint (pg-theme-css) stamps color:#fff !important inline on everything
+  inside a tile, so the switch is drawn in white type and its quiet second
+  line is dimmed with opacity, not with a colour.
+
+  ONE LINE PER PICKER, AND NO "CHOOSE YOUR COLOR" (2026-09-17, by report on the
+  Duo Pack: "there is text wrapping ... console 1 and console 2 just looks
+  crammed and weird, I don't know if you need to say choose your color").
+    - the line under the tile's name is short enough to stay on one line at
+      360px with the wider two-console price beside it ("15,000+ games
+      each"; the name and the 2x chip already say there are two);
+    - the label over the pickers is gone from all three tiles. Each picker
+      carries its own tag instead: "Color" for one console, "Console 1" and
+      "Console 2" for two;
+    - on a phone pg-pick-size stacks a picker row (tag centred above a
+      full-width picker), which is what read as crammed with two of them.
+      Here the tag sits to the LEFT of its picker on one line, the way the
+      row is drawn on desktop.
+
+  THE DUO MAX BUNDLE NAMES ITS ACCESSORIES BEFORE IT IS OPENED (2026-09-17, by
+  request: "should say the 4 accessories but like 2x so people know before
+  they click on the bundle, in that purple"). The Max Bundle's chip says
+  "+ 4 Accessories"; the Duo Max only said "2x 128GB, 20K Games", and its
+  doubled kit was listed only once the tile was selected. It carries a second
+  purple chip, "2x 4 Accessories". Two chips, not one longer one: a chip does
+  not wrap (white-space:nowrap, width:max-content from pg-case-mobile), and
+  "2x 128GB, 20K Games + 2x 4 Accessories" in one chip runs under the price
+  on anything narrower than about 430px.
+  Its line under the chips said "Two consoles, one price". It reads like the
+  Max Bundle's now (2026-09-17, by request: "take out the 2 console one price
+  thing ... say something similar to the one above it"): "Two consoles, two
+  protection kits", after the Max's "Console plus the full protection kit",
+  and short enough to stay on one line at 440px beside the wider price.
+
+  A LARGER "128GB" CHIP ON THE MAX TILES WAS TRIED AND TAKEN BACK OUT
+  (2026-09-17: asked for as "128gb is main selling point of the max bundles",
+  then "no i dont like what you did to the bundles for the 128gb"). The Max
+  tiles are as they were: one chip that opens with 128GB.
+  NO PER CONSOLE PRICE IN THE DUO PACK NOTE (same day: "take out the 69.99
+  each in the duo thing"). The note says what is in the pack; the price is the
+  tile's own price and the "2 for" line on the switch.
+  THE PICKER SITS NEXT TO ITS TAG (same day: "the one console should be closer
+  to the color words"). The tags had one fixed width sized for "Console 1", so
+  the short word "Color" stood 40px away from its picker. Tags are as wide as
+  their word; only the two-console rows share a width, so their pickers line
+  up.
+
+  THE PICKERS are built in JS once window.pgDrop exists (pg-theme-css runs
+  after this section, in the footer group). If it never appears, a native
+  <select> with the same pgValue() interface is used instead, so the page
+  still sells.
+
+  ONE SKU PER CART LINE (2026-09-21, AutoDS: "anything that comes with a kit
+  or duo pack all needs to be separate line items, and if it's a duo pack
+  split the price between the 2"). The Duo Max VARIANTS are gone: the Duo
+  Max tile posts two Max Bundle consoles (one per picked colour) and the
+  admin's "R36H Pro - Duo Max Savings" takes $30.00 off each from two up
+  (the tile mirrors it through duomax_off). The Max and the Duo Max post
+  the Protection Kit (r36h-max-kit: silicone daily case, hard shell travel
+  case, screen protector as ONE product, the way the supplier ships them)
+  as a line of its own, one per console, and "R36H Pro - Max Kit Free" makes it
+  free beside a Max console, so the console line carries the whole price
+  and the kit row reads FREE. The three add-on products stay separate
+  items: they are only sold one at a time under the Single Device.
+{%- endcomment -%}
+{%- assign p = product -%}
+{%- comment -%} the three add-ons sold under the Single Device (2026-09-19, "add
+  the same upsells for r36 that you have for the flip ... also screen
+  protectors for both, 9.99, 14.99 originally"): one-variant products, read
+  live so a reprice in the admin follows on its own {%- endcomment -%}
+{%- assign add_sil = all_products['r36h-silicone-case'] -%}
+{%- assign add_hard = all_products['r36h-hard-shell-travel-case'] -%}
+{%- assign add_prot = all_products['r36h-screen-protector'] -%}
+{%- comment -%} the Protection Kit (2026-09-21): the three accessories as ONE product, the way the supplier ships them; the Max and Duo Max post it as a line of its own {%- endcomment -%}
+{%- assign add_kit = all_products['r36h-max-kit'] -%}
+{%- if p and p.variants.size > 0 -%}
+{%- assign color_opt = blank -%}
+{%- for option in p.options_with_values -%}
+  {%- if option.name == 'Color' -%}{%- assign color_opt = option -%}{%- endif -%}
+{%- endfor -%}
+<style>
+  /* pg-landing's native single tile: replaced by the tiles below */
+  #pgx .pgx-buy > .pgx-tile[data-pgx-tile="single"]{display:none !important}
+  #pgx .pgx-tile.pg-rh{cursor:pointer}
+  #pgx .pgx-tile.pg-rh .pgx-duo-t b{font-size:17px}
+  /* the colour's name on the big photo (2026-09-18, asked for on the Flip SP
+     first: "when you scroll through hero images it had the colors labeled ...
+     add that to the r36 too"): a pill in the photo's top-left corner naming
+     the colour whose render is showing; nothing on the other shots. Top-left,
+     clear of the SWIPE counter at the foot. */
+  #pgx .pgx-hero{position:relative}
+  /* on a phone pg-r36s-mobile hides the hero and turns the thumb strip into
+     the swipe carousel (html.pg-r36-gal), so every colour render's SLIDE
+     carries its own pill; the hero's pill serves the desktop */
+  html.pg-r36-gal #pgx .pgx-thumbs > button{position:relative}
+  #pgx .pgx-thumbs > button .pg-rh-hcap{display:none}
+  html.pg-r36-gal #pgx .pgx-thumbs > button .pg-rh-hcap.on{display:inline-block}
+  /* centred over the top of the photo (owner 2026-09-19: "for the colors over the image center them") */
+  /* bigger and a touch higher (owner 2026-09-19: "make it bigger and push it up a tad") */
+  #pgx .pg-rh-hcap{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:3;display:none;padding:9px 17px;border-radius:999px;white-space:nowrap;
+    background:rgba(13,7,20,.74);border:1px solid rgba(199,155,234,.55);color:#fff;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:.05em;line-height:1;
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);pointer-events:none}
+  #pgx .pg-rh-hcap.on{display:inline-block}
+  /* the Duo Max Bundle's two chips share one full-width row under the name
+     and the price (2026-09-17, "keep the max duo bundle all in one line"):
+     in the name column they stacked, "4 Accessories" wrapping down. The sub
+     line follows them, restated here because it left .pgx-duo-t. */
+  /* the tiles keep their stacked price column (a one-line head with the struck
+     price beside the price was tried on 2026-09-17 and undone the same night:
+     "idk what u did to bundles but undo that"). What stays: the Duo's chips on
+     one full-width row, the Max's sub line on its own row so it cannot wrap in
+     the name column, and the Duo's sub line up in the name column so the two-
+     line price column leaves no hole beside a one-line name. */
+  /* the Max and Duo tiles carry no sub line under their chips (2026-09-18,
+     "I meant these sentences ... undo that"); the Duo's one-line name is
+     centred against its two-line price column so nothing gapes beside it */
+  /* the Max chip sits at the tile's left edge on its own row like the Duo's
+     chips (2026-09-18, "all the way to the left side like duo max bundle has").
+     Every head is top-aligned, name and dot on the first line ("they should
+     all be positioned the same and look the same"); a centred Duo head was
+     tried and rejected ("it's like in the center, it should be up like the
+     others"). The pack chip rows are pulled up beside the struck price where
+     they fit: the Max's everywhere, the Duo's from 420px (its two chips need
+     264px next to the struck price). */
+  /* the pack tiles sit closer under the tile above (2026-09-18, "move max
+     bundle and duo max bundle up higher"): 18px, the hanging pill clears the box above by 6px */
+  #pgx#pgx .pgx-buy > .pgx-tile.pg-rh + .pgx-tile.pg-rh{margin-top:6px !important}
+  #pgx .pg-rh .pg-rh-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:7px 0 0}
+  /* the Duo's chips hug its name the way the Max's chip does (2026-09-18) */
+  #pgx .pg-rh[data-rh="max"] .pg-rh-meta{margin-top:-20px;padding-right:64px}
+  /* the sentence under the chip ignores the room kept for the struck price */
+  #pgx .pg-rh[data-rh="max"] .pg-rh-meta small{flex-basis:calc(100% + 64px)}
+  /* the Single's chip sits on the same kind of row, at the tile's left edge, beside the struck price (2026-09-19, "the purple is indented over to the right while everything else is to the left"); its chips are 150 to 175px, so it fits at every width */
+  #pgx .pg-rh[data-rh="single"] .pg-rh-meta{margin-top:-20px;padding-right:64px}
+  #pgx .pg-rh[data-rh="single"] .pg-rh-meta small{flex-basis:calc(100% + 64px)}
+/* no struck price (an AutoDS push wiped compare-at on 2026-09-22 and the chip rode up over the name): the chip drops under the name instead of hugging the strike line */
+#pgx .pg-rh .pgx-duo-head:not(:has(s[data-rh-was]:not(:empty))) + .pg-rh-meta{margin-top:7px;padding-right:0}
+  #pgx .pg-rh[data-rh="duo"] .pg-rh-meta{margin-top:5px}
+  /* one chip on the Duo since 2026-09-18 ("all that info in one purple line like
+     the max has"): 249px, beside the struck price from 400px, under the head below */
+  /* the Duo Max chip (266px at 12px) clears the price from 425px (room 273px at 430) */
+  @media (min-width:425px){ #pgx .pg-rh[data-rh="duo"] .pg-rh-meta{margin-top:-20px;padding-right:64px} #pgx .pg-rh[data-rh="duo"] .pg-rh-meta small{flex-basis:calc(100% + 64px)} }
+  #pgx .pg-rh .pg-rh-meta .pgx-lad-chip{display:inline-block !important;margin:0 !important}
+  /* the chips are the Flip SP's size (2026-09-19, "the sizes of the font should
+     be the same on r36 and the flip sp"): 12.5px, 12px under 450px, 11.5px
+     under 390px. Room beside the struck price on this page: about 215px at
+     375, 236 at 393, 273 at 430. The Single's chips (170 to 200px) fit
+     everywhere; the Max's (~227px at 12px) from 390px and the Duo Max's
+     (~272px) from 450px; below those widths the rows sit under the head. */
+  #pgx#pgx .pg-rh .pg-rh-meta .pgx-lad-chip{font-size:12.5px !important}
+  @media (max-width:449px){ #pgx#pgx .pg-rh .pg-rh-meta .pgx-lad-chip{font-size:12px !important;letter-spacing:0 !important;padding-left:8px !important;padding-right:8px !important} }
+  @media (max-width:389px){
+    #pgx#pgx .pg-rh .pg-rh-meta .pgx-lad-chip{font-size:11.5px !important}
+    #pgx .pg-rh[data-rh="max"] .pg-rh-meta{margin-top:5px;padding-right:0}
+    #pgx .pg-rh[data-rh="max"] .pg-rh-meta small{flex-basis:100%}
+  }
+  #pgx .pg-rh .pg-rh-meta small{flex:0 0 100%;display:block;margin:2px 0 0;font-size:12.5px;line-height:1.6;font-weight:600;color:#fff}
+  /* what the bundle includes: a two-column check list, shown on the selected
+     tile like the picker block and the tier note */
+  #pgx .pg-rh-inc{display:none;width:max-content;max-width:100%;margin:12px auto 0;padding:0;list-style:none;grid-template-columns:auto auto;justify-content:center;gap:7px 24px}
+  #pgx .pgx-tile.pgx-sel .pg-rh-inc{display:grid}
+  #pgx .pg-rh-inc li{position:relative;padding-left:20px;font-size:13.5px;font-weight:600;color:#F1EDF7;line-height:1.3}
+  #pgx .pg-rh-inc li:before{content:"\2713";position:absolute;left:0;top:0;color:#C79BEA;font-weight:800}
+  #pgx .pg-rh-inc li b{font-weight:800}
+  /* the two cases carry their full names (2026-09-19, "silicone daily case" and "hard shell travel case", as on the Flip SP) on rows of their own under the pairs, so nothing runs past the tile on a 375px phone */
+  /* three ticks a side ("checkmarks are not even on both sides", 2026-09-19): the case names stay whole; on phones the columns sit 14px apart and the type steps down so they fit beside their neighbour */
+  @media (max-width:389px){ #pgx .pg-rh[data-rh="max"] .pg-rh-inc li{font-size:12px} }
+  @media (max-width:419px){ #pgx .pg-rh[data-rh="duo"] .pg-rh-inc li{font-size:11px;padding-left:15px} }
+  /* six items, three a side, at every width ("even on both sides"): the
+     labels are kept short enough for a 140px column on a 375px phone */
+  /* the fallback native picker, only if pgDrop never loads */
+  #pgx .pg-rh .pgx-lad-row select.pg-rh-fallback{font-size:12.5px;padding:6px 10px;border-radius:8px;border:1px solid rgba(139,68,190,.5);background:#16101F;color:#fff;font-family:inherit;min-width:160px}
+  /* the duo's two pickers wear a small "Console 1 / 2" tag in the tile's
+     lavender, so the shopper knows which box is which */
+  #pgx .pg-rh .pgx-lad-row .pg-rh-tag{flex:none;width:auto;font-size:12.5px;font-weight:700;color:#C79BEA !important;letter-spacing:.02em;opacity:.82}
+  /* two consoles: one width for both tags, so the two pickers line up */
+  #pgx .pg-rh[data-rh-qty="2"] .pgx-lad-row .pg-rh-tag,
+  #pgx .pg-rh[data-rh="duo"] .pgx-lad-row .pg-rh-tag{width:70px}
+  /* the Single Device tile's 1 Console / Duo Pack switch */
+  #pgx .pg-rh-qty{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}
+  #pgx .pg-rh-qb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;min-height:50px;padding:7px 8px;box-sizing:border-box;
+    border:1.5px solid rgba(199,155,234,.4);border-radius:12px;background:rgba(255,255,255,.04);text-align:center;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;transition:border-color .15s ease,background-color .15s ease}
+  #pgx .pg-rh-qb b{display:block;font-size:14.5px;line-height:1.2;font-weight:800}
+  #pgx .pg-rh-qb i{display:block;font-style:normal;font-size:12px;line-height:1.25;font-weight:600;opacity:.75}
+  #pgx .pg-rh-qb.on{border-color:#C79BEA;background:linear-gradient(135deg,#9B4BC4,#5B2380);box-shadow:0 10px 22px -14px rgba(155,75,196,.95)}
+  #pgx .pg-rh-qb.on i{opacity:.95}
+  #pgx .pg-rh-qb:focus-visible{outline:2px solid #C79BEA;outline-offset:2px}
+  /* Console 2's row and the Console tags belong to the Duo Pack only. Two
+     ids: pg-pick-size sets the rows to display:flex !important at one. */
+  #pgx#pgx .pg-rh:not([data-rh-qty="2"]) [data-rh-duo]{display:none !important}
+  /* a phone keeps the tag and its picker on ONE line. Two ids: pg-pick-size
+     stacks the row and makes the picker full width at one, !important */
+  @media (max-width:768px){
+    #pgx#pgx .pg-rh .pgx-lad-picks .pgx-lad-row{flex-direction:row !important;align-items:center !important;gap:10px !important;margin-bottom:0 !important}
+    #pgx#pgx .pg-rh .pgx-lad-picks .pgx-lad-row + .pgx-lad-row{margin-top:10px !important}
+    #pgx#pgx .pg-rh .pgx-lad-picks .pg-drop{flex:1 1 0 !important;width:auto !important;min-width:0 !important}
+  }
+  /* the line under the name stays on one line down to 375px */
+  @media (max-width:380px){
+    #pgx .pg-rh .pgx-duo-t small{font-size:12.5px}
+  }
+  @media (max-width:600px){
+    #pgx .pg-rh-inc{gap:6px 14px}
+    #pgx .pg-rh-inc li{font-size:12.5px;padding-left:17px;white-space:nowrap}
+  }
+  /* the three add-on rows under the Single's Add to cart, the Flip SP's rows
+     to the pixel (2026-09-19): 44px pictures, 40px on phones */
+  #pgx .pg-rh .pg-tadd{gap:11px;padding:7px 10px 7px 9px;border-radius:12px}
+  /* three ids: a later section pins every non-frame .pg-tadd img to 30px !important */
+  #pgx#pgx#pgx .pg-rh .pg-tadd img{width:44px !important;height:44px !important;border-radius:9px !important}
+  #pgx .pg-rh .pg-tadd-t{white-space:normal;font-size:12.5px;line-height:1.25}
+  #pgx .pg-rh .pg-tadd-p{font-size:13.5px}
+  @media (max-width:600px){
+    #pgx .pg-rh .pg-tadd{gap:10px;padding:6px 9px 6px 8px}
+    #pgx#pgx#pgx .pg-rh .pg-tadd img{width:40px !important;height:40px !important}
+    #pgx .pg-rh .pg-tadd-t{font-size:11.5px}
+    #pgx .pg-rh .pg-tadd-p{font-size:12.5px}
+  }
+</style>
+
+<div class="pg-rh-src" id="pg-rh-src" hidden>
+  <div class="pgx-tile pgx-duo pg-rh pgx-sel" data-rh="single" data-rh-qty="1" role="radio" aria-checked="true" tabindex="0">
+    <span class="pgx-lad-badge" data-rh-badge></span>
+    <span class="pgx-duo-ribbon"></span>
+    <div class="pgx-duo-head"><span class="pgx-duo-dot"></span>
+      <div class="pgx-duo-t"><b><span data-rh-name>Single Device</span></b></div>
+      <div class="pgx-duo-px"><b data-rh-now></b><s data-rh-was></s><span class="pgx-lad-chip pgx-each"></span></div>
+    </div>
+    <div class="pg-rh-meta"><span class="pgx-lad-chip" data-rh-chip>64GB &middot; 15,000+ Games</span><small data-rh-sub>Landscape grip, dual sticks, plays on your TV</small></div>
+    <div class="pgx-lad-picks">
+      <div class="pg-rh-qty" role="radiogroup" aria-label="How many consoles">
+        <span class="pg-rh-qb on" role="radio" aria-checked="true" tabindex="0" data-rh-qb="1"><b>1 Console</b><i data-rh-q1></i></span>
+        <span class="pg-rh-qb" role="radio" aria-checked="false" tabindex="0" data-rh-qb="2"><b>Duo Pack</b><i data-rh-q2></i></span>
+      </div>
+      <div class="pgx-lad-row" data-rh-row="1"><span class="pg-rh-tag" data-rh-tag1>Color</span></div>
+      <div class="pgx-lad-row" data-rh-row="2" data-rh-duo><span class="pg-rh-tag">Console 2</span></div>
+    </div>
+    <div class="pgx-tier-note" data-rh-note><b>One R36H Pro (64GB)</b> with 15,000+ games preloaded, plus an extra <b>5% off</b> at checkout.</div>
+    <!-- the three add-on rows (silicone daily case, hard shell travel case,
+         screen protector): the JS re-seats them under the phone Add to cart
+         button and re-words / re-prices them when the Duo Pack switch moves -->
+    {%- if add_sil and add_sil.available -%}
+    <div class="pg-tadd" role="checkbox" aria-checked="false" tabindex="0" data-rh-add="silicone" data-rh-add-id="{{ add_sil.selected_or_first_available_variant.id }}"><span class="pg-tadd-ck" aria-hidden="true"></span><img alt="" src="{{ add_sil.featured_image | image_url: width: 160 }}"><span class="pg-tadd-t">Add Silicone Daily Case</span><span class="pg-tadd-p"><s>{{ add_sil.compare_at_price | default: add_sil.price | money }}</s><b>{{ add_sil.price | money }}</b></span></div>
+    {%- endif -%}
+    {%- if add_hard and add_hard.available -%}
+    <div class="pg-tadd" role="checkbox" aria-checked="false" tabindex="0" data-rh-add="hardshell" data-rh-add-id="{{ add_hard.selected_or_first_available_variant.id }}"><span class="pg-tadd-ck" aria-hidden="true"></span><img alt="" src="{{ add_hard.featured_image | image_url: width: 160 }}"><span class="pg-tadd-t">Add Hard Shell Travel Case</span><span class="pg-tadd-p"><s>{{ add_hard.compare_at_price | default: add_hard.price | money }}</s><b>{{ add_hard.price | money }}</b></span></div>
+    {%- endif -%}
+    {%- if add_prot and add_prot.available -%}
+    <div class="pg-tadd" role="checkbox" aria-checked="false" tabindex="0" data-rh-add="protector" data-rh-add-id="{{ add_prot.selected_or_first_available_variant.id }}"><span class="pg-tadd-ck" aria-hidden="true"></span><img alt="" src="{{ add_prot.featured_image | image_url: width: 160 }}"><span class="pg-tadd-t">Add Screen Protector</span><span class="pg-tadd-p"><s>{{ add_prot.compare_at_price | default: add_prot.price | money }}</s><b>{{ add_prot.price | money }}</b></span></div>
+    {%- endif -%}
+  </div>
+
+  <div class="pgx-tile pgx-duo pg-rh" data-rh="max" role="radio" aria-checked="false" tabindex="0">
+    <span class="pgx-lad-badge" data-rh-badge></span>
+    <span class="pgx-duo-ribbon"></span>
+    <div class="pgx-duo-head"><span class="pgx-duo-dot"></span>
+      <div class="pgx-duo-t"><b>Max Bundle</b></div>
+      <div class="pgx-duo-px"><b data-rh-now></b><s data-rh-was></s><span class="pgx-lad-chip pgx-each"></span></div>
+    </div>
+      <div class="pg-rh-meta"><span class="pgx-lad-chip">128GB &middot; 20K Games + 3 Accessories</span><small>One console plus the full protection kit</small></div>
+    <div class="pgx-lad-picks"><div class="pgx-lad-row" data-rh-row="1"><span class="pg-rh-tag">Color</span></div></div>
+    <ul class="pg-rh-inc">
+      <li><b>128GB</b> Storage</li>
+      <li><b>20K</b> Games</li>
+      <li>Screen Protector</li>
+      <li>USB-C Cable</li>
+      <li>Silicone Daily Case</li>
+      <li>Hard Shell Travel Case</li>
+    </ul>
+    <div class="pgx-tier-note">Saves <b data-rh-savings></b> vs buying separately, plus an extra <b>5% off</b> at checkout.</div>
+  </div>
+
+  <div class="pgx-tile pgx-duo pg-rh" data-rh="duo" role="radio" aria-checked="false" tabindex="0">
+    <span class="pgx-lad-badge" data-rh-badge></span>
+    <span class="pgx-duo-ribbon"></span>
+    <div class="pgx-duo-head"><span class="pgx-duo-dot"></span>
+      <div class="pgx-duo-t"><b>Duo Max Bundle</b></div>
+      <div class="pgx-duo-px"><b data-rh-now></b><s data-rh-was></s><span class="pgx-lad-chip pgx-each" data-rh-each></span></div>
+    </div>
+      <div class="pg-rh-meta"><span class="pgx-lad-chip">2X 128GB &middot; 20K Games + 2X 3 Accessories</span><small>Two consoles, two protection kits</small></div>
+    <div class="pgx-lad-picks">
+      <div class="pgx-lad-row" data-rh-row="1"><span class="pg-rh-tag">Console 1</span></div>
+      <div class="pgx-lad-row" data-rh-row="2"><span class="pg-rh-tag">Console 2</span></div>
+    </div>
+    <ul class="pg-rh-inc">
+      <li><b>2X</b> 128GB Storage</li>
+      <li><b>2X</b> 20K Games</li>
+      <li><b>2X</b> Screen Protector</li>
+      <li><b>2X</b> USB-C Cable</li>
+      <li><b>2X</b> Silicone Daily Case</li>
+      <li><b>2X</b> Hard Shell Travel Case</li>
+    </ul>
+    <div class="pgx-tier-note"><b>Everything in the Max Bundle, twice.</b> Pick a color for each console, plus an extra <b>5% off</b> at checkout.</div>
+  </div>
+</div>
+
+<script type="application/json" id="pg-rh-data">
+{"duoOff":{{ section.settings.duo_off | default: '5.00' | times: 100 | round }},"duoMaxOff":{{ section.settings.duomax_off | default: '30.00' | times: 100 | round }},"kit":{"id":{{ add_kit.selected_or_first_available_variant.id | default: 0 }},"p":{{ add_kit.price | default: 0 }}},"img0":{{ p.featured_image | image_url: width: 200 | json }},"colors":[{%- if color_opt != blank -%}{%- for value in color_opt.values -%}{{ value | json }}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}{%- endif -%}],"variants":[{%- for v in p.variants -%}{"id":{{ v.id }},"b":{{ v.option1 | json }},"c":{{ v.option2 | json }},"c2":{{ v.option3 | default: 'None' | json }},"p":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"av":{{ v.available | json }},"img":{% if v.featured_image %}{{ v.featured_image | image_url: width: 200 | json }}{% else %}""{% endif %},"big":{% if v.featured_image %}{{ v.featured_image | image_url: width: 1400 | json }}{% else %}""{% endif %}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],"addons":{"silicone":{"id":{{ add_sil.selected_or_first_available_variant.id | default: 0 }},"p":{{ add_sil.price | default: 0 }},"cap":{{ add_sil.compare_at_price | default: 0 }},"img":{{ add_sil.featured_image | image_url: width: 160 | json }}},"hardshell":{"id":{{ add_hard.selected_or_first_available_variant.id | default: 0 }},"p":{{ add_hard.price | default: 0 }},"cap":{{ add_hard.compare_at_price | default: 0 }},"img":{{ add_hard.featured_image | image_url: width: 160 | json }}},"protector":{"id":{{ add_prot.selected_or_first_available_variant.id | default: 0 }},"p":{{ add_prot.price | default: 0 }},"cap":{{ add_prot.compare_at_price | default: 0 }},"img":{{ add_prot.featured_image | image_url: width: 160 | json }}}}}
+</script>
+
+<script>
+(function(){
+  if (window.pgR36hTiles) return; window.pgR36hTiles = 1;
+  /* claimed before the footer group runs: see the note at the top */
+  window.pgLadder = 1;
+  window.pgDuo = 1;
+
+  var dataEl = document.getElementById('pg-rh-data');
+  if (!dataEl) return;
+  var DATA; try { DATA = JSON.parse(dataEl.textContent); } catch (e){ return; }
+  var VARS = DATA.variants || [];
+  if (!VARS.length) return;
+  /* cents off EACH console of a Duo Pack of singles: mirrors the admin's
+     automatic discount "R36H Pro - Duo Pack Savings" (see the note at the top) */
+  var DUO_OFF = Math.max(0, parseInt(DATA.duoOff, 10) || 0);
+  /* cents off EACH Max Bundle console of a Duo Max (2026-09-21): mirrors the
+     admin's automatic discount "R36H Pro - Duo Max Savings" ($30.00 off
+     each, two or more), the same way DUO_OFF mirrors the Duo Pack's */
+  var DUOMAX_OFF = Math.max(0, parseInt(DATA.duoMaxOff, 10) || 0);
+  /* the Protection Kit, one variant: posted beside every Max console, free at the till ("R36H Pro - Max Kit Free") */
+  var KIT = DATA.kit || {};
+  /* the discount is a fixed amount in the shop's currency and the till
+     converts it. Seen in CAD on 2026-09-17: the tile took a flat $10.00 off
+     $214.00 where checkout takes about $14.20. The variant prices here are
+     already in the shopper's currency, so the amount is scaled by the same
+     rate. Shopify rounds converted amounts its own way, so outside the shop
+     currency this can still differ from the till by a few cents. */
+  (function(){
+    var r = window.Shopify && Shopify.currency && parseFloat(Shopify.currency.rate);
+    if (r && r > 0 && r !== 1){ DUO_OFF = Math.round(DUO_OFF * r); DUOMAX_OFF = Math.round(DUOMAX_OFF * r); }
+  })();
+  var COLORS = (DATA.colors && DATA.colors.length) ? DATA.colors : [VARS[0].c];
+  var DEFAULT_COLOR = COLORS[0];
+
+  var BUNDLE = {single: 'Single Device (64GB)', max: 'Max Bundle (128GB)', duo: 'Duo Max Bundle (2x 128GB)'};
+  var LABEL = {single: '', max: 'MOST POPULAR', duo: 'BEST DEAL'};
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function pct(v){ return v && v.cap > v.p ? Math.floor((v.cap - v.p) / v.cap * 100) : 0; }
+
+  /* one photo per colour: the first variant of that colour with its own image */
+  var IMG = {}, BIG = {};
+  VARS.forEach(function(v){ if (v.img && !IMG[v.c]) IMG[v.c] = v.img; if (v.big && !BIG[v.c]) BIG[v.c] = v.big; });
+  var OPTS = COLORS.map(function(c){ return {id: c, t: c, img: IMG[c] || DATA.img0 || ''}; });
+
+  /* ---------------- the pickers ---------------- */
+
+  /* the picker in a row: pgDrop's widget (pgValue()) or the fallback select */
+  function pickerOf(row){ return row.querySelector('.pg-drop, select.pg-rh-fallback'); }
+  function valueOf(el){
+    if (!el) return DEFAULT_COLOR;
+    if (typeof el.pgValue === 'function') return String(el.pgValue());
+    return el.value || DEFAULT_COLOR;
+  }
+  var fallbackAt = Date.now() + 4000;   /* pgDrop has this long to show up */
+  function buildPickers(){
+    var pending = false;
+    tiles().forEach(function(tile){
+      tile.querySelectorAll('[data-rh-row]').forEach(function(row){
+        if (pickerOf(row)) return;
+        if (typeof window.pgDrop === 'function'){
+          row.appendChild(window.pgDrop(OPTS, DEFAULT_COLOR, function(){ paint(tile); }));
+        } else if (Date.now() > fallbackAt){
+          var s = document.createElement('select');
+          s.className = 'pg-rh-fallback';
+          s.setAttribute('aria-label', 'Color');
+          OPTS.forEach(function(o){ var op = document.createElement('option'); op.value = o.id; op.textContent = o.t; s.appendChild(op); });
+          s.addEventListener('click', function(e){ e.stopPropagation(); });
+          s.addEventListener('change', function(){ paint(tile); });
+          row.appendChild(s);
+        } else {
+          pending = true;
+        }
+      });
+    });
+    return !pending;
+  }
+
+  function pick(tile){
+    var rows = tile.querySelectorAll('[data-rh-row]');
+    var c1 = rows[0] ? valueOf(pickerOf(rows[0])) : DEFAULT_COLOR;
+    var c2 = rows[1] ? valueOf(pickerOf(rows[1])) : 'None';
+    return {c1: c1, c2: c2};
+  }
+  function find(b, c1, c2){
+    var hit = null;
+    VARS.forEach(function(v){ if (!hit && v.b === b && v.c === c1 && v.c2 === c2) hit = v; });
+    return hit;
+  }
+  function firstOf(b){
+    var hit = null;
+    VARS.forEach(function(v){ if (!hit && v.b === b) hit = v; });   /* the first of the tier, never nothing */
+    return hit;
+  }
+  /* the Single Device tile switched to Duo Pack */
+  function isPair(tile){ return tile.getAttribute('data-rh') === 'single' && tile.getAttribute('data-rh-qty') === '2'; }
+  /* WHAT THE TILE SELLS RIGHT NOW: one variant, or, for a Duo Pack of singles,
+     the two Single Device variants that were picked. A single's variants all
+     carry "None" as their second colour, so its Console 2 picker names a
+     second SINGLE, never a c2. */
+  function linesFor(tile){
+    var kind = tile.getAttribute('data-rh'), k = pick(tile), b = BUNDLE[kind];
+    if (kind === 'single'){
+      var one = find(b, k.c1, 'None') || firstOf(b);
+      if (!one) return [];
+      if (!isPair(tile)) return [one];
+      return [one, find(b, k.c2, 'None') || one];
+    }
+    /* THE DUO MAX IS TWO MAX BUNDLE LINES (2026-09-21, AutoDS fulfils one
+       supplier SKU per cart line, so the one-variant Duo Max is gone): the
+       Max Bundle variant of each picked colour, one line of two when they
+       match. The admin's "R36H Pro - Duo Max Savings" takes DUOMAX_OFF off
+       each from two up; the kit rides as a free line of its own (Add to cart). */
+    if (kind === 'duo'){
+      var m1 = find(BUNDLE.max, k.c1, 'None') || firstOf(BUNDLE.max);
+      if (!m1) return [];
+      return [m1, find(BUNDLE.max, k.c2, 'None') || m1];
+    }
+    var v = find(b, k.c1, 'None') || firstOf(b);
+    return v ? [v] : [];
+  }
+
+  /* the words on the Single Device tile, for one console and for two */
+  var COPY = {
+    one: {name: 'Single Device', chip: '64GB \u00b7 15,000+ Games', sub: 'Landscape grip, dual sticks, plays on your TV', tag: 'Color',
+      note: '<b>One R36H Pro (64GB)</b> with 15,000+ games preloaded, plus an extra <b>5% off</b> at checkout.'},
+    two: {name: 'Duo Pack', chip: '2X 64GB \u00b7 15,000+ Games', sub: 'One for you, one to gift', tag: 'Console 1',
+      note: '<b>Two R36H Pro (64GB)</b> with 15,000+ games each, plus an extra <b>5% off</b> at checkout.'}
+  };
+  var ADDONS = DATA.addons || {};
+  /* the words on the add-on rows, for one console and for two (the Duo Pack
+     offers two of each, as on the Flip SP) */
+  var ADD_COPY = {
+    silicone: {one: 'Add Silicone Daily Case', two: 'Add 2 Silicone Daily Cases'},
+    hardshell: {one: 'Add Hard Shell Travel Case', two: 'Add 2 Hard Shell Travel Cases'},
+    protector: {one: 'Add Screen Protector', two: 'Add 2 Screen Protectors'}
+  };
+  function addRows(tile){ return Array.prototype.slice.call(tile.querySelectorAll('[data-rh-add]')); }
+  /* the add-on rows: worded and priced for the number of consoles in the tile */
+  function dressAddons(tile, n){
+    addRows(tile).forEach(function(row){
+      var key = row.getAttribute('data-rh-add'), a = ADDONS[key], w = ADD_COPY[key];
+      if (!a || !w) return;
+      setText(row.querySelector('.pg-tadd-t'), n > 1 ? w.two : w.one);
+      setText(row.querySelector('.pg-tadd-p s'), money((a.cap > a.p ? a.cap : a.p) * n));
+      setText(row.querySelector('.pg-tadd-p b'), money(a.p * n));
+    });
+  }
+  /* THE ROWS SIT UNDER THE ADD TO CART BUTTON, ALWAYS. pg-r36s-mobile appends
+     its in-tile .pg-r36-atc button to the tile on phones; the rows are
+     re-seated right after it on every paint, idempotently, in their own
+     order. On desktop there is no button and they stay at the end of the
+     tile, after the tier note. */
+  function seatAddons(tile){
+    var atcB = tile.querySelector('.pg-r36-atc');
+    if (!atcB || atcB.parentNode !== tile) return;
+    var after = atcB;
+    addRows(tile).forEach(function(row){
+      if (row.parentNode === tile && (after.compareDocumentPosition(row) & 2)) tile.insertBefore(row, after.nextSibling);
+      after = row;
+    });
+  }
+  /* what the lines cost together: a Duo Pack of singles has the discount off each */
+  function priceOf(tile, lines){
+    var p = 0;
+    lines.forEach(function(v){ p += v.p; });
+    if (isPair(tile)) p -= Math.min(p, DUO_OFF * lines.length);
+    if (tile.getAttribute('data-rh') === 'duo') p -= Math.min(p, DUOMAX_OFF * lines.length);
+    return p;
+  }
+  function setText(el, txt){ if (el && el.textContent !== txt) el.textContent = txt; }
+  function dress(tile, lines){
+    var c = isPair(tile) ? COPY.two : COPY.one;
+    setText(tile.querySelector('[data-rh-name]'), c.name);
+    setText(tile.querySelector('[data-rh-chip]'), c.chip);
+    setText(tile.querySelector('[data-rh-sub]'), c.sub);
+    setText(tile.querySelector('[data-rh-tag1]'), c.tag);
+    var a = lines[0], z = lines[1] || lines[0];
+    var two = Math.max(0, a.p + z.p - DUO_OFF * 2);
+    var note = tile.querySelector('[data-rh-note]');
+    if (note && note.pgCopy !== c.note){ note.pgCopy = c.note; note.innerHTML = c.note; }
+    /* the switch prices itself from the colours picked */
+    setText(tile.querySelector('[data-rh-q1]'), money(a.p));
+    setText(tile.querySelector('[data-rh-q2]'), '2 for ' + money(two));
+    dressAddons(tile, lines.length);
+    seatAddons(tile);
+  }
+  function setQty(tile, q){
+    tile.setAttribute('data-rh-qty', q === 2 ? '2' : '1');
+    tile.querySelectorAll('[data-rh-qb]').forEach(function(b){
+      var on = b.getAttribute('data-rh-qb') === String(q);
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+    paint(tile);
+  }
+
+  function paint(tile){
+    var lines = linesFor(tile); if (!lines.length) return;
+    var kind = tile.getAttribute('data-rh');
+    /* a Duo Pack of singles is priced, struck and badged on the sum of its
+       two, less the Duo discount the till takes off each */
+    var p = priceOf(tile, lines), cap = 0;
+    lines.forEach(function(v){ cap += (v.cap > v.p ? v.cap : v.p); });
+    var now = tile.querySelector('[data-rh-now]'), was = tile.querySelector('[data-rh-was]'), badge = tile.querySelector('[data-rh-badge]');
+    setText(now, money(p));
+    setText(was, cap > p ? money(cap) : '');
+    var pc = pct({p: p, cap: cap});
+    var bt = pc > 0 ? ((LABEL[kind] ? LABEL[kind] + ' · ' : '') + 'SAVE ' + pc + '%') : '';
+    if (badge){
+      if (badge.textContent !== bt) badge.textContent = bt;
+      badge.style.display = bt ? '' : 'none';
+    }
+    var each = tile.querySelector('[data-rh-each]');
+    if (each) setText(each, money(Math.ceil(p / 2)) + ' each');
+    var sav = tile.querySelector('[data-rh-savings]');
+    if (sav && cap > p) setText(sav, money(cap - p));
+    if (kind === 'single') dress(tile, lines);
+  }
+
+  function tiles(){ return Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-buy > .pgx-tile.pg-rh')); }
+  function selected(){ return document.querySelector('#pgx .pgx-buy > .pgx-tile.pg-rh.pgx-sel'); }
+
+  function select(tile){
+    document.querySelectorAll('#pgx .pgx-tile.pgx-sel').forEach(function(x){ x.classList.remove('pgx-sel'); x.setAttribute('aria-checked', 'false'); });
+    tile.classList.add('pgx-sel');
+    tile.setAttribute('aria-checked', 'true');
+  }
+
+  /* seat the tiles in pg-landing's buy column, after its (hidden) native
+     single tile, so pg-r36s-mobile (in-tile Add to cart, phone ordering),
+     pg-sellout-last and pg-offer-copy find them where they expect tiles */
+  function seat(){
+    var src = document.getElementById('pg-rh-src');
+    var buy = document.querySelector('#pgx .pgx-buy');
+    if (!src || !buy) return false;
+    var pgx = document.getElementById('pgx');
+    if (pgx && !pgx.hasAttribute('data-pg-tiernotes')) pgx.setAttribute('data-pg-tiernotes', '1');
+    var native = buy.querySelector(':scope > .pgx-tile[data-pgx-tile="single"]');
+    var anchor = native ? native.nextSibling : (buy.querySelector('#pgx-atc') || null);
+    var moved = false;
+    Array.prototype.slice.call(src.querySelectorAll('.pg-rh')).forEach(function(t){
+      buy.insertBefore(t, anchor);
+      moved = true;
+      t.addEventListener('click', function(){ select(t); });
+      t.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); select(t); } });
+      t.querySelectorAll('[data-rh-qb]').forEach(function(b){
+        var q = b.getAttribute('data-rh-qb') === '2' ? 2 : 1;
+        b.addEventListener('click', function(){ setQty(t, q); });
+        b.addEventListener('keydown', function(e){
+          if (e.key !== ' ' && e.key !== 'Enter') return;
+          e.preventDefault(); e.stopPropagation();
+          select(t); setQty(t, q);
+        });
+      });
+      paint(t);
+    });
+    if (native) { native.classList.remove('pgx-sel'); native.setAttribute('aria-checked', 'false'); }
+    /* the "Bundle & Save" heading pgDuo draws over the R36S tiles (pg-mobile
+       hides pg-landing's own divider on every page) */
+    var firstTile = buy.querySelector(':scope > .pgx-tile.pg-rh');
+    if (moved && firstTile && !buy.querySelector('.pgx-bs')){
+      var bs = document.createElement('div');
+      bs.className = 'pgx-bs';
+      bs.innerHTML = '<span>Bundle &amp; Save</span>';
+      buy.insertBefore(bs, firstTile);
+    }
+    return moved;
+  }
+
+  /* ONE OWNER FOR ADD TO CART. Window, capture phase: first node in the
+     propagation path, so it runs before pg-landing's handler on #pgx-atc and
+     before every document-level listener in the footer group. */
+  /* THE ADD-ON ROWS TOGGLE. Capture phase and stopPropagation: a click on a
+     row must not fall through to the tile's own click handler chain twice,
+     and must never reach the pickers. Toggling still SELECTS the tile first
+     if it was not. Enter and Space do what a click does. */
+  document.addEventListener('click', function(e){
+    var row = e.target && e.target.closest && e.target.closest('#pgx .pg-rh .pg-tadd');
+    if (!row) return;
+    e.stopPropagation();
+    var tile = row.closest('.pg-rh');
+    if (tile && !tile.classList.contains('pgx-sel')) select(tile);
+    var on = !row.classList.contains('on');
+    row.classList.toggle('on', on);
+    row.setAttribute('aria-checked', on ? 'true' : 'false');
+  }, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    var row = e.target && e.target.closest && e.target.closest('#pgx .pg-rh .pg-tadd');
+    if (!row) return;
+    e.preventDefault();
+    e.stopPropagation();
+    row.click();
+  }, true);
+
+  var busy = false;
+  window.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    var atc = e.target.closest('.pgx-atc');
+    if (!atc) return;
+    var tile = selected();
+    if (!tile) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (busy) return;
+    var lines = linesFor(tile);
+    var err = document.getElementById('pgx-err');
+    if (!lines.length) return;
+    /* one line of two when both consoles are the same colour */
+    var items = [];
+    lines.forEach(function(v){
+      var hit = null;
+      items.forEach(function(it){ if (it.id === v.id) hit = it; });
+      if (hit) hit.quantity += 1; else items.push({id: v.id, quantity: 1});
+    });
+    /* each add-on that was ticked, one per console */
+    addRows(tile).forEach(function(row){
+      if (!row.classList.contains('on')) return;
+      var id = parseInt(row.getAttribute('data-rh-add-id'), 10);
+      if (id > 0) items.push({id: id, quantity: lines.length});
+    });
+    /* THE KIT IS A LINE OF ITS OWN (2026-09-21, AutoDS: one supplier SKU per
+       cart line, and the supplier ships the three accessories as one item).
+       The Max and the Duo Max post the Protection Kit at quantity = the
+       number of consoles; the admin's "R36H Pro - Max Kit Free" makes it free
+       beside a Max console, so the console line carries the whole price and
+       the kit row reads FREE. */
+    var kindNow = tile.getAttribute('data-rh');
+    if ((kindNow === 'max' || kindNow === 'duo') && KIT.id > 0) items.push({id: KIT.id, quantity: lines.length});
+    if (lines.some(function(v){ return !v.av; })){
+      if (err){ err.textContent = 'That configuration is sold out right now. Try another color.'; err.style.display = 'block'; }
+      return;
+    }
+    busy = true;
+    var lbl = atc.querySelector('span'), old = lbl ? lbl.textContent : '';
+    if (lbl) lbl.textContent = 'Adding...';
+    if (err) err.style.display = 'none';
+    fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({items: items})
+    }).then(function(r){
+      busy = false;
+      if (lbl) lbl.textContent = old || 'Add to cart';
+      if (!r.ok) throw new Error('add failed');
+      if (window.pgOpenCart) { window.pgOpenCart(); } else { window.location.href = '/cart'; }
+    }).catch(function(){
+      busy = false;
+      if (lbl) lbl.textContent = old || 'Add to cart';
+      if (err){ err.textContent = 'Could not add to cart. Please try again.'; err.style.display = 'block'; }
+    });
+  }, true);
+
+  /* the name of the colour whose render the big photo is showing, as a pill
+     on the photo; hidden on any photo that is not a colour render */
+  function fileOf(u){ u = String(u || '').split('?')[0]; u = u.substring(u.lastIndexOf('/') + 1); return u.replace(/_(\d+x\d*|x\d+)(@\dx)?(?=\.[a-z]+$)/i, '').toLowerCase(); }
+  function colourOf(src){
+    var file = fileOf(src);
+    if (!file) return '';
+    for (var c in BIG){ if (BIG[c] && fileOf(BIG[c]) === file) return c; }
+    return '';
+  }
+  function capOn(box, img){
+    var cap = box.querySelector(':scope > .pg-rh-hcap');
+    if (!cap){ cap = document.createElement('span'); cap.className = 'pg-rh-hcap'; cap.setAttribute('aria-hidden', 'true'); box.appendChild(cap); }
+    var name = colourOf(img.currentSrc || img.getAttribute('src'));
+    if (cap.textContent !== name) cap.textContent = name;
+    cap.classList.toggle('on', !!name);
+  }
+  function heroCap(){
+    var img = document.getElementById('pgx-hero-img');
+    if (img && img.parentNode) capOn(img.parentNode, img);
+    /* the phone carousel: one pill per slide */
+    document.querySelectorAll('#pgx .pgx-thumbs > button').forEach(function(b){
+      var im = b.querySelector('img');
+      if (im) capOn(b, im);
+    });
+  }
+  function boot(){
+    var seated = seat();
+    setInterval(function(){ try { heroCap(); } catch (e){} }, 300);
+    var n = 0;
+    var t = setInterval(function(){
+      if (!seated) seated = seat();
+      var done = seated && buildPickers();
+      if (done && seated){ tiles().forEach(paint); }
+      if ((done && seated) || ++n > 40) clearInterval(t);
+    }, 200);
+    if (seated) buildPickers();
+    /* prices settle on a slow beat too, in case another script rebuilds a
+       tile's text; a picker lost to a rebuild is put back the same way */
+    setInterval(function(){ buildPickers(); tiles().forEach(paint); }, 2500);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{%- endif -%}
+{% schema %}
+{"name": "PG R36H Pro Tiles", "settings": [{"type": "text", "id": "duo_off", "label": "Duo Pack: dollars off EACH Single Device when two are bought", "info": "Must match the automatic discount R36H Pro - Duo Pack Savings in Discounts. The tile only prints it, checkout applies it.", "default": "5.00"}, {"type": "text", "id": "duomax_off", "label": "Duo Max: dollars off EACH Max Bundle when two are bought", "info": "Must match the automatic discount R36H Pro - Duo Max Savings in Discounts. The tile only prints it, checkout applies it.", "default": "30.00"}], "presets": [{"name": "PG R36H Pro Tiles"}]}
+{% endschema %}
