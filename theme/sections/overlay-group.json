@@ -1,0 +1,184 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "custom.overlay",
+  "name": "Overlay",
+  "sections": {
+    "side-cart": {
+      "type": "side-cart",
+      "settings": {
+        "empty_cart_text": "<p>Your cart is empty..</p>",
+        "enable_cart_drawer_undo_remove": true,
+        "enable_cart_drawer_undo_remove_delay": true,
+        "cart_drawer_undo_remove_delay": 5,
+        "cart_drawer_view_button": true,
+        "cart_drawer_checkout_button": true,
+        "cart_drawer_discount_tab": false,
+        "cart_drawer_order_notes": false,
+        "cart_drawer_order_notes_default_open": true,
+        "show_trustbadge": true,
+        "enable_cart_drawer_upsell_complementary": true,
+        "enable_cart_drawer_upsell_related": true,
+        "cart_drawer_upsell_limit": 4,
+        "enable_cart_drawer_upsell_variants": true
+      }
+    },
+    "newsletter-popup": {
+      "type": "newsletter-popup",
+      "disabled": true,
+      "settings": {
+        "newsletter_popup_seconds": 5,
+        "enable_newsletter_terms_checkbox": false,
+        "newsletter_terms_text": ""
+      }
+    },
+    "age-verify-popup": {
+      "type": "age-verify-popup",
+      "disabled": true,
+      "settings": {
+        "age_verify_popup_title": "Age verification",
+        "age_verify_popup_text": "<p>Please confirm that you are 18 years or older to enter the shop.</p>",
+        "age_verify_popup_cookie_text": "<p>Our shop uses cookies, by confirming you are agreeing to our <a href=\"/policies/terms-of-service\" target=\"_blank\" title=\"Terms of Service\">terms of service</a> and <a href=\"/policies/privacy-policy\" target=\"_blank\" title=\"Privacy Policy\">privacy policy</a></p>",
+        "age_verify_popup_accept_text": "Yes, I'm 18 years or older",
+        "age_verify_popup_deny_text": "No",
+        "age_verify_popup_denied_title": "Have patience...",
+        "age_verify_popup_denied_text": "<p>You are not old enough to visit the shop yet.</p>"
+      }
+    },
+    "cookie-banner": {
+      "type": "cookie-banner",
+      "disabled": true,
+      "settings": {
+        "show_cookiebanner": "banner",
+        "cookiebanner_title": "Cookies",
+        "cookiebanner_text": "<p>Our site uses cookies. By clicking on accept you agree with our <a href=\"/policies/terms-of-service\" target=\"_blank\" title=\"Terms of Service\">voorwaarden</a> and <a href=\"/policies/privacy-policy\" target=\"_blank\" title=\"Privacy Policy\">privacy policy</a>.</p>"
+      }
+    },
+    "nc-pdp3": {
+      "type": "nc-pdp3",
+      "disabled": true,
+      "settings": {}
+    },
+    "nc-popfix": {
+      "type": "nc-popfix",
+      "settings": {}
+    },
+    "nc-cartfix": {
+      "type": "nc-cartfix",
+      "settings": {}
+    },
+    "nc-footer": {
+      "type": "nc-footer",
+      "settings": {}
+    },
+    "nc-recs": {
+      "type": "nc-recs",
+      "settings": {}
+    },
+    "nc-linesave": {
+      "type": "nc-linesave",
+      "settings": {}
+    },
+    "nc-cartcount": {
+      "type": "nc-cartcount",
+      "settings": {}
+    },
+    "nc-navsale-first": {
+      "type": "nc-navsale-first",
+      "disabled": true,
+      "settings": {}
+    },
+    "pg-drawer": {
+      "type": "pg-drawer",
+      "settings": {
+        "logo_image": "shopify://shop_images/768205661_122117213481364394_2003014125810604411_n.jpg",
+        "keep_match": "data-frog"
+      }
+    },
+    "pg-footer": {
+      "type": "pg-footer",
+      "settings": {
+        "logo_image": "shopify://shop_images/768205661_122117213481364394_2003014125810604411_n.jpg",
+        "tagline": "Retro gaming, pocket-sized."
+      }
+    },
+    "pg-giftguard": {
+      "type": "pg-giftguard",
+      "settings": {}
+    },
+    "pg-chips": {
+      "type": "pg-chips",
+      "settings": {}
+    },
+    "pg-cart-mobile": {
+      "type": "pg-cart-mobile",
+      "settings": {}
+    },
+    "pg-no-promo": {
+      "type": "pg-no-promo",
+      "settings": {}
+    },
+    "pg-cart-variants": {
+      "type": "pg-cart-variants",
+      "settings": {}
+    },
+    "pg-unlock": {
+      "type": "pg-unlock",
+      "settings": {}
+    },
+    "pg-cart-total": {
+      "type": "pg-cart-total",
+      "settings": {}
+    },
+    "pg-cart-imglink": {
+      "type": "pg-cart-imglink",
+      "settings": {}
+    },
+    "pg-cart-timer": {
+      "type": "pg-cart-timer",
+      "settings": {}
+    },
+    "pg-cart-sticky": {
+      "type": "pg-cart-sticky",
+      "settings": {}
+    },
+    "pg-cart-zfix": {
+      "type": "pg-cart-zfix",
+      "settings": {}
+    }
+  },
+  "order": [
+    "side-cart",
+    "newsletter-popup",
+    "age-verify-popup",
+    "cookie-banner",
+    "nc-pdp3",
+    "nc-popfix",
+    "nc-cartfix",
+    "nc-footer",
+    "nc-recs",
+    "nc-linesave",
+    "nc-cartcount",
+    "nc-navsale-first",
+    "pg-drawer",
+    "pg-footer",
+    "pg-giftguard",
+    "pg-chips",
+    "pg-cart-mobile",
+    "pg-no-promo",
+    "pg-cart-variants",
+    "pg-unlock",
+    "pg-cart-total",
+    "pg-cart-imglink",
+    "pg-cart-timer",
+    "pg-cart-sticky",
+    "pg-cart-zfix"
+  ]
+}

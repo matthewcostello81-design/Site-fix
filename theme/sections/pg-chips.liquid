@@ -1,0 +1,833 @@
+{%- comment -%}
+  PG Chips: cart pill styling, and a SAVED % that tells the truth.
+
+  (A) CENTRING. The FREE GIFT pill (pg-drawer's giftTag) and the SAVED n% pill
+  (its pass()) are both stamped with INLINE `!important` styles the moment they
+  are created: font-size:12px, line-height:1.5, padding:4px 12px. An inline
+  !important declaration outranks every stylesheet rule, so this cannot be fixed
+  in CSS -- the properties have to be re-set on the elements themselves.
+
+  - display:inline-flex + centred alignment and line-height:1, so the glyphs sit
+    in the middle of the pill instead of riding on a 1.5 line box.
+  - text-indent matching the letter-spacing. Letter-spacing adds its gap AFTER
+    the final letter too, which pushes the visual centre left; indenting by the
+    same amount puts it back.
+  - 12px -> 13px text and 4px 12px -> 7px 15px padding.
+
+  (B) THE PERCENTAGE. pg-drawer works its SAVED n% out from compare-at against
+  the variant's list price, which ignores every bundle discount actually applied
+  to that line. A shopper who took the 3rd-orb-50%-off rung saw a line charged
+  $16.50 against a $79.99 compare-at -- a real saving of 79% -- still badged
+  SAVED 59%, the same as the undiscounted orb sitting above it. The badge was
+  understating the offer precisely on the line the offer applied to, and two
+  identical-looking lines carried identical badges at different prices.
+
+  So the pill is recomputed from what the line is genuinely charged:
+
+      saved% = 1 - line_price / (compare_at x quantity)
+
+  line_price is cart.js's fully-discounted figure, so any BXGY rung, any
+  combination of them now that the ladders stack, AND the automatic 5% order
+  discount are all reflected. It has to be line_price rather than
+  final_line_price: final_line_price counts line-level discounts only, so when
+  the 10% became an order discount it silently dropped out and the pill started
+  printing SAVED 50% beside a row reading $140.00 struck and $62.99 charged --
+  figures that are 55% apart. compare_at comes from /products.json, which
+  cart.js does not carry.
+
+  (C) THE STRUCK PRICE. Same root cause, other half of the line. pg-drawer
+  strikes through the variant's LIST price, so an undiscounted orb showed
+  $79.99 struck against $32.99 -- correct, that is MSRP -- while the
+  bundle-discounted orb beside it showed $32.99 struck against $16.50. Two
+  identical products, two different meanings for the same struck figure, and
+  the discounted line quietly hid the fact that it is $79.99 off MSRP.
+
+  Every line now strikes MSRP x quantity, so the struck number means the same
+  thing on every row and the pill's percentage is the arithmetic between the
+  two figures a shopper can actually see.
+
+  Lines are matched to cart items by IDENTITY -- the variant id the row itself
+  carries, falling back to the product handle -- and never by position, because
+  the drawer re-renders out of cart order after an add. See groupsOf below. The
+  FREE GIFT pill is left alone: it is a label, not a percentage.
+
+  (D) ONE ROW PER PRODUCT, AND WHY THE QUANTITY USED TO SKIP.
+
+  Shopify's Buy 2 Get 1 does not discount a line, it SPLITS one: three orbs
+  become a line of 2 charged and a line of 1 free. The drawer rendered both as
+  ordinary rows, each with its own +/- stepper, and that is the whole bug.
+
+  Measured, three orbs in the cart, pressing MINUS on the row displaying 2:
+  the cart correctly went from 3 to 2 -- and that row still displayed 2, because
+  the unit Shopify took away was the free one on the OTHER row. The shopper
+  pressed minus and the number they were looking at did not move. Pressing PLUS
+  repeatedly walked the rows through 2 / 2+1 / 1+2+1 / 1+2+2: rows appearing,
+  disappearing and changing places under the finger, with the price on each one
+  changing every time the split was re-cut.
+
+  Nothing there is fixable by adjusting a stepper, because the premise is wrong:
+  two numbers were being shown for one product, and Shopify -- not the shopper --
+  decides how the total is divided between them.
+
+  So the PAID rows for one variant are merged into one. The first carries the
+  group: the paid quantity, the sum of the paid line prices, MSRP times that
+  quantity struck through, and one honest percentage. Extra paid rows are hidden.
+
+  THE FREE ROW STAYS ON SCREEN, on its own line AT THE TOP OF THE CART, by
+  request -- and hiding it was
+  a mistake worth naming. Merging it away removed the evidence for what the offer
+  had done: the shopper pressed + and, when the new unit became the free one,
+  nothing they could see moved. With the free row visible that press has an
+  answer -- the free line is what changed. It renders MSRP struck, nothing
+  charged, and the word FREE rather than a percentage.
+
+  Its stepper is removed. How many units are free is Shopify's decision, not the
+  shopper's, so a control there would argue with the offer. The paid row keeps
+  the only stepper and moves the product's whole total.
+
+  THE STEPPER IS INTERCEPTED ONLY ON MERGED ROWS. +/- sets the product's TOTAL
+  through a single /cart/update.js that puts the whole quantity on the first line
+  and zeroes the others; Shopify then re-cuts the split however it likes, which
+  is invisible because the display is rebuilt from the cart either way. A product
+  on a single line is not touched at all -- the theme's own stepper keeps working
+  exactly as before, so this can only affect the rows that were broken.
+
+  Everything shown is derived from cart.js on every pass, so if the drawer's own
+  markup is momentarily stale the figures still converge on the truth.
+{%- endcomment -%}
+<style>
+  /* Backstop for any pill rendered without the inline styles. */
+  #cart .pg-free-tag,#cart .pg-save-chip,
+  body.template-cart .pg-free-tag,body.template-cart .pg-save-chip{
+    display:inline-flex;align-items:center;justify-content:center;text-align:center;
+    /* same geometry as STYLE below, so a pill painted before the stamp lands is
+       already the right width instead of resizing under the shopper */
+    width:fit-content;max-width:100%;min-width:0;
+    padding:6px 7px 6px 7px;letter-spacing:normal;word-spacing:normal;column-gap:0;text-indent:0
+  }
+
+  /* ONE ROW PER PRODUCT -- see (D) in the note above. The extra rows Shopify's
+     bundle split creates are hidden rather than removed: the drawer rebuilds
+     itself constantly and re-adding removed nodes is the fight that made the
+     upsell rows swap places, while a class costs nothing and is re-applied on
+     every pass. */
+  #cart .l4ca > li.pg-merged-away,
+  body.template-cart .l4ca > li.pg-merged-away{display:none !important}
+
+  /* THE FREE ORB GETS ITS OWN LINE, by request -- and it is not editable. Its
+     quantity is decided by Shopify's Buy 2 Get 1, not by the shopper, so a
+     stepper on it would be a control that argues with the offer. */
+  #cart .l4ca > li.pg-free-line .pg-qbtn,
+  #cart .l4ca > li.pg-free-line input[type=number],
+  body.template-cart .l4ca > li.pg-free-line .pg-qbtn,
+  body.template-cart .l4ca > li.pg-free-line input[type=number]{display:none !important}
+
+  /* THE ONE PILL IN THE CART THAT DID NOT HUG ITS TEXT.
+     This note is inserted as a sibling of the SAVED chip, and the drawer makes
+     that parent a GRID (`#cart .l4ca > li section{display:grid;...}`) which gives
+     the chip an explicit grid-area and justify-self:start. The note got neither,
+     so it was auto-placed into an implicit row with justify-self:auto -- i.e.
+     stretch -- and a stretched grid item with width:auto fills its column. Its
+     inline-flex was blockified by grid layout, so inline shrink-wrapping never
+     applied either. Measured: 168.8px on a 390px phone and 229.3px on the wider
+     desktop drawer, for 111.5px of letters -- it got LONGER as the drawer got
+     wider, which is the giveaway that it was tracking the column and not the
+     text. Beside a SAVED chip that hugs at 81.8px it read as a long empty purple
+     bar across the line.
+     width/justify-self give it back its own width; grid-column puts it on a full
+     row of its own rather than an odd implicit cell; and the tracking and padding
+     now match the chip -- letter-spacing applies after the final glyph too, which
+     is the same trailing gap the chip was fixed for. 168.8px -> 118.9px. */
+  #cart .pg-free-note,
+  body.template-cart .pg-free-note{
+    /* flex, not inline-flex: the plaque lives INSIDE the title's h2 now (see
+       noteOn below), directly after the inline product link, and inline-flex
+       there let it ride the same line as the title's last word. Block-level
+       flex with fit-content width takes its own line and still hugs its text. */
+    display:flex;align-items:center;
+    width:fit-content;max-width:100%;min-width:0;
+    margin-top:3px;margin-bottom:9px;padding:4px 7px;border-radius:999px;
+    background:rgba(139,68,190,.14);
+    border:1px solid rgba(168,120,214,.4);
+    color:#6B3E93;
+    font-size:11.5px;font-weight:800;
+    letter-spacing:normal;word-spacing:normal;text-indent:0;
+    text-transform:uppercase;
+    white-space:normal;overflow-wrap:anywhere;
+  }
+
+</style>
+<script>
+(function(){
+  if (window.pgChips) return; window.pgChips = 1;
+
+  /* .nc-lsave-off is the drawer's OWN saved-percent pill, in the price column of
+     the same cart line -- pg-unlock has a rule for it, so it is a distinct node.
+     It was never in this selector, so it kept the drawer's 12px-a-side padding
+     and .05em tracking while the chip three columns away was narrowed to 7px and
+     normal: the same words, "SAVED 74%", rendering at two different lengths on
+     one line. Adding it is free and idempotent -- if it ever turns out to be the
+     same node as .pg-save-chip the extra selector matches the same element and
+     changes nothing. */
+  /* .pg-free-tag left this list: its geometry is owned by pg-drawer's
+     giftTag, which also applies a measured glyph-centring correction that
+     this stamp would immediately undo. */
+  var SEL = '.pg-save-chip, .nc-lsave-off';
+  /* THE PILL HUGS ITS TEXT. It was `padding:7px 15px` with `letter-spacing:.05em`
+     and a matching `text-indent`, which is 30px of purple either side of a ~80px
+     word plus a tracked space trailing the % sign -- the badge read as a wide
+     slab with the number floating in the middle of it.
+
+     Measured in Chromium against the drawer's own grid: the pill hugs its glyphs
+     exactly -- 0px of slack on either side -- so nothing is stretching it and
+     there is no layout bug to find. It was simply BUILT wide: 18px of padding
+     and .05em of tracking around a 13px word, 96.7px of purple for 79.3px of
+     letters. The width therefore comes off the things that actually hold it.
+     Padding to a symmetric 7px, size back to the 12px the theme drew it at, and
+     tracking off altogether -- 81.8px for 67.8px of letters.
+
+     letter-spacing goes to `normal` rather than a smaller number because it
+     applies AFTER the final glyph as well, so any non-zero value leaves a gap
+     trailing the % sign. Earlier passes tried to balance that (indent by the
+     same amount, then trim padding-right by it) and both kept the gap while
+     adding arithmetic; removing the tracking removes the problem, and
+     text-indent goes with it. word-spacing and column-gap are pinned for the
+     same reason: neither was ever reset, so an inherited value on either could
+     widen the pill at the space in "SAVED 55%" without appearing in any rule
+     here. */
+  var STYLE = {
+    'display': 'inline-flex',
+    'align-items': 'center',
+    'justify-content': 'center',
+    'text-align': 'center',
+    'font-size': '12px',
+    'line-height': '1',
+    /* 6px, not 4px. Height is font-size x line-height plus this padding and
+       nothing else, so this is the only lever on the badge's aspect that does
+       not touch its width: 20px tall -> 24px tall, for free. */
+    'padding-top': '6px',
+    'padding-bottom': '6px',
+    'padding-left': '7px',
+    'padding-right': '7px',
+    'letter-spacing': 'normal',
+    'word-spacing': 'normal',
+    'column-gap': '0',
+    'text-indent': '0',
+    'border-radius': '999px',
+    'width': 'fit-content',
+    'max-width': '100%',
+    'min-width': '0',
+    'flex': 'none'
+  };
+
+  /* THE STAMP RE-ASSERTS, AND IT DOES NOT WAIT. Two faults, one fix.
+     pg-drawer builds every pill with its OWN inline !important geometry
+     (font-size:12px, line-height:1.5, padding:4px 12px), and inline !important
+     can only be beaten by inline !important -- this stamp. It used to mark each
+     element with dataset.pgChip and skip it forever after, so any pill the
+     drawer rebuilt in place kept the wide slab; and it only ran on a 300ms
+     interval, so even a fresh pill wore that slab for up to a third of a second
+     and visibly snapped narrower under the shopper. The guard is now the
+     rendered value rather than a one-shot flag, and an observer runs it in the
+     same task the pill is inserted in. setProperty with an unchanged value is
+     free, so re-checking costs nothing. */
+  /* THE GUARD MUST COVER WHAT IT IS GUARDING. It used to test two of the
+     nineteen properties the loop writes -- paddingLeft and letterSpacing -- which
+     meant any other writer landing a single inline !important declaration on one
+     of the other seventeen left both guarded values untouched, so every later
+     stamp returned immediately and the pill kept the foreign value for the life
+     of the page. Six of the seventeen change the width. Measured with the real
+     stamp running: `width:100%` -> 276px permanent, `min-width:140px` -> 140px
+     permanent, `font-size:13px` -> 87.5px permanent, `padding-right:12px` ->
+     86.8px permanent, none of them ever corrected. The guard now covers every
+     width-bearing property, so the only thing it can skip is a pill that is
+     already right. */
+  function isStamped(el){
+    var st = el.style;
+    return st.paddingLeft === '7px' && st.paddingRight === '7px'
+        && st.letterSpacing === 'normal' && st.wordSpacing === 'normal'
+        && st.textIndent === '0px' && st.fontSize === '12px'
+        && st.width === 'fit-content' && st.minWidth === '0px'
+        && st.maxWidth === '100%' && st.columnGap === '0px';
+  }
+  var stamping = false;
+  function stamp(){
+    if (stamping) return;
+    stamping = true;
+    try {
+      document.querySelectorAll(SEL).forEach(function(el){
+        if (isStamped(el)) return;
+        for (var k in STYLE) el.style.setProperty(k, STYLE[k], 'important');
+      });
+    } finally { stamping = false; }
+  }
+
+  /* SPEED (2026-09-22, "I can barely load the site"): the observers below
+     fired stamp() synchronously on every change anywhere in the body. They
+     now queue one stamp per animation frame, which still lands before the
+     next paint, so a pill is never seen unstamped. */
+  var stampQ = false;
+  function stampSoon(){
+    if (stampQ) return;
+    stampQ = true;
+    (window.requestAnimationFrame || function(f){ return setTimeout(f, 16); })(function(){ stampQ = false; stamp(); });
+  }
+  if (window.MutationObserver){
+    /* childList AND style attributes. It used to be childList only, on the
+       grounds that watching style would make the stamp re-trigger itself -- true,
+       but the cost of not watching was worse: pg-drawer restyles these pills
+       inline (padding:4px 12px, letter-spacing:.05em) after every drawer rebuild,
+       and that is an ATTRIBUTE change, invisible to a childList observer. So the
+       correction was left to the 300ms interval and the shopper watched the pill
+       sit wide and then snap narrower under their eyes on every cart change.
+       Self-triggering is handled properly instead: `stamping` blocks re-entry,
+       and the stamp is idempotent -- a second pass over an already-stamped pill
+       writes nothing, so the cascade is one extra callback that does no work. */
+    new MutationObserver(stampSoon)
+      .observe(document.body, {childList: true, subtree: true});
+
+    /* ATTRIBUTES, BUT ONLY WHERE PILLS LIVE. Watching style on the whole body
+       would fire for every unrelated inline write in the theme -- and there are
+       several a second, from four different sections' polling loops -- for a set
+       of about five pills that all live in one subtree. Scoped to the drawer and
+       the cart page's form, it fires for pg-drawer's pill restyle (the write
+       that actually matters) and almost nothing else. Attached lazily because
+       #cart may not exist yet, and re-checked until it does. */
+    var attrSeen = [];
+    (function watchAttrs(){
+      ['#cart', 'body.template-cart .form-cart'].forEach(function(sel){
+        var el = document.querySelector(sel);
+        if (!el || attrSeen.indexOf(el) > -1) return;
+        attrSeen.push(el);
+        try {
+          new MutationObserver(stampSoon)
+            .observe(el, {subtree: true, attributes: true, attributeFilter: ['style', 'class']});
+        } catch(e){}
+      });
+      if (attrSeen.length < 2) setTimeout(watchAttrs, 500);
+    })();
+  }
+
+  /* ---------------- the honest percentage ---------------- */
+
+  var CAP = null;   /* variant id -> compare-at in cents (falls back to price) */
+
+  fetch('/products.json?limit=50').then(function(r){ return r.json(); }).then(function(j){
+    CAP = {};
+    (j.products || []).forEach(function(p){
+      (p.variants || []).forEach(function(v){
+        var price = Math.round(parseFloat(v.price || 0) * 100);
+        var cap = Math.round(parseFloat(v.compare_at_price || 0) * 100);
+        CAP[v.id] = cap > price ? cap : price;
+      });
+    });
+  }).catch(function(){});
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+
+  /* WHAT THE LINE ACTUALLY COST, whichever field the discount lands in.
+     Shopify puts LINE-level discounts in final_line_price and ORDER-level ones
+     (the standing Extra 5% off entire order) in line_price -- and which of the
+     two is the smaller depends on which kind of discount is running, so reading
+     either one alone under-reports the saving the moment the other applies.
+     The lower of the two is the amount actually charged for the line. */
+  function paidOf(it){
+    var a = typeof it.line_price === 'number' ? it.line_price : null;
+    var b = typeof it.final_line_price === 'number' ? it.final_line_price : null;
+    if (a === null) return b;
+    if (b === null) return a;
+    return Math.min(a, b);
+  }
+  /* IDENTICAL LINES PRINT IDENTICAL FIGURES (2026-09-13, by request: "some of
+     them are like 0.01 off", lamps and orbs alike). Shopify takes the
+     order-level Extra 5% off the cart total, floors it once, and spreads it
+     over the lines a cent at a time, so two lamps at 39.99 came back 38.00 /
+     37.99 and paid orbs 33.25 / 33.24. Checkout never shows that split (every
+     line at its product-discounted price, the 5% as one line); only the
+     drawer rows did. So the row figure is built the way the product page and
+     pg-cart-offer's cards build theirs: the product-level discounts (a pack
+     amount, a Buy X Get Y unit) exactly as Shopify allocated them, then the
+     order-level percentage recomputed on THIS line's own product-discounted
+     figure and floored -- unit less floor(unit x rate). A row can read a cent
+     ABOVE Shopify's allocation, never below, and the Total row is Shopify's.
+     Same arithmetic as nc-linesave's perLine(); the two must agree, because
+     both write .nc-lsave-now and the later one wins. On this store the 5% is
+     listed only under cart_level_discount_applications; a cart without
+     exactly one order-level percentage, or a line with an unfamiliar
+     allocation, falls back to paidOf(). */
+  function orderRate(cart){
+    var rate = 0, n = 0, ok = true;
+    (cart.cart_level_discount_applications || []).forEach(function(d){
+      if (!d || d.target_selection !== 'all') return;
+      if (d.value_type !== 'percentage'){ ok = false; return; }
+      var r = parseFloat(d.value || 0) / 100;
+      if (!(r > 0 && r < 1)){ ok = false; return; }
+      rate = r; n++;
+    });
+    return ok && n === 1 ? rate : null;
+  }
+  function netOf(it, rate){
+    /* since 2026-09-19 evening the line prints its PRODUCT-discounted figure and
+       the 5% lives only in the totals box (owner: "keep the original prices in
+       the cart without 5% off"); the name is kept so the callers do not move */
+    if (rate === null) return typeof it.final_line_price === 'number' ? it.final_line_price : paidOf(it);   /* final_line_price is the figure BEFORE cart-level discounts on this API */
+    var orig = it.original_line_price;
+    if (typeof orig !== 'number' || !(orig > 0)) return paidOf(it);
+    var prod = 0, ok = true;
+    (it.line_level_discount_allocations || []).forEach(function(a){
+      var d = a && a.discount_application;
+      if (!d){ ok = false; return; }
+      if (d.target_selection === 'all') return;   /* the order-level one, if a line ever lists it: re-floored below */
+      prod += (a.amount || 0);
+    });
+    if (!ok) return paidOf(it);
+    var after = orig - prod;
+    if (after < 0) return paidOf(it);
+    return after;
+  }
+
+  function lines(){
+    return document.querySelectorAll('#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li');
+  }
+
+  /* THE ROW SAYS WHICH VARIANT IT IS. This used to pair rows to cart lines by
+     HANDLE and DOM ORDER, and that is the bug behind "prices all over the place
+     after an upsell, fine again after a refresh".
+
+     Buy 2 Get 1 splits one product across several lines of the SAME handle, so
+     handle alone cannot tell them apart and the pairing fell through to
+     position. The drawer re-renders asynchronously after an add: measured
+     earlier in this cart, pressing + left the free row rendered ABOVE the paid
+     row while the cart still listed paid first. Whenever those two orders
+     disagree, every figure written below lands on the wrong row -- one line's
+     price on another line's row, the wrong row marked FREE, the deal plaque on
+     some rows and not others. A reload rebuilds the drawer in cart order, the
+     two agree again, and it all looks fixed.
+
+     The row itself knows its variant: pg-cart-variants renders a <select> whose
+     value is the variant id, and the title link carries ?variant= too. That is
+     an identity rather than a position, so re-ordering cannot break it. */
+  function variantOf(li){
+    var sel = li.querySelector('select.pg-vsel, select[data-pg-var]');
+    if (sel && /^\d+$/.test(sel.value || '')) return sel.value;
+    var a = li.querySelector('a[href*="variant="]');
+    if (a){
+      var m = (a.getAttribute('href') || '').match(/variant=(\d+)/);
+      if (m) return m[1];
+    }
+    return null;
+  }
+
+  function handleOf(li){
+    var a = li.querySelector('a[href*="/products/"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/\/products\/([^/?#]+)/);
+    return m ? m[1] : null;
+  }
+
+  /* Bucket rows and cart lines by the same key, and REFUSE THE PASS if the two
+     sides do not correspond exactly. Variant id is the precise key, but it is
+     only readable off a row when the theme has drawn a variant <select> or a
+     ?variant= link, and neither is guaranteed -- a single-variant product gets
+     no select at all. So the product handle is kept as a second key: coarser,
+     but every row carries a product link, and a handle bucket still separates
+     one product's lines from another's, which is all the split below needs.
+     If neither key identifies every row, this returns null and the pass is
+     skipped -- mid-rebuild the drawer can hold three rows while the cart holds
+     two, and the honest thing then is to leave the theme's own render alone
+     rather than write confident wrong numbers over it. That refusal is the
+     whole fix: the old code always produced a pairing, even when there was no
+     correct one to produce. */
+  var DUO_HANDLE = 'handheld-game-console';
+
+  function bucket(rows, items, rowKey, itemKey){
+    var rowsBy = {}, order = [], i, v;
+    for (i = 0; i < rows.length; i++){
+      v = rowKey(rows[i]);
+      /* A ROW WITH NO IDENTITY IS NOT EVIDENCE OF DISAGREEMENT -- SKIP IT.
+
+         This used to `return null`, abandoning the entire pass. The drawer
+         renders a stray empty <li> (no title, no variant, no price) in the
+         middle of its list, and one of those was enough to switch this whole
+         file off: groupsOf() returned null, repct() bailed on every tick, and
+         every class it owns froze wherever it happened to be -- BOTH duo
+         consoles left wearing pg-merged-away (display:none, so no console row
+         on screen at all) and the free case row stuck half-labelled. When the
+         empty row came and went between renders the grouper alternated
+         between running and bailing, which is the free case "spazzing".
+
+         An unidentifiable row cannot be matched to a cart item by definition,
+         so skipping it loses nothing; the counts below still guard the real
+         rows. The null returns for ITEMS are left alone: a cart line with no
+         variant and no handle really is a disagreement. */
+      if (!v) continue;
+      if (!rowsBy[v]){ rowsBy[v] = []; order.push(v); }
+      rowsBy[v].push(rows[i]);
+    }
+    var itemsBy = {};
+    for (i = 0; i < items.length; i++){
+      v = itemKey(items[i]);
+      if (!v) return null;
+      (itemsBy[v] = itemsBy[v] || []).push(items[i]);
+    }
+    if (order.length !== Object.keys(itemsBy).length) return null;
+    for (i = 0; i < order.length; i++){
+      v = order[i];
+      if (!itemsBy[v] || itemsBy[v].length !== rowsBy[v].length) return null;
+    }
+    return {order: order, rowsBy: rowsBy, itemsBy: itemsBy};
+  }
+
+  function groupsOf(cart){
+    var rows = Array.prototype.slice.call(lines());
+    var items = cart.items || [];
+    if (!rows.length || !items.length) return null;
+
+    return bucket(rows, items, variantOf, function(it){ return String(it.variant_id); })
+        || bucket(rows, items, handleOf,  function(it){ return it.handle || null; });
+  }
+
+  function setText(el, t){ if (el && el.textContent.trim() !== t) el.textContent = t; }
+
+  function repct(){
+    if (!CAP) return;
+    var els = lines();
+    if (!els.length) return;
+
+    fetch('/cart.js').then(function(r){ return r.json(); }).then(function(cart){
+      var G = groupsOf(cart);
+      if (!G) return;      /* drawer and cart disagree -- see groupsOf above */
+      var RATE0 = orderRate(cart);
+
+      function isFreeItem(it){ return it.line_price === 0; }
+      function setWas(li, cents){
+        li.querySelectorAll('s, del, [class*="was"], [class*="old"], [class*="compare"]').forEach(function(el){
+          if (el.closest('.pg-save-chip') || el.closest('.pg-free-tag')) return;
+          var t = (el.textContent || '').trim();
+          if (!/^\$[\d.,]+$/.test(t)) return;
+          setText(el, money(cents));
+        });
+      }
+      /* INSIDE THE TITLE'S CELL, not in a cell of its own. The row is a grid
+         with no explicit columns, its items placed by a mix of explicit areas
+         and auto-flow, and every attempt to claim a fresh row for the plaque as
+         a grid item landed it in someone else's cell -- measured stacked on the
+         SAVED chip, and before that in the price column shoving the + button
+         across the price. Hosted inside the h2 it is not a grid item at all:
+         it renders on its own line under the product title, inside space the
+         title's cell already owns, and cannot collide with anything the grid
+         places. */
+      function noteOn(li, text){
+        var note = li.querySelector('.pg-free-note');
+        if (!note){
+          note = document.createElement('span');
+          note.className = 'pg-free-note';
+        }
+        var host = li.querySelector('h2') || li.querySelector('section') || li;
+        if (note.parentNode !== host || note !== host.lastElementChild) host.appendChild(note);
+        setText(note, text);
+      }
+      function noteOff(li){
+        var n = li.querySelector('.pg-free-note');
+        if (n && n.parentNode) n.parentNode.removeChild(n);
+      }
+
+      /* WHICH DEAL THIS LINE IS ON. The orb ladder is not one offer, it is
+         several, and they do not behave alike -- measured on the live cart:
+             4 orbs  PokeOrb - Buy 2 Get 1 Free   free line, 1 @ $0.00
+             6 orbs  PokeOrb - 6 Pack $137.20     ONE line, 6 @ $20.58, none free
+             9 orbs  PokeOrb - Buy 5 Get 3 Free   free line, 3 @ $0.00
+         So the plaque has to name the rung the shopper actually landed on. The
+         standing order-wide 5% is skipped: it is on every line and is not a
+         rung. The "PokeOrb - " prefix goes because the row already names the
+         product. */
+      function dealTitleOf(item){
+        var ds = item.discounts || [], i, t, amt;
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          amt = ds[i].amount != null ? ds[i].amount : (ds[i].total_allocated_amount || 0);
+          if (t && !/entire order/i.test(t) && amt > 0) return t;
+        }
+        for (i = 0; i < ds.length; i++){
+          t = ds[i].title || ds[i].description || '';
+          if (t && !/entire order/i.test(t)) return t;
+        }
+        return '';
+      }
+      /* The DEAL, not the price. Shopify names this rung "PokeOrb - 6 Pack
+         $137.20", and printing that in the plaque put a third figure on a row
+         that already shows a struck price and a charged one -- three numbers,
+         one of them the bundle total rather than anything to do with this line.
+         The product prefix and any trailing amount both come off, leaving the
+         offer: 6 PACK, BUY 5 GET 3 FREE. */
+      function dealLabel(t){
+        return String(t || '')
+          .replace(/^[^-]*-\s*/, '')
+          .replace(/\s*[-–:]?\s*\$[\d.,]+\s*$/, '')
+          .trim().toUpperCase();
+      }
+      function dealOfItems(its){
+        for (var i = 0; i < its.length; i++){
+          var t = dealTitleOf(its[i]);
+          if (t) return t;
+        }
+        return '';
+      }
+
+      G.order.forEach(function(v){
+        var rws = G.rowsBy[v], its = G.itemsBy[v];
+
+        /* CONSOLE ROWS ARE NEVER COLLAPSED INTO ONE.
+
+           The collapse below is right for an accidental duplicate: show the
+           first row with the combined quantity and hide the rest. It is wrong
+           for two consoles, however they got there -- a Duo Pack or two
+           singles added one at a time look identical in the cart, and both
+           want the same thing: one row per console, each keeping the size
+           dropdown pg-drawer stamps on it, so either can be changed.
+
+           Hiding one took its dropdown with it, and the row that was hidden
+           kept trading the "head" and "free" labels with its neighbour on
+           every tick, which is what made the free case row flicker. Nothing
+           competes for those labels here any more. */
+        if (its.length && its[0].handle === DUO_HANDLE){
+          /* EACH CONSOLE IS ITS OWN LINE, PRICED ON ITS OWN.
+
+             Suppressing the collapse is not the same as skipping the row: an
+             earlier pass simply returned here, and the console that would have
+             been the "head" was left showing its undiscounted unit price with
+             no saving chip beside it -- $79.99 sitting where $72.00 belonged.
+
+             So the head arithmetic below is run PER ROW instead of once per
+             group: this row's own paid total, its own compare-at x quantity
+             struck through it, and its own percentage on the chip. rws and its
+             are parallel here -- a mixed pack is two groups of one, and a
+             matched pack is two identical-priced lines -- so pairing by index
+             is exact either way. */
+          rws.forEach(function(li, i){
+            li.classList.remove('pg-merged-away');
+            li.classList.remove('pg-free-line');
+            li.removeAttribute('data-pg-keys');
+            li.removeAttribute('data-pg-total');
+
+            var it = its[i] || its[0];
+            var paid = netOf(it, RATE0) || 0;
+            var capI = CAP[it.variant_id] || 0;
+            var base = capI * it.quantity;
+
+            setText(li.querySelector('.nc-lsave-now'), money(paid));
+            if (capI) setWas(li, base);
+
+            var chip = li.querySelector('.pg-save-chip');
+            if (chip && base > 0){
+              var pct = Math.round((base - paid) / base * 100);
+              if (pct >= 1) setText(chip, '-' + pct + '%');
+            }
+            noteOff(li);
+          });
+          return;
+        }
+
+        var freeItems = its.filter(isFreeItem);
+        var paidItems = its.filter(function(it){ return !isFreeItem(it); });
+
+        var paidQty = 0, paidSum = 0, freeQty = 0;
+        paidItems.forEach(function(it){ paidQty += it.quantity; paidSum += (netOf(it, RATE0) || 0); });
+        freeItems.forEach(function(it){ freeQty += it.quantity; });
+
+        var cap0 = CAP[its[0].variant_id] || 0;
+        var label = dealLabel(dealOfItems(its));
+
+        /* ROLES BY COUNT, NOT BY IDENTITY -- AND STICKY ONCE GIVEN. Every row
+           in this group is the same variant, so which physical row is called
+           the paid one and which the free one is arbitrary; the counts are what
+           matter, and groupsOf has already refused the pass if they disagree.
+           On a fresh render the last N rows take the N free lines. But the free
+           rows are then LIFTED to the top of the cart (liftFree below), so on
+           every later pass position would hand the roles out backwards --
+           the lifted row is first now -- and the two rows would trade labels
+           forever. So a row that already wears pg-free-line keeps the free role
+           whenever the class count still matches the cart, and the slice is
+           only the cold-start fallback. */
+        var freeRows = rws.filter(function(li){ return li.classList.contains('pg-free-line'); });
+        var paidRows = rws.filter(function(li){ return !li.classList.contains('pg-free-line'); });
+        if (freeRows.length !== freeItems.length){
+          var cut = rws.length - freeItems.length;
+          paidRows = rws.slice(0, cut);
+          freeRows = rws.slice(cut);
+        }
+
+        paidRows.forEach(function(li, i){
+          li.classList.remove('pg-free-line');
+          if (i === 0) li.classList.remove('pg-merged-away');
+          else li.classList.add('pg-merged-away');
+        });
+
+        var head = paidRows[0];
+        if (head){
+          head.setAttribute('data-pg-keys', its.map(function(it){ return it.key; }).join('|'));
+          head.setAttribute('data-pg-total', String(paidQty + freeQty));
+
+          var q = head.querySelector('input[type=number]');
+          if (q && q.value !== String(paidQty)) q.value = String(paidQty);
+
+          setText(head.querySelector('.nc-lsave-now'), money(paidSum));
+          if (cap0) setWas(head, cap0 * paidQty);
+
+          var chip = head.querySelector('.pg-save-chip');
+          var base = cap0 * paidQty;
+          if (chip && base > 0){
+            var pct = Math.round((base - paidSum) / base * 100);
+            if (pct >= 1) setText(chip, '-' + pct + '%');
+          }
+
+          /* a rung that yields free units is labelled on the free row; one that
+             does not -- the 6 Pack is a fixed bundle PRICE -- is labelled here,
+             so the per-unit drop is never unexplained */
+          if (freeQty > 0) noteOff(head);
+          else if (label) noteOn(head, label);
+          else noteOff(head);
+        }
+
+        freeRows.forEach(function(li, i){
+          var it = freeItems[i];
+          li.classList.remove('pg-merged-away');
+          li.classList.add('pg-free-line');
+          li.removeAttribute('data-pg-keys');
+          li.removeAttribute('data-pg-total');
+
+          var fq = it.quantity;
+          var fi = li.querySelector('input[type=number]');
+          if (fi && fi.value !== String(fq)) fi.value = String(fq);
+
+          setText(li.querySelector('.nc-lsave-now'), money(0));
+          if (cap0) setWas(li, cap0 * fq);
+
+          var fchip = li.querySelector('.pg-save-chip');
+          if (fchip) setText(fchip, 'FREE');
+          noteOn(li, label || (fq > 1 ? (fq + ' FREE') : 'FREE'));
+        });
+      });
+
+      liftFree();
+    }).catch(function(){});
+  }
+
+  /* FREE ITEMS AT THE TOP OF THE CART, by request. Runs after the pass above
+     has decided which rows are free, and moves them above the first paid row
+     in one batch, keeping their own relative order.
+
+     Written to SETTLE, not to fight: moving a node fires the drawer observer,
+     which schedules another pass -- so the reorder only happens when a free row
+     actually sits below a paid one, and a list already in order is left
+     untouched. That check is also what keeps this safe against the theme's own
+     rebuilds: a rebuild puts the rows back in cart order, the next pass lifts
+     the free rows once, and then nothing moves again. (The roles themselves
+     cannot flip underneath this -- see the sticky-role note above.) */
+  function liftFree(){
+    document.querySelectorAll('#cart .l4ca:not(.in-panel), body.template-cart .form-cart .l4ca:not(.in-panel)').forEach(function(list){
+      var rows = Array.prototype.slice.call(list.children).filter(function(el){
+        return el.tagName === 'LI';
+      });
+      var free = rows.filter(function(li){ return li.classList.contains('pg-free-line'); });
+      if (!free.length) return;
+      var ref = null;
+      for (var i = 0; i < rows.length; i++){
+        if (!rows[i].classList.contains('pg-free-line')){ ref = rows[i]; break; }
+      }
+      if (!ref) return;                       /* nothing paid to be above */
+      var settled = free.every(function(li){
+        return !!(li.compareDocumentPosition(ref) & Node.DOCUMENT_POSITION_FOLLOWING);
+      });
+      if (settled) return;
+      free.forEach(function(li){ list.insertBefore(li, ref); });
+    });
+  }
+
+  /* ---- +/- on a merged row sets the product's TOTAL -- see (D) above ---- */
+  var stepping = false;
+  function rowOf(el){
+    return el.closest('#cart .l4ca > li, body.template-cart .l4ca > li');
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target.closest) return;
+    var btn = e.target.closest('.pg-qbtn');
+    if (!btn) return;
+    var li = rowOf(btn);
+    if (!li) return;
+
+    var keys = (li.getAttribute('data-pg-keys') || '').split('|').filter(Boolean);
+    /* a product on ONE line is none of our business: the theme's own stepper
+       already handles it correctly, and intercepting it could only break it */
+    if (keys.length < 2) return;
+
+    var t = (btn.textContent || '').trim();
+    var delta = t === '+' ? 1 : (t === '-' || t === '−') ? -1 : 0;
+    if (!delta) return;
+
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    if (stepping) return;
+    stepping = true;
+
+    var total = parseInt(li.getAttribute('data-pg-total'), 10) || 0;
+    var target = Math.max(0, total + delta);
+
+    /* the whole quantity onto the first line, nothing on the rest, in ONE call.
+       Shopify re-cuts the free/paid split afterwards however it wants; that is
+       invisible because the row is rebuilt from the cart either way. */
+    var updates = {};
+    keys.forEach(function(k, i){ updates[k] = i === 0 ? target : 0; });
+
+    fetch('/cart/update.js', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      credentials: 'same-origin',
+      body: JSON.stringify({updates: updates})
+    }).then(function(){
+      if (window.pgDrawerRefresh){
+        try { return Promise.resolve(window.pgDrawerRefresh()); } catch(err){}
+      }
+    }).catch(function(){}).then(function(){
+      stepping = false;
+      repct();
+      [200, 700, 1600].forEach(function(ms){ setTimeout(repct, ms); });
+    });
+  }, true);
+
+  /* WHY THIS IS NOT A 700ms POLL ANY MORE. repct() fetches /cart.js, so polling
+     it every 700ms -- alongside pg-cart-total doing the same -- meant several
+     requests a second for a cart that changes a handful of times a visit.
+     Shopify throttles that endpoint: under test the responses started coming
+     back unparseable, and because repct() bails when the fetch fails the row
+     simply froze on its last good figures. A cart display that stops updating
+     because it asked too often is worse than one that asks less.
+
+     It now runs when the drawer actually changes, which is the only time the
+     numbers can move, with a slow interval left as a backstop. stamp() touches
+     no network -- it only re-applies inline styles to new pills -- so it stays
+     frequent. */
+  var pending = false;
+  function soon(){
+    if (pending) return;
+    pending = true;
+    setTimeout(function(){ pending = false; repct(); }, 80);
+  }
+  if (window.MutationObserver){
+    var drawer = document.getElementById('cart');
+    if (drawer) new MutationObserver(soon).observe(drawer, {childList: true, subtree: true});
+  }
+
+  /* the backstops, skipped while the tab is hidden; repct() also runs on
+     every drawer change above, so its timed read is every 10s (was 2.5s) */
+  setInterval(function(){ if (!document.hidden) stamp(); }, 300);
+  setInterval(function(){ if (!document.hidden) repct(); }, 10000);
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) repct(); });
+  stamp();
+  repct();
+})();
+</script>
+{% schema %}
+{"name": "PG Chips", "settings": []}
+{% endschema %}
+

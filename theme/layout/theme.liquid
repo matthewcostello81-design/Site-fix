@@ -140,7 +140,12 @@
         {%- sections 'footer-group' -%}
       </main>
       {%- liquid
-        if template.name == 'product'
+        comment
+          SPEED (2026-09-22): the pg- product templates draw their own buy bar and
+          hide this one with display:none, so it is no longer rendered there.
+        endcomment
+        assign pg_sfx = template.suffix | slice: 0, 3
+        if template.name == 'product' and pg_sfx != 'pg-'
           section 'sticky-add-to-cart'
         endif
         unless customer

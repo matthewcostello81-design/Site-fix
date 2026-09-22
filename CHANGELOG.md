@@ -1,3 +1,36 @@
+# Site speed: stop the background work that made phones crawl
+
+## Problem
+"I can barely load the site." Every page ships about 1 MB of inline CSS and JS
+and ran 45 never-ending timers (about 57 wake-ups a second), 42 page watchers
+(11 on the whole document) and several /cart.js polls every 2 to 4 seconds.
+
+## Fixes (low risk, behaviour kept)
+- nc-cartcount: removed two North Cove scripts (summer-sale % patch, bands
+  thumb swaps, birchwood picker) that scanned every element and measured every
+  image on EVERY change anywhere in the page. Cart badge refresh after a drawer
+  change is batched (once per 1.5s burst instead of 120ms after each change).
+- overlay-group: disabled nc-pdp3 (North Cove product page code, also ran on
+  every scroll) and nc-navsale-first (pinned a North Cove summer-sale link,
+  ran on every tap and every change). footer-group: disabled nc_chatfix (700ms
+  loop that put a North Cove logo from northcovewellness.com in the chat).
+- pg-cart-pills: shimmer sync wakes on inserted nodes and class changes only,
+  at most 4 times a second (was every inline style write, up to 16 a second).
+- pg-giftguard: /cart.js safety read every 10s (was 2s), skipped while hidden;
+  every cart write already triggers an immediate check.
+- pg-cart-offer and pg-chips: /cart.js backstop reads every 10s (were 4s and
+  2.5s), skipped while hidden; they already read on every drawer change.
+  pg-chips' page-wide observer batches to one stamp per frame.
+- pg-home: hero image is responsive (750 to 2200px) and fetched first
+  (fetchpriority high) instead of one fixed 2200px file.
+- theme.liquid: the stock sticky add-to-cart is no longer rendered on pg-
+  product templates, which hide it anyway.
+
+## Applied to
+Draft theme 164321034468.
+
+---
+
 # Spec tiles and childhood slogan on every console page
 
 ## Change

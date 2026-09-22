@@ -1,0 +1,1161 @@
+{%- comment -%}
+  PG Cart Offer: the cart's one upsell card per product family.
+
+  By request (2026-09-11): "there should always be upsells in the cart even if
+  they order max orbs or max game boys -- game boys add another case option,
+  orbs add more orbs -- less cluttered, cleaner, simpler; they should still
+  be able to choose Pokemons and GBs; optimised for iPhone 16 Pro Max and
+  iPhone 13."
+
+  WHAT IT REPLACES. Four writers each put their own row into #pg-unlock-slot:
+  pg-unlock (the Buy-2-Get-1 rails, with a chooser that opens under the row),
+  pg-cart-tune (the Duo Pack upgrade and the stand-alone spare case),
+  pg-frame-add (the case / frame accessory). A one-console cart showed two or
+  three of them stacked, and every one of them went quiet at the top of its
+  ladder -- three Trio Packs, nine orbs -- leaving nothing to offer. Those rows
+  are hidden here (display:none; their scripts keep running unchanged, and one
+  of them, pg-unlock, also carries the drawer's duplicate-line repair, which
+  must not be switched off), and this section paints the offers instead.
+
+  ONE CARD, for the product the shopper added LAST (by request, 2026-09-11:
+  "limit it to 1 upsell max; it should go off the product they added, but if
+  they max out that product with all item combos then move to the next
+  item"). /cart.js lists lines newest first, so the first line whose handle
+  is known names the family (the free case counts as the console's). That
+  family's deal is offered; when it has none left -- every console has a case,
+  or the orbs are past the ladder with no free unit to promise -- the other
+  families in the cart are tried, newest first; only when no family has a
+  deal is a plain "add another" (or, with no orbs held, a Crystal Legends Orb)
+  offered, so the cart is never without a card. The deals, per family:
+
+    consoles   1 single ............ Add a 2nd: the Duo Pack (GB picker)
+               2 singles ........... Switch to the Duo Pack (same consoles, less)
+               Duo Pack ............ Add a 3rd: the Trio Pack (GB picker)
+               3 singles ........... Switch to the Trio Pack
+               anything else ....... one card for the cases still missing
+                                     (the free gift is one per order, so a
+                                     Trio wants two); then the family is done
+    orbs       the next rung of the ladder the product page sells --
+               Buy 2 Get 1 (repeats), Buy 5 Get 4 (once) -- phrased as the
+               shopper experiences it: "Add 2 more, get 1 FREE", "Add your
+               FREE 3rd Orb"; one design picker per orb added, defaulted to
+               designs not already in the cart. Past the ladder's top the
+               repeating Buy 2 Get 1 is offered again once it beats the
+               Buy 5 Get 4 already earned (from 12 orbs); between 9 and 11
+               no free-orb promise is honest, so the family is done and the
+               single orb it can still offer is the plain fallback.
+    wall art   the repeating Buy 2 Get 1, the same way.
+    power ball the repeating Buy 2 Get 1, the same way (2026-09-14, "copy how
+               the orb upsells are for this"); the picker only offers balls
+               at the price of the one held, see ladderOffer.
+    lamps      the Dragon Ball Z lamp page's Single / Duo Pack / Trio Pack
+               ladder (by request, 2026-09-12: "upsell another and another
+               so they get the best pricing per lamp, including the extra
+               5%; at 3 that is the max discount, so advertise the game boy
+               after that"): 1 lamp ... Add a 2nd: the Duo Pack (character
+               picker); 2 lamps ... Add a 3rd: the Trio Pack; 3 or more ...
+               the family is done and, with no console in the cart, the R36S
+               is offered instead (plain, so any family's real deal outranks
+               it). See lampOffer for the till's numbers.
+
+  THE MATHS IS THE DISCOUNTS'. Read from the admin on 2026-09-11:
+  "PokeOrb - Buy 2 Get 1 Free" ACTIVE, unlimited per order; "PokeOrb - Buy 5
+  Get 4 Free" ACTIVE, once per order; "Wall Art - Buy 2 Get 1 Free" ACTIVE,
+  unlimited; "Extra 10% off entire order" ACTIVE. The packs are products with
+  their own prices and compare-at prices, read live from /products/*.js so an
+  admin reprice propagates on its own. The SAVE chip measures what the row
+  prints: free units against units x price, a pack against its compare-at,
+  and a plain single against the product's compare-at -- the same measure the
+  product page tiles and the cart lines use.
+
+  HOW IT ADDS. Orbs and prints: one line per chosen design (a mixed three
+  still earns the free one -- different variants of one product all qualify).
+  Pack upgrades: the single line is taken out BY LINE KEY and the pack variant
+  that holds those consoles plus the picked one goes in, so the cart charges
+  exactly the pack price the row printed. Every write is checked for r.ok and
+  the second write never follows a failed first one. The drawer is then
+  refreshed through pg-drawer's own pgDrawerRefresh.
+
+  HOW IT WATCHES. /cart.js is shared with half a dozen sections and throttled
+  under their load, so this reads on the drawer's pg:cart-updated event and a
+  debounced observer, plus a slow 4s beat, single-flight with a watchdog. A
+  changed cart must be seen on two consecutive reads before the card is
+  rebuilt (a read caught between two writes must never flash a wrong offer);
+  our own add forces the rebuild. An unchanged cart is a no-op, so an open
+  picker is never yanked mid-choice.
+
+  THE SLOT is pg-unlock's #pg-unlock-slot, created here if it is not there
+  yet, in the same position (above the item list) so pg-cart-mobile's
+  placeUnlock() and pg-unlock agree with it.
+{%- endcomment -%}
+<style>
+  /* the rows this card replaces; their scripts keep running unchanged */
+  #cart#cart#cart#cart .pg-unlock,
+  #cart#cart#cart#cart .pg-soloff,
+  #cart#cart#cart#cart .pg-duoup,
+  #cart#cart#cart#cart .pg-frameoffer{display:none !important}
+
+  #cart#cart#cart#cart .pg-offer{
+    display:grid !important;
+    grid-template-columns:48px minmax(0,1fr);
+    grid-auto-flow:row;
+    column-gap:10px;row-gap:7px;align-items:center;
+    margin:0 0 6px;padding:9px 10px 10px;
+    border:1px solid rgba(122,47,162,.3);border-radius:14px;
+    background:linear-gradient(120deg,#F8F3FC,#F1E7F8);
+    box-shadow:0 12px 30px -24px rgba(74,28,102,.45);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;
+    box-sizing:border-box;
+  }
+  /* PULLED UP UNDER "CONTINUE SHOPPING" (by request, 2026-09-11: "blank
+     white space" above the upsells). Measured on the live theme: the theme's
+     <p> around the Continue shopping link carries a 23px bottom margin, the
+     slot 6px of its own on phones (pg-cart-timer, two ids, !important) and
+     the card another 6px -- 39px of nothing between the link and the card at
+     375px, 33px on desktop. The paragraph's margin is trimmed to 12px and
+     both top margins go, so the card sits about 15px under the link at every
+     width; the 6px under the card stays so the line list keeps its distance.
+     Five ids, to outrank pg-cart-timer's two. */
+  #cart#cart#cart#cart p:has(> a.m6pn-close){margin-bottom:12px !important}
+  #cart#cart#cart#cart #pg-unlock-slot{margin-top:0 !important}
+  #cart#cart#cart#cart .pg-offer > img{
+    grid-column:1;width:44px !important;min-width:44px !important;height:44px !important;
+    flex:none;border-radius:11px !important;object-fit:cover !important;background:#efe4f8;display:block !important;
+  }
+  #cart#cart#cart#cart .pg-offer-t{grid-column:2;min-width:0}
+  #cart#cart#cart#cart .pg-offer-t b{
+    display:block;font-size:13.5px;line-height:1.25;color:#3B1553;font-weight:800;
+    white-space:normal;overflow-wrap:anywhere;
+  }
+  #cart#cart#cart#cart .pg-offer-px{
+    display:flex;flex-wrap:wrap;align-items:center;gap:2px 7px;
+    margin-top:2px;font-size:13.5px;font-weight:800;color:#7A2FA2;line-height:1.3;
+  }
+  #cart#cart#cart#cart .pg-offer-px s{color:#666;font-weight:400;font-size:12.5px;white-space:nowrap}   /* #666, not #8a8a8a: "more visible", by request */
+  #cart#cart#cart#cart .pg-offer-sv{
+    display:inline-block;padding:3px 7px;border-radius:999px;
+    font-size:10.5px;font-weight:800;letter-spacing:normal;text-transform:uppercase;font-style:normal;
+    /* still, by request: the card's SAVE chip does not move (the cart lines' chips do) */
+    color:#fff;background:linear-gradient(120deg,#9B4BC4,#7A2FA2);animation:none;
+  }
+  #cart#cart#cart#cart .pg-offer-t small{display:block;font-size:11px;line-height:1.3;color:#6E5C80;margin-top:2px}
+  #cart#cart#cart#cart .pg-offer-t small.pg-offer-inc{color:#7A2FA2;font-weight:600}
+
+  /* the pickers: one per unit, in a row that wraps; the free ones say so */
+  #cart#cart#cart#cart .pg-offer-picks{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:5px;min-width:0}
+  #cart#cart#cart#cart .pg-offer-picks:empty{display:none}
+  #cart#cart#cart#cart .pg-offer-pick{
+    flex:1 1 calc(33.333% - 4px);max-width:100%;
+    display:flex;flex-direction:column;gap:1px;min-width:0;
+  }
+  #cart#cart#cart#cart .pg-offer-pick span{
+    font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#7A2FA2;padding-left:2px;
+    margin-left:0;   /* the theme gives every label > span 3px of left margin; measured, it pushed "GB for the new one" 3px right of the title */
+    height:14px;line-height:14px;   /* every label the same height, so the selects under them line up */
+  }
+  /* THE FREE LABEL LOOKS LIKE THE OTHER LABELS. It was hot pink ("not red",
+     by request), then white on a purple pill ("looks weird there", by
+     request, both 2026-09-11 evening). It is now a plain label in the same
+     purple as "Orb 1", and the WORDING carries it: "Free Orb" / "Free Print"
+     (see ladderOffer). */
+  #cart#cart#cart#cart .pg-offer-pick select{
+    -webkit-appearance:none;-moz-appearance:none;appearance:none;
+    width:100% !important;max-width:100% !important;min-width:0 !important;box-sizing:border-box !important;
+    height:30px !important;min-height:0 !important;padding:0 24px 0 8px !important;margin:0 !important;
+    border:1.5px solid rgba(122,47,162,.35) !important;border-radius:9px !important;
+    background:#fff url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' fill='none' stroke='%237A2FA2' stroke-width='1.8' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 9px center !important;
+    color:#3B1553 !important;font-family:inherit !important;font-size:12px !important;font-weight:700 !important;
+    line-height:28px !important;text-overflow:ellipsis;white-space:nowrap;overflow:hidden;
+    box-shadow:none !important;
+  }
+  #cart#cart#cart#cart .pg-offer-pick select:focus{outline:2px solid #9B4BC4;outline-offset:1px}
+
+  /* the one button: full width, the site's moving purple at the same 8s */
+  #cart#cart#cart#cart .pg-offer-add{
+    grid-column:1 / -1;display:flex !important;align-items:center;justify-content:center;gap:8px;
+    width:100% !important;min-width:0 !important;max-width:none !important;margin:0 !important;
+    min-height:38px !important;padding:0 12px !important;
+    border:0 !important;border-radius:11px !important;
+    background-color:#7A2FA2 !important;
+    background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%) !important;
+    background-size:240% 240% !important;animation:pgWave 8s ease-in-out infinite !important;
+    color:#fff !important;-webkit-text-fill-color:#fff !important;
+    font-family:inherit !important;font-size:12.5px !important;font-weight:800 !important;
+    letter-spacing:.06em !important;text-transform:uppercase !important;line-height:1 !important;
+    box-shadow:0 12px 26px -12px rgba(139,68,190,.7) !important;cursor:pointer;
+    transition:filter .15s ease,opacity .15s ease;
+  }
+  html body #cart .pg-offer-add::before,html body #cart .pg-offer-add::after{display:none !important;content:none !important;background:none !important}
+  #cart#cart#cart#cart .pg-offer-add:after{display:none}
+  #cart#cart#cart#cart .pg-offer-add:hover{filter:brightness(1.08)}
+  #cart#cart#cart#cart .pg-offer-add[disabled]{opacity:.65 !important;cursor:default}
+  #cart#cart#cart#cart .pg-offer.is-done{opacity:.7;pointer-events:none}
+  #cart#cart#cart#cart .pg-offer-add .arr{font-size:16px;line-height:1}
+
+  /* iPhone 13 (390) and the compact block pg-cart-timer stamps under 414px:
+     a touch tighter, and never narrower than the 34px touch height */
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-offer{padding:8px 9px 9px;column-gap:9px;row-gap:6px}
+    #cart#cart#cart#cart .pg-offer-t b{font-size:13px}
+    #cart#cart#cart#cart .pg-offer-px{font-size:13px}
+    #cart#cart#cart#cart .pg-offer-pick{flex-basis:calc(33.333% - 4px)}
+  }
+  /* a card with one picker (the pack cards' GB) gives it room for the longer
+     "128GB — Best Value" option instead of a third of the row */
+  #cart#cart#cart#cart .pg-offer-pick:only-child{flex-basis:calc(66.666% - 2px);max-width:calc(66.666% - 2px)}
+  /* EVERY CARD WITH A PICKER GETS THE BIG PHOTO (by request, 2026-09-11
+     evening, first for the pack cards, then "make the orb picture big just
+     like the R36"): the thumbnail is a 100px square on the left, its top
+     edge level with the title. The R36 pack card, which has ONE picker, keeps that picker in
+     the text column beside the photo, so the photo spans both rows. A card
+     with two or more pickers (the orb and wall art ladders) keeps its row
+     of dropdowns side by side at full width under the photo and the text --
+     the owner liked it that way and said so when a stacked version was
+     tried -- and the photo spans the text row only. The "Two consoles, one
+     price" line is gone from the pack cards and "Extra 5% off included"
+     moves up into its place. A card with no picker (the cases, the pack
+     switch) keeps the compact 44px thumb. The attribute is stamped by
+     card(). */
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]){grid-template-columns:100px minmax(0,1fr);column-gap:12px;row-gap:6px}
+  /* A FIXED 100px SQUARE, NEVER A PERCENTAGE HEIGHT: a height:100% +
+     align-self:stretch version measured fine in the pane's Chrome and blew
+     up on the owner's iPhone ("stretched out and overlaps everywhere",
+     2026-09-11 night), Safari resolving the percentage against something
+     other than the grid row. Top-aligned so its top edge is the title's. */
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]) > img{width:100px !important;min-width:100px !important;height:100px !important;align-self:start}
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]) .pg-offer-t{align-self:start}
+  #cart#cart#cart#cart .pg-offer[data-picks="1"] > img{grid-row:1 / 3}
+  /* TWO OR MORE PICKERS: the dropdown row lives below, so the only thing
+     beside the photo is the title block (title, price line, "Extra 5% off
+     included": 54px), and a 100px photo left a hole under the text (the
+     owner's iPhone screenshot, 2026-09-11 night: "huge gap, should we
+     shrink the photo?"). The photo is 56px on these cards, flush with the
+     title block top and bottom. */
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]):not([data-picks="1"]){grid-template-columns:56px minmax(0,1fr)}
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]):not([data-picks="1"]) > img{width:56px !important;min-width:56px !important;height:56px !important}
+  #cart#cart#cart#cart .pg-offer[data-picks="1"] .pg-offer-picks{grid-column:2;flex-direction:column;gap:6px}
+  #cart#cart#cart#cart .pg-offer[data-picks="1"] .pg-offer-pick,
+  #cart#cart#cart#cart .pg-offer[data-picks="1"] .pg-offer-pick:only-child{flex:0 0 auto;max-width:100%}
+  /* the labels sit flush with the title above them and the dropdowns below
+     (by request, 2026-09-11 evening) */
+  #cart#cart#cart#cart .pg-offer:not([data-picks="0"]) .pg-offer-pick span{padding-left:0}
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-offer:not([data-picks="0"]){column-gap:10px}
+  }
+  /* the line's title is a link to its product page again (owner, 2026-09-19
+     evening: "you should be able to click on any orb title in cart and it
+     brings you to listing"); the theme's stylesheet had it at pointer-events:none.
+     pgFlipNoAddonLinks still kills the add-on cases' links inline. */
+  #cart#cart#cart#cart .l4ca > li section h2 a{pointer-events:auto !important;cursor:pointer !important;text-decoration:none}
+  #cart#cart#cart#cart .l4ca > li section h2 a:hover{text-decoration:underline}
+  /* the pinned pane, if a stale pg-cart-mobile ever seats the slot there */
+  #cart#cart#cart#cart .sticky-in-panel .pg-offer{margin:0 0 6px}
+  @keyframes pgWave{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  /* EVERY CARD IS A CHECKBOX ROW (2026-09-19, by request: "copy that upsells
+     thing you did for the flip for the orbs and the r36 too, keep what their
+     upsells are but use this form", "too many words", "just use checkbox",
+     "make sure orbs don't get cut off either, and use checkboxes for them
+     too"). The same row pg-cart-addons paints for the Flip SP's cases: a tick,
+     a 40px picture, the title and the struck / net price on one line, and the
+     pickers (Orb 1, Free Orb; GB for the new one) on a second line in the text
+     column. The big button is gone from view: a tap anywhere on the row that
+     is not a picker is the tap on it (the button stays in the DOM and is
+     clicked by the row, so the add / swap code is untouched). The rules below
+     carry the data-picks attribute so they outrank the older photo rules. */
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks]{
+    grid-template-columns:20px 46px minmax(0,1fr) !important;column-gap:11px;row-gap:0;
+    padding:9px 12px;margin:0 0 7px;background:#FBF8FD;box-shadow:none;cursor:pointer;align-items:center;
+  }
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] > img{
+    grid-column:2 !important;grid-row:auto !important;align-self:center !important;
+    width:46px !important;min-width:46px !important;height:46px !important;border-radius:10px !important;
+  }
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-t{grid-column:3;align-self:center}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-t b{font-size:13.5px}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-px{font-size:13.5px;margin-top:2px}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-t small{display:none}
+  /* the pickers: paid units down the LEFT column, free units down the RIGHT
+     (owner, 2026-09-19 evening: "the buy 3 more get 3 orbs upsell in cart
+     should be all orb 1-3 on left side and free on right side"); dense flow so
+     the first free unit starts at the top of its column */
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-picks{grid-column:3;display:grid;grid-template-columns:1fr 1fr;grid-auto-flow:row dense;gap:5px;margin-top:4px}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-pick{grid-column:1;flex:none;max-width:100%;min-width:0}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-pick.is-free{grid-column:2}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-pick:only-child{grid-column:1 / -1}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-pick span{padding-left:0}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-pick select{height:28px !important;line-height:26px !important}
+  #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-add{display:none !important}
+  #cart#cart#cart#cart .pg-offer-ck{grid-column:1;grid-row:1;width:20px;height:20px;border-radius:6px;border:2px solid #7A2FA2;background:#fff;position:relative;box-sizing:border-box}
+  #cart#cart#cart#cart .pg-offer.is-done .pg-offer-ck{background:linear-gradient(120deg,#9B4BC4,#7A2FA2 60%,#4A1C66)}
+  #cart#cart#cart#cart .pg-offer.is-done .pg-offer-ck:after{content:"";position:absolute;left:50%;top:50%;width:4px;height:8px;border:solid #fff;border-width:0 2px 2px 0;transform:translate(-50%,-62%) rotate(45deg)}
+  #cart#cart#cart#cart .pg-offer.is-busy{opacity:.6}
+  @media (max-width:414px){
+    #cart#cart#cart#cart .pg-offer[data-offer][data-picks]{padding:9px 12px;column-gap:11px;row-gap:0}
+    #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-t b{font-size:13.5px}
+    #cart#cart#cart#cart .pg-offer[data-offer][data-picks] .pg-offer-px{font-size:13.5px}
+  }
+</style>
+<script>
+(function(){
+  if (window.pgCartOffer) return; window.pgCartOffer = 1;
+
+  var H = {
+    orb:   'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift',
+    wall:  'anime-pokemon-3d-lenticular-poster-charizard-squirtle-bulbasaur-come-alive-with-amazing-3d-effects-wall-art-printwithout-frame',
+    con:   'handheld-game-console',
+    duo:   'r36s-duo-pack',
+    trio:  'r36s-trio-pack',
+    kase:  'r36s-protective-case-free-gift',
+    lamp:  'dragon-ball-z-legends-lamp',
+    ball:  'legends-power-ball'
+  };
+  var SPARE_CASE = 49640879063268;           /* $17.99 "Spare case" (since 2026-09-14; $13.99 before) */
+  var FREE_CASE  = 49640846426340;           /* $0.00 "Free with console" */
+  var SIZE_OF = {49622431858916: '64', 49622431826148: '128'};   /* console variant -> GB */
+  /* the GB picker's options, "Best Value" on the size whose cut against its
+     compare-at is the deepest, from the console's live prices (by request,
+     2026-09-11: from the pricing, not a fixed label); a tie labels nothing */
+  function gbOpts(con){
+    var pct = {};
+    (con ? con.variants : []).forEach(function(v){
+      var sz = SIZE_OF[v.id]; if (!sz) return;
+      pct[sz] = v.cap > v.price ? Math.floor((v.cap - v.price) / v.cap * 100) : 0;   /* whole percents, as printed */
+    });
+    var best = null, bestPct = 0, tie = false;
+    Object.keys(pct).forEach(function(sz){
+      if (pct[sz] > bestPct){ best = sz; bestPct = pct[sz]; tie = false; }
+      else if (pct[sz] === bestPct && bestPct > 0 && sz !== best) tie = true;
+    });
+    return ['64', '128'].map(function(sz){ return {id: sz, t: sz + 'GB' + (!tie && sz === best ? ' (Best Value)' : '')}; });
+  }
+  var CASE_IMG = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260810_234744_eb2ec102-427d-4c23-94f0-453e70014817.png?v=1786422962&width=120';
+
+  function money(c){ return '$' + (c / 100).toFixed(2); }
+  function pct(was, now){ return was > now ? Math.floor((was - now) / was * 100) : 0; }
+
+  /* THE EXTRA 5% IS IN THE PRICE. The admin's "Extra 5% off entire order"
+     (automatic, every item, stacks with the Buy X Get Y) comes off at checkout,
+     so a card that printed the catalogue price overstated what the shopper
+     would pay; by request (2026-09-11) every card prints the net figure and
+     says so on a line of its own ("Extra 5% off included"). The admin's 5%
+     is the DEFAULT. /cart.js reports that discount under
+     cart_level_discount_applications on this store (pg-drawer's savings row
+     reads it there; a first cut of this looked only at the per-line
+     line_level_discount_allocations, found nothing, zeroed the rate and
+     printed the gross $135.98 for a Duo Pack the till then charged $122.38).
+     Both places are read now, and a rate found in either replaces the
+     default, so an admin change to the percentage follows on the next read.
+     Absence never zeroes it: "show the best price in the upsell and state the
+     5% is included in that", by request. The Buy X Get Y discounts are
+     percentages too, but over the entitled item only, and are not counted. */
+  var ADMIN_RATE = 0.05;
+  var RATE = ADMIN_RATE;
+  function readRate(cart){
+    var found = null;
+    function take(d){
+      if (!d || d.type !== 'automatic' || d.value_type !== 'percentage' || d.target_selection !== 'all') return;
+      var v = parseFloat(d.value || 0) / 100;
+      if (v > 0 && v < 0.9 && (found === null || v > found)) found = v;
+    }
+    (cart.cart_level_discount_applications || []).forEach(take);
+    (cart.items || []).forEach(function(it){
+      (it.line_level_discount_allocations || []).forEach(function(a){ take(a && a.discount_application); });
+    });
+    return found === null ? ADMIN_RATE : found;
+  }
+  /* THE TILL FLOORS THE DISCOUNT, so the net figure is cents minus the
+     floored cut, never a rounded product: measured 2026-09-11, the 64+128
+     Duo Pack at $148.98 bills $134.09 (14898 - 1489) while a rounded
+     14898 x 0.9 printed $134.08, a cent under what checkout takes; the
+     Trio at $197.97 bills $178.18, not $178.17. Same per-line rule the
+     cart lines and the product tiles use. */
+  function net(c){ return c - Math.floor(c * RATE); }
+  /* a line's price before any discount (the compare-at figures the cards are
+     measured against are gross too); older carts only carry line_price */
+  function gross(it){ return it.original_line_price != null ? it.original_line_price : it.line_price; }
+  function ord(k){ var t = k % 10, h = k % 100; return k + (t === 1 && h !== 11 ? 'st' : t === 2 && h !== 12 ? 'nd' : t === 3 && h !== 13 ? 'rd' : 'th'); }
+  function nths(from, to){ var p = []; for (var i = from; i <= to; i++) p.push(ord(i)); var l = p.pop(); return (p.length ? p.join(', ') + ' & ' : '') + l; }
+  function thumb(src){ return src ? String(src).replace(/(\.[a-z]+)(\?|$)/i, '_480x$1$2') : ''; }   /* 480, not 240: the one-picker cards show it as a 100px square, 300px on a 3x phone, and the lamp's landscape photos crop to their height (a 240 wide lamp photo was 180 tall: "enlarged images in cart where they look blurry", by report 2026-09-13) */
+  function esc(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;'); }
+  /* Title Case: every word starts with a capital, on the orb card only, by
+     request (2026-09-11). Words already in capitals (FREE) are left as they
+     are; a word starting with a digit (3rd, 10%) is untouched. */
+  function tc(s){ return String(s).replace(/(^|\s)(\S)/g, function(m, a, b){ return a + b.toUpperCase(); }); }
+
+  /* ---------------- products, read once ---------------- */
+  var P = {}, PBUSY = {};
+  function product(handle){
+    if (P[handle]) return Promise.resolve(P[handle]);
+    if (PBUSY[handle]) return PBUSY[handle];
+    PBUSY[handle] = fetch('/products/' + handle + '.js').then(function(r){ return r.json(); }).then(function(pr){
+      var out = {handle: handle, image: (pr.featured_image || (pr.images && pr.images[0]) || ''), variants: []};
+      (pr.variants || []).forEach(function(v){
+        out.variants.push({id: v.id, title: v.title, price: v.price, cap: v.compare_at_price || 0, available: v.available !== false,
+          img: (v.featured_image && v.featured_image.src) || ''});
+      });
+      P[handle] = out; PBUSY[handle] = null; return out;
+    }).catch(function(){ PBUSY[handle] = null; return null; });
+    return PBUSY[handle];
+  }
+  /* a pack variant by the sorted GB sizes it holds ("64GB + 128GB") */
+  function packBySizes(pr, sizes){
+    var key = sizes.slice().sort(function(a, b){ return a - b; }).join('|');
+    for (var i = 0; i < pr.variants.length; i++){
+      var m = String(pr.variants[i].title).match(/\d+(?=GB)/g);
+      if (m && m.slice().sort(function(a, b){ return a - b; }).join('|') === key && pr.variants[i].available) return pr.variants[i];
+    }
+    return null;
+  }
+  function sizesOfPack(title){ return (String(title).match(/\d+(?=GB)/g) || []); }
+
+  /* ---------------- reading the cart ---------------- */
+  function tally(cart){
+    var t = {con: [], duo: [], trio: [], orb: [], wall: [], lamp: [], ball: [], spares: 0, freeCase: 0, held: {}};
+    (cart.items || []).forEach(function(it){
+      var h = it.handle || '';
+      if (h === H.con) t.con.push(it);
+      else if (h === H.duo) t.duo.push(it);
+      else if (h === H.trio) t.trio.push(it);
+      else if (h === H.orb) t.orb.push(it);
+      else if (h === H.wall) t.wall.push(it);
+      else if (h === H.lamp) t.lamp.push(it);
+      else if (h === H.ball) t.ball.push(it);
+      else if (h === H.kase){ if (it.variant_id === SPARE_CASE) t.spares += it.quantity; else t.freeCase += it.quantity; }
+      (t.held[h] = t.held[h] || {})[it.variant_id] = true;
+    });
+    t.conUnits = 0; t.con.forEach(function(it){ t.conUnits += it.quantity; });
+    t.duoUnits = 0; t.duo.forEach(function(it){ t.duoUnits += it.quantity; });
+    t.trioUnits = 0; t.trio.forEach(function(it){ t.trioUnits += it.quantity; });
+    t.consoles = t.conUnits + 2 * t.duoUnits + 3 * t.trioUnits;
+    t.orbUnits = 0; t.orb.forEach(function(it){ t.orbUnits += it.quantity; });
+    t.wallUnits = 0; t.wall.forEach(function(it){ t.wallUnits += it.quantity; });
+    t.lampUnits = 0; t.lamp.forEach(function(it){ t.lampUnits += it.quantity; });
+    t.ballUnits = 0; t.ball.forEach(function(it){ t.ballUnits += it.quantity; });
+    return t;
+  }
+
+  /* the console family's one offer */
+  function consoleOffer(t){
+    if (!t.consoles) return Promise.resolve(null);
+    var single = t.con[0];
+    /* 1 or 2 or 3 loose singles, no pack: the pack that holds exactly them (plus one picked) */
+    if (!t.duoUnits && !t.trioUnits && t.conUnits >= 1 && t.conUnits <= 3){
+      var sizes = [];
+      t.con.forEach(function(it){ for (var i = 0; i < it.quantity; i++) sizes.push(SIZE_OF[it.variant_id] || '64'); });
+      if (t.conUnits === 1){
+        var handle = H.duo;
+        return Promise.all([product(H.con), product(handle)]).then(function(r){
+          var con = r[0], pack = r[1]; if (!con || !pack) return null;
+          var isDuo = true;
+          /* 64GB BY DEFAULT, whatever is in the cart, with 128GB as the
+             option and "(Best Value)" on it, exactly as the product page's
+             Size picker labels it (by request, 2026-09-11). It used to
+             default to the size already in the cart, so a 128GB shopper was
+             shown the 128+128 price first. */
+          var pickDefault = '64';
+          var withPick = packBySizes(pack, sizes.concat([pickDefault])); if (!withPick) return null;
+          return {
+            kind: 'pack', key: 'pack:' + handle + ':' + sizes.join('|'),
+            handle: handle, packSizes: sizes, lines: t.con,
+            img: thumb(con.image),
+            title: isDuo ? 'Add a 2nd R36S: the Duo Pack' : 'Add a 3rd R36S: the Trio Pack',
+            sub: '',   /* no "+$" figure and no "Two consoles, one price" line either (by request, 2026-09-11 evening: the card took too much room); "Extra 5% off included" moves up into its place */
+            was: withPick.cap || withPick.price, now: withPick.price,
+            picks: [{label: 'GB for the new one', options: gbOpts(con), value: pickDefault}],
+            btn: 'Upgrade to the ' + (isDuo ? 'Duo' : 'Trio') + ' Pack',
+            pack: pack
+          };
+        });
+      }
+      /* two or three loose singles: the pack holding exactly them, for less */
+      var packH = t.conUnits === 2 ? H.duo : H.trio, packName = t.conUnits === 2 ? 'Duo' : 'Trio';
+      return product(packH).then(function(pack){
+        if (!pack) return null;
+        var v = packBySizes(pack, sizes); if (!v) return null;
+        var singlesNow = 0; t.con.forEach(function(it){ singlesNow += gross(it); });
+        if (v.price >= singlesNow) return null;
+        /* both sides carry the extra 5% at checkout, so the saving is net too */
+        var less = net(singlesNow) - net(v.price);
+        return {
+          kind: 'switch', key: 'switch:' + packH + ':' + sizes.join('|'), handle: packH, variant: v, lines: t.con,
+          img: thumb(v.img || pack.image),
+          title: 'Switch to the ' + packName + ' Pack', sub: 'Same ' + (t.conUnits === 2 ? 'two' : 'three') + ' consoles, ' + money(less) + ' less',
+          was: v.cap || singlesNow, now: v.price, picks: [], btn: 'Switch to the ' + packName + ' Pack, save ' + money(less)
+        };
+      });
+    }
+    /* a Duo Pack (and nothing else on the console side): the Trio holding it plus one */
+    if (t.duoUnits === 1 && !t.trioUnits && !t.conUnits){
+      return Promise.all([product(H.duo), product(H.trio), product(H.con)]).then(function(r){
+        var duo = r[0], trio = r[1], con = r[2]; if (!duo || !trio) return null;
+        var line = t.duo[0], sizes = sizesOfPack(line.title || line.product_title || '');
+        duo.variants.forEach(function(v){ if (String(v.id) === String(line.variant_id)) sizes = sizesOfPack(v.title); });
+        if (sizes.length !== 2) return null;
+        var pickDefault = '64';   /* 64GB by default, as on the duo card */
+        var withPick = packBySizes(trio, sizes.concat([pickDefault])); if (!withPick) return null;
+        return {
+          kind: 'pack', key: 'pack:' + H.trio + ':' + sizes.join('|'), handle: H.trio, packSizes: sizes, lines: t.duo,
+          img: thumb(withPick.img || trio.image),
+          title: 'Add a 3rd R36S: the Trio Pack',
+          sub: '',   /* same as the duo card: no sub line, by request */
+          was: withPick.cap || withPick.price, now: withPick.price,
+          picks: [{label: 'GB for the new one', options: gbOpts(con), value: pickDefault}],
+          btn: 'Upgrade to the Trio Pack', pack: trio
+        };
+      });
+    }
+    /* every other console cart: a case for every console that has none, in
+       ONE card (the first case is the free gift, one per order, so a Trio is
+       offered two cases, not one -- by request, 2026-09-11); then an orb */
+    var needCases = t.consoles - 1 - t.spares;
+    if (needCases > 0){
+      return product(H.kase).then(function(pr){
+        var v = null; (pr ? pr.variants : []).forEach(function(x){ if (x.id === SPARE_CASE) v = x; });
+        var unit = (v && v.price) || 1799, cap = (v && v.cap) || 2499;   /* live from the product; the fallback is the 2026-09-14 price */
+        return {
+          kind: 'add', key: 'case:' + t.spares + ':' + needCases, items: [{id: SPARE_CASE, quantity: needCases}],
+          img: thumb((v && v.img) || (pr && pr.image) || CASE_IMG),
+          title: needCases > 1 ? 'Add ' + needCases + ' protective cases' : (t.spares ? 'Add another protective case' : 'Add a spare protective case'),
+          sub: needCases > 1 ? 'One per console; the 1st is free' : (t.freeCase ? 'One case already comes free with your console' : 'Zip case, fitted for the R36S'),
+          was: cap * needCases, now: unit * needCases, picks: [], btn: needCases > 1 ? 'Add ' + needCases + ' cases' : 'Add the case'
+        };
+      });
+    }
+    return Promise.resolve(null);   /* every console has a case: this family is done */
+  }
+
+  /* the orb (and wall art) ladder, phrased as the shopper experiences it */
+  var RUNGS = {};
+  RUNGS[H.orb]  = {name: 'Orb', rungs: [{paid: 2, free: 1}, {paid: 5, free: 4}], repeats: true, top: 4};
+  RUNGS[H.wall] = {name: 'Print', rungs: [{paid: 2, free: 1}], repeats: true, top: 0};
+  RUNGS[H.ball] = {name: 'Power Ball', rungs: [{paid: 2, free: 1}], repeats: true, top: 0};   /* "Power Ball - Buy 2 Get 1 Free", unlimited, read from the admin 2026-09-14 */
+
+  function ladderOffer(handle, units, lines, held, cross){
+    var L = RUNGS[handle];
+    return product(handle).then(function(pr){
+      if (!pr) return null;
+      var unitV = null;
+      if (lines.length) pr.variants.forEach(function(v){ if (String(v.id) === String(lines[0].variant_id)) unitV = v; });
+      var unit = unitV ? unitV.price : (pr.variants[0] ? pr.variants[0].price : 0);
+      var cap = unitV ? unitV.cap : (pr.variants[0] ? pr.variants[0].cap : 0);
+      if (!unit) return null;
+      var n = units;
+      if (cross && !n){
+        var one = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
+        return {
+          kind: 'add', key: 'cross:' + handle, handle: handle, need: 1, single: one.length < 2 ? one[0] : null, plain: true,
+          img: thumb(pr.image), title: 'Add a Crystal Legends ' + L.name, sub: 'Buy 2, Get 1 FREE',
+          was: cap || unit, now: unit, btn: 'Add to cart',
+          picks: one.length > 1 ? [{label: L.name, free: false, options: one, value: one[0].id}] : []
+        };
+      }
+      var freeNow = 0;
+      L.rungs.forEach(function(g){ if (g.paid + g.free <= n && g.free > freeNow) freeNow = g.free; });
+      if (L.repeats) freeNow = Math.max(freeNow, Math.floor(n / 3) * L.rungs[0].free);
+      var paidNow = n - freeNow;
+      var need = 0, paidAdded = 0, freeAdded = 0, tier = null;
+      for (var i = 0; i < L.rungs.length; i++){
+        var g = L.rungs[i];
+        if (g.paid < paidNow) continue;
+        if (g.paid + g.free <= n) continue;
+        tier = g; need = g.paid + g.free - n; paidAdded = Math.max(0, g.paid - paidNow); freeAdded = Math.max(0, need - paidAdded); break;
+      }
+      if (!tier && L.repeats){
+        /* past the ladder: the repeating Buy 2 Get 1, once it beats what is held */
+        var m = 3 * (freeNow + 1);
+        if (m - n <= 3){ tier = L.rungs[0]; need = m - n; freeAdded = 1; paidAdded = need - 1; }
+      }
+      var title, sub, was, now, btn, plain = false;
+      if (tier && need > 0){
+        if (paidAdded === 0){
+          title = 'Add your FREE ' + nths(n + 1, n + need) + ' ' + L.name + (need > 1 ? 's' : '');
+          sub = '';   /* the title already says it, by request */
+        } else {
+          title = 'Buy ' + paidAdded + ' more, get ' + freeAdded + ' FREE';
+          sub = '';
+        }
+        was = unit * need; now = unit * paidAdded;
+        btn = 'Add ' + need + ' to cart' + (freeAdded ? ', ' + freeAdded + ' FREE' : '');
+      } else {
+        need = 1; paidAdded = 1; freeAdded = 0; plain = true;   /* no free unit to promise: the family is done */
+        title = cross ? 'Add a Crystal Legends ' + L.name : 'Add another ' + L.name;
+        sub = '';   /* the note under the cards names the extra 5% */
+        was = cap || unit; now = unit; btn = 'Add to cart';
+      }
+      /* ONLY UNITS AT THE HELD LINE'S PRICE. The Power Ball sells a 6,000mAh
+         and a 12,000mAh at different prices, and a Buy X Get Y makes the
+         CHEAPEST qualifying unit the free one, so a card that priced the
+         add-on off the held 12,000mAh and then let the shopper pick 6,000mAh
+         balls would print a total the till never charges. The picker offers
+         the capacity already in the cart; the orb and the prints have one
+         price, so nothing changes for them. */
+      var opts = pr.variants.filter(function(v){ return v.available && (!lines.length || v.price === unit); }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
+      var heldHere = held[handle] || {};
+      var fresh = opts.filter(function(o){ return !heldHere[o.id]; });
+      var pool = fresh.length >= need ? fresh : opts;
+      var picks = [];
+      if (opts.length > 1){
+        for (var k = 0; k < need; k++){
+          var isFree = k >= need - freeAdded;
+          picks.push({label: isFree ? 'Free ' + L.name : L.name + ' ' + (k + 1), free: isFree, options: opts, value: pool[k % pool.length].id});
+        }
+      }
+      return {
+        kind: 'add', key: 'ladder:' + handle + ':' + n + ':' + need, handle: handle, need: need, single: opts.length < 2 ? opts[0] : null,
+        img: thumb(((picks[0] && opts.filter(function(x){ return String(x.id) === String(picks[0].value); })[0]) || {}).img || pr.image), imgPick0: true, /* the picture is the FIRST pick's own orb / print (owner 2026-09-22: "it should show the picture of the orb next to the name") */ title: title, sub: sub, was: was, now: now, picks: picks, btn: btn, plain: plain };
+    });
+  }
+  function orbOffer(t, cross){ return ladderOffer(H.orb, t.orbUnits, t.orb, t.held, !!cross); }
+
+  /* THE LAMP LADDER (by request, 2026-09-12: "add upsells for the goku lamp
+     in the cart; based on how many they have it should upsell another and
+     another so they get the best pricing per lamp, including the extra 5%;
+     when they have 3 that is the max discount, so advertise the game boy
+     after that"). The lamp page sells Single / Duo Pack / Trio Pack
+     (pg-dbz-tiles: $42.99 against a $59.99 compare-at, Duo $77.98, Trio
+     $104.97 since 2026-09-13 -- the base came down from $59.99 and the
+     owner set the rungs at "38.99 a lamp for the duo, 34.99 for the trio"),
+     and the till carries the packs as two automatic amount-off discounts on
+     the lamp product: "DBZ Lamp - 2 Pack $77.98" is $4.00 off EACH lamp from
+     2 lamps, "DBZ Lamp - 3 Pack $104.97" is $8.00 off EACH lamp from 3.
+     Both are product-class and, measured in a real cart (2026-09-12), they
+     do not stack: three lamps carried the 3 Pack amount off each and
+     nothing from the 2 Pack. From 3 lamps every lamp is $34.99 before the
+     5% and a 4th changes nothing per lamp, so the ladder tops out at 3.
+     Hence: one lamp held, the 2nd is offered; two held, the 3rd; three or
+     more, the family is done and, with no console in the cart, the R36S is
+     offered in its place (plain, so a real deal from any other family
+     outranks it; the orb cross-sell stays the last resort).
+
+     THE FIGURE IS THE ONE THE CART LINE WILL SHOW. The price line is the
+     per-lamp price at the next rung, net of the 5%: net(38.99) = $37.05 on
+     the 2nd-lamp card, net(34.99) = $33.25 on the 3rd-lamp card, against the
+     lamp's compare-at (the worked figures below date from a 39.99 duo). A first cut printed the MARGINAL cost instead (the
+     cart total after minus before: $35.15 for the 2nd lamp), and the owner
+     caught the problem before it shipped (2026-09-13): the pack amount
+     comes off EVERY lamp, so the new lamp's line in the cart read $38.00
+     while the card had said $35.15, and "people are going to think they
+     paid more than advertised". Now the card, the new line and the old
+     lines all say the same figure, and the sub line says why the old
+     lines moved: "Your 1st lamp drops to $38.00 too". The 5% is taken off
+     the cart total and spread over the lines, so a line can read a cent
+     UNDER the card (two lamps at 39.99: 7998 less 399 = lines of 38.00 and
+     37.99), never over. The amounts come off EACH lamp, so a unit reprice
+     in the admin moves every figure here on its own; only the two amounts
+     are fixed, mirrored in pg-dbz-tiles' OFF, and both are the only thing
+     to change if the admin discounts change. */
+  var LAMP_OFF = {2: 400, 3: 800};   /* cents off each lamp: from 2 lamps, from 3 lamps; = pg-dbz-tiles' OFF */
+  function lampUnitAt(u, n){ return u - (n >= 3 ? LAMP_OFF[3] : (n >= 2 ? LAMP_OFF[2] : 0)); }
+  function lampOffer(t){
+    var n = t.lampUnits;
+    if (!n) return Promise.resolve(null);
+    if (n >= 3) return t.consoles ? Promise.resolve(null) : consoleCross(t);
+    return product(H.lamp).then(function(pr){
+      if (!pr) return null;
+      var unitV = null;
+      pr.variants.forEach(function(v){ if (String(v.id) === String(t.lamp[0].variant_id)) unitV = v; });
+      var u = unitV ? unitV.price : (pr.variants[0] ? pr.variants[0].price : 0);
+      var cap = unitV ? unitV.cap : (pr.variants[0] ? pr.variants[0].cap : 0);
+      if (!u) return null;
+      var eachGross = lampUnitAt(u, n + 1);   /* what every lamp's line will carry; priceHtml nets it */
+      if (eachGross <= 0 || eachGross >= u) return null;
+      var each = net(eachGross);
+      var opts = pr.variants.filter(function(v){ return v.available; }).map(function(v){ return {id: String(v.id), t: v.title, img: v.img}; });
+      if (!opts.length) return null;
+      var heldHere = t.held[H.lamp] || {};
+      var fresh = opts.filter(function(o){ return !heldHere[o.id]; });
+      var first = (fresh.length ? fresh : opts)[0];
+      return {
+        kind: 'add', key: 'lamp:' + n, handle: H.lamp, need: 1, single: opts.length < 2 ? opts[0] : null, imgFollows: true,
+        img: thumb(first.img || pr.image),
+        title: n === 1 ? 'Add a 2nd Lamp: the Duo Pack' : 'Add a 3rd Lamp: the Trio Pack',
+        sub: (n === 1 ? 'Your 1st lamp drops to ' : 'Your first 2 lamps drop to ') + money(each) + ' too',
+        was: cap || u, now: eachGross,
+        picks: opts.length > 1 ? [{label: 'Character for the new one', options: opts, value: first.id}] : [],
+        btn: n === 1 ? 'Add the 2nd Lamp' : 'Add the 3rd Lamp'
+      };
+    });
+  }
+  /* THE R36S, OFFERED PLAIN once a family is at the top of its ladder (the
+     lamps at three: "advertise the game boy after that") and no console is
+     in the cart yet. The GB picker is the product page's (64GB first,
+     "(Best Value)" on the deeper cut) and the price line follows the pick;
+     pg-giftguard puts the free case in beside it, as on any console add. */
+  function consoleCross(t){
+    return product(H.con).then(function(con){
+      if (!con) return null;
+      var byId = {}; con.variants.forEach(function(v){ byId[String(v.id)] = v; });
+      var opts = [];
+      gbOpts(con).forEach(function(g){
+        var id = null; Object.keys(SIZE_OF).forEach(function(k){ if (SIZE_OF[k] === g.id) id = k; });
+        var v = id ? byId[id] : null;
+        if (v && v.available) opts.push({id: String(v.id), t: g.t, price: v.price, cap: v.cap, img: v.img});
+      });
+      if (!opts.length) return null;
+      var v0 = opts[0];
+      return {
+        kind: 'add', key: 'cross:' + H.con, handle: H.con, need: 1, single: opts.length < 2 ? opts[0] : null, plain: true, imgFollows: true,
+        img: thumb(v0.img || con.image), title: 'Add an R36S Handheld', sub: 'Free protective case included',
+        was: v0.cap || v0.price, now: v0.price, btn: 'Add to cart',
+        picks: opts.length > 1 ? [{label: 'GB', options: opts, value: v0.id}] : []
+      };
+    });
+  }
+
+  /* the families in the cart, the one the shopper added last first. /cart.js
+     lists lines newest first; a line of an unknown handle names no family.
+     FREE LINES DO NOT COUNT: the free case is put in by pg-giftguard a beat
+     after the console, so it would name the console family "newest" over an
+     orb the shopper had just added (the card swapped in front of them), and a
+     cart holding only the free case, mid-way through emptying, would name the
+     console family with no console in it and fall to the orb cross-sell (a
+     "random orb upsell" that popped up and vanished). A Buy X Get Y free orb
+     is a line the shopper added and keeps its say. */
+  var FAMILY = {};
+  FAMILY[H.con] = FAMILY[H.duo] = FAMILY[H.trio] = FAMILY[H.kase] = 'console';
+  FAMILY[H.orb] = 'orb'; FAMILY[H.wall] = 'wall'; FAMILY[H.lamp] = 'lamp'; FAMILY[H.ball] = 'ball';
+  function familiesByRecency(cart){
+    var out = [];
+    (cart.items || []).forEach(function(it){
+      if (!gross(it)) return;
+      var f = FAMILY[it.handle || ''];
+      if (f && out.indexOf(f) === -1) out.push(f);
+    });
+    return out;
+  }
+  function familyOffer(f, t){
+    if (f === 'console') return consoleOffer(t);
+    if (f === 'orb') return orbOffer(t, false);
+    if (f === 'wall') return ladderOffer(H.wall, t.wallUnits, t.wall, t.held, false);
+    if (f === 'lamp') return lampOffer(t);
+    if (f === 'ball') return ladderOffer(H.ball, t.ballUnits, t.ball, t.held, false);
+    return Promise.resolve(null);
+  }
+  function offersFor(cart){
+    RATE = readRate(cart);
+    var t = tally(cart);
+    var fams = familiesByRecency(cart);
+    if (!fams.length) return Promise.resolve([]);
+    return Promise.all(fams.map(function(f){ return familyOffer(f, t); })).then(function(list){
+      /* ONE CARD. The newest family's deal; failing that, the next family's;
+         a plain "add another" only when no family has a deal left; and with no
+         orbs held, a Crystal Legends Orb as the last resort. */
+      var deal = null, plain = null;
+      list.forEach(function(o){
+        if (!o) return;
+        if (!o.plain && !deal) deal = o;
+        if (o.plain && !plain) plain = o;
+      });
+      if (deal) return [deal];
+      if (plain) return [plain];
+      if (!t.orbUnits) return orbOffer(t, true).then(function(o){ return o ? [o] : []; });
+      return [];
+    });
+  }
+
+  /* ---------------- the card ---------------- */
+  /* the price line: struck compare-at, the net figure, the SAVE chip on it */
+  function priceHtml(was, now0){
+    var now = now0 || 0;      /* the product price; the 5% is the totals box's (2026-09-19 evening) */
+    var save = pct(was, now);
+    return (was > now ? '<s>' + money(was) + '</s>' : '') + (now === 0 ? 'FREE' : money(now)) +
+      (save ? '<i class="pg-offer-sv">Save ' + save + '%</i>' : '');
+  }
+  function card(o){
+    var el = document.createElement('div');
+    el.className = 'pg-offer';
+    el.setAttribute('data-offer', o.key);
+    el.setAttribute('data-picks', String((o.picks || []).length));   /* a one-picker card lays out in two columns, see the CSS */
+    /* the TITLE of every card is Title Case ("the title of the upsell in
+       cart, every word", by request); the orb card is Title Case throughout */
+    var T = o.handle === H.orb ? tc : function(x){ return x; };
+    var picks = '';
+    (o.picks || []).forEach(function(p, i){
+      picks += '<label class="pg-offer-pick' + (p.free ? ' is-free' : '') + '"><span' + (p.free ? ' class="is-free"' : '') + '>' + esc(T(p.label)) + '</span><select data-i="' + i + '">';
+      p.options.forEach(function(op){ picks += '<option value="' + esc(op.id) + '"' + (String(op.id) === String(p.value) ? ' selected' : '') + '>' + esc(op.t) + '</option>'; });
+      picks += '</select></label>';
+    });
+    /* every card says so itself ("state it in the upsell", by request) */
+    var inc = RATE > 0 ? 'Extra ' + Math.round(RATE * 100) + '% off included' : '';
+    /* a checkbox row (2026-09-19): the tick, the picture, title and price; the
+       sub line and "Extra 5% off included" are out ("too many words"); the
+       button stays for the click code but is not shown */
+    el.setAttribute('role', 'checkbox'); el.setAttribute('aria-checked', 'false'); el.setAttribute('tabindex', '0');
+    el.innerHTML =
+      '<span class="pg-offer-ck" aria-hidden="true"></span>' +
+      '<img alt="" width="40" height="40" decoding="sync" src="' + esc(o.img || '') + '">' +
+      '<div class="pg-offer-t"><b>' + esc(tc(o.title)) + '</b>' +
+        '<span class="pg-offer-px">' + priceHtml(o.was, o.now) + '</span></div>' +
+      '<div class="pg-offer-picks">' + picks + '</div>' +
+      '<button type="button" class="pg-offer-add" tabindex="-1">' + esc(T(o.btn)) + '<span class="arr">→</span></button>';
+    void inc;
+    el.pgOffer = o;
+    return el;
+  }
+
+  function slotFor(c){
+    var list = c.querySelector('.l4ca:not(.in-panel)');
+    if (!list) return null;
+    var slot = c.querySelector('#pg-unlock-slot');
+    if (!slot){
+      slot = document.createElement('div');
+      slot.id = 'pg-unlock-slot';
+      /* BELOW the items since 2026-09-19 (see pg-cart-mobile placeUnlock) */
+      list.parentNode.insertBefore(slot, list.nextSibling);
+    }
+    return slot;
+  }
+
+  /* A PICK LIVES ON THE OFFER, WITH ITS PRICE. The drawer is rebuilt by every
+     refresh (the free case landing, a Shipping Protection toggle, a size
+     switch), which throws the card away; heal() repaints it from the offer
+     object, so the shopper's GB or design pick, and the price line that goes
+     with it, must be stored there or the card comes back at the default
+     (and a pack card came back printing the default pack's price with the
+     picked GB selected, a figure the till would not charge). */
+  function applyPick(o, i, val){
+    var p = o && o.picks && o.picks[i]; if (!p) return;
+    if (p.options && !p.options.some(function(op){ return String(op.id) === String(val); })) return;
+    p.value = val;
+    /* an option that carries its own price (the console cross-sell's GB) or
+       its own photo (a lamp character) reprices / re-pictures the card */
+    var op = null; (p.options || []).forEach(function(x){ if (String(x.id) === String(val)) op = x; });
+    if (op && op.price){ o.was = op.cap || op.price; o.now = op.price; }
+    if (op && op.img && (o.imgFollows || (o.imgPick0 && i === 0))) o.img = thumb(op.img);
+    if (o.kind === 'pack' && o.pack){
+      var v = packBySizes(o.pack, o.packSizes.concat([val]));
+      if (v){ o.was = v.cap || v.price; o.now = v.price; if (v.img) o.img = thumb(v.img); }
+    }
+  }
+  function paint(offers){
+    var c = document.getElementById('cart');
+    if (!c) return;
+    var slot = slotFor(c);
+    if (!slot) return;
+    var want = {};
+    /* the node cached on the offer is dropped first: a drawer rebuild throws
+       the cards away, and a repaint from lastOffers that still trusted o.el
+       would reuse the detached node and insert nothing */
+    offers.forEach(function(o){ o.el = null; want[o.key] = o; });
+    slot.querySelectorAll('.pg-offer').forEach(function(el){
+      var k = el.getAttribute('data-offer');
+      if (!want[k] || el.classList.contains('is-done')){ el.parentNode.removeChild(el); return; }
+      want[k].el = el;   /* same offer: keep it, and whatever the shopper picked */
+      el.querySelectorAll('.pg-offer-pick select').forEach(function(s, i){ if (s.value) applyPick(want[k], i, s.value); });
+    });
+    var prev = null;
+    offers.forEach(function(o, i){
+      var el = o.el || card(o);
+      el.style.order = String(-10 + i);   /* ahead of the hidden rows */
+      if (!o.el){
+        if (prev && prev.nextSibling) slot.insertBefore(el, prev.nextSibling);
+        else if (prev) slot.appendChild(el);
+        else slot.insertBefore(el, slot.firstChild);
+      }
+      prev = el;
+    });
+    if (window.pgPlaceUnlock){ try { window.pgPlaceUnlock(); } catch(e){} }
+  }
+
+  /* ---------------- watching ---------------- */
+  var busy = false, again = false, watch = null, lastSig = null, seenSig = null, force = false;
+  var gen = 0;   /* bumped by every write of ours; a read from before the write is discarded */
+  var expect = null;   /* what our last write must have done before a read is trusted */
+  function reflects(cart){
+    if (!expect) return true;
+    if (Date.now() > expect.until){ expect = null; return true; }
+    var items = cart.items || [];
+    var has = !expect.has || items.some(function(it){ return String(it.variant_id) === String(expect.has); });
+    var gone = !(expect.gone || []).some(function(id){ return items.some(function(it){ return ident(it) === id; }); });
+    /* and the cart must differ from the one the tapped card was built from:
+       an 'add another' of a variant already held would otherwise pass on a
+       stale snapshot (the variant is present in it too) */
+    var moved = expect.notSig == null || sig(cart) !== expect.notSig;
+    if (has && gone && moved){ expect = null; return true; }
+    return false;
+  }
+  function sig(cart){ return (cart.items || []).map(function(it){ return it.variant_id + 'x' + it.quantity; }).join(','); }
+  var healSig = null;
+  function read(){
+    if (busy){ again = true; return; }
+    var c = document.getElementById('cart');
+    if (!c) return;
+    busy = true;
+    var g = gen;
+    clearTimeout(watch);
+    watch = setTimeout(function(){ busy = false; }, 8000);
+    fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}}).then(function(r){ return r.json(); }).then(function(cart){
+      if (g !== gen) return;   /* fetched before our write landed: the queued read has the real cart */
+      if (!reflects(cart)){ setTimeout(read, 400); return; }   /* a cached or in-flight snapshot from before our write: keep the done card, read again */
+      var s = sig(cart);
+      if (!c.querySelector('.l4ca:not(.in-panel)')){
+        /* the drawer shows no line list. With lines in the cart that is the
+           side-cart section caught in its empty render (see swapIn): ask
+           pg-drawer for a fresh one, once per cart state, and read again
+           when it lands (pg:cart-updated) */
+        if ((cart.items || []).length && healSig !== s && window.pgDrawerRefresh){ healSig = s; try { window.pgDrawerRefresh(); } catch(e){} }
+        return;
+      }
+      if (s === lastSig && document.querySelector('#cart .pg-offer, #cart #pg-unlock-slot')){
+        /* unchanged: only make sure the cards are still standing (a drawer
+           rebuild replaces #cart's innerHTML wholesale) */
+        if (!document.querySelector('#cart .pg-offer') && lastOffers && lastOffers.length) paint(lastOffers);
+        return;
+      }
+      if (!force && lastSig !== null && s !== seenSig){ seenSig = s; setTimeout(read, 600); return; }   /* a change is seen once, then confirmed */
+      force = false; seenSig = s;
+      return offersFor(cart).then(function(offers){ lastSig = s; lastOffers = offers; paint(offers); });
+    }).catch(function(){}).then(function(){ clearTimeout(watch); busy = false; if (again){ again = false; schedule(0); } });
+  }
+  var lastOffers = null;
+  var q = null;
+  function schedule(ms){ if (q) return; q = setTimeout(function(){ q = null; read(); }, ms || 150); }
+
+  /* ---------------- adding ---------------- */
+  var adding = false;
+  function post(url, body){
+    return fetch(url, {method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin', body: JSON.stringify(body)})
+      .then(function(r){ if (!r || !r.ok) throw new Error('write ' + (r && r.status)); return r; });
+  }
+  function perform(o, el){
+    var sels = el.querySelectorAll('.pg-offer-pick select');
+    if (o.kind === 'add'){
+      var items = [];
+      if (o.items) items = o.items;
+      else if (o.single) items = [{id: parseInt(o.single.id, 10), quantity: o.need}];
+      else sels.forEach(function(s){ var id = parseInt(s.value, 10); if (id) items.push({id: id, quantity: 1}); });
+      if (!items.length) return Promise.reject(new Error('nothing to add'));
+      o.expectHas = items[0].id; o.expectGone = [];
+      return post('/cart/add.js', {items: items});
+    }
+    if (o.kind === 'pack' || o.kind === 'switch'){
+      var v = o.variant;
+      if (o.kind === 'pack'){
+        var size = sels[0] ? sels[0].value : '64';
+        v = packBySizes(o.pack, o.packSizes.concat([size]));
+      }
+      if (!v) return Promise.reject(new Error('no pack variant'));
+      o.expectHas = v.id; o.expectGone = o.lines.map(ident);
+      return swapIn(o, v.id);
+    }
+    return Promise.reject(new Error('unknown offer'));
+  }
+  /* THE PACK GOES IN FIRST; THE LINES IT REPLACES COME OUT AFTER. The first
+     cut took the old lines out and then put the pack in, and for the beat in
+     between the cart held nothing but the free case: pg-giftguard pulled the
+     case (no console to earn it), the drawer's watchers re-rendered the
+     side-cart section in its EMPTY state, and a Duo to Trio upgrade "made the
+     whole cart go blank" (by report, 2026-09-11). In this order the cart is
+     never empty and never without a console. A retry after a failed removal
+     never adds a second pack: the add is remembered on the offer.
+
+     AND THE LINES COME OUT BY THE KEY THEY HAVE NOW, NOT THE ONE THE CARD SAW.
+     Measured on the live theme (2026-09-11), one 64GB console plus its free
+     case, tap "Upgrade to the Duo Pack": the pack went in (200), and the
+     console's line key had CHANGED in that same write -- Shopify spreads the
+     order-level 10% across the lines again, the console's price moved
+     67.50 -> 67.49, and the key hash moved with it. The key captured when
+     the card was built was dead: change.js answered 400 three times, and the
+     single stayed beside the pack ("adds duo pack but keeps the original
+     r36", by report). A line key on this store is only good until the next
+     cart write, so nothing is removed by a remembered key any more: the cart
+     is read again after the pack goes in, each source line is found by what
+     it IS (variant plus properties), taken out by the key it carries at that
+     moment, and the cart is read once more to make sure none survived (up to
+     three rounds). Before anything is written, the same read checks that the
+     source lines are still there at the quantity the card was built from; if
+     the cart moved under the card (a size switch, a quantity bump), the tap
+     is refused and the card rebuilt, rather than a pack going in beside a
+     console it was never meant to replace. */
+  function ident(it){
+    var p = it.properties || {}, out = [];
+    Object.keys(p).sort().forEach(function(k){ out.push(k + '=' + p[k]); });
+    return String(it.variant_id) + '|' + out.join('&');
+  }
+  function readCart(){
+    return fetch('/cart.js', {headers: {'X-Requested-With': 'XMLHttpRequest'}, credentials: 'same-origin', cache: 'no-store'})
+      .then(function(r){ if (!r || !r.ok) throw new Error('read ' + (r && r.status)); return r.json(); });
+  }
+  function wanted(o){ var w = {}; (o.lines || []).forEach(function(it){ w[ident(it)] = it.quantity; }); return w; }
+  function sourcesIn(cart, o){
+    var w = wanted(o);
+    return (cart.items || []).filter(function(it){ return w[ident(it)] != null; });
+  }
+  function removeSources(o, passes){
+    return readCart().then(function(cart){
+      var found = sourcesIn(cart, o);
+      if (!found.length) return;                                   /* all gone: done */
+      if (passes <= 0) throw new Error('source line still in cart');
+      var chain = Promise.resolve();
+      found.forEach(function(it){
+        chain = chain.then(function(){
+          /* a miss here (the key moved again) is caught by the next read */
+          return post('/cart/change.js', {id: it.key, quantity: 0}).catch(function(){});
+        });
+      });
+      return chain.then(function(){ return removeSources(o, passes - 1); });
+    });
+  }
+  function swapIn(o, variantId){
+    var start = readCart().then(function(cart){
+      /* NEVER A SECOND PACK. Every swap card is only shown for a cart that
+         holds none of the pack it offers (consoleOffer's guards), so a pack
+         variant already in the cart at this point is our own earlier add
+         whose removal round failed and was retried: the add is skipped and
+         only the removal is retried. The o.added flag used to carry this,
+         but a drawer rebuild between the failure and the retry hands the
+         card a fresh offer object without it. */
+      var already = (cart.items || []).some(function(it){ return String(it.variant_id) === String(variantId); });
+      if (already){ o.added = true; return; }
+      var found = sourcesIn(cart, o), w = wanted(o);
+      var same = found.length === o.lines.length && found.every(function(it){ return w[ident(it)] === it.quantity; });
+      if (!same) throw new Error('cart changed');
+      return post('/cart/add.js', {items: [{id: variantId, quantity: 1}]}).then(function(){ o.added = true; });
+    });
+    return start.then(function(){ return removeSources(o, 3); });
+  }
+  document.addEventListener('click', function(e){
+    if (!e.target || !e.target.closest) return;
+    var btn = e.target.closest('#cart .pg-offer-add');
+    if (!btn) return;
+    e.preventDefault(); e.stopPropagation();
+    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    if (adding) return;
+    var el = btn.closest('.pg-offer'), o = el && el.pgOffer;
+    if (!o) return;
+    adding = true;
+    var label = btn.innerHTML, sigAtTap = lastSig;   /* the cart this card was built from */
+    btn.disabled = true; btn.textContent = 'Adding…'; el.classList.add('is-busy');
+    perform(o, el).then(function(){
+      /* SMOOTH. The card is not pulled out here (the slot collapsed, the
+         drawer rebuilt, and the next card popped in a second or two later:
+         "slight glitching and a delay", by report). It stays put, marked
+         done, and the fresh read swaps it for the next offer in one paint;
+         paint() never reuses a done card. lastOffers is dropped so a drawer
+         rebuild in between heals to nothing rather than to the stale card. */
+      adding = false; force = true; lastSig = null; lastOffers = null; gen++;
+      expect = {has: o.expectHas, gone: o.expectGone || [], notSig: sigAtTap, until: Date.now() + 8000};
+      el.classList.add('is-done'); el.classList.remove('is-busy'); el.setAttribute('aria-checked', 'true');
+      btn.textContent = 'Added \u2713';
+      read();
+      if (window.pgDrawerRefresh){ try { Promise.resolve(window.pgDrawerRefresh()).then(function(){ schedule(50); }, function(){ schedule(50); }); } catch(x){ schedule(50); } }
+      else schedule(50);
+      setTimeout(read, 1500);
+    }).catch(function(e){
+      adding = false; el.classList.remove('is-busy');
+      btn.disabled = false; btn.innerHTML = label;
+      btn.textContent = 'Try again';
+      if (o.added && window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch(x){} }   /* the pack went in: the drawer must show it */
+      /* the card no longer matched the cart: rebuild it from a fresh read */
+      if (/cart changed/.test(String(e && e.message))){ force = true; lastSig = null; lastOffers = null; schedule(0); }
+    });
+  }, true);
+  /* a tap inside the card must not fall through to the theme's drawer handlers */
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('#cart .pg-offer-pick')) e.stopPropagation();
+  }, true);
+  /* THE ROW IS THE BUTTON (2026-09-19): a tap anywhere on the card that is not
+     a picker or the (hidden) button itself clicks the button, so the add /
+     swap path above runs unchanged; Enter and Space do the same */
+  function rowTap(e){
+    if (!e.target || !e.target.closest) return;
+    if (e.target.closest('#cart .pg-offer-pick') || e.target.closest('#cart .pg-offer-add')) return;
+    var el = e.target.closest('#cart .pg-offer');
+    if (!el || el.classList.contains('is-done')) return;
+    e.preventDefault(); e.stopPropagation();
+    var btn = el.querySelector('.pg-offer-add');
+    if (btn && !btn.disabled) btn.click();
+  }
+  document.addEventListener('click', rowTap, true);
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    if (e.target && e.target.closest && e.target.closest('#cart .pg-offer') && !e.target.closest('#cart .pg-offer-pick')) rowTap(e);
+  }, true);
+  /* THE PACK CARD REPRICES AS THE GB IS PICKED. The price was set once when
+     the card was built, for the default size, and a shopper choosing 128GB
+     kept reading the 64GB figure (by report, 2026-09-11). The pack variant
+     that holds the consoles plus the picked one is looked up again and the
+     price line rewritten; perform() reads the same picker, so what is
+     printed is what is added. */
+  document.addEventListener('change', function(e){
+    var sel = e.target && e.target.closest && e.target.closest('#cart .pg-offer-pick select');
+    if (!sel) return;
+    var el = sel.closest('.pg-offer'), o = el && el.pgOffer;
+    if (!o) return;
+    var pi = parseInt(sel.getAttribute('data-i'), 10);
+    applyPick(o, pi, sel.value);
+    /* el.pgOffer and lastOffers diverge after a re-read keeps the card (paint()
+       keeps the element, not the object): write the pick to both */
+    (lastOffers || []).forEach(function(x){ if (x !== o && x.key === o.key) applyPick(x, pi, sel.value); });
+    if (o.kind !== 'pack' || !o.pack){
+      var p0 = o.picks && o.picks[pi], op0 = null;
+      ((p0 && p0.options) || []).forEach(function(x){ if (String(x.id) === String(sel.value)) op0 = x; });
+      if (op0 && op0.price){ var px0 = el.querySelector('.pg-offer-px'); if (px0) px0.innerHTML = priceHtml(op0.cap || op0.price, op0.price); }
+      if (op0 && op0.img && (o.imgFollows || (o.imgPick0 && pi === 0))){ var im0 = el.querySelector('img'); if (im0) im0.src = thumb(op0.img); }
+      return;
+    }
+    var v = packBySizes(o.pack, o.packSizes.concat([sel.value]));
+    var px = el.querySelector('.pg-offer-px');
+    if (!v || !px) return;
+    px.innerHTML = priceHtml(v.cap || v.price, v.price);
+    if (v.img){ var im = el.querySelector('img'); if (im) im.src = thumb(v.img); }
+  }, true);
+
+  /* the standing card, put straight back after a drawer rebuild: no fetch,
+     no frame without it */
+  /* is a line of that product still in the rendered list? */
+  function domHas(handle){ return !!document.querySelector('#cart .l4ca:not(.in-panel) > li a[href*="/products/' + handle + '"]'); }
+  /* a card whose product has left the list goes NOW, in the same frame as the
+     rebuild, not 200ms later when the read answers */
+  function prune(){
+    var empty = !document.querySelector('#cart .l4ca:not(.in-panel) > li');
+    document.querySelectorAll('#cart .pg-offer').forEach(function(el){
+      var o = el.pgOffer;
+      if (empty || (o && String(o.key).indexOf('cross:') !== 0 && o.handle && !domHas(o.handle))){ if (el.parentNode) el.parentNode.removeChild(el); }
+    });
+  }
+  function heal(){
+    var c = document.getElementById('cart');
+    prune();
+    if (!c || !lastOffers || !lastOffers.length) return;
+    if (c.querySelector('.pg-offer') || !c.querySelector('.l4ca:not(.in-panel)')) return;
+    /* NOT when the family the card sells to has just left the list (owner,
+       2026-09-19 evening: deleting the orbs flashed their card back for a
+       beat before the read took it away: "when you exit out the orbs the
+       upsell like flashes on the screen, dont do that"); the fresh read
+       paints whatever is right next */
+    var still = lastOffers.every(function(o){ return String(o.key).indexOf('cross:') === 0 || !o.handle || domHas(o.handle); });
+    if (still) paint(lastOffers);
+  }
+  function boot(){
+    read();
+    /* pg-drawer fires this synchronously right after it swaps the drawer's
+       HTML, so healing here lands in the same frame as the rebuild; the
+       observer below is a beat later, and the re-read confirms */
+    document.addEventListener('pg:cart-updated', function(){ heal(); schedule(120); });
+    if (window.MutationObserver){
+      var mo = null;
+      var hook = function(){
+        var c = document.getElementById('cart');
+        if (!c || c.pgOfferObs) return;
+        c.pgOfferObs = 1;
+        new MutationObserver(function(){ heal(); schedule(150); }).observe(c, {childList: true, subtree: true});
+      };
+      hook();
+      mo = new MutationObserver(hook);
+      mo.observe(document.documentElement, {childList: true, subtree: true});
+    }
+    /* SPEED (2026-09-22, "I can barely load the site"): the event and the
+       observer above already read on every drawer change, so the timed read is
+       a backstop only: every 10s (was 4s), skipped while the tab is hidden,
+       and once at once when the shopper comes back to the tab. */
+    setInterval(function(){ if (!document.hidden) read(); }, 10000);
+    document.addEventListener('visibilitychange', function(){ if (!document.hidden) read(); });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+})();
+</script>
+{% schema %}
+{"name": "PG Cart Offer", "settings": []}
+{% endschema %}
