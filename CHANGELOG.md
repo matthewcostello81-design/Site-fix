@@ -1,3 +1,30 @@
+# R36H page: compare against the Game Boy Advance, add spec rows
+
+## Request
+Name the original Game Boy Advance (not the SP) in the "Do the math" price
+comparison, and make the "Why the R36H Stands Out" chart show 20K games,
+screen size and battery life beating it.
+
+## Change (sections/pg-r36h-story.liquid)
+- `gba_model` default is now "Game Boy Advance". The headline and the chart's
+  column header both print it (the header used to be a fixed "Vintage
+  Handheld"). The price stays at the owner's ~$150 resale figure.
+- Three spec rows lead the chart: Games (up to 20,000 vs 1 per cartridge),
+  Screen (3.5 inch backlit IPS vs 2.9 inch, no backlight), Battery
+  (rechargeable over USB-C vs 2 disposable AAs).
+
+## Caveats raised with the owner
+- An original GBA gets about 15 hours on two AAs, more than the R36H's ~5, so
+  the battery row claims rechargeable vs disposable, not longer life.
+- Loose PriceCharting listings for a plain GBA were ~$50 to $85 on
+  2026-09-17; $150 is the owner's resale figure.
+
+## Applied to
+Pocket Era copy (Claude 9-21b), which matched the live theme file for file.
+The live theme can't be written through the API; publish the copy to go live.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
