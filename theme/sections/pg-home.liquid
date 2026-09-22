@@ -92,15 +92,23 @@
      five stars filled to the real average, the average, and the review
      count. The numbers are the product's own reviews.rating and
      reviews.rating_count metafields, which Judge.me keeps in step, so a card
-     never shows a rating its product page does not have. Amber like the
-     cart's stars (pg-dark .pgm-stars i), the one color that reads as a
-     rating at a glance on the dark cards. A product with no reviews yet says
+     never shows a rating its product page does not have. The stars are
+     the theme's purple (see the note at .pgh-stars-on). A product with no reviews yet says
      "New arrival" on that line instead, so its price sits level with its
      neighbour's; it never borrows another product's stars. */
   #pgh#pgh .pgh-card-r{display:flex;justify-content:center;align-items:center;gap:6px;height:18px;margin:2px 0 7px;
     font-size:13.5px;line-height:1;white-space:nowrap;color:#CFC4DE}
   #pgh#pgh .pgh-stars{position:relative;display:inline-block;font-size:16.5px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.2)}
-  #pgh#pgh .pgh-stars-on{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#F5A623}
+  /* PURPLE AND MOVING (2026-09-22, by request: "make the stars purple tho in
+     line with theme and dynamic"): the lit stars wear the ADD TO CART
+     button's moving purple (the same stops and the same 8s pgShiftT wave),
+     lifted a few steps lighter so they still read on the dark cards. Still
+     for visitors who ask for reduced motion. */
+  #pgh#pgh .pgh-stars-on{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#C79BEA;
+    background-image:linear-gradient(120deg,#E4C4FF 0%,#B478E0 30%,#8B44BE 50%,#B478E0 70%,#E4C4FF 100%);background-size:240% 240%;
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    animation:pgShiftT 8s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(155,75,196,.45))}
+  @media (prefers-reduced-motion:reduce){ #pgh#pgh .pgh-stars-on{animation:none} }
   #pgh#pgh .pgh-card-r b{font-weight:600;color:#FFFFFF}
   #pgh#pgh .pgh-card-rn{color:#B9A9CC}
   #pgh#pgh .pgh-card-new{color:#D9B3F5;font-weight:600;letter-spacing:.02em}
