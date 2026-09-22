@@ -183,6 +183,27 @@
   .pgx-card{break-inside:avoid;border:1px solid #ececec;border-radius:10px;padding:18px;margin-bottom:16px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.04)}
   .pgx-card-name{font-weight:700;font-size:16px;margin-bottom:6px}
   .pgx-card .pgx-stars{font-size:15px}
+  /* THE STARS WEAR THE MOVING PURPLE (2026-09-22, by request: "change the
+     stars to that dynamic color on each product page and make it fill the
+     stars up to the amount it says, like 4.7 would fill 4.7 of the stars").
+     Every star on the page (rating line, review cards, histogram, the big
+     score star) takes the ADD TO CART button's purple wave: the same stops
+     and the same 8s pgShiftT, lifted lighter to read on the dark page. The
+     text-fill is what paints them, and it is !important because
+     pg-reviews-text forces a light colour onto the rating line's spans.
+     THE RATING LINE FILLS TO THE NUMBER BESIDE IT: five dim stars with five
+     lit ones laid over them, cut to rating x 20% wide, so "4.6" lights four
+     and six tenths of a star. Still for reduced motion. */
+  @keyframes pgShiftT{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  html body #pgx .pgx-stars,html body #pgx .pgx-rev-star,html body #pgx .pgx-stars-on{
+    background-image:linear-gradient(120deg,#E4C4FF 0%,#B478E0 30%,#8B44BE 50%,#B478E0 70%,#E4C4FF 100%) !important;
+    background-size:240% 240% !important;-webkit-background-clip:text !important;background-clip:text !important;
+    -webkit-text-fill-color:transparent !important;color:#B478E0;
+    animation:pgShiftT 8s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(155,75,196,.45))}
+  html body #pgx .pgx-stars.pgx-fill{position:relative;display:inline-block;white-space:nowrap;line-height:1;
+    background-image:none !important;-webkit-text-fill-color:rgba(255,255,255,.2) !important;animation:none;filter:none}
+  html body #pgx .pgx-stars-on{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap}
+  @media (prefers-reduced-motion:reduce){ html body #pgx .pgx-stars,html body #pgx .pgx-rev-star,html body #pgx .pgx-stars-on{animation:none} }
   .pgx-card-txt{font-size:15px;color:#2f2f2f;line-height:1.5;margin-top:8px}
   .pgx-card-pics{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
   .pgx-card-pics img{width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid rgba(255,255,255,.10)}
@@ -318,7 +339,9 @@
       {%- assign quote_blocks = section.blocks | where: "type", "review" -%}
       {%- if jm_cards > 0 or quote_blocks.size > 0 -%}
       <div class="pgx-rating">
-        <span class="pgx-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span>
+        {%- if jm_count > 0 -%}{%- assign pgx_rv = jm_avg | round: 1 -%}{%- else -%}{%- assign pgx_rv = section.settings.rating_value | plus: 0 -%}{%- endif -%}
+        {%- assign pgx_rw = pgx_rv | times: 20 | at_most: 100 -%}
+        <span class="pgx-stars pgx-fill" role="img" aria-label="Rated {{ pgx_rv }} out of 5">&#9733;&#9733;&#9733;&#9733;&#9733;<span class="pgx-stars-on" aria-hidden="true" style="width:{{ pgx_rw }}%">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
         <strong>{%- if jm_count > 0 -%}{{ jm_avg | round: 1 }}{%- else -%}{{ section.settings.rating_value }}{%- endif -%}</strong>
         <span>&bull;</span>
         <span>{%- if jm_count > 0 -%}{{ jm_count }} reviews{%- else -%}{{ section.settings.rating_label }}{%- endif -%}</span>
