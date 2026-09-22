@@ -1,3 +1,21 @@
+# Spec tiles and childhood slogan on every console page
+
+## Change
+- Under the hood cards on the R36H, R36S Pro and Flip SP pages: each card leads
+  with a big stat drawn from its own original title (Quad-Core, 3.5 Inch,
+  2 Slots, 3000mAh / 3200mAh / 3300mAh, Your Games, Flip Open) over its
+  original description, restored or kept verbatim. Smaller rounded icons.
+  Mobile stat size is clamped so two-word stats fit a half-width card.
+- "The games you remember. The feeling you forgot." closes the childhood panel
+  on all three console pages (the orb page is left as is).
+- R36H childhood lead cut to three short memories.
+
+## Applied to
+Draft theme 164320313572. Files: sections/pg-r36h-story.liquid,
+sections/pg-pro2-story.liquid, sections/pg-flipsp-story.liquid
+
+---
+
 # R36H Pro: "Under the hood" cards as compact spec tiles
 
 ## Problem
