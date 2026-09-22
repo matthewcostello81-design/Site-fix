@@ -1,3 +1,21 @@
+# R36H Pro cart: color picker flickered
+
+## Cause (sections/pg-r36h-cart.liquid)
+The script finds the picker it built with `select[data-pg-rh]`, but still
+stamped new pickers `data-pg-p2` (`dataset.pgP2`, from the Pro 2 clone). Every
+pass missed its own picker and built another: every 400ms, and again on each
+MutationObserver call the rebuild itself triggered.
+
+## Fix
+The build and the lookup both use `data-pg-rh` (`dataset.pgRh`). No other theme
+file references `data-pg-p2`/`data-pg-rh` (33 cart-related files checked), and
+the Pro 2 cart keeps `data-pg-p2` on both sides, so it is unaffected.
+
+## Applied to
+Pocket Era copy (Claude 9-21b). Publish the copy to go live.
+
+---
+
 # R36H Mystic Purple photo: upscaled to 2048px
 
 The Mystic Purple hero shot (MediaImage 73382859276516, r36h-purple-vivid2.jpg)
