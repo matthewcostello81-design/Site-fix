@@ -59,12 +59,15 @@
   header prints the setting), not "knockoffs": every row is true of an
   original Game Boy Advance, and nothing is claimed that cannot be shown.
   THE CHART LEADS WITH THREE SPEC ROWS (2026-09-22, by request: "20K games,
-  screen size and battery life all better than" the GBA). Games: up to 20,000
-  (the lead above says the same; the Single Device carries 15,000+) against
-  one per cartridge. Screen: 3.5 inch backlit IPS against the original's
-  2.9 inch unlit screen. Battery: the original GBA runs about 15 hours on two
-  AAs, longer than the R36H's 5, so the row claims rechargeable over USB-C
-  against disposable AAs, NOT longer life. This was raised with the owner.
+  screen size and battery life all better than" the GBA). They were value
+  cells for an hour; the owner asked for the wording in the left column and
+  plain checks and crosses like the rest. Games: up to 20,000 (the lead above
+  says the same; the Single Device carries 15,000+); the GBA plays one per
+  cartridge. Screen: 3.5 inch backlit IPS; the original GBA's is 2.9 inch and
+  unlit (the owner wrote "2.5 inch", a slip for 3.5). Battery: the original
+  GBA runs about 15 hours on two AAs, longer than the R36H's 5, so the row
+  claims a rechargeable battery against disposable AAs, NOT longer life. This
+  was raised with the owner.
 
   WHERE THINGS SIT ON A PHONE. pg-r36s-mobile makes .pgx-buy a flex column under
   900px and gives every child an order (title 1, stars 2, BUNDLE & SAVE 3,
@@ -363,10 +366,6 @@
   .pg-rhs-tbl .n{background:#2A2236}
   .pg-rhs-tbl .y svg,.pg-rhs-tbl .n svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
   .pg-rhs-tbl .n svg{stroke:#8E829F}
-  .pg-rhs-tbl .v{display:block;text-align:center;font-weight:800;color:#fff;line-height:1.2}
-  .pg-rhs-tbl .v small{display:block;margin-top:2px;font-size:11.5px;font-weight:600;color:#B9AECB}
-  .pg-rhs-tbl .v.o{color:#8E829F}
-  .pg-rhs-tbl .v.o small{color:#6F6582}
 
   .pg-rhs-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin:36px 0 0;padding:16px 34px;border-radius:12px;cursor:pointer;
     background-color:#7A2FA2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;
@@ -576,12 +575,7 @@
     <h2>Why the R36H <span>Stands Out.</span></h2>
     <div class="pg-rhs-tbl" role="table" aria-label="R36H compared with a {{ section.settings.gba_model | escape }}">
       <div class="pg-rhs-row hd" role="row"><div role="columnheader"></div><div class="us" role="columnheader">R36H</div><div class="them" role="columnheader">{{ section.settings.gba_model }}</div></div>
-      {%- assign specs = 'Games|Up to 20,000|preloaded|1|per cartridge;Screen|3.5 inch|IPS, backlit|2.9 inch|no backlight;Battery|Rechargeable|USB-C|2 AA|disposable' | split: ';' -%}
-      {%- for spec in specs -%}
-      {%- assign sp = spec | split: '|' -%}
-      <div class="pg-rhs-row" role="row"><div role="cell">{{ sp[0] }}</div><div class="us" role="cell"><span class="v">{{ sp[1] }}<small>{{ sp[2] }}</small></span></div><div role="cell"><span class="v o">{{ sp[3] }}<small>{{ sp[4] }}</small></span></div></div>
-      {%- endfor -%}
-      {%- assign rows = 'Games included in the box|20+ systems in one device|Two joysticks, four shoulder buttons|Plays on your TV over HDMI|Two microSD slots: system and games|Brand new with a 30-day guarantee' | split: '|' -%}
+      {%- assign rows = 'Up to 20,000 games preloaded|3.5 inch backlit IPS screen|Rechargeable battery|Games included in the box|20+ systems in one device|Two joysticks, four shoulder buttons|Plays on your TV over HDMI|Two microSD slots: system and games|Brand new with a 30-day guarantee' | split: '|' -%}
       {%- for row in rows -%}
       <div class="pg-rhs-row" role="row"><div role="cell">{{ row }}</div><div class="us" role="cell"><span class="y" aria-label="Yes"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div><div role="cell"><span class="n" aria-label="No"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span></div></div>
       {%- endfor -%}

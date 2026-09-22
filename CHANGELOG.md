@@ -9,9 +9,11 @@ screen size and battery life beating it.
 - `gba_model` default is now "Game Boy Advance". The headline and the chart's
   column header both print it (the header used to be a fixed "Vintage
   Handheld"). The price stays at the owner's ~$150 resale figure.
-- Three spec rows lead the chart: Games (up to 20,000 vs 1 per cartridge),
-  Screen (3.5 inch backlit IPS vs 2.9 inch, no backlight), Battery
-  (rechargeable over USB-C vs 2 disposable AAs).
+- Three rows lead the chart, checked for the R36H and crossed for the GBA
+  like the rest: "Up to 20,000 games preloaded", "3.5 inch backlit IPS
+  screen", "Rechargeable battery". (They were value cells first, e.g. "3.5
+  inch" vs "2.9 inch"; the owner asked for the wording on the left and plain
+  checks and crosses.)
 
 ## Caveats raised with the owner
 - An original GBA gets about 15 hours on two AAs, more than the R36H's ~5, so
