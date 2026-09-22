@@ -1,0 +1,399 @@
+{%- comment -%}
+  PG R36H Pro Cart (2026-09-16, swap rewritten 2026-09-17): the R36H Pro bundle
+  lines in the cart drawer and on the cart page read like the R36S pack lines.
+
+  THE PROBLEM. The Pro 2 carries every offer as one variant of one product
+  with THREE options (Bundle / Color / Second Console Color). pg-cart-variants
+  builds an in-cart picker for any multi-variant line and labels each option
+  with the LAST segment of the variant title, so a Duo Max line read
+  "Pocket Era R36H Pro" over a picker that said "White" and opened onto 35
+  rows of "None / Purple / Blue ..." -- and choosing one could silently swap a
+  $179.99 Duo Max for a $74.99 Single.
+
+  THE FIX, per line of this product:
+    - the title names the tier the way the pack lines do ("Pocket Era R36S
+      Duo Pack"): "R36H Pro Duo Max Bundle", "R36H Pro Max Bundle", or the
+      product title for the single;
+    - the picker is rebuilt from the variants of the SAME tier only, labelled
+      by colour ("Blue + White" on the duo, "Blue" otherwise), so a shopper can
+      change colours in the cart but never the tier or the price;
+    - it wears pg-cart-variants' own .pg-vsel class, so that section styles it
+      with arm() and, seeing a picker already on the line, does not build its
+      own over it. Ours is marked data-pg-rh so it is never mistaken for theirs.
+
+  THE SWAP IS ONE WRITE NOW, AND THE PICTURE CHANGES AT ONCE (2026-09-17, by
+  report: "when they switch color it should change quick, the cart was taking
+  way too long"). The first cut read /cart.js, removed the old line, added the
+  new one and then refreshed the drawer: three requests in a row before the
+  refresh even started, and the old colour's photo on screen the whole time.
+    - /cart/update.js takes the old variant to 0 and the new one to the line's
+      quantity in a SINGLE request (it adds a variant the cart does not hold),
+      so the cart is never empty in between and two round trips are gone. The
+      quantities are read off the rendered lines, not from /cart.js. If the
+      new colour is already in the cart as its own line, its quantity is
+      added to, not overwritten.
+    - the line's photo is switched to the picked colour the instant the picker
+      changes, from the variant images in the product JSON, and those five
+      photos are preloaded as soon as a Pro 2 line is seen, so the change is
+      on screen before the request leaves.
+  The drawer refresh that follows is pg-drawer's, unchanged.
+
+  A TAP ON THE PICKER WENT TO THE TITLE (2026-09-17, by report from an iPhone:
+  "I'm clicking the color button in cart and it thinks I'm clicking the
+  title"). The picker was 32px tall and sits a few pixels under the product
+  title, which is a link, and the row's link is also what a tap falls through
+  to whenever the picker's paragraph is not marked clickable (pg-drawer's
+  section > p:not(.pg-varp){pointer-events:none}). Three changes, phone only
+  (760px, the width pg-cart-imglink uses for its picture tap):
+    - on a line that has a picker, the TITLE is no longer a link. The picture
+      still opens the product (pg-cart-imglink reads the row's href, which
+      pointer-events does not touch), so nothing is lost and a near miss on the
+      picker can no longer leave the cart. This is a CSS rule on any line with
+      a .pg-vsel, so the size pickers on the other products get it too;
+    - the Pro 2 picker is 40px tall, the smallest comfortable thumb target,
+      with 6px of air between it and the title. pg-cart-variants' arm() stamps
+      32px inline once, so the height is stamped after it has run;
+    - the picker's paragraph is re-marked clickable on EVERY pass, not only on
+      the pass that builds the select, so it cannot be left inert.
+
+  A COLOUR CHANGE DOES NOT FLASH (2026-09-17, by report: "when they switch
+  color in the cart there shouldn't be a flash"). Measured on the draft: the
+  write takes about 0.65s, the list dims to 55% while it is in flight
+  (pg-cart-smooth) and comes back; the drawer then swaps the row for the
+  server's bare one, whose picture is a NEW <img> at a different URL (not
+  loaded yet: blank), whose title is the product's again and whose picker is
+  plain text, and the picker only came back 50 to 140ms later, unstyled at
+  first, fading in, 6px lower. The picker also went grey (disabled) for the
+  whole write. Now, for a colour change on this product only:
+    - #cart carries data-pg-quiet for the length of the swap: no dimming and
+      no fade-in (the list still takes no taps while the write is in flight);
+    - the picker is not disabled, it just stops taking taps;
+    - the row is dressed again in the SAME task as the drawer's swap (the
+      MutationObserver runs pass() at once while a swap is on, before the
+      browser paints), and the new picker starts with the old one's inline
+      styles, so pg-cart-variants' later arm() changes nothing on screen;
+    - the old row's <img>, already showing the new colour from cache, is moved
+      into the new row in place of the server's unloaded one;
+    - the height ease pg-cart-smooth starts for the 6px it saw missing is
+      cleared, because nothing is missing any more.
+
+  THE PICKER FLICKERED (2026-09-22, by report: "when R36H item is added to
+  cart the color selector just starts flickering"). The lookup for our own
+  picker read select[data-pg-rh] while the build still stamped data-pg-p2
+  (dataset.pgP2, left from the Pro 2 clone), so every pass missed the picker
+  it had just built and built another: every 400ms, and again on each
+  MutationObserver call the rebuild itself set off. Both now use data-pg-rh.
+
+  Runs on the drawer's rebuild beat (pg:cart-updated, a MutationObserver on
+  #cart, and a 400ms tick) because the drawer replaces its rows on every cart
+  change. Registered in sections/header-group.json.
+{%- endcomment -%}
+<style>
+  @media (max-width:760px){
+    #cart .l4ca > li:has(select.pg-vsel) h2 a,
+    #cart .l4ca > li[data-pg-pick] h2 a,
+    body.template-cart .form-cart .l4ca > li:has(select.pg-vsel) h2 a,
+    body.template-cart .form-cart .l4ca > li[data-pg-pick] h2 a{pointer-events:none !important;cursor:default}
+    #cart .l4ca > li[data-pg-pick] section > p.pg-varp{margin-top:6px !important}
+    /* pg-cart-smooth holds 32px for a picker that is being rebuilt; this one is 40 */
+    #cart .l4ca > li[data-pg-hadsel]:has(a[href*="/products/pocket-era-r36h"]) section > p{min-height:40px}
+  }
+  /* a colour change is quiet: no dimming while the write is in flight */
+  #cart#cart[data-pg-quiet] .l4ca:not(.in-panel),
+  #cart#cart[data-pg-quiet] .l4tt{opacity:1 !important;transition:none !important}
+  #cart#cart[data-pg-quiet] .l4ca .pg-vsel,
+  #cart#cart[data-pg-quiet] .l4ca > li[data-pg-new]{animation:none !important}
+</style>
+<script>
+(function(){
+  if (window.pgR36hCart) return; window.pgR36hCart = 1;
+
+  var HANDLE = 'pocket-era-r36h';
+  var TITLE = {
+    'Single Device (64GB)': 'Pocket Era R36H Pro',
+    'Max Bundle (128GB)': 'R36H Pro Max Bundle',
+    'Duo Max Bundle (2x 128GB)': 'R36H Pro Duo Max Bundle'
+  };
+  var LINES = '#cart .l4ca:not(.in-panel) > li, body.template-cart .form-cart .l4ca:not(.in-panel) > li';
+
+  var VARS = null, loading = false, warmed = false;
+  function load(){
+    if (VARS || loading) return;
+    loading = true;
+    fetch('/products/' + HANDLE + '.js')
+      .then(function(r){ return r.json(); })
+      .then(function(p){ VARS = (p && p.variants) || []; })
+      .catch(function(){ loading = false; });
+  }
+  function byId(id){
+    for (var i = 0; i < VARS.length; i++){ if (String(VARS[i].id) === String(id)) return VARS[i]; }
+    return null;
+  }
+  function label(v){
+    return v.option3 && v.option3 !== 'None' ? (v.option2 + ' + ' + v.option3) : v.option2;
+  }
+  function photoOf(v){
+    var src = v && v.featured_image && v.featured_image.src;
+    if (!src) return '';
+    src = String(src);
+    return src + (src.indexOf('?') > -1 ? '&' : '?') + 'width=360';
+  }
+  /* the colour photos, fetched once so a switch paints from cache */
+  function warm(){
+    if (warmed || !VARS) return;
+    warmed = true;
+    var seen = {};
+    VARS.forEach(function(v){
+      var u = photoOf(v);
+      if (!u || seen[u]) return;
+      seen[u] = 1;
+      var im = new Image(); im.decoding = 'async'; im.src = u;
+    });
+  }
+  function showPhoto(li, v){
+    var u = photoOf(v);
+    if (!u) return;
+    var img = li.querySelector('figure img, picture img, img');
+    if (!img) return;
+    var pic = img.closest('picture');
+    if (pic) pic.querySelectorAll('source').forEach(function(s){ s.setAttribute('srcset', u); });
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
+    img.setAttribute('src', u);
+  }
+
+  /* While a swap is in flight the line is stamped as the NEW variant. Every
+     watcher in the drawer reads a line's variant off its product link, and
+     pg-cart-addons re-checks each line's photo against what /cart.js holds for
+     that variant about once a second: left pointing at the old variant, the
+     old colour's photo would be put straight back over the new one. */
+  function pointAt(li, vid){
+    Array.prototype.forEach.call(li.querySelectorAll('a[href*="variant="]'), function(a){
+      var h = a.getAttribute('href') || '';
+      a.setAttribute('href', h.replace(/([?&]variant=)\d+/, '$1' + vid));
+    });
+  }
+
+  function lineInfo(li){
+    if (li.closest('.nc-recs, .nc-recs-panel, .pg-unlock')) return null;
+    var a = li.querySelector('h2 a[href*="/products/' + HANDLE + '"], a[href*="/products/' + HANDLE + '"]');
+    if (!a) return null;
+    var m = (a.getAttribute('href') || '').match(/[?&]variant=(\d+)/);
+    if (!m) return null;
+    return {a: a, vid: m[1]};
+  }
+  function qtyOf(li){
+    var input = li.querySelector('.semantic-amount input, .input-amount input, input[type=number]');
+    return input ? (parseInt(input.value, 10) || 0) : 0;
+  }
+
+  /* the <p> holding the variant text or a picker someone else built */
+  function pickerSlot(li){
+    var sel = li.querySelector('select.pg-vsel');
+    if (sel && sel.parentElement) return sel.parentElement;
+    var ps = li.querySelectorAll('section p, p');
+    for (var i = 0; i < ps.length; i++){
+      var t = (ps[i].textContent || '').replace(/\s+/g, ' ').trim();
+      if (/Bundle|Single Device/.test(t) && /\//.test(t)) return ps[i];
+    }
+    return null;
+  }
+
+  /* the row belongs to the picker: marked on every pass, because the mark is
+     what makes the paragraph take taps at all */
+  function claim(li, slot){
+    if (!li.hasAttribute('data-pg-pick')) li.setAttribute('data-pg-pick', '1');
+    if (!slot.classList.contains('pg-varp')) slot.classList.add('pg-varp');
+    if (slot.style.getPropertyValue('pointer-events') !== 'auto'){
+      slot.style.setProperty('pointer-events', 'auto', 'important');
+      slot.style.setProperty('position', 'relative', 'important');
+      slot.style.setProperty('z-index', '6', 'important');
+    }
+  }
+  /* a thumb-sized target on a phone. Waits for pg-cart-variants' arm() (it
+     stamps height:32px inline, once) so this lands after it and stays. */
+  var PHONE = window.matchMedia ? window.matchMedia('(max-width:760px)') : null;
+  function roomy(sel){
+    if (!sel || !sel.dataset.pgVar || sel.dataset.pgRoomy) return;
+    if (!PHONE || !PHONE.matches) return;
+    sel.dataset.pgRoomy = '1';
+    sel.style.setProperty('height', '40px', 'important');
+    sel.style.setProperty('min-height', '40px', 'important');
+  }
+
+  /* what a colour change carries across the drawer's row swap */
+  var CARRY = null, quietTimer = null;
+  function quiet(on){
+    var c = document.getElementById('cart');
+    if (quietTimer){ clearTimeout(quietTimer); quietTimer = null; }
+    if (!c) return;
+    if (on){
+      c.setAttribute('data-pg-quiet', '1');
+      /* never left on: a write that hangs must not leave the cart undimmable */
+      quietTimer = setTimeout(function(){ quiet(false); }, 7000);
+    } else {
+      c.removeAttribute('data-pg-quiet');
+      CARRY = null;
+    }
+  }
+  /* the row the drawer just put in, made to look like the one it replaced */
+  function settle(li, slot, sel){
+    if (!CARRY) return;
+    if (CARRY.selCss){
+      sel.style.cssText = CARRY.selCss;
+      /* it wears pg-cart-variants' styles already, and this file's 40px: marked
+         as done, so neither arm() (32px, then 40 again a pass later) nor
+         roomy() touches it. refit() still re-measures it on a resize. */
+      if (CARRY.armed){
+        sel.dataset.pgVar = '1';
+        if (CARRY.fitW) sel.dataset.pgFitW = CARRY.fitW;
+        if (CARRY.roomy) sel.dataset.pgRoomy = '1';
+      }
+    }
+    sel.style.setProperty('animation', 'none', 'important');
+    sel.style.removeProperty('pointer-events');
+    if (CARRY.slotCss) slot.style.cssText = CARRY.slotCss;
+    var img = li.querySelector('figure img, picture img, img');
+    var old = CARRY.img;
+    if (old && img && old !== img && img.parentNode && !old.isConnected){
+      old.setAttribute('alt', img.getAttribute('alt') || '');
+      img.parentNode.replaceChild(old, img);
+    }
+    var list = li.parentNode;
+    if (list && list.style){
+      list.style.height = ''; list.style.overflow = ''; list.style.transition = '';
+    }
+  }
+
+  var busy = false;
+  function swap(oldVid, newId, li, sel){
+    if (busy) return;
+    busy = true;
+    var q = qtyOf(li) || 1;
+    /* the picked colour may already be a line of its own: add to it */
+    var already = 0;
+    Array.prototype.forEach.call(document.querySelectorAll(LINES), function(other){
+      if (other === li) return;
+      var info = lineInfo(other);
+      if (info && String(info.vid) === String(newId)) already += (qtyOf(other) || 1);
+    });
+    var updates = {};
+    updates[String(oldVid)] = 0;
+    updates[String(newId)] = already + q;
+    fetch('/cart/update.js', {
+      method: 'POST', headers: {'Content-Type': 'application/json'}, credentials: 'same-origin',
+      body: JSON.stringify({updates: updates})
+    }).then(function(r){
+      if (!r || !r.ok) throw new Error('update');
+      busy = false;
+      if (window.pgDrawerRefresh) return window.pgDrawerRefresh();
+      window.location.reload();
+    }).then(function(){
+      /* a moment for the other sections' own passes, then the cart dims and
+         fades as usual again */
+      if (quietTimer) clearTimeout(quietTimer);
+      quietTimer = setTimeout(function(){ quiet(false); }, 1200);
+    }).catch(function(){
+      /* sold out in that colour, or the write failed: put the line back the
+         way it was and let the drawer confirm it */
+      busy = false;
+      quiet(false);
+      li.removeAttribute('data-pg-swapping');
+      pointAt(li, oldVid);
+      var old = VARS && byId(oldVid);
+      if (old) showPhoto(li, old);
+      if (sel){ sel.value = String(oldVid); sel.style.removeProperty('pointer-events'); }
+      if (window.pgDrawerRefresh){ try { window.pgDrawerRefresh(); } catch (e){} }
+    });
+  }
+
+  function dress(li){
+    if (li.hasAttribute('data-pg-swapping')) return;   /* mid-swap: leave the line alone */
+    var info = lineInfo(li);
+    if (!info) return;
+    var v = byId(info.vid);
+    if (!v) return;
+
+    /* the tier in the title, like "Pocket Era R36S Duo Pack" */
+    var want = TITLE[v.option1] || info.a.textContent.trim();
+    if (info.a.textContent.trim() !== want) info.a.textContent = want;
+
+    /* the colour picker, scoped to this tier */
+    var slot = pickerSlot(li);
+    if (!slot) return;
+    claim(li, slot);
+    var mine = slot.querySelector('select[data-pg-rh]');
+    if (mine && mine.dataset.pgRh === info.vid){ roomy(mine); return; }   /* built for this line already */
+
+    var sel = document.createElement('select');
+    sel.className = 'pg-vsel';
+    sel.dataset.pgRh = info.vid;   /* data-pg-rh: the attribute the lookup above finds */
+    sel.setAttribute('aria-label', v.option3 && v.option3 !== 'None' ? 'Console colors' : 'Color');
+    VARS.forEach(function(x){
+      if (x.option1 !== v.option1) return;
+      if (x.available === false && String(x.id) !== String(v.id)) return;
+      var o = document.createElement('option');
+      o.value = x.id;
+      o.textContent = label(x);
+      if (String(x.id) === String(v.id)) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener('change', function(){
+      var id = sel.value;
+      if (!id || String(id) === String(v.id)) return;
+      /* the new colour's photo first, then the write */
+      var nv = byId(id);
+      li.setAttribute('data-pg-swapping', '1');
+      pointAt(li, id);
+      if (nv) showPhoto(li, nv);
+      /* not disabled (a disabled picker turns grey for the whole write): it
+         just stops taking taps until the row is replaced */
+      CARRY = {vid: String(id), img: li.querySelector('figure img, picture img, img'), selCss: sel.style.cssText, slotCss: slot.style.cssText,
+        armed: !!sel.dataset.pgVar, fitW: sel.dataset.pgFitW || '', roomy: !!sel.dataset.pgRoomy};
+      sel.style.setProperty('pointer-events', 'none', 'important');
+      quiet(true);
+      swap(v.id, id, li, sel);
+    });
+    ['click', 'mousedown', 'touchstart', 'pointerdown'].forEach(function(ev){
+      sel.addEventListener(ev, function(e){ e.stopPropagation(); }, true);
+    });
+    slot.textContent = '';
+    slot.appendChild(sel);
+    claim(li, slot);
+    if (CARRY && CARRY.vid === String(info.vid)) settle(li, slot, sel);
+    /* pg-cart-variants' arm() styles every .pg-vsel on its own mutation beat;
+       roomy() follows it on the next pass here */
+  }
+
+  function pass(){
+    var lis = document.querySelectorAll(LINES);
+    if (!lis.length) return;
+    var any = false;
+    for (var i = 0; i < lis.length; i++){ if (lineInfo(lis[i])){ any = true; break; } }
+    if (!any) return;
+    if (!VARS){ load(); return; }
+    warm();
+    Array.prototype.forEach.call(lis, function(li){ try { dress(li); } catch (e){} });
+  }
+
+  setInterval(pass, 400);
+  document.addEventListener('pg:cart-updated', function(){ try { pass(); } catch (e){} });
+  (function watchCart(){
+    var c = document.getElementById('cart');
+    if (!c || !window.MutationObserver){ setTimeout(watchCart, 500); return; }
+    var queued = false;
+    new MutationObserver(function(){
+      /* mid colour change: dress the new row NOW, in the same task as the
+         drawer's swap, so it is never painted bare */
+      if (CARRY){ try { pass(); } catch (e){} return; }
+      if (queued) return;
+      queued = true;
+      setTimeout(function(){ queued = false; pass(); }, 0);
+    }).observe(c, {childList: true, subtree: true});
+  })();
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pass); else pass();
+})();
+</script>
+{% schema %}
+{"name": "PG R36H Pro Cart", "settings": [], "presets": [{"name": "PG R36H Pro Cart"}]}
+{% endschema %}

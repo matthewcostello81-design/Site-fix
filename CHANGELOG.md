@@ -1,3 +1,36 @@
+# R36H Pro: cart colour picker flicker, and cart add-on links to the old theme
+
+## Problems
+1. After adding the R36H Pro to the cart, its colour dropdown in the drawer
+   flickered and would not stay open.
+2. Tapping the R36H Protection Kit or an R36H add-on (silicone case, hard shell
+   case, screen protector) in the cart opened that item's own page, which uses
+   the stock product template and looks like the old theme.
+
+## Causes
+1. `pg-r36h-cart` was cloned from `pg-pro2-cart`. The lookup for its own picker
+   was renamed to `select[data-pg-rh]`, but the build still stamped
+   `data-pg-p2`, so every pass (400ms tick plus every `#cart` mutation,
+   including the ones the rebuild caused) tore the picker down and built a new
+   one.
+2. `layout/theme.liquid` already redirects the Flip SP and R36S Pro 2 kits to
+   their consoles, but had no redirect for the R36H kit or add-ons. Those
+   products have no template suffix, so they render `templates/product.json`.
+
+## Fix
+1. The picker is stamped with `data-pg-rh` when it is built, so it is built
+   once per line.
+2. Product pages for `r36h-max-kit`, `r36h-silicone-case`,
+   `r36h-hard-shell-travel-case` and `r36h-screen-protector` now redirect to
+   `/products/pocket-era-r36h`. Cart hrefs are unchanged, because the drawer
+   scripts identify lines by them.
+
+## Applied to
+Draft theme 164320313572. Files changed: sections/pg-r36h-cart.liquid,
+layout/theme.liquid
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
