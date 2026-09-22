@@ -336,8 +336,13 @@
   .pg-p2s-feat .ic{width:72px;height:72px;margin:0 auto 16px;border-radius:20px;display:flex;align-items:center;justify-content:center;
     background:linear-gradient(135deg,#9B4BC4,#4A1C66);box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
   .pg-p2s-feat .ic svg{width:54px;height:54px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  /* the stat words carry a slow white-to-lavender sweep (2026-09-22, "should be moving"); the gradient repeats every element width, so a 200% travel loops without a jump */
   .pg-p2s-feat h3{margin:0 0 8px;font-family:inherit;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.01em;text-wrap:balance;
-    background:linear-gradient(100deg,#fff,#D9B3F5);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+    background:linear-gradient(100deg,#fff 0%,#D9B3F5 25%,#fff 50%,#D9B3F5 75%,#fff 100%);background-size:200% 100%;background-position:0% 50%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    animation:pg-p2s-statflow 4s linear infinite}
+  @keyframes pg-p2s-statflow{from{background-position:0% 50%}to{background-position:200% 50%}}
+  @media (prefers-reduced-motion:reduce){.pg-p2s-feat h3{animation:none}}
   /* every description is cut to the same length, so the four cards read as one row (2026-09-22, "all paragraphs need to be the same size") */
   .pg-p2s-feat p{margin:0;font-size:15px;line-height:1.5;color:#CFC4DE;text-wrap:balance}
 
