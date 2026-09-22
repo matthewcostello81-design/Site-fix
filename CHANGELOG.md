@@ -1,3 +1,20 @@
+# R36H Pro: "Under the hood" cards as compact spec tiles
+
+## Problem
+The four feature cards ("Quick, Smooth and Made to Be Played.") read as a wall
+of text on mobile: a 72px icon, a bold title and a two to four line paragraph
+per card.
+
+## Fix
+Each card is now a spec tile: a smaller rounded icon, a big gradient stat
+(4-Core, 3.5 in, 2 Slots, 5 Hrs) and one short line. The claims are the same
+ones the cards already made. Mobile and desktop are sized in the same push.
+
+## Applied to
+Draft theme 164320313572. Files changed: sections/pg-r36h-story.liquid
+
+---
+
 # R36H Pro: cart colour picker flicker, and cart add-on links to the old theme
 
 ## Problems
