@@ -549,19 +549,19 @@
       {%- if sil -%}
       <div class="pg-fsps-case">
         <img src="{{ sil.featured_image | image_url: width: 360 }}" alt="{{ sil.title | escape }}" loading="lazy" decoding="async" width="360" height="360">
-        <div><span class="tag">Daily</span><h3>Silicone Daily Case</h3><p>Soft, grippy sleeve with a lanyard. Shrugs off drops, and the lid still flips.</p><div class="px">{%- if sil.compare_at_price > sil.price -%}<s>{{ sil.compare_at_price | money }}</s>{%- endif -%}{{ sil.price | money }}</div></div>
+        <div><span class="tag">Daily</span><h3>Silicone Daily Case</h3><p>A soft silicone sleeve with a lanyard that stays on the console. Grippy in the hand, shrugs off scratches and drops, and the lid still flips.</p><div class="px">{%- if sil.compare_at_price > sil.price -%}<s>{{ sil.compare_at_price | money }}</s>{%- endif -%}{{ sil.price | money }}</div></div>
       </div>
       {%- endif -%}
       {%- if hard -%}
       <div class="pg-fsps-case">
         <img src="{{ hard.featured_image | image_url: width: 360 }}" alt="{{ hard.title | escape }}" loading="lazy" decoding="async" width="360" height="360">
-        <div><span class="tag">Travel</span><h3>Hard Shell Travel Case</h3><p>Zip-up hard shell for the bag. Fits the console, cable and microSD cards.</p><div class="px">{%- if hard.compare_at_price > hard.price -%}<s>{{ hard.compare_at_price | money }}</s>{%- endif -%}{{ hard.price | money }}</div></div>
+        <div><span class="tag">Travel</span><h3>Hard Shell Travel Case</h3><p>A zip-up hard shell for the bag. Holds the console, its USB-C cable and your microSD cards, and takes the knocks so the console does not.</p><div class="px">{%- if hard.compare_at_price > hard.price -%}<s>{{ hard.compare_at_price | money }}</s>{%- endif -%}{{ hard.price | money }}</div></div>
       </div>
       {%- endif -%}
       {%- if prot -%}
       <div class="pg-fsps-case">
         {%- if prot.featured_image -%}<img src="{{ prot.featured_image | image_url: width: 360 }}" alt="{{ prot.title | escape }}" loading="lazy" decoding="async" width="360" height="360">{%- else -%}<img src="{{ 'pe-r36pro2-protector.jpg' | file_url }}" alt="Tempered glass screen protector" loading="lazy" decoding="async" width="360" height="360">{%- endif -%}
-        <div><span class="tag">Screen</span><h3>Tempered Glass Screen Protector</h3><p>Real glass for the 3.5 inch screen. Cloth and wipe included.</p><div class="px">{%- if prot.compare_at_price > prot.price -%}<s>{{ prot.compare_at_price | money }}</s>{%- endif -%}{{ prot.price | money }}</div></div>
+        <div><span class="tag">Screen</span><h3>Tempered Glass Screen Protector</h3><p>Real glass over the 3.5 inch screen, with a cloth and a wipe to fit it clean. Scratches stop at the glass.</p><div class="px">{%- if prot.compare_at_price > prot.price -%}<s>{{ prot.compare_at_price | money }}</s>{%- endif -%}{{ prot.price | money }}</div></div>
       </div>
       {%- endif -%}
     </div>
