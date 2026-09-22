@@ -41,7 +41,7 @@
        removed and a new photo review lands in the middle until it is sorted.
        SUPERSEDED 2026-09-22: the strip now shows every photo of every review
        but only from an allow list of the sharp ones (hq_keys, in display
-       order), and it loops without end. See the notes at hq_keys and at
+       order), and swiping it never reaches an end. See the notes at hq_keys and at
        loopRail() in the script.
     3. THE STORY (#pg-obs): nostalgia headline, the used-handheld price
        comparison, four feature blocks, the comparison chart and a button back
@@ -257,9 +257,8 @@
   /* THE STRIP LOOPS FOREVER (2026-09-22, by request: "take more of the
      photos from judge me and make it an endless scroll in loop"). The photo
      set is printed twice, side by side, in .pg-obs-track; loopRail() in the
-     script drifts the rail and steps it back by exactly one set once it has
-     travelled one, which looks like nothing happened. No scroll snap: snapping
-     fights the drift. The cards are a fixed width (they used to be 46% of a
+     script steps the rail back by exactly one set once a swipe has gone past
+     it, which looks like nothing happened. It does not scroll by itself. The cards are a fixed width (they used to be 46% of a
      rail that no longer holds them directly); cqw is 46% of the rail where
      container units work, 44vw is the fallback. */
   #pgx .pg-obs-rail{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;container-type:inline-size;
@@ -629,58 +628,25 @@
   }
 
   /* THE ENDLESS PHOTO LOOP (2026-09-22). The rail holds the photo set twice.
-     It drifts left on its own; once it has moved one full set (the distance
-     from the first set's start to the second's) it steps back by exactly that
-     much, which shows the same picture, so it never runs out. A finger, the
-     mouse wheel, a hovering mouse or keyboard focus pauses it, and it carries
-     on from wherever the shopper left it 2.5s after they let go; a swipe's
-     momentum is noticed the same way (the rail is not where the loop left
-     it). It rests while off screen, and does not move at all for visitors
-     who ask for reduced motion (they can still swipe). Moving the strip to
-     its seat can reset the rail to the start; that is read as a touch too. */
+     IT DOES NOT MOVE ON ITS OWN (same day, by request: "the reviews
+     shouldn't auto scroll tho"); the shopper swipes it. Once a swipe comes to
+     rest past the end of the first set, the rail steps back by exactly one
+     set (the distance from the first set's start to the second's), which
+     shows the same picture, so there is always more to swipe. The step waits
+     for the scroll to settle: moving scrollLeft mid-fling stops iOS momentum
+     dead. */
   function loopRail(){
     var rail = document.querySelector('[data-obs-loop]');
     if (!rail || rail.pgLoop) return;
     rail.pgLoop = 1;
     var sets = rail.querySelectorAll('.pg-obs-set');
-    if (sets.length < 2 || !window.requestAnimationFrame) return;
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var SPEED = 28;                     /* px a second: a card every 6 to 7s */
-    var pos = rail.scrollLeft, last = 0, holdUntil = 0, onScreen = true;
-    var now = function(){ return window.performance && performance.now ? performance.now() : new Date().getTime(); };
-    function hold(ms){ holdUntil = Math.max(holdUntil, now() + ms); }
-    function release(ms){ holdUntil = now() + ms; }
-    ['pointerdown', 'touchstart', 'touchmove', 'touchend', 'wheel'].forEach(function(t){
-      rail.addEventListener(t, function(){ hold(2500); }, {passive: true});
-    });
-    rail.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hold(1e9); });
-    rail.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') release(400); });
-    /* keyboard focus only: tapping or clicking a photo also focuses its link
-       in Chrome, and that pause would never end */
-    rail.addEventListener('focusin', function(e){
-      var kb = true;
-      try { kb = e.target.matches(':focus-visible'); } catch (x){}
-      if (kb) hold(1e9);
-    });
-    rail.addEventListener('focusout', function(){ release(400); });
-    if (window.IntersectionObserver){
-      new IntersectionObserver(function(es){ onScreen = es[es.length - 1].isIntersecting; }).observe(rail);
-    }
-    function tick(t){
-      requestAnimationFrame(tick);
-      var dt = last ? Math.min(t - last, 100) : 0;
-      last = t;
-      if (!onScreen || document.hidden || now() < holdUntil){ pos = rail.scrollLeft; return; }
-      /* the shopper moved it (or a swipe is still coasting): follow, and wait */
-      if (Math.abs(rail.scrollLeft - pos) > 3){ pos = rail.scrollLeft; hold(2500); return; }
+    if (sets.length < 2) return;
+    var t = 0;
+    function settle(){
       var period = sets[1].offsetLeft - sets[0].offsetLeft;
-      /* too few photos to fill the rail twice over: leave it as a plain swipe */
-      if (period <= 0 || rail.scrollWidth - rail.clientWidth < period) return;
-      pos += SPEED * dt / 1000;
-      while (pos >= period) pos -= period;
-      rail.scrollLeft = pos;
+      if (period > 0 && rail.scrollLeft >= period) rail.scrollLeft -= period;
     }
-    requestAnimationFrame(tick);
+    rail.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(settle, 160); }, {passive: true});
   }
 
   /* the loved-by pill reads the page's own rating line, so it follows Judge.me */
