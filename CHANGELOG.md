@@ -1,3 +1,19 @@
+# Orb page: chart compares against a 3rd party seller
+
+## Change (sections/pg-orb-story.liquid)
+The "Why the Orb Stands Out" chart's second column header (and its aria-label)
+reads "3rd Party Seller" instead of "Vintage Handheld". Rows unchanged.
+
+## Caveat raised with the owner
+"Do the math" says the same orb sells elsewhere, so crosses on "3D character
+floating in solid glass", "Seven-color automatic glow" and "36 characters to
+collect" claim things another seller's orb may well have.
+
+## Applied to
+Pocket Era copy (Claude 9-21b). Publish the copy to go live.
+
+---
+
 # R36H page: compare against the Game Boy Advance, add spec rows
 
 ## Request
