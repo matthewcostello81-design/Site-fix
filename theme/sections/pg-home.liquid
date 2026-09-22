@@ -88,17 +88,19 @@
   .pgh-card-p{font-size:16px;font-weight:600;color:var(--p)}
   /* THE STAR RATING ON EVERY CARD (2026-09-22, by request: "on each homepage
      card you should have the stars rated of the product somewhere visually
-     clean so people can see"). One line between the title and the price:
-     five stars filled to the real average, the average, and the review
-     count. The numbers are the product's own reviews.rating and
+     clean so people can see"). A pill on the product photo, bottom left
+     (moved there and made bigger by request: "add the stars into the product
+     photos"): five stars filled to the real average, the average, and the
+     review count (the count drops on phones, where cards are two a row). The numbers are the product's own reviews.rating and
      reviews.rating_count metafields, which Judge.me keeps in step, so a card
      never shows a rating its product page does not have. The stars are
-     the theme's purple (see the note at .pgh-stars-on). A product with no reviews yet says
-     "New arrival" on that line instead, so its price sits level with its
-     neighbour's; it never borrows another product's stars. */
-  #pgh#pgh .pgh-card-r{display:flex;justify-content:center;align-items:center;gap:6px;height:18px;margin:2px 0 7px;
-    font-size:13.5px;line-height:1;white-space:nowrap;color:#CFC4DE}
-  #pgh#pgh .pgh-stars{position:relative;display:inline-block;font-size:16.5px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.2)}
+     the theme's purple (see the note at .pgh-stars-on). A product with no reviews yet wears a
+     "New arrival" pill instead; it never borrows another product's stars. */
+  #pgh#pgh .pgh-card-r{position:absolute;left:10px;bottom:10px;z-index:2;display:flex;align-items:center;gap:7px;
+    padding:7px 12px 7px 10px;border-radius:999px;font-size:15px;line-height:1;white-space:nowrap;color:#E6DFF2;
+    background:rgba(11,7,16,.72);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+    border:1px solid rgba(199,155,234,.38);box-shadow:0 10px 24px -12px rgba(0,0,0,.85)}
+  #pgh#pgh .pgh-stars{position:relative;display:inline-block;font-size:21px;line-height:1;letter-spacing:1px;color:rgba(255,255,255,.22)}
   /* PURPLE AND MOVING (2026-09-22, by request: "make the stars purple tho in
      line with theme and dynamic"): the lit stars wear the ADD TO CART
      button's moving purple (the same stops and the same 8s pgShiftT wave),
@@ -107,14 +109,17 @@
   #pgh#pgh .pgh-stars-on{position:absolute;left:0;top:0;overflow:hidden;white-space:nowrap;color:#C79BEA;
     background-image:linear-gradient(120deg,#E4C4FF 0%,#B478E0 30%,#8B44BE 50%,#B478E0 70%,#E4C4FF 100%);background-size:240% 240%;
     -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    animation:pgShiftT 8s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(155,75,196,.45))}
+    animation:pgShiftT 8s ease-in-out infinite;filter:drop-shadow(0 0 6px rgba(155,75,196,.55))}
   @media (prefers-reduced-motion:reduce){ #pgh#pgh .pgh-stars-on{animation:none} }
-  #pgh#pgh .pgh-card-r b{font-weight:600;color:#FFFFFF}
-  #pgh#pgh .pgh-card-rn{color:#B9A9CC}
-  #pgh#pgh .pgh-card-new{color:#D9B3F5;font-weight:600;letter-spacing:.02em}
+  #pgh#pgh .pgh-card-r b{font-weight:700;color:#FFFFFF}
+  #pgh#pgh .pgh-card-rn{color:#CFC4DE;font-size:13.5px}
+  #pgh#pgh .pgh-card-new{padding:8px 14px;color:#F1E2FF;font-weight:700;letter-spacing:.02em}
+  /* two cards a row on a phone: the count gives way so the pill fits */
   @media (max-width:600px){
-    #pgh#pgh .pgh-card-r{font-size:12px;gap:5px;height:16px;margin:1px 0 6px}
-    #pgh#pgh .pgh-stars{font-size:13.5px;letter-spacing:.5px}
+    #pgh#pgh .pgh-card-r{left:8px;bottom:8px;gap:5px;padding:6px 10px 6px 8px;font-size:13.5px}
+    #pgh#pgh .pgh-stars{font-size:17px;letter-spacing:.5px}
+    #pgh#pgh .pgh-card-rn{display:none}
+    #pgh#pgh .pgh-card-new{padding:7px 12px;font-size:12.5px}
   }
   /* the price line in the titles' type: pg-theme-css stamps it 800 with
      .01em tracking, which sat oddly beside the 500 titles; 600, untracked */
@@ -293,20 +298,20 @@
                 {%- assign pgh_pct = bp.compare_at_price | minus: bp.price | times: 100 | divided_by: bp.compare_at_price -%}
                 <span class="pgh-badge">Sale {{ pgh_pct }}% Off</span>
               {%- endif -%}
+              {%- assign pgh_rv = bp.metafields.reviews.rating.value.rating | plus: 0 -%}
+              {%- assign pgh_rn = bp.metafields.reviews.rating_count.value | plus: 0 -%}
+              {%- if pgh_rv > 0 and pgh_rn > 0 -%}
+                {%- assign pgh_rw = pgh_rv | times: 20 -%}
+                <div class="pgh-card-r" role="img" aria-label="Rated {{ pgh_rv | round: 1 }} out of 5 from {{ pgh_rn }} reviews">
+                  <span class="pgh-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;<span class="pgh-stars-on" style="width:{{ pgh_rw }}%">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
+                  <b aria-hidden="true">{{ pgh_rv | round: 1 }}</b><span class="pgh-card-rn" aria-hidden="true">({{ pgh_rn }})</span>
+                </div>
+              {%- else -%}
+                <div class="pgh-card-r pgh-card-new">New arrival</div>
+              {%- endif -%}
               <button type="button" class="pgh-atc" data-variant="{{ bp.selected_or_first_available_variant.id }}">Add to Cart</button>
             </div>
             <div class="pgh-card-t">{{ block.settings.label | default: bp.title }}</div>
-            {%- assign pgh_rv = bp.metafields.reviews.rating.value.rating | plus: 0 -%}
-            {%- assign pgh_rn = bp.metafields.reviews.rating_count.value | plus: 0 -%}
-            {%- if pgh_rv > 0 and pgh_rn > 0 -%}
-              {%- assign pgh_rw = pgh_rv | times: 20 -%}
-              <div class="pgh-card-r" role="img" aria-label="Rated {{ pgh_rv | round: 1 }} out of 5 from {{ pgh_rn }} reviews">
-                <span class="pgh-stars" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;<span class="pgh-stars-on" style="width:{{ pgh_rw }}%">&#9733;&#9733;&#9733;&#9733;&#9733;</span></span>
-                <b aria-hidden="true">{{ pgh_rv | round: 1 }}</b><span class="pgh-card-rn" aria-hidden="true">({{ pgh_rn }})</span>
-              </div>
-            {%- else -%}
-              <div class="pgh-card-r pgh-card-new">New arrival</div>
-            {%- endif -%}
             <div class="pgh-card-p">
               {%- if bp.compare_at_price > bp.price -%}<s>{{ bp.compare_at_price | money }}</s>{%- endif -%}
               {{ bp.price | money }}
