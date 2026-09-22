@@ -3,6 +3,11 @@
   request, modelled on the layout of a competitor's page but in our own words,
   colors and claims. Registered in templates/product.pg-r36h.json only.
 
+  THE CHILDHOOD PANEL READS LIKE A MEMORY (2026-09-22, by request: "grasp at
+  heartstrings, do something like the R36S Pro has"). The lead names the
+  moments (Saturday mornings, passing the controller, sleepovers) before the
+  product facts, and a lavender closing line follows it. Claims unchanged.
+
   THE PIECES, EACH SEATED BY THE SCRIPT AT THE BOTTOM:
     1. BENEFITS (.pg-rhs-ben): four pain points answered, icon plus one line,
        directly under the title and stars. No paragraph, by request. The third
@@ -309,6 +314,11 @@
   .pg-rhs h2 span{background:linear-gradient(100deg,#D9B3F5,#9B4BC4);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
   .pg-rhs-lead{margin:0 auto;max-width:640px;font-size:16.5px;line-height:1.6;color:#CFC4DE;text-wrap:pretty}
   .pg-rhs-lead b{color:#fff}
+  /* the closing line of the childhood panel (2026-09-22, "grasp at heartstrings") */
+  .pg-rhs-mem{margin:18px 0 0;padding-left:14px;border-left:3px solid #9B4BC4;font-size:17px;line-height:1.45;font-weight:700;font-style:italic;color:#D9B3F5}
+  @media (max-width:900px){
+    .pg-rhs-mem{margin:16px auto 0;padding:0;border:0;font-size:15.5px;text-align:center}
+  }
 
   .pg-rhs-split{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;text-align:left}
   .pg-rhs-split h2,.pg-rhs-split .pg-rhs-lead{margin-left:0;margin-right:0}
@@ -524,8 +534,9 @@
     <div class="pg-rhs-split">
       <div>
         <span class="pg-rhs-eye">Your childhood, upgraded</span>
-        <h2>Every Console You Grew Up With. <span>Held Like a Controller.</span></h2>
-        <p class="pg-rhs-lead">Two real joysticks. A bright 3.5 inch screen. HDMI out to any TV. <b>Up to 20,000 games across 20+ classic systems</b>, ready the second you power&nbsp;on.</p>
+        <h2>Remember Blowing on the Cartridge? <span>It All Comes Back.</span></h2>
+        <p class="pg-rhs-lead">Saturday mornings in pajamas, cereal on the carpet. Passing the controller to your little brother after you lost a life. Sleepovers that went way past bedtime for one more level. Now it all fits in your hands, with two real joysticks and <b>up to 20,000 games across 20+ classic systems</b>, ready the second you power&nbsp;on.</p>
+        <p class="pg-rhs-mem">The games you remember. The feeling you forgot.</p>
       </div>
       {%- if hero_img != blank -%}
       <div class="pg-rhs-photo">
