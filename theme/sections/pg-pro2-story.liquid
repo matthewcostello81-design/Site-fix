@@ -249,7 +249,7 @@
   #pgx .pg-p2s-loved p{margin:8px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:13.5px;line-height:1.5;color:#CFC4DE}
   /* THE STRIP LOOPS FOREVER (2026-09-22, by request: "take more of the
      photos from judge me and make it an endless scroll in loop"). The photo
-     set is printed three times, side by side, in .pg-p2s-track; loopRail() in
+     set is printed five times, side by side, in .pg-p2s-track; loopRail() in
      the script keeps the rail on the middle copy, stepping it by exactly one
      set after a swipe, which looks like nothing happened. It does not scroll
      by itself. The cards are a fixed width (they used to be 46% of a
@@ -509,7 +509,8 @@
   <div class="pg-p2s-shots" data-p2s="shots">
     <div class="pg-p2s-loved"><span class="pg-p2s-loved-pill"><span class="st" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span data-p2s-loved="pill">Rated 4.6/5 &middot; 143 reviews</span></span><h3>Loved by Gamers<span>Just Like You</span></h3></div>
     <div class="pg-p2s-shots-h"><b>Buyer Reviews</b><span>Swipe &rarr;</span></div>
-    <div class="pg-p2s-rail" data-p2s-loop><div class="pg-p2s-track"><div class="pg-p2s-set">{{ shots_html }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_html | replace: '<a class="pg-p2s-shot"', '<a tabindex="-1" class="pg-p2s-shot"' }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_html | replace: '<a class="pg-p2s-shot"', '<a tabindex="-1" class="pg-p2s-shot"' }}</div></div></div>
+    {%- capture shots_clone -%}{{ shots_html | replace: '<a class="pg-p2s-shot"', '<a tabindex="-1" class="pg-p2s-shot"' }}{%- endcapture -%}
+    <div class="pg-p2s-rail" data-p2s-loop><div class="pg-p2s-track"><div class="pg-p2s-set">{{ shots_html }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-p2s-set" aria-hidden="true">{{ shots_clone }}</div></div></div>
   </div>
   {%- endif -%}
 </div>
@@ -620,9 +621,11 @@
     loopRail();
   }
 
-  /* THE ENDLESS PHOTO LOOP (2026-09-22). The rail holds the photo set three
-     times and rests on the MIDDLE copy, so there is a full set to swipe into
-     in either direction. It does not move on its own (by request: "the
+  /* THE ENDLESS PHOTO LOOP (2026-09-22). The rail holds the photo set five
+     times and rests on the MIDDLE copy, so there are two full sets to swipe
+     into in either direction: with only one, a hard fling ran into the end
+     and stopped before the loop could step it back ("it's taking too long to
+     loop to beginning when scrolling"). It does not move on its own (by request: "the
      reviews shouldn't auto scroll tho"). When a swipe settles outside the
      middle copy, the rail steps by exactly one set width (the distance from
      one copy's start to the next), which shows the same picture, so the loop
@@ -635,18 +638,21 @@
     if (!rail) return;
     var sets = rail.querySelectorAll('.pg-p2s-set');
     if (sets.length < 3) return;
+    var mid = Math.floor(sets.length / 2);
     function centre(){
       var period = sets[1].offsetLeft - sets[0].offsetLeft;
       if (period <= 0) return;
-      var x = rail.scrollLeft;
-      if (x < period) rail.scrollLeft = x + period;
-      else if (x >= 2 * period) rail.scrollLeft = x - period;
+      var lo = mid * period, x = rail.scrollLeft;
+      if (x >= lo && x < lo + period) return;
+      var off = (x - lo) % period;
+      if (off < 0) off += period;
+      rail.scrollLeft = lo + off;
     }
     centre();
     if (rail.pgLoop) return;
     rail.pgLoop = 1;
     var t = 0;
-    rail.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(centre, 160); }, {passive: true});
+    rail.addEventListener('scroll', function(){ clearTimeout(t); t = setTimeout(centre, 90); }, {passive: true});
     /* a first swipe can come before any scroll event (still at the start) */
     rail.addEventListener('touchstart', centre, {passive: true});
     window.addEventListener('resize', function(){ clearTimeout(t); t = setTimeout(centre, 160); }, {passive: true});
