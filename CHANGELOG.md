@@ -1,3 +1,22 @@
+# R36H Pro Protection Kit photo: banner and memory card removed
+
+## Problem
+The kit's only photo had "128GB · 20K GAMES" printed across the top and a
+giant 128GB microSD card in front of the case, both baked into the image.
+
+## Fix
+media/r36h-kit-clean.png is the same photo rebuilt: the banner is cropped
+off and the card is painted out. The hidden strip behind the card (the tray's
+foam lip, the zipper rim and the floor reflection) is rebuilt from the pixels
+beside it, matched row by row so there is no seam. Square crop that keeps the
+case and all three screen protectors. Uploaded to the product as its only
+image; the old photo is deleted.
+
+## Applied to
+Product r36h-max-kit (live, not theme dependent).
+
+---
+
 # Site speed: stop the background work that made phones crawl
 
 ## Problem
