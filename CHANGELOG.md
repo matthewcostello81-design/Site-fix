@@ -11,9 +11,10 @@ upsell" (plus: the Protection Kit photo must lose the silicone case).
   and 3 screen protectors"; list: 128GB, 20K games, 3X screen protector, USB-C
   cable, hard shell travel case, free shipping (six items, three a side). Duo
   Max: "2X 4 Accessories", 6X screen protector, 2X hard shell case.
-- sections/pg-r36h-story.liquid: the accessories section is two cards (hard
-  shell case, 3 tempered glass screen protectors), "Case and Glass. Both
-  Included.", laid out two across.
+- sections/pg-r36h-story.liquid: "Everything in the Max. Every Piece
+  Included." Three cards: 128GB · 20K Games (Mystic Purple shot, replacing the
+  silicone card, by request), hard shell travel case, 3 tempered glass screen
+  protectors.
 - sections/pg-cart-addons.liquid: R36H singles are offered the hard shell case
   and screen protector only; having both unlocks the Duo Max upgrade row.
 

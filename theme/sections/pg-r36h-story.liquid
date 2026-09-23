@@ -195,9 +195,11 @@
   childhood lead was cut to three short memories ("too long").
 {%- endcomment -%}
 {%- if product -%}
-{%- comment -%} the accessory cards (two since 2026-09-23: no silicone case) show the ADD-ON PRODUCTS' own pictures (2026-09-21: the case renders were redone with one unit each; a fixed file name in Files kept showing the old two-case shot, "look this still shows 2"); the Files render stays as the fallback {%- endcomment -%}
+{%- comment -%} the three Max Bundle cards (2026-09-23: the silicone case can't be sourced, so its card became "128GB · 20K Games" on the Mystic Purple shot, by request: "replace this silicone daily with 20K games 128gb"); the two accessory cards show the ADD-ON PRODUCTS' own pictures (2026-09-21: the case renders were redone with one unit each; a fixed file name in Files kept showing the old two-case shot, "look this still shows 2"); the Files render stays as the fallback {%- endcomment -%}
+{%- assign p2_big = product.images | where: 'alt', 'Pocket Era R36H in Mystic Purple' | first | default: product.featured_image -%}
 {%- assign p2_hard = all_products['r36h-hard-shell-travel-case'] -%}
 {%- assign p2_prot = all_products['r36h-screen-protector'] -%}
+{%- assign p2_big_img = p2_big | image_url: width: 600 -%}
 {%- if p2_hard.featured_image -%}{%- assign p2_hard_img = p2_hard.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_hard_img = 'pe-r36pro2-travel.jpg' | file_url -%}{%- endif -%}
 {%- if p2_prot.featured_image -%}{%- assign p2_prot_img = p2_prot.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_prot_img = 'pe-r36pro2-protector.jpg' | file_url -%}{%- endif -%}
 {%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
@@ -375,8 +377,8 @@
      between Under the hood and Side by side. The photos are Gemini renders
      in the store's purple studio style (Files: pe-r36pro2-*.jpg). The joystick
      caps card was removed 2026-09-19 ("no joystick caps anywhere"). */
-  .pg-rhs-cases{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:680px;margin:30px auto 0;text-align:left}
-  /* two cards since 2026-09-23 (the silicone case can't be sourced; the Max ships a hard shell case and 3 screen protectors): two across on a desktop, a column on phones */
+  .pg-rhs-cases{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:1000px;margin:30px auto 0;text-align:left}
+  /* three cards since 2026-09-19 ("no joystick caps anywhere"): three across on a desktop, a column on phones */
   .pg-rhs-case{grid-template-columns:104px minmax(0,1fr);gap:13px;padding:14px}
   .pg-rhs-case img{width:104px;height:104px}
   .pg-rhs-case{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;align-items:center;padding:16px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
@@ -594,9 +596,10 @@
 
   <section class="pg-rhs-sec">
     <span class="pg-rhs-eye">In the Max Bundle</span>
-    <h2>Case and Glass. <span>Both Included.</span></h2>
-    <p class="pg-rhs-lead">The Max Bundle ships with a hard shell travel case and 3 screen protectors, the Duo Max with twice that. Or add either to the Single&nbsp;Device.</p>
+    <h2>Everything in the Max. <span>Every Piece Included.</span></h2>
+    <p class="pg-rhs-lead">128GB with 20K games, a hard shell travel case and 3 screen protectors in the Max Bundle, twice over in the Duo Max. Or add the case and protectors to the Single&nbsp;Device.</p>
     <div class="pg-rhs-cases">
+      <div class="pg-rhs-case"><img src="{{ p2_big_img }}" alt="R36H Pro with 128GB and 20K games" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>128GB &middot; 20K Games</h3><p>A 128GB card with 20,000+ games preloaded, ready the moment you power on.</p></div></div>
       <div class="pg-rhs-case"><img src="{{ p2_hard_img }}" alt="R36H Pro hard shell travel case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Hard Shell Travel Case</h3><p>Zip-up hard shell for the bag. Fits the console, cable and microSD cards.</p></div></div>
       <div class="pg-rhs-case"><img src="{{ p2_prot_img }}" alt="R36H Pro tempered glass screen protectors" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>3 Tempered Glass Screen Protectors</h3><p>Real glass for the 3.5 inch screen, with spares ready. Cloth and wipe included.</p></div></div>
     </div>
