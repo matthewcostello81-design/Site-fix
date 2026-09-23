@@ -129,7 +129,7 @@
       "type": "pg-r36h-tiles",
       "settings": {
         "duo_off": "7.00",
-        "duomax_off": "22.50"
+        "duomax_off": "20.00"
       }
     },
     "pg_r36hstory": {
