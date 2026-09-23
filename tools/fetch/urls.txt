@@ -1,0 +1,6 @@
+# one per line: <url> <output name>
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/570a6d8d-d232-43d4-abd1-341dcb8fcc2b.jpg?v=1790203333 ultra-1-570a6d8d.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/32927418-9b20-4e7a-ad32-e64ebc2a6a07.jpg?v=1790203206 ultra-2-32927418.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/72772de3-814a-4e26-8280-2aee18063780.jpg?v=1790203205 ultra-3-72772de3.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/c22e32ab-6cb3-42fc-b104-e0397e859f50.jpg?v=1790203244 ultra-4-c22e32ab.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/Gemini_Generated_Image_yjap1zyjap1zyjap.jpg?v=1790203205 ultra-5-gemini.jpg
