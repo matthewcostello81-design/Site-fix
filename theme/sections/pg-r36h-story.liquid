@@ -3,6 +3,11 @@
   request, modelled on the layout of a competitor's page but in our own words,
   colors and claims. Registered in templates/product.pg-r36h.json only.
 
+  THE CHILDHOOD PANEL READS LIKE A MEMORY (2026-09-22, by request: "grasp at
+  heartstrings, do something like the R36S Pro has"). The lead names the
+  moments (Saturday mornings, passing the controller, sleepovers) before the
+  product facts, and a lavender closing line follows it. Claims unchanged.
+
   THE PIECES, EACH SEATED BY THE SCRIPT AT THE BOTTOM:
     1. BENEFITS (.pg-rhs-ben): four pain points answered, icon plus one line,
        directly under the title and stars. No paragraph, by request. The third
@@ -24,6 +29,15 @@
        "Games Preloaded". White like the rest of the label; it was lavender
        for a few hours ("doesnt need to be in purple"). "Up to", because the
        Single Device carries 15,000+.
+       THE THIRD IS "READY OUT OF THE BOX" (2026-09-22, by request: replace the
+       battery one with another pain point buyers in this market have). Setup
+       hassle is the common complaint with budget retro handhelds; the claim
+       is the one the story already makes ("ready the second you power on").
+       Battery stays in Under the hood.
+       THE FIRST IS "UP TO 20K GAMES" (2026-09-22, by request: "the main point
+       under the title should say something about up to 20k games, get rid of
+       dual joysticks"). It matches the R36S page, which leads with its game
+       count. "Up to", because the Single Device carries fewer than the Max.
     2. BUYER PHOTOS (.pg-rhs-shots): a swipeable strip of the photo reviews
        Judge.me holds for this product, under the rotating review card at the
        foot of the buy column. Headed "Buyer Reviews" by request. It is built
@@ -172,13 +186,18 @@
   THE PRICE CARD IS A BUTTON. The highlighted "$74.99" card in "Do the math"
   looks like the thing to tap, so it is one: it scrolls up to the bundles, the
   same as the button at the foot of the story.
+
+  SPEC TILES, SECOND PASS (2026-09-22, by request: "keep a little more text
+  under each, keep original text and add those bolded words"). Each Under the
+  hood card leads with a big stat drawn from its original title (Quad-Core,
+  3.5 Inch, 2 Slots, 3000mAh) over its original description, restored in
+  full. The same tiles went onto the R36S Pro and Flip SP pages. The
+  childhood lead was cut to three short memories ("too long").
 {%- endcomment -%}
 {%- if product -%}
-{%- comment -%} the three accessory cards show the ADD-ON PRODUCTS' own pictures (2026-09-21: the case renders were redone with one unit each; a fixed file name in Files kept showing the old two-case shot, "look this still shows 2"); the Files render stays as the fallback {%- endcomment -%}
-{%- assign p2_sil = all_products['r36h-silicone-case'] -%}
+{%- comment -%} the accessory cards (two since 2026-09-23: no silicone case) show the ADD-ON PRODUCTS' own pictures (2026-09-21: the case renders were redone with one unit each; a fixed file name in Files kept showing the old two-case shot, "look this still shows 2"); the Files render stays as the fallback {%- endcomment -%}
 {%- assign p2_hard = all_products['r36h-hard-shell-travel-case'] -%}
 {%- assign p2_prot = all_products['r36h-screen-protector'] -%}
-{%- if p2_sil.featured_image -%}{%- assign p2_sil_img = p2_sil.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_sil_img = 'pe-r36pro2-silicone.jpg' | file_url -%}{%- endif -%}
 {%- if p2_hard.featured_image -%}{%- assign p2_hard_img = p2_hard.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_hard_img = 'pe-r36pro2-travel.jpg' | file_url -%}{%- endif -%}
 {%- if p2_prot.featured_image -%}{%- assign p2_prot_img = p2_prot.featured_image | image_url: width: 600 -%}{%- else -%}{%- assign p2_prot_img = 'pe-r36pro2-protector.jpg' | file_url -%}{%- endif -%}
 {%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
@@ -304,6 +323,11 @@
   .pg-rhs h2 span{background:linear-gradient(100deg,#D9B3F5,#9B4BC4);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
   .pg-rhs-lead{margin:0 auto;max-width:640px;font-size:16.5px;line-height:1.6;color:#CFC4DE;text-wrap:pretty}
   .pg-rhs-lead b{color:#fff}
+  /* the closing line of the childhood panel (2026-09-22, "grasp at heartstrings") */
+  .pg-rhs-mem{margin:18px 0 0;padding-left:14px;border-left:3px solid #9B4BC4;font-size:17px;line-height:1.45;font-weight:700;font-style:italic;color:#D9B3F5}
+  @media (max-width:900px){
+    .pg-rhs-mem{margin:16px auto 0;padding:0;border:0;font-size:15.5px;text-align:center}
+  }
 
   .pg-rhs-split{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;text-align:left}
   .pg-rhs-split h2,.pg-rhs-split .pg-rhs-lead{margin-left:0;margin-right:0}
@@ -327,12 +351,21 @@
   .pg-rhs-math em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:#CFC4DE}
 
   .pg-rhs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:34px 0 0}
-  .pg-rhs-feat{padding:24px 16px 22px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
-  .pg-rhs-feat .ic{width:72px;height:72px;margin:0 auto 16px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-    background:linear-gradient(135deg,#9B4BC4,#4A1C66);box-shadow:0 14px 30px -14px rgba(155,75,196,.9)}
-  .pg-rhs-feat .ic svg{width:44px;height:44px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-  .pg-rhs-feat h3{margin:0 0 7px;font-family:inherit;font-size:16.5px;line-height:1.25;font-weight:800;color:#fff}
-  .pg-rhs-feat p{margin:0;font-size:13.5px;line-height:1.55;color:#CFC4DE}
+  /* spec tiles (2026-09-22, by request): a big stat drawn from each card's title over its original description */
+  .pg-rhs-feat{position:relative;padding:32px 18px 30px;border-radius:22px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(155,75,196,.14),rgba(155,75,196,0) 60%),#16101F;border:1px solid rgba(199,155,234,.18)}
+  .pg-rhs-feat .ic{width:72px;height:72px;margin:0 auto 16px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#9B4BC4,#4A1C66);box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
+  .pg-rhs-feat .ic svg{width:54px;height:54px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  /* the stat words carry a slow white-to-lavender sweep (2026-09-22, "should be moving"); the gradient repeats every element width, so a 200% travel loops without a jump */
+  .pg-rhs-feat h3{margin:0 0 8px;font-family:inherit;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.01em;text-wrap:balance;
+    background:linear-gradient(100deg,#fff 0%,#D9B3F5 25%,#fff 50%,#D9B3F5 75%,#fff 100%);background-size:200% 100%;background-position:0% 50%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    animation:pg-rhs-statflow 4s linear infinite}
+  @keyframes pg-rhs-statflow{from{background-position:0% 50%}to{background-position:200% 50%}}
+  @media (prefers-reduced-motion:reduce){.pg-rhs-feat h3{animation:none}}
+  /* every description is cut to the same length, so the four cards read as one row (2026-09-22, "all paragraphs need to be the same size") */
+  .pg-rhs-feat p{margin:0;font-size:15px;line-height:1.5;color:#CFC4DE;text-wrap:balance}
 
   /* the accessories chapter (2026-09-19, asked for after the Flip SP's cases
      module: "copy that module for the hard shell and daily case ... for the
@@ -342,8 +375,8 @@
      between Under the hood and Side by side. The photos are Gemini renders
      in the store's purple studio style (Files: pe-r36pro2-*.jpg). The joystick
      caps card was removed 2026-09-19 ("no joystick caps anywhere"). */
-  .pg-rhs-cases{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;max-width:1000px;margin:30px auto 0;text-align:left}
-  /* three cards since 2026-09-19 ("no joystick caps anywhere"): three across on a desktop, a column on phones */
+  .pg-rhs-cases{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:680px;margin:30px auto 0;text-align:left}
+  /* two cards since 2026-09-23 (the silicone case can't be sourced; the Max ships a hard shell case and 3 screen protectors): two across on a desktop, a column on phones */
   .pg-rhs-case{grid-template-columns:104px minmax(0,1fr);gap:13px;padding:14px}
   .pg-rhs-case img{width:104px;height:104px}
   .pg-rhs-case{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;align-items:center;padding:16px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
@@ -425,11 +458,11 @@
     .pg-rhs-math em{font-size:12px}
     .pg-rhs-math .go{font-size:11px;letter-spacing:.06em}
     .pg-rhs-grid{grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
-    .pg-rhs-feat{padding:18px 12px 16px;border-radius:16px}
-    .pg-rhs-feat .ic{width:64px;height:64px;margin-bottom:13px}
-    .pg-rhs-feat .ic svg{width:40px;height:40px}
-    .pg-rhs-feat h3{font-size:14.5px}
-    .pg-rhs-feat p{font-size:12.5px;line-height:1.5}
+    .pg-rhs-feat{padding:24px 8px 22px;border-radius:20px}
+    .pg-rhs-feat .ic{width:60px;height:60px;margin-bottom:12px;border-radius:17px}
+    .pg-rhs-feat .ic svg{width:46px;height:46px}
+    .pg-rhs-feat h3{font-size:clamp(20px,5.8vw,24px);margin-bottom:6px}
+    .pg-rhs-feat p{font-size:13.5px;line-height:1.45}
     .pg-rhs-cases{grid-template-columns:1fr;gap:12px;margin-top:22px}
     .pg-rhs-case{grid-template-columns:96px minmax(0,1fr);gap:13px;padding:13px}
     .pg-rhs-case img{width:96px;height:96px}
@@ -466,9 +499,9 @@
 
 <div id="pg-rhs-src" hidden>
   <ul class="pg-rhs-ben" data-rhs="ben">
-    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M7.4 6h9.2a5 5 0 0 1 4.9 6l-.8 4.6a2.8 2.8 0 0 1-5 1.2L14.4 16H9.6l-1.3 1.8a2.8 2.8 0 0 1-5-1.2L2.5 12a5 5 0 0 1 4.9-6z" fill="rgba(255,255,255,.16)"/><path d="M7.6 9.5v4.2M5.5 11.6h4.2"/><circle cx="15.2" cy="10.2" r=".95" fill="#fff" stroke="none"/><circle cx="17.9" cy="11.9" r=".95" fill="#fff" stroke="none"/><circle cx="15.2" cy="13.6" r=".95" fill="#fff" stroke="none"/><circle cx="12.5" cy="11.9" r=".95" fill="#fff" stroke="none"/><path d="M8 6V5.2a1 1 0 0 1 1-1h1.2M16 6V5.2a1 1 0 0 0-1-1h-1.2"/></svg></span><span><b>Dual<br>Joysticks</b>360&deg; control</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="3.2" y="3.2" width="7.6" height="7.6" rx="1.8" fill="rgba(255,255,255,.16)"/><rect x="13.2" y="3.2" width="7.6" height="7.6" rx="1.8" fill="rgba(255,255,255,.16)"/><rect x="3.2" y="13.2" width="7.6" height="7.6" rx="1.8" fill="rgba(255,255,255,.16)"/><rect x="13.2" y="13.2" width="7.6" height="7.6" rx="1.8" fill="#fff" stroke="none"/><path d="M15.4 17h3.2M17 15.4v3.2" stroke="#6B2A99" stroke-width="1.6"/></svg></span><span><b>Up to 20K<br>Games</b>Preloaded, ready to play</span></li>
     <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="12.5" rx="2.2" fill="rgba(255,255,255,.14)"/><path d="M8 20.5h8M12 17v3.5"/><path d="M9 8.5l6 2.5-6 2.5z" fill="#fff" stroke="none"/></svg></span><span><b>Plays on<br>Your TV</b>HDMI out, big screen</span></li>
-    <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="7.2" width="17.5" height="9.6" rx="2.4" fill="rgba(255,255,255,.14)"/><path d="M21.7 10.4v3.2"/><rect x="4.6" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="8.3" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="12" y="9.4" width="2.5" height="5.2" rx=".7" fill="#fff" stroke="none"/><rect x="15.7" y="9.4" width="2.5" height="5.2" rx=".7" stroke-width="1.2"/></svg></span><span><b>5-Hour<br>Battery</b>3000mAh, USB-C charging</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12.6" r="8.4" fill="rgba(255,255,255,.14)"/><path d="M8.4 7.9a6 6 0 1 0 7.2 0"/><path d="M12 4.2v7.4" stroke-width="2"/></svg></span><span><b>Ready Out<br>of the Box</b>No setup, no downloads</span></li>
     <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M8.2 3h7.6L19 6.2V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V8.6L8.2 3z" fill="rgba(255,255,255,.14)"/><path d="M9 3v2.8M11.4 3v2.8M13.8 3v2.8M16.2 3.6v2.2" stroke-width="1.4"/><circle cx="12" cy="14.2" r="3.7" fill="#fff" stroke="none"/><path d="M12 12.2v4M10 14.2h4" stroke="#6B2A99" stroke-width="1.8"/></svg></span><span><b>Add Your<br>Own Games</b>Drag and drop by microSD</span></li>
   </ul>
 
@@ -516,8 +549,9 @@
     <div class="pg-rhs-split">
       <div>
         <span class="pg-rhs-eye">Your childhood, upgraded</span>
-        <h2>Every Console You Grew Up With. <span>Held Like a Controller.</span></h2>
-        <p class="pg-rhs-lead">Held sideways, the way a controller sits in your hands. Two real joysticks, a bright 3.5 inch screen, and an HDMI port that turns any TV into the arcade. <b>Up to 20,000 games across 20+ classic systems</b>, ready the second you power&nbsp;on.</p>
+        <h2>Remember Blowing on the Cartridge? <span>It All Comes Back.</span></h2>
+        <p class="pg-rhs-lead">Saturday mornings on the carpet. Passing the controller after you lost a life. One more level at a sleepover. <b>Up to 20,000 games across 20+ classic systems</b>, ready the second you power&nbsp;on.</p>
+        <p class="pg-rhs-mem">The games you remember. The feeling you forgot.</p>
       </div>
       {%- if hero_img != blank -%}
       <div class="pg-rhs-photo">
@@ -551,21 +585,20 @@
     <h2>Quick, Smooth and <span>Made to Be Played.</span></h2>
     <p class="pg-rhs-lead">The parts that matter once you are deep in a game.</p>
     <div class="pg-rhs-grid">
-      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><h3>Quad-Core Processor</h3><p>A quad-core chip runs 8-bit classics through PS1 games smoothly, and stays cool doing it.</p></div>
-      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 17v3.5"/></svg></span><h3>Bright 3.5 Inch Screen</h3><p>A bright 3.5 inch IPS display at 640x480 keeps every pixel crisp and clear.</p></div>
-      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h7.5L19 7.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9.5 3v3.5M12.5 3v3.5"/><path d="M12.5 11.5v6M9.5 14.5h6"/></svg></span><h3>Two microSD Slots</h3><p>One card runs the system, the other holds your games, so an OS update never touches a single save.</p></div>
-      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="16.5" height="8.5" rx="2"/><path d="M21.5 11v2.5M11.5 9.8l-2.4 2.9h3.2l-2.2 2.6"/></svg></span><h3>3000mAh Battery</h3><p>A 3000mAh battery gives you about 5 hours of play, and USB-C refills it in 2.5.</p></div>
+      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/><path d="M10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4"/></svg></span><h3>Quad-Core</h3><p>Runs 8-bit classics to PS1 smoothly.</p></div>
+      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2"/><path d="M8.5 20.5h7M12 17v3.5"/></svg></span><h3>3.5 Inch</h3><p>Sharp, bright 640x480 IPS display.</p></div>
+      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h7.5L19 7.5V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9.5 3v3.5M12.5 3v3.5"/><path d="M12.5 11.5v6M9.5 14.5h6"/></svg></span><h3>2 Slots</h3><p>One runs the system, one holds games.</p></div>
+      <div class="pg-rhs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="8" width="16.5" height="8.5" rx="2"/><path d="M21.5 11v2.5M11.5 9.8l-2.4 2.9h3.2l-2.2 2.6"/></svg></span><h3>3000mAh</h3><p>About 5 hours of play, USB-C charging.</p></div>
     </div>
   </section>
 
   <section class="pg-rhs-sec">
     <span class="pg-rhs-eye">In the Max Bundle</span>
-    <h2>Three Accessories. <span>Every One Included.</span></h2>
-    <p class="pg-rhs-lead">All three come in the Max Bundle and the Duo Max Bundle, or add any of them to the Single&nbsp;Device.</p>
+    <h2>Case and Glass. <span>Both Included.</span></h2>
+    <p class="pg-rhs-lead">The Max Bundle ships with a hard shell travel case and 3 screen protectors, the Duo Max with twice that. Or add either to the Single&nbsp;Device.</p>
     <div class="pg-rhs-cases">
-      <div class="pg-rhs-case"><img src="{{ p2_sil_img }}" alt="R36H Pro silicone daily case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Silicone Daily Case</h3><p>A soft silicone sleeve with a lanyard that stays on the console. Grippy in the hand, shrugs off scratches and drops.</p></div></div>
-      <div class="pg-rhs-case"><img src="{{ p2_hard_img }}" alt="R36H Pro hard shell travel case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Hard Shell Travel Case</h3><p>A zip-up hard shell for the bag. Holds the console, its cable and your microSD cards, and takes the knocks so the console does not.</p></div></div>
-      <div class="pg-rhs-case"><img src="{{ p2_prot_img }}" alt="R36H Pro tempered glass screen protector" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Tempered Glass Screen Protector</h3><p>Real glass over the 3.5 inch screen, with a cloth and a wipe to fit it clean.</p></div></div>
+      <div class="pg-rhs-case"><img src="{{ p2_hard_img }}" alt="R36H Pro hard shell travel case" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>Hard Shell Travel Case</h3><p>Zip-up hard shell for the bag. Fits the console, cable and microSD cards.</p></div></div>
+      <div class="pg-rhs-case"><img src="{{ p2_prot_img }}" alt="R36H Pro tempered glass screen protectors" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">Included</span><h3>3 Tempered Glass Screen Protectors</h3><p>Real glass for the 3.5 inch screen, with spares ready. Cloth and wipe included.</p></div></div>
     </div>
     <span class="pg-rhs-cta" role="button" tabindex="0" data-rhs-cta data-rhs-max>Get the Max Bundle <span>&rarr;</span></span>
   </section>

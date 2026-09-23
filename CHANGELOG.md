@@ -1,3 +1,24 @@
+# R36H Pro: no silicone case; the Max ships a hard shell case + 3 screen protectors
+
+## Request
+"we cant source a silicone daily well for r36h. SO max bundle will just have
+the hard case and 3 screen protectors. Somehow fix that in the product page
+upsell" (plus: the Protection Kit photo must lose the silicone case).
+
+## Theme (new unpublished theme "R36H no silicone (Claude 9-23)", duplicated from live)
+- sections/pg-r36h-tiles.liquid: the Single's silicone add-on row, its data and
+  copy are gone. Max chip "+ 4 Accessories" with "One console, a hard shell case
+  and 3 screen protectors"; list: 128GB, 20K games, 3X screen protector, USB-C
+  cable, hard shell travel case, free shipping (six items, three a side). Duo
+  Max: "2X 4 Accessories", 6X screen protector, 2X hard shell case.
+- sections/pg-r36h-story.liquid: the accessories section is two cards (hard
+  shell case, 3 tempered glass screen protectors), "Case and Glass. Both
+  Included.", laid out two across.
+- sections/pg-cart-addons.liquid: R36H singles are offered the hard shell case
+  and screen protector only; having both unlocks the Duo Max upgrade row.
+
+---
+
 # R36H Pro cart: color picker flickered
 
 ## Cause (sections/pg-r36h-cart.liquid)
