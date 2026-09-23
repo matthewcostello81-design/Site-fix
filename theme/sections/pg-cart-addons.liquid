@@ -1,6 +1,15 @@
 {%- comment -%}
   PG Cart Add-ons (2026-09-17): the cart upsells pg-cart-offer does not carry.
 
+  R36S ULTRA (2026-09-23): family 'ultra' (pocket-era-r36s-ultra) added as a
+  mirror of pro2, same Bundle x Color shape: usil / uhard / uprot rows under
+  its singles, the free kit row (ukit), the 'ulduo' Duo Max rows at $20.00 off
+  each Max ("R36S Ultra - Duo Max Savings"), ultraOffer in choose() and famOf.
+  Its add-on and kit ids are the ones the dead flip family lists too (the Ultra
+  products are the renamed Flip SP ones); flip keys on the old flip-sp-*
+  handles, which no longer exist, so the two never meet. flip, pro2 and r36h
+  are unchanged.
+
   pg-cart-offer paints ONE card for the newest product family in the cart and
   hides every other upsell row (the frame row included). Two gaps, by report:
 
@@ -283,7 +292,13 @@
         hsil:  'r36h-silicone-case',
         hhard: 'r36h-hard-shell-travel-case',
         hprot: 'r36h-screen-protector',
-        hkit:  'r36h-max-kit'
+        hkit:  'r36h-max-kit',
+        /* the R36S Ultra and its add-ons (2026-09-23) */
+        ultra: 'pocket-era-r36s-ultra',
+        usil:  'r36s-ultra-silicone-case',
+        uhard: 'r36s-ultra-hard-shell-case',
+        uprot: 'r36s-ultra-screen-protector',
+        ukit:  'r36s-ultra-max-kit'
   };
   var FRAME_VARIANT = 49688364613860;
   /* the products pg-cart-offer has a card for (its own H table) */
@@ -305,10 +320,12 @@
     var PRO2S = {};
     PRO2S[H.pro2] = 'pro2'; PRO2S[H.psil] = 'pro2'; PRO2S[H.phard] = 'pro2'; PRO2S[H.pprot] = 'pro2'; PRO2S[H.pkit] = 'pro2';
     PRO2S[H.r36h] = 'r36h'; PRO2S[H.hsil] = 'r36h'; PRO2S[H.hhard] = 'r36h'; PRO2S[H.hprot] = 'r36h'; PRO2S[H.hkit] = 'r36h';
+    PRO2S[H.ultra] = 'ultra'; PRO2S[H.usil] = 'ultra'; PRO2S[H.uhard] = 'ultra'; PRO2S[H.uprot] = 'ultra'; PRO2S[H.ukit] = 'ultra';
     var FSIL_VARIANT = 49908115210468, FHARD_VARIANT = 49908115308772, FPROT_VARIANT = 49913872908516;
     var PSIL_VARIANT = 49913872810212, PHARD_VARIANT = 49913872842980, PPROT_VARIANT = 49913872875748;
     var FKIT_VARIANT = 49931342217444, PKIT_VARIANT = 49931342282980;
     var HSIL_VARIANT = 49937358225636, HHARD_VARIANT = 49937358258404, HPROT_VARIANT = 49937358291172, HKIT_VARIANT = 49937358323940;
+    var USIL_VARIANT = 49908115210468, UHARD_VARIANT = 49908115308772, UPROT_VARIANT = 49913872908516, UKIT_VARIANT = 49931342217444;
     /* the Flip SP's Bundle (option2; option1 is the colour) */
     var FB = {single: 'Single Device', max: 'Max Package', duo: 'Duo Max Package'};
   var B = {single: 'Single Device (64GB)', max: 'Max Bundle (128GB)', duo: 'Duo Max Bundle (2x 128GB)'};
@@ -424,7 +441,12 @@
          screen protector, and having both is what unlocks the Duo Max row */
       kit: {handle: H.hkit, id: HKIT_VARIANT, fam: 'hkit', noun: 'Protection Kit'}, rows: [
       {handle: H.hhard, id: HHARD_VARIANT, fam: 'hhard', noun: 'Hard Shell Travel Case'},
-      {handle: H.hprot, id: HPROT_VARIANT, fam: 'hprot', noun: 'Screen Protector'}]}
+      {handle: H.hprot, id: HPROT_VARIANT, fam: 'hprot', noun: 'Screen Protector'}]},
+    ultra: {handle: H.ultra, single: function(v){ return v.o1 === B.single; }, max: function(v){ return v.o1 === B.max; }, colour: function(v){ return v.o2; }, duoOff: 2000,   /* $20.00 off each Max from two up ("R36S Ultra - Duo Max Savings", 2026-09-23) */
+      kit: {handle: H.ukit, id: UKIT_VARIANT, fam: 'ukit', noun: 'Protection Kit'}, rows: [
+      {handle: H.usil, id: USIL_VARIANT, fam: 'usil', noun: 'Clear Daily Case'},
+      {handle: H.uhard, id: UHARD_VARIANT, fam: 'uhard', noun: 'Hard Shell Travel Case'},
+      {handle: H.uprot, id: UPROT_VARIANT, fam: 'uprot', noun: 'Screen Protector'}]}
   };
   /* what a family holds (2026-09-21): single units, the Max consoles one by
      one, and how many of each product the cart carries, by handle */
@@ -571,7 +593,7 @@
          cuts the pair earns (the first console's price drops as well) */
       var plus = Math.max(0, m.price - 2 * F.duoOff);
       var secondOff = Math.max(0, Math.round((1 - plus / m.price) * 100));
-      var famTag = famKey === 'flip' ? 'fduo' : famKey === 'r36h' ? 'rhduo' : 'p2duo';
+      var famTag = famKey === 'flip' ? 'fduo' : famKey === 'r36h' ? 'rhduo' : famKey === 'ultra' ? 'ulduo' : 'p2duo';
       return {
         key: famTag, kind: 'swap', tone: 'row',
         img: keep(famTag, sized(m.img || pr.image, 200)),
@@ -630,7 +652,7 @@
       });
       var duo = 2 * Math.max(0, m1.price - F.duoOff);
       var plus = Math.max(0, duo - held);
-      var famTag = famKey === 'flip' ? 'fduo' : famKey === 'r36h' ? 'rhduo' : 'p2duo';
+      var famTag = famKey === 'flip' ? 'fduo' : famKey === 'r36h' ? 'rhduo' : famKey === 'ultra' ? 'ulduo' : 'p2duo';
       return {
         key: famTag + 'x', kind: 'swap', tone: 'row',
         img: keep(famTag + 'x', sized(m1.img || pr.image, 200)),
@@ -675,19 +697,26 @@
       return bundleRow(cart, 'r36h').then(function(o){ return o ? [o] : []; });
     });
   }
+  /* the R36S Ultra (2026-09-23): the Pro 2's order, the add-on rows first, else its bundle row */
+  function ultraOffer(cart){
+    return addonRows(cart, 'ultra').then(function(rows){
+      if (rows.length) return rows;
+      return bundleRow(cart, 'ultra').then(function(o){ return o ? [o] : []; });
+    });
+  }
 
   /* 5. WHO HOLDS THE ONE SEAT. sure: this file's card shows and
      pg-cart-offer's is hidden. Not sure: pg-cart-offer's card has the seat and
      ours is only a stand-in should it have none. */
   function gross(it){ return it.original_line_price != null ? it.original_line_price : it.line_price; }
-    function choose(cart, pro2, frame, flip, r36h){
+    function choose(cart, pro2, frame, flip, r36h, ultra){
     var newest = null, theirs = false, prints = 0;
     (cart.items || []).forEach(function(it){
       if (!gross(it)) return;                       /* free lines name no family, as in pg-cart-offer */
             var f = PRO2S[it.handle] || FLIPS[it.handle] || THEIRS[it.handle] || null;
       if (!f) return;
       if (!newest) newest = f;                      /* /cart.js lists lines newest first */
-            if (f !== 'pro2' && f !== 'flip' && f !== 'r36h') theirs = true; /* both families are this file's */
+            if (f !== 'pro2' && f !== 'flip' && f !== 'r36h' && f !== 'ultra') theirs = true; /* both families are this file's */
       if (it.handle === H.wall) prints += it.quantity;
     });
         /* the Flip family holds the seat when it was added last, or when nothing
@@ -696,18 +725,22 @@
         var flips = flip && flip.length ? flip : null;
         var p2 = pro2 && pro2.length ? pro2 : null;
         var rh = r36h && r36h.length ? r36h : null;
+        var ul = ultra && ultra.length ? ultra : null;
+        /* the R36S Ultra (2026-09-23): the seat when it was added last, or when no other family has a card */
+        if (ul && (newest === 'ultra' || (!theirs && !p2 && !flips && !rh))) return {offers: ul, sure: true};
         if (rh && (newest === 'r36h' || (!theirs && !p2 && !flips))) return {offers: rh, sure: true};
         if (flips && (newest === 'flip' || (!theirs && (newest !== 'pro2' || !p2)))) return {offers: flips, sure: true};
         if (p2 && (newest === 'pro2' || !theirs)) return {offers: p2, sure: true};
     if (frame && newest === 'wall' && prints % 3 === 0) return {offer: frame, sure: true};
         if (p2) return {offers: p2, sure: false};
+        if (ul) return {offers: ul, sure: false};
         if (frame) return {offer: frame, sure: false};
         return {offers: flips, sure: false};
   }
   function pickFor(cart){
     RATE = readRate(cart);
-        return Promise.all([pro2Offer(cart), frameOffer(cart), flipOffer(cart), r36hOffer(cart)]).then(function(r){
-            return choose(cart, r[0], r[1], r[2], r[3]);
+        return Promise.all([pro2Offer(cart), frameOffer(cart), flipOffer(cart), r36hOffer(cart), ultraOffer(cart)]).then(function(r){
+            return choose(cart, r[0], r[1], r[2], r[3], r[4]);
     });
   }
 
@@ -926,6 +959,7 @@
     if (/^(fsil|fhard|fprot|fkit):/.test(key) || /^f(duo|switch)/.test(key)) return H.flip;
     if (/^(psil|phard|pprot|pkit):/.test(key) || /^p2/.test(key)) return H.pro2;
     if (/^(hsil|hhard|hprot|hkit):/.test(key) || /^rh/.test(key)) return H.r36h;
+    if (/^(usil|uhard|uprot|ukit):/.test(key) || /^ul/.test(key)) return H.ultra;
     if (/^frame:/.test(key)) return H.wall;
     return null;
   }

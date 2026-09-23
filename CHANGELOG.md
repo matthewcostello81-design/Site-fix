@@ -1,3 +1,32 @@
+# R36S Ultra product page (clone of the R36S Pro page)
+
+Built on the draft product "Pocket Era R36S Ultra" (handle pocket-era-r36s-ultra,
+the renamed Flip SP product). Single Device $109.99 (compare $149.99), Max Bundle
+$139.99 (compare $221.96); Duo Pack $7.00 off each and Duo Max $20.00 off each
+(admin discounts "R36S Ultra - Duo Pack Savings" / "R36S Ultra - Duo Max Savings").
+
+## New files
+- templates/product.pg-ultra.json (pg-landing with hide_reviews, Ultra features)
+- sections/pg-ultra-tiles.liquid, pg-ultra-story.liquid, pg-ultra-cart.liquid
+  (clones of the pg-pro2-* sections: prefixes pg-ul / pg-uls / data-pg-ul)
+
+## Edited shared files
+- sections/header-group.json: registers pg_ultra_cart
+- sections/pg-cart-addons.liquid: 'ultra' family (clear daily case, hard shell,
+  screen protector, protection kit), $20.00 Duo Max
+- sections/pg-landing.liquid: "hide_reviews" setting (default off)
+- sections/pg-home.liquid, snippets/social-meta-tags.liquid: no rating / no
+  aggregateRating for the Ultra
+- layout/theme.liquid: the Ultra add-on and kit pages redirect to the Ultra
+- sections/pg-theme-css.liquid, sections/pg-flipsp-cart.liquid: add-on handles
+
+## Why reviews are hidden
+The product's Judge.me data (110 reviews, 4.91) was imported for the Flip SP
+clamshell. It is not shown on the Ultra; the product's review metafields were
+also removed. Hide those reviews in Judge.me so they are not synced back.
+
+---
+
 # R36H Pro: no silicone case; the Max ships a hard shell case + 3 screen protectors
 
 ## Request

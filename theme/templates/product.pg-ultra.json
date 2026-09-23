@@ -1,0 +1,79 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ * 2026-09-23: cloned from product.pg-pro2.json for the R36S Ultra (pg-ultra-tiles,
+ * pg-ultra-story); reviews hidden, its Judge.me data belongs to the Flip SP.
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {},
+      "block_order": [],
+      "settings": {
+        "product": "pocket-era-r36s-ultra",
+        "hide_reviews": true,
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "",
+        "rating_label": "",
+        "review_total": 0,
+        "default_size": "",
+        "gallery_video_url": "",
+        "show_bundle": false,
+        "bundle_title": "",
+        "bundle_pct": 0,
+        "features_text": "<p>15,000+ classic games preloaded (up to 40,000 on the 128GB bundles), with 20+ retro systems, from NES and SNES to Game Boy Advance, N64, PS1 and Dreamcast<br>4 inch IPS screen (720x720), OCA fully laminated<br>RK3326 Cortex-A35 1.5GHz chip, Mali-G31 MP2 graphics and 1GB LPDDR3 RAM for smooth play<br>8GB built-in eMMC system storage with system recovery<br>Built-in 2.4G Wi-Fi for multiplayer, no adapter needed<br>Dual joysticks with 7-color LED lights<br>Built-in 8W speaker<br>3000mAh battery for about 5 hours of play, about 1 hour to charge<br>Type-C charging, Type-C OTG data port and 3.5mm headphone jack<br>Runs multiple open-source Linux systems</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+      }
+    },
+    "pg_revlink": {
+      "type": "pg-rev-link",
+      "settings": {}
+    },
+    "pg_r36smobile": {
+      "type": "pg-r36s-mobile",
+      "settings": {}
+    },
+    "pg_selloutlast": {
+      "type": "pg-sellout-last",
+      "settings": {}
+    },
+    "pg_r36stitle": {
+      "type": "pg-r36s-title",
+      "settings": {}
+    },
+    "pg_ultratiles": {
+      "type": "pg-ultra-tiles",
+      "settings": {
+        "duo_off": "7.00",
+        "duomax_off": "20.00"
+      }
+    },
+    "pg_picksize": {
+      "type": "pg-pick-size",
+      "settings": {}
+    },
+    "pg_ultrastory": {
+      "type": "pg-ultra-story",
+      "settings": {}
+    }
+  },
+  "order": [
+    "pg_landing",
+    "pg_picksize",
+    "pg_revlink",
+    "pg_r36smobile",
+    "pg_selloutlast",
+    "pg_r36stitle",
+    "pg_ultratiles",
+    "pg_ultrastory"
+  ]
+}
