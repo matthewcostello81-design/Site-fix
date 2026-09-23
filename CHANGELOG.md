@@ -8,8 +8,9 @@ giant 128GB microSD card in front of the case, both baked into the image.
 media/r36h-kit-clean.png is the same photo rebuilt: the banner is cropped
 off and the card is painted out. The hidden strip behind the card (the tray's
 foam lip, the zipper rim and the floor reflection) is rebuilt from the pixels
-beside it, matched row by row so there is no seam. Square crop that keeps the
-case and all three screen protectors. Uploaded to the product as its only
+beside it, matched row by row so there is no seam. Portrait 1000x1180 with wide margins: the cart
+drawer thumbnail is taller than wide and cover-crops the sides, so a square
+image lost the protectors. The wall and floor are extended above and below. Uploaded to the product as its only
 image; the old photo is deleted.
 
 ## Applied to
