@@ -1,0 +1,35 @@
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "settings": {
+        "product": "legends-power-ball",
+        "show_sellout": false,
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 10,000 customers",
+        "review_total": 0,
+        "default_size": "Poke Ball",
+        "gallery_video_url": "",
+        "show_bundle": false,
+        "bundle_title": "Bundle Deal: 2x Legends Power Balls",
+        "bundle_pct": 10,
+        "features_text": "<p>12,000mAh battery inside a glossy 83mm ball you can actually hold<br>Three designs to collect: Poke Ball, Great Ball and Master Ball<br>18650 lithium-ion cells, QC fast charge support and multiple USB outputs<br>High-gloss painted shell that catches the light from every angle<br>USB charging cable and wrist strap included with every ball<br>Buy 2, Get 1 FREE applied automatically at checkout</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"
+      }
+    },
+    "pg_picksize": {"type": "pg-pick-size", "settings": {}},
+    "pg_pbtiles": {"type": "pg-powerball-tiles", "settings": {}},
+    "pg_galtweaks": {"type": "pg-gallery-tweaks", "settings": {}},
+    "pg_tiktok": {"type": "pg-tiktok-pdp", "settings": {}},
+    "pg_revlink": {"type": "pg-rev-link", "settings": {}},
+    "pg_revgrid": {"type": "pg-rev-grid", "settings": {"count": 20}},
+    "pg_orbtitle": {"type": "pg-orb-title", "settings": {}},
+    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}},
+    "pg_ymllast": {"type": "pg-yml-last", "settings": {}}
+  },
+  "order": ["pg_landing", "pg_picksize", "pg_pbtiles", "pg_galtweaks", "pg_tiktok", "pg_revlink", "pg_revgrid", "pg_orbtitle", "pg_selloutlast", "pg_ymllast"]
+}

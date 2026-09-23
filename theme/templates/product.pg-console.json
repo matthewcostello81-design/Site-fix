@@ -1,0 +1,188 @@
+{
+  "sections": {
+    "nc-gallery-fix": {
+      "type": "nc-gallery-fix",
+      "settings": {}
+    },
+    "nc-pg-tweaks": {
+      "type": "nc-pg-tweaks",
+      "settings": {}
+    },
+    "nc-pg-bundle": {
+      "type": "nc-pg-bundle",
+      "settings": {
+        "heading": "Bundle and Save",
+        "t1": "Single",
+        "t2": "Buy 2",
+        "t3": "Buy 3",
+        "tag2": "Most popular",
+        "tag3": "Best value",
+        "cta": "Add to cart",
+        "d2": 10,
+        "d3": 15
+      }
+    },
+    "nc-pg-specs": {
+      "type": "nc-pg-specs",
+      "settings": {
+        "eyebrow": "What it plays",
+        "systems": "ARCADE, NEO GEO, CPS, MEGA DRIVE, GAME GEAR, PS1, NES, SNES, GB, GBC, GBA",
+        "facts": "3.5 inch IPS 640x480|RK3326 quad core|1GB DDR3|3200mAh battery|Dual analog sticks|Up to 256GB microSD"
+      }
+    },
+    "nc-rvw-topup": {
+      "type": "nc-rvw-topup",
+      "settings": {}
+    },
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "layout": "title-right",
+            "title_size": "h2",
+            "title": "",
+            "show_vendor_brand": false,
+            "show_vendor_name": false,
+            "show_product_rating": true,
+            "share_whatsapp": false,
+            "share_facebook": true,
+            "share_twitter": false,
+            "share_pinterest": false,
+            "share_messenger": false,
+            "share_email": true,
+            "layout_mobile": "title-top"
+          }
+        },
+        "short_description": {
+          "type": "short_description",
+          "settings": {
+            "show_read_more": true
+          }
+        },
+        "variant_selection": {
+          "type": "variant_selection",
+          "settings": {
+            "selection_type": "buttons",
+            "options": false,
+            "show_variant_images": true,
+            "show_unavailable_variants": true,
+            "show_single_options": false,
+            "enable_selling_plans": false
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_tax": true
+          }
+        },
+        "buy_button": {
+          "type": "buy_button",
+          "settings": {
+            "button_style": "plain",
+            "show_amount_selection": true,
+            "show_dynamic_buybutton": true,
+            "button_style_dynamic_buybutton": "plain",
+            "preorder": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "spacer_1": {
+          "type": "spacer",
+          "settings": {
+            "height": 20
+          }
+        },
+        "trustbadge": {
+          "type": "trustbadge",
+          "settings": {}
+        },
+        "spacer_2": {
+          "type": "spacer",
+          "settings": {
+            "height": 15
+          }
+        },
+        "usp_1": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Free tracked shipping</strong> on every order</p>"
+          }
+        },
+        "complementary": {
+          "type": "complementary_products",
+          "settings": {
+            "enable_tab": true,
+            "collapse": true,
+            "title": "Pairs well with",
+            "icon": "none",
+            "header_image_width": 25,
+            "layout": "grid",
+            "number_of_items": 3,
+            "enable_quick_buy_desktop": true,
+            "enable_quick_buy_mobile": true,
+            "enable_quick_buy_drawer": true,
+            "enable_quick_buy_qty_selector": false,
+            "enable_color_picker": false,
+            "enable_quick_buy_compact": false,
+            "products_show_image": true,
+            "products_show_labels": false,
+            "products_show_vendor": false,
+            "products_show_title": true,
+            "products_show_rating": false,
+            "products_show_price": true,
+            "products_show_stock": false
+          }
+        }
+      },
+      "block_order": [
+        "title",
+        "short_description",
+        "variant_selection",
+        "price",
+        "buy_button",
+        "spacer_1",
+        "trustbadge",
+        "spacer_2",
+        "usp_1",
+        "complementary"
+      ],
+      "settings": {
+        "show_thumbs_desktop": true,
+        "show_thumbs_mobile": false,
+        "images_layout": "aside",
+        "show_product_description": false,
+        "product_description_enable_read_more": false,
+        "pros": "",
+        "cons": "",
+        "specifications": "",
+        "product_description_mobile_collapse": false
+      }
+    },
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "judgeme_reviews": {
+      "type": "jdgm-reviews",
+      "settings": {
+        "spacing_desktop": 40,
+        "spacing_mobile": 30
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main-product",
+    "nc-pg-bundle",
+    "nc-pg-specs",
+    "nc-gallery-fix",
+    "nc-pg-tweaks",
+    "nc-rvw-topup",
+    "judgeme_reviews"
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "sections": {
+    "main-product": {
+      "type": "main-product",
+      "blocks": {
+        "title": {
+          "type": "title",
+          "settings": {
+            "layout": "title-right",
+            "title_size": "h2",
+            "title": "",
+            "show_vendor_brand": false,
+            "show_vendor_name": false,
+            "show_product_rating": false,
+            "layout_mobile": "title-top"
+          }
+        },
+        "short_description": {
+          "type": "short_description",
+          "settings": {
+            "show_read_more": true
+          }
+        },
+        "variant_selection": {
+          "type": "variant_selection",
+          "settings": {
+            "selection_type": "buttons",
+            "options": false,
+            "show_variant_images": true,
+            "show_unavailable_variants": true,
+            "show_single_options": false,
+            "enable_selling_plans": false
+          }
+        },
+        "price": {
+          "type": "price",
+          "settings": {
+            "show_tax": true
+          }
+        },
+        "buy_button": {
+          "type": "buy_button",
+          "settings": {
+            "button_style": "plain",
+            "show_amount_selection": true,
+            "show_dynamic_buybutton": true,
+            "button_style_dynamic_buybutton": "plain",
+            "preorder": false,
+            "show_gift_card_recipient": false
+          }
+        },
+        "spacer_1": {
+          "type": "spacer",
+          "settings": {
+            "height": 20
+          }
+        },
+        "trustbadge": {
+          "type": "trustbadge",
+          "settings": {}
+        },
+        "usp_1": {
+          "type": "usp",
+          "settings": {
+            "usp": "<p><strong>Free tracked shipping</strong> on every order</p>"
+          }
+        }
+      },
+      "block_order": [
+        "title",
+        "short_description",
+        "variant_selection",
+        "price",
+        "buy_button",
+        "spacer_1",
+        "trustbadge",
+        "usp_1"
+      ],
+      "settings": {
+        "show_thumbs_desktop": true,
+        "show_thumbs_mobile": false,
+        "images_layout": "aside",
+        "show_product_description": false,
+        "product_description_enable_read_more": false,
+        "pros": "",
+        "cons": "",
+        "specifications": "",
+        "product_description_mobile_collapse": false
+      }
+    },
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main-product"
+  ]
+}

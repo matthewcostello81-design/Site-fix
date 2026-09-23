@@ -1,3 +1,77 @@
+# Product pages: remove the money-back guarantee
+
+## Problem
+Every product page promised a 30-day money-back guarantee in several places.
+The merchant asked for it to be removed from the product pages.
+
+## Where it appeared
+Live product pages use four templates: `product.json` (accessories and shipping
+protection), `product.pg-crystal.json` (Crystal Legends Orb), `product.pg-pro2.json`
+(Pocket Era R36S Pro) and `product.pg-r36h.json` (Pocket Era R36H Pro). The
+three landing-page templates render `sections/pg-landing.liquid`, and each has a
+matching story section with a comparison table.
+
+- `sections/pg-landing.liquid`: the green "30-day money back guarantee" pill
+  under the payment icons, plus the schema default for the Shipping accordion.
+- Template `shipping_text` settings (the Shipping accordion): the sentence
+  "Every purchase is covered by our 30-day money-back guarantee."
+- `sections/pg-orb-story.liquid`, `pg-pro2-story.liquid`, `pg-r36h-story.liquid`:
+  the "Brand new with a 30-day guarantee" row in the "Why it stands out"
+  comparison table.
+- `templates/product.pg-bag.json`, `pg-blank.json`, `pg-console.json`: a
+  "30-day money-back guarantee" USP block under the buy button. `pg-blank` is
+  the template on the draft Pocket Era R36S Ultra product.
+- `sections/pg-mobile.liquid`: the announcement marquee message list included
+  "30-day money back guarantee". The marquee is site-wide, so this one change
+  also affects non-product pages.
+
+## Fix
+- Removed the guarantee pill from `pg-landing.liquid` and dropped the sentence
+  from its schema default. The JS in `pg-acc-place`, `pg-tiktok-pdp` and
+  `pg-theme-css` that referenced `.pgx-guar` already tolerates it being absent
+  (null check, or `querySelectorAll` + `forEach`), so nothing else needed to move.
+- Dropped the guarantee sentence from `shipping_text` in every `pg-*` product
+  template that carried it (crystal, pro2, r36h, dbz, flipsp, landing,
+  powerball, wallart). The rest of the shipping copy and the policy links stay.
+- Removed the `usp_2` guarantee block (and its `block_order` entry) from
+  `pg-bag`, `pg-blank` and `pg-console`.
+- Removed the "Brand new with a 30-day guarantee" comparison row from the three
+  story sections.
+- Removed the guarantee message from the marquee list in `pg-mobile.liquid`.
+
+## Left as is (not a money-back guarantee, or not a product page)
+- "Easy Returns / 30-Day Returns" info tile on `pg-landing.liquid`.
+- "No hassle returns, 30 days return" USP on the default `product.json`.
+- Cart drawer trust row "30-Day Guarantee" (`pg-cart-express`, `nc-cartfix`) and
+  the homepage "Money back, no hassle" tile (`pg-home`).
+- The retired `nc-*` wellness templates (all their products are in draft).
+
+## Applied to
+Shopify draft theme `165951144164` ("R36S Ultra page (Claude 9-23)") via the
+Admin API (themeFilesUpsert). The 16 files were byte-identical between this
+draft and the live theme (`164327686372`) before the change, and each upload
+was verified by MD5 against the local file.
+
+Files changed:
+- sections/pg-landing.liquid
+- sections/pg-mobile.liquid
+- sections/pg-orb-story.liquid
+- sections/pg-pro2-story.liquid
+- sections/pg-r36h-story.liquid
+- templates/product.pg-crystal.json
+- templates/product.pg-pro2.json
+- templates/product.pg-r36h.json
+- templates/product.pg-dbz.json
+- templates/product.pg-flipsp.json
+- templates/product.pg-landing.json
+- templates/product.pg-powerball.json
+- templates/product.pg-wallart.json
+- templates/product.pg-bag.json
+- templates/product.pg-blank.json
+- templates/product.pg-console.json
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
