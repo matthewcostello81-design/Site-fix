@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness recovery staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Foam rolling, upgraded with vibration.",
+        "intro_text": "Tight, sore muscles before or after training? The Vibrating Electric Foam Roller adds adjustable vibration to the classic foam rolling experience, in a portable, rechargeable body, so you can warm up, recover and roll out tension at home, at the gym or on the go.",
+        "be_eye": "Built different",
+        "be_head": "Why this foam roller",
+        "be_sub": "Four reasons tight, sore muscles do not stand a chance.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Vibrating Electric Foam Roller actually work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/vibrating-electric-foam-roller-secondary_8f9acaf4-76a1-4d93-8530-cb8b01cdd561.png?v=1782695757",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How a vibrating roller compares to a plain foam roller.",
+        "cmp_ours": "Vibrating Roller",
+        "cmp_theirs": "Plain Foam Roller",
+        "ba_eye": "Before & after",
+        "ba_head": "How recovery feels after two weeks",
+        "ba_sub": "What changes when vibrating foam rolling becomes part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to recover",
+        "tl_sub": "The same aches, with and without a few minutes of vibrating rolling.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Charge it, set the level, roll.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260610_023301_73cd4202-85f1-47d3-91d0-61a8944a0f87.png?v=1781058972",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182254_bd2dd254-2c25-4cd5-90e9-64aa9dc146a8.png?v=1784399016",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182452_5ceda1f5-de88-476f-9827-306a213f67a7.png",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182408_55625990-3d84-4bc3-97c4-0c164c0b3752.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Releases tight backs and legs — powered vibration does the work"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Faster warm-ups, easier recovery — one roller for both"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Rechargeable and portable — relief at home or the gym"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday recovery for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This roller + Birchwood Roller Set — power and precision",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Warm up and recover",
+            "text": "A few minutes of vibrating rolling before training helps prepare the muscles, and a session afterward helps ease the tightness that follows a workout."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Roll out every muscle",
+            "text": "The classic foam roller shape suits different areas, from large muscle groups like the back and legs to calves and quads, so you can work tension out anywhere."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Control the intensity",
+            "text": "Adjustable vibration levels let you choose anything from a light, gentle buzz to a stronger setting, matching the muscle group and how it feels that day."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Portable and rechargeable",
+            "text": "Lightweight and rechargeable with no batteries to replace, it slips into a gym bag, so your recovery routine goes wherever you do."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Vibration upgrade",
+            "text": "Built-in vibration adds to the classic rolling experience to help make each session more effective on tight muscle."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Adjustable levels",
+            "text": "Dial the vibration from a gentle warm-up buzz to a stronger post-workout setting, matched to the muscle and how it feels that day."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Classic roller shape",
+            "text": "The familiar foam roller form works for big muscle groups and broad areas, so every spot gets the right contact."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Rechargeable and portable",
+            "text": "Lightweight and rechargeable, small enough to live in your gym bag and ready to go after a charge."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Built-in vibration",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable intensity",
+            "ours": "Multiple levels",
+            "theirs": "None"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Rechargeable",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Helps prep and recover",
+            "ours": "yes",
+            "theirs": "Basic"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Portable for travel",
+            "ours": "yes",
+            "theirs": "Bulky"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Color options",
+            "ours": "Black, Blue, Grey",
+            "theirs": "One color"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Tight, sore muscles that linger for days after training"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "A plain roller that never quite reaches the tension"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Skipping recovery because rolling feels like a chore"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Looser muscles and faster bounce-back between sessions"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few minutes of vibrating rolling at home, whenever you need it"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "On-demand recovery that travels in your bag"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "Pre-workout",
+            "trad_title": "Cold, stiff start",
+            "trad_text": "You jump into training tight and underprepared, and tweak something in the first few sets.",
+            "trad_tag": "Stiff and tight",
+            "nc_title": "Warmed up in minutes",
+            "nc_text": "A quick roll on the legs and back wakes the muscles up so you move better from the first rep.",
+            "nc_tag": "Primed to move"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "6 PM",
+            "label": "Post-workout",
+            "trad_title": "Soreness creeping in",
+            "trad_text": "You skip recovery and tomorrow's soreness is already on its way.",
+            "trad_tag": "Sore tomorrow",
+            "nc_title": "Roll out the tension",
+            "nc_text": "A short vibrating session on the legs and back helps ease the tightness right after you train.",
+            "nc_tag": "Faster recovery"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Evening",
+            "trad_title": "Tension carries to bed",
+            "trad_text": "Tight muscles follow you to the couch and make it hard to wind down.",
+            "trad_tag": "Still tight",
+            "nc_title": "Wind down at home",
+            "nc_text": "A few minutes of gentle rolling before bed helps you relax and recover overnight.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 97,
+            "suffix": "%",
+            "label": "Love the vibration",
+            "fill": 100,
+            "sub": "Adjustable intensity they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 82,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 80,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt looser after use",
+            "fill": 90,
+            "sub": "Less tension where they rolled."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Charge it up",
+            "text": "Charge before your session so it's ready to go."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Set the level",
+            "text": "Start low and increase as the muscle loosens."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Roll slowly",
+            "text": "Move over the area for a minute or two per muscle group."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Vibrating electric foam roller"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Quick start guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Vibration",
+            "value": "Adjustable levels"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "Rechargeable"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Shape",
+            "value": "Classic foam roller"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Use",
+            "value": "Pre and post workout"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Portability",
+            "value": "Gym bag friendly"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Colors",
+            "value": "Black, Blue, Grey"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

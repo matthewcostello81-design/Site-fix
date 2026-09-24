@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness comfort staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Soothing warmth, right where you want it.",
+        "intro_text": "Cold mornings, long days or quiet evenings call for a little comfort. The Electric Heating Pad delivers soft, adjustable warmth across a plush surface, with multiple heat settings and an auto shut-off so you can relax across your back, abdomen or shoulders at home.",
+        "be_eye": "Built different",
+        "be_head": "Why this heating pad",
+        "be_sub": "Four reasons cold, achy moments do not stand a chance.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Comfort System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Electric Heating Pad feel so good.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/electric-heating-pad-secondary_179d4c03-2410-496d-afbe-6f8053635c1a.png?v=1782695303",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How adjustable, even warmth compares to a simple hot water bottle.",
+        "cmp_ours": "Heating Pad",
+        "cmp_theirs": "A Hot Water Bottle",
+        "ba_eye": "Before & after",
+        "ba_head": "How comfort feels after two weeks",
+        "ba_sub": "What changes when soothing warmth becomes part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to stay cozy",
+        "tl_sub": "The same cold, achy moments, with and without a few minutes of warmth.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Plug in, pick a heat, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_013035_c81f0734-9395-4a2a-b824-483b7124a07f.png?v=1780796618",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182253_6faa2f73-dc1a-402b-89a6-77e198e0d690.png?v=1784399021",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_214631_3a01c984-3a88-41b4-955f-96e005dba185.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_214303_e9a7df30-97b2-453b-99c2-eb089e34cffe.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Eases sore backs and cramps — fast, even warmth"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Relax without watching the clock — auto shut-off safety"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Adjustable heat levels — from gentle warm to deep soothing"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday comfort for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This pad + Wearable Neck Massager — warmth head to toe",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Warm up on cold days",
+            "text": "A few minutes of gentle warmth takes the chill off a cold morning or a long evening, so you can settle in and feel cozy wherever you are at home."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Cover more of you",
+            "text": "A generous surface is large enough to drape across the back, abdomen or shoulders, so warmth reaches the area you want to soothe without shifting around."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Control the warmth",
+            "text": "Multiple heat settings let you choose anything from a light background warmth to a cozier, warmer setting, matching the moment and how you feel that day."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Soft and reassuring",
+            "text": "The plush fabric feels soft against the skin, and an auto shut-off gives peace of mind if you happen to drift off while you relax."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Even, soothing warmth",
+            "text": "Heat spreads evenly across the plush surface so you get steady, consistent warmth rather than a few hot spots."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Heat settings, your control",
+            "text": "Dial it from a gentle background warmth to a cozier, warmer setting, matched to the moment and how you feel that day."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Large, flexible coverage",
+            "text": "A generous size drapes easily over the back, abdomen or shoulders, and the long cord lets you position it on a chair, couch or bed."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Plush with auto shut-off",
+            "text": "A soft fabric surface feels comfortable against the skin, while the auto shut-off adds reassurance if you fall asleep during use."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable heat",
+            "ours": "Multiple settings",
+            "theirs": "Cools over time"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Even warmth",
+            "ours": "yes",
+            "theirs": "Uneven"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Auto shut-off",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Plush soft surface",
+            "ours": "yes",
+            "theirs": "Hard rubber"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Large coverage area",
+            "ours": "yes",
+            "theirs": "Small"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Reusable and consistent",
+            "ours": "yes",
+            "theirs": "Needs refilling"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Shivering through cold mornings with no easy way to warm up"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Refilling a hot water bottle that cools off within minutes"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Bundling up in blankets that still leave you achy and cold"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Steady, even warmth across your back, abdomen or shoulders"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A cozy few minutes at home, whenever you want them"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Soft, soothing comfort you can set and relax into"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "Cold morning",
+            "trad_title": "Cold, slow start",
+            "trad_text": "You shuffle around the house bundled up, still cold and stiff from the chilly morning air.",
+            "trad_tag": "Cold and stiff",
+            "nc_title": "Warm in minutes",
+            "nc_text": "A few minutes of gentle warmth across the shoulders takes the chill off so you can ease into the day.",
+            "nc_tag": "Cozy and ready"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "2 PM",
+            "label": "Afternoon",
+            "trad_title": "Achy afternoon",
+            "trad_text": "Sitting through the afternoon leaves your lower back feeling tight and cold by mid-day.",
+            "trad_tag": "Tight and cold",
+            "nc_title": "Warmth at your seat",
+            "nc_text": "Draping the pad across your back brings soothing warmth without leaving your chair.",
+            "nc_tag": "Warm and easy"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Wind-down",
+            "trad_title": "Restless evening",
+            "trad_text": "You try to relax before bed but the cold keeps you from fully settling in.",
+            "trad_tag": "Cold and restless",
+            "nc_title": "Wind down warm",
+            "nc_text": "A cozy session on the couch helps you relax and settle in, with auto shut-off if you drift off.",
+            "nc_tag": "Relaxed and warm"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 97,
+            "suffix": "%",
+            "label": "Love the warmth",
+            "fill": 100,
+            "sub": "Adjustable heat they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 82,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 80,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt cozier after use",
+            "fill": 90,
+            "sub": "More comfort where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Plug it in",
+            "text": "Connect the pad and place it where you want warmth."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a heat",
+            "text": "Choose a setting, starting low and warming up as you like."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Settle in",
+            "text": "Relax and let the even warmth do the rest."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Electric heating pad"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Heat control unit"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Instruction guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat settings",
+            "value": "Multiple levels"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Surface",
+            "value": "Plush soft fabric"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Safety",
+            "value": "Auto shut-off"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Coverage",
+            "value": "Back, abdomen, shoulder"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Cord",
+            "value": "Long for flexible use"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Color",
+            "value": "Grey"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

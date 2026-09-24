@@ -515,7 +515,8 @@
     <div class="pg-uls-tbl" role="table" aria-label="R36S Ultra compared with a vintage handheld">
       <div class="pg-uls-row hd" role="row"><div role="columnheader"></div><div class="us" role="columnheader">R36S Ultra</div><div class="them" role="columnheader">Vintage Handheld</div></div>
       {%- comment -%} 2026-09-23, Ultra page: every row is true of the R36S Ultra and not of an original Game Boy Advance SP (one system per cartridge, no wireless without an adapter, 2.9 inch 240x160 screen) {%- endcomment -%}
-      {%- assign rows = 'Games included in the box|20+ systems in one device|Add your own game files|Built-in Wi-Fi, no adapter needed|4 inch 720x720 laminated screen|Brand new with a 30-day guarantee' | split: '|' -%}
+      {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
+      {%- assign rows = 'Games included in the box|20+ systems in one device|Add your own game files|Built-in Wi-Fi, no adapter needed|4 inch 720x720 laminated screen' | split: '|' -%}
       {%- for row in rows -%}
       <div class="pg-uls-row" role="row"><div role="cell">{{ row }}</div><div class="us" role="cell"><span class="y" aria-label="Yes"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span></div><div role="cell"><span class="n" aria-label="No"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span></div></div>
       {%- endfor -%}

@@ -1,0 +1,322 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Deep-tissue percussion to release tension"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Built-in heat therapy to loosen stiff muscle"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "8 swappable heads for every muscle group"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday recovery for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Family (3 units)",
+            "qty": 3,
+            "sub": "Home, gym and travel",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Faster recovery",
+            "text": "Percussion before and after training helps you warm up and wind down."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Desk-fatigue relief",
+            "text": "Ease the tight band across your shoulders after a long day at the screen."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Whole-body reach",
+            "text": "Eight heads cover everything from big muscle groups to a single knot."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Travel-ready",
+            "text": "Light and quiet enough to keep one at the office and one in the gym bag."
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 8,
+            "label": "Attachment heads",
+            "fill": 100,
+            "sub": "One device covers every major muscle group."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 5,
+            "label": "Intensity levels",
+            "fill": 85,
+            "sub": "From a light warm-up to a deep session."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 6,
+            "suffix": "h",
+            "label": "Battery per charge",
+            "fill": 70,
+            "sub": "Days of sessions between charges."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 2,
+            "suffix": "lb",
+            "label": "Travel weight",
+            "fill": 40,
+            "sub": "Light enough for the gym bag."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Pick your head",
+            "text": "Choose the attachment that fits the muscle group you're targeting."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Warm it up",
+            "text": "Switch on heat and start at a low intensity to ease into the area."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Work the muscle",
+            "text": "Glide slowly for 1 to 2 minutes, raising intensity as it loosens."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Octa massage gun"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "8 attachment heads"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "bx4": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Carry case"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Attachment heads",
+            "value": "8"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Intensity levels",
+            "value": "5"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat therapy",
+            "value": "Yes, built-in"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Battery life",
+            "value": "Up to 6 hours"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Charging",
+            "value": "USB rechargeable"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Colors",
+            "value": "Black, Gray"
+          }
+        },
+        "f1": {
+          "type": "faq",
+          "settings": {
+            "q": "Faster bounce-back after training",
+            "a": "Percussion before and after a workout helps you warm up and wind down, so soreness has less of a head start."
+          }
+        },
+        "f2": {
+          "type": "faq",
+          "settings": {
+            "q": "Relief for desk and screen fatigue",
+            "a": "A few minutes with the cushioned head helps that tight shoulder band let go."
+          }
+        },
+        "f3": {
+          "type": "faq",
+          "settings": {
+            "q": "Travel-ready, no routine skipped",
+            "a": "Compact and light enough to keep one at the office and one in the gym bag."
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "bx4",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6",
+        "f1",
+        "f2",
+        "f3"
+      ],
+      "settings": {
+        "sold_line": "A North Cove Wellness favorite",
+        "intro_eye": "Why recovery matters",
+        "intro_head": "Tension you carry all day deserves more than a tennis ball.",
+        "intro_text": "Desk fatigue, training soreness, the knot that never quite leaves your shoulder. The Octa brings percussion therapy home so loosening up doesn't mean booking an appointment.",
+        "meter_eye": "By the numbers",
+        "meter_head": "Built around how your muscles recover.",
+        "step_eye": "Simple to use",
+        "step_head": "Three minutes to looser muscles.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "faq_eye": "How it helps",
+        "faq_head": "A daily ritual, not another gadget in the drawer.",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury."
+      }
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 5,
+        "text_alignment": "start",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": true,
+        "enable_quick_buy_mobile": true,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 50,
+        "spacing_mobile": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

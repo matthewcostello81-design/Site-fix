@@ -1,0 +1,512 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness lymphatic ritual",
+        "intro_eye": "Why it matters",
+        "intro_head": "Wood therapy at home, in five slow minutes",
+        "intro_text": "Puffy mornings, heavy legs by evening. The Birchwood Lymphatic Drainage Set brings the wood therapy ritual home: a ribbed roller, a contoured board, a mushroom dome, a beaded strap and a free fifth piece. Long, light, one-way strokes are the heart of the wood therapy tradition - slow, unhurried, always in one direction. No power, no charging, nothing to plug in.",
+        "be_eye": "Why birchwood",
+        "be_head": "Why this birchwood drainage set",
+        "be_sub": "Four reasons this is the five minutes people keep coming back to.",
+        "system_eye": "The system",
+        "system_head": "The North Cove drainage routine",
+        "system_sub": "Tap or hover a number to see what makes five slow minutes with birchwood work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/natural-wood-massage-roller-set-secondary_49fb9d91-68f3-4ae1-a7c6-8f2bd90a9787.png?v=1782695608",
+        "cmp_eye": "The difference",
+        "cmp_head": "The set versus the spa",
+        "cmp_sub": "How a birchwood drainage set compares to booking a spa session.",
+        "cmp_ours": "Birchwood Set",
+        "cmp_theirs": "Spa Visit",
+        "ba_eye": "Before and after",
+        "ba_head": "What changes once it is part of your evening",
+        "ba_sub": "What changes when a five minute drainage ritual becomes part of your day.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to feel lighter",
+        "tl_sub": "The same puffy mornings and heavy evenings, with and without five slow minutes.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Start at the hollows, stroke upward, finish light",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260629_234620_d8c2efbe-41cd-473e-b1ca-f6e63e2b036f.png?v=1782776925",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182249_e84b304a-a0e7-431a-91d4-24ad738c8ed1.png?v=1784399006",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182416_3b4a503d-44ac-4de3-bce4-f56003fa5af4.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182500_89df37d9-b6c5-44e6-a3d5-5992b88d06ba.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "For that puffy, heavy feeling - the five minute birchwood ritual"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Five shapes, one routine - legs, arms, stomach, back and face"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Spa wood therapy at home - no cords, batteries or appointments"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday wood therapy for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This manual set + Vibrating Foam Roller - two ways to unwind",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Your five minute morning reset",
+            "text": "Long, light strokes toward the body's natural crease points are the classic wood therapy move, and many people say mornings feel less puffy."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Every area covered",
+            "text": "Ribbed roller for long limbs, contoured board for broad areas, mushroom for the small hollows, beaded strap for your own back and shoulders."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Smoother-looking skin",
+            "text": "Firmer wood therapy passes along the outer thighs, hips and glutes can leave skin looking smoother and more even right after a session."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Manual by design",
+            "text": "Solid natural birchwood with no motor, battery or cord - you control the pressure, direction and rhythm this slow, one-way routine asks for."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Solid birchwood build",
+            "text": "Warm, smooth birchwood holds its shape under pressure, so the pass stays even instead of flexing away from the skin."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Five pieces, five shapes",
+            "text": "Ribbed roller, contoured board, rounded mushroom and beaded strap, plus a free fifth birchwood piece as a mystery gift."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "No power, no charging",
+            "text": "Manual from end to end, so there is nothing to charge, nothing to plug in and no app between you and five quiet minutes."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Light and travel-friendly",
+            "text": "Lightweight pieces tuck into a drawer, sit beside the sofa, or ride in a carry-on for the evenings after a long flight."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Where you use it",
+            "ours": "At home",
+            "theirs": "In a salon"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Appointment needed",
+            "ours": "no",
+            "theirs": "yes"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "How often you use it",
+            "ours": "Daily",
+            "theirs": "Now and then"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Travels in a carry-on",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "You set the pressure",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Tools you keep",
+            "ours": "5 pieces",
+            "theirs": "None"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Puffy mornings after a salty dinner or a late flight"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Legs that feel heavy and full by mid-afternoon"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Booking a spa visit every time you feel heavy"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Five quiet minutes of wood therapy before bed"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A morning ritual for the days you feel puffy"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "One set that reaches legs, arms, stomach and back"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "Morning reset",
+            "trad_title": "A puffy, slow start",
+            "trad_text": "After a salty dinner you look puffy in the mirror, and it takes half the morning to feel like yourself.",
+            "trad_tag": "Puffy and slow",
+            "nc_title": "Five minutes before coffee",
+            "nc_text": "Mushroom tool along the jawline, then down the neck. Five quiet minutes, and a calmer start to the morning.",
+            "nc_tag": "Face feels awake"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "3 PM",
+            "label": "Desk-bound legs",
+            "trad_title": "Heavy by mid-afternoon",
+            "trad_text": "Hours at the desk and your calves and thighs feel tight, full and heavy, like everything has settled downward.",
+            "trad_tag": "Heavy and tight",
+            "nc_title": "A reset at your desk",
+            "nc_text": "Loop the beaded strap behind one calf and draw it slowly upward, ankle toward knee, about ten times each leg. It works right through your pants, so you never leave your chair.",
+            "nc_tag": "Legs feel lighter"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Evening ritual",
+            "trad_title": "Heaviness goes to bed",
+            "trad_text": "You climb into bed with tight thighs and ankles that feel heavy, and wake up carrying the same heaviness again.",
+            "trad_tag": "Same tomorrow",
+            "nc_title": "Fifteen minutes, then sleep",
+            "nc_text": "A little oil, then the roller from knee to hip. Switch to the flat board along the outer thigh, and finish with long sweeps from ankle all the way up. Fifteen unhurried minutes.",
+            "nc_tag": "Calm and light"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Felt lighter after use",
+            "fill": 95,
+            "sub": "Less of that heavy, puffy feeling."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 91,
+            "suffix": "%",
+            "label": "Looked more sculpted",
+            "fill": 90,
+            "sub": "Skin looked tighter and smoother."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 83,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Start at the hollows",
+            "text": "Light presses above the collarbones, armpits and groin creases come first."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Always stroke upward",
+            "text": "Always light, one-way passes upward: ankle toward hip, wrist toward armpit."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Slow and light",
+            "text": "About one stroke per second, eight to twelve passes per area, two or three rounds."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Ribbed roller, two handles"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Curved paddle, flat edge"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Mushroom dome, rounded tip"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Material",
+            "value": "Solid natural birchwood"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Set size",
+            "value": "5 pieces (4 plus free gift)"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "None, fully manual"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Areas",
+            "value": "Legs, arms, stomach, back, face"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Technique",
+            "value": "Light, slow, one-way strokes"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Routine",
+            "value": "5 to 20 minutes daily"
+          }
+        },
+        "bx4": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Beaded strap, flexible"
+          }
+        },
+        "bx5": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Free 5th piece, mystery gift"
+          }
+        },
+        "bx6": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Quick-start routine card"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "bx4",
+        "bx5",
+        "bx6",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

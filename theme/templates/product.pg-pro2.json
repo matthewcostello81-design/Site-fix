@@ -88,26 +88,22 @@
         "rev8"
       ],
       "settings": {
-        "product": "pocket-era-r36h",
+        "product": "pocket-era-r36-pro-2",
         "display_title": "",
         "announce_text": "Free shipping on all orders",
-        "logo_image": "shopify:\/\/shop_images\/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
         "logo_text": "PocketEra",
         "rating_value": "4.6",
         "rating_label": "143 reviews",
         "review_total": 143,
         "default_size": "",
-        "gallery_video_url": "",
+        "gallery_video_url": "https://cdn.shopify.com/videos/c/vp/47c6f0ab64d94811958424a291df39c8/47c6f0ab64d94811958424a291df39c8.HD-1080p-2.5Mbps-91268534.mp4",
         "show_bundle": false,
         "bundle_title": "",
         "bundle_pct": 0,
-        "features_text": "<p>15,000+ classic games preloaded (40,000+ on the 128GB bundles), spanning 21+ retro systems from NES and SNES to Game Boy, PS1 and PSP<br>Add your own games: the library lives on the microSD card, so you can plug it into a computer and drag and drop your own game files into the matching system folder<br>Bright 3.5 inch IPS screen (640x480) with classic D-pad controls<br>RK3326 quad-core chip and 1GB RAM for smooth emulation<br>Expandable storage via MicroSD up to 256GB<br>Custom firmware friendly (ArkOS) with USB-C Wi-Fi dongle support for multiplayer<br>3200mAh battery for around 6 hours of play<\/p>",
-        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. See our <a href=\"\/pages\/shipping-policy\">Shipping Policy<\/a> for full details.<\/p>"
+        "features_text": "<p>15,000+ classic games preloaded (40,000+ on the 128GB bundles), spanning 21+ retro systems from NES and SNES to Game Boy, PS1 and PSP<br>Add your own games: the library lives on the microSD card, so you can plug it into a computer and drag and drop your own game files into the matching system folder<br>Bright 3.5 inch IPS screen (640x480) with classic D-pad controls<br>RK3326 quad-core chip and 1GB RAM for smooth emulation<br>Expandable storage via MicroSD up to 256GB<br>Custom firmware friendly (ArkOS) with USB-C Wi-Fi dongle support for multiplayer<br>3200mAh battery for around 6 hours of play</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> for full details.</p>"
       }
-    },
-    "pg_picksize": {
-      "type": "pg-pick-size",
-      "settings": {}
     },
     "pg_revlink": {
       "type": "pg-rev-link",
@@ -125,15 +121,16 @@
       "type": "pg-r36s-title",
       "settings": {}
     },
-    "pg_r36htiles": {
-      "type": "pg-r36h-tiles",
-      "settings": {
-        "duo_off": "7.00",
-        "duomax_off": "20.00"
-      }
+    "pg_pro2tiles": {
+      "type": "pg-pro2-tiles",
+      "settings": {}
     },
-    "pg_r36hstory": {
-      "type": "pg-r36h-story",
+    "pg_picksize": {
+      "type": "pg-pick-size",
+      "settings": {}
+    },
+    "pg_pro2story": {
+      "type": "pg-pro2-story",
       "settings": {}
     }
   },
@@ -144,7 +141,7 @@
     "pg_r36smobile",
     "pg_selloutlast",
     "pg_r36stitle",
-    "pg_r36htiles",
-    "pg_r36hstory"
+    "pg_pro2tiles",
+    "pg_pro2story"
   ]
 }

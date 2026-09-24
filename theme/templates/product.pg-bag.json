@@ -20,20 +20,20 @@
     "main-product": {
       "type": "main-product",
       "blocks": {
-        "c7259cb9-7235-4028-b6df-3a68077fed80": {
+        "title": {
           "type": "title",
           "settings": {
             "layout": "title-right",
             "title_size": "h2",
             "title": "",
             "show_vendor_brand": false,
-            "show_vendor_name": true,
+            "show_vendor_name": false,
             "show_product_rating": true,
-            "share_whatsapp": true,
+            "share_whatsapp": false,
             "share_facebook": true,
-            "share_twitter": true,
-            "share_pinterest": true,
-            "share_messenger": true,
+            "share_twitter": false,
+            "share_pinterest": false,
+            "share_messenger": false,
             "share_email": true,
             "layout_mobile": "title-top"
           }
@@ -52,12 +52,8 @@
             "show_variant_images": true,
             "show_unavailable_variants": true,
             "show_single_options": false,
-            "enable_selling_plans": true
+            "enable_selling_plans": false
           }
-        },
-        "inventory": {
-          "type": "inventory",
-          "settings": {}
         },
         "price": {
           "type": "price",
@@ -72,33 +68,25 @@
             "show_amount_selection": true,
             "show_dynamic_buybutton": true,
             "button_style_dynamic_buybutton": "plain",
-            "preorder": true,
-            "preorder_button_text": "Pre-order",
-            "preorder_label": "<p>The estimated delivery time is 2-4 weeks</p>",
-            "preorder_label_color_palette": "light_2",
-            "preorder_show_dynamic_buybutton": false,
+            "preorder": false,
             "show_gift_card_recipient": false
           }
         },
-        "beafbaf1-a0af-4326-b4de-6e78c472249c": {
+        "spacer_1": {
           "type": "spacer",
           "settings": {
             "height": 20
           }
         },
-        "e55f9825-3e08-4f90-bd42-9d336323be89": {
+        "trustbadge": {
           "type": "trustbadge",
           "settings": {}
         },
-        "e9431daf-3b99-40f6-89ff-dab164cda2ff": {
+        "spacer_2": {
           "type": "spacer",
           "settings": {
             "height": 15
           }
-        },
-        "shipping_timer": {
-          "type": "shipping_timer",
-          "settings": {}
         },
         "usp_1": {
           "type": "usp",
@@ -106,7 +94,7 @@
             "usp": "<p><strong>Free tracked shipping</strong> on every order</p>"
           }
         },
-        "f2290434-741b-4731-a534-ad679331e164": {
+        "complementary": {
           "type": "complementary_products",
           "settings": {
             "enable_tab": true,
@@ -133,18 +121,16 @@
         }
       },
       "block_order": [
-        "c7259cb9-7235-4028-b6df-3a68077fed80",
+        "title",
         "short_description",
         "variant_selection",
-        "inventory",
         "price",
         "buy_button",
-        "beafbaf1-a0af-4326-b4de-6e78c472249c",
-        "e55f9825-3e08-4f90-bd42-9d336323be89",
-        "e9431daf-3b99-40f6-89ff-dab164cda2ff",
-        "shipping_timer",
+        "spacer_1",
+        "trustbadge",
+        "spacer_2",
         "usp_1",
-        "f2290434-741b-4731-a534-ad679331e164"
+        "complementary"
       ],
       "settings": {
         "show_thumbs_desktop": true,
@@ -156,27 +142,6 @@
         "cons": "",
         "specifications": "",
         "product_description_mobile_collapse": false
-      }
-    },
-    "recommendations": {
-      "type": "product-recommendations",
-      "settings": {
-        "recommended_products_qty": 9,
-        "number_of_items": 4,
-        "text_alignment": "start",
-        "width": "boxed",
-        "title": "<h2>You may also like</h2>",
-        "title_underline_style": "none",
-        "enable_quick_buy_desktop": false,
-        "enable_quick_buy_mobile": false,
-        "enable_quick_buy_drawer": false,
-        "enable_quick_buy_qty_selector": true,
-        "enable_color_picker": false,
-        "enable_quick_buy_compact": false,
-        "spacing_desktop": 75,
-        "spacing_mobile": 0,
-        "fix_zindex": 0,
-        "mobile_collapse": false
       }
     },
     "breadcrumbs": {
@@ -198,7 +163,6 @@
     "main-product",
     "nc-gallery-fix",
     "nc-rvw-topup",
-    "judgeme_reviews",
-    "recommendations"
+    "judgeme_reviews"
   ]
 }

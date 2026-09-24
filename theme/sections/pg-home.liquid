@@ -198,7 +198,8 @@
   @media (max-width:600px){ #pgh#pgh .pgh-tic{width:76px;height:76px} #pgh#pgh .pgh-tic svg{width:48px !important;height:48px !important} }
 
   /* Trust row */
-  .pgh-trust{max-width:1232px;margin:56px auto 72px;padding:52px 24px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:26px;text-align:center;background:#faf7fc;border:1px solid #efe3f8;border-radius:20px}
+  {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
+  .pgh-trust{max-width:1232px;margin:56px auto 72px;padding:52px 24px;display:grid;grid-template-columns:1fr 1fr;gap:26px;text-align:center;background:#faf7fc;border:1px solid #efe3f8;border-radius:20px}
   /* The icons were 44px 1.5-weight outlines in a 46px-padded band, which left
      each cell mostly empty and the marks too thin to read as anything at a
      glance. They are drawn on a 48-unit grid now (see the markup) at 78px, so
@@ -357,15 +358,7 @@
       <b>Free Shipping</b>
       <span>Free tracked shipping on every order</span>
     </div>
-    <div>
-      {%- comment -%}
-        Shield with an inner face so it reads as a crest rather than a blob,
-        a heavier tick, and two small sparks for the "money back" idea.
-      {%- endcomment -%}
-      <span class="pgh-tic"><svg viewBox="0 0 24 24" role="img" aria-label="30-day guarantee"><path d="M12 3l7 2.6v5.6c0 4.6-3 8.2-7 9.8-4-1.6-7-5.2-7-9.8V5.6z" fill="rgba(255,255,255,.16)"/><path d="M8.6 12.2l2.3 2.3 4.6-4.8"/></svg></span>
-      <b>30-Day Guarantee</b>
-      <span>Money back, no hassle</span>
-    </div>
+    {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
     <div>
       {%- comment -%}
         Padlock with a real keyhole and shank, a highlight along the shackle,

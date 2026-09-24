@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness sleep staple",
+        "intro_eye": "What it does",
+        "intro_head": "Your mattress can't fill the gap between your knees.",
+        "intro_text": "Contoured memory foam that keeps its shape all night. A soft strap that keeps the pillow on your leg. A scooped channel that cradles your knee. A zip-off cover you can take off and wash.",
+        "be_eye": "Why it helps",
+        "be_head": "Four things it does",
+        "be_sub": "Your top leg falls forward when there is nothing to rest on. Here is what changes when you fill that gap.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Leg Support System",
+        "system_sub": "The four parts that make it work. Hover over each one to see it on the photo.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/t/31/assets/nc-lp-system.png?v=1786144283",
+        "cmp_eye": "The difference",
+        "cmp_head": "Better than a folded pillow",
+        "cmp_sub": "What you get instead of folding a spare bed pillow in half.",
+        "cmp_ours": "Leg Pillow",
+        "cmp_theirs": "A Folded Bed Pillow",
+        "ba_eye": "Before and after",
+        "ba_head": "Two weeks of sleeping on your side",
+        "ba_sub": "Red is where it hurts. Blue is where it stops.",
+        "tl_eye": "One night",
+        "tl_head": "What it does while you sleep",
+        "tl_sub": "Three stages, three different jobs.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What side sleepers tell us",
+        "step_eye": "Easy to use",
+        "step_head": "Three steps and you are done",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This is a sleep comfort product, not a medical device. It is not meant to diagnose, treat, cure or prevent any illness. Results vary from person to person. Talk to your doctor first if you have a health problem or an injury, or if your pain is bad, lasting or getting worse.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/t/31/assets/nc-lp-hero17.jpg?v=1786253969",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/t/31/assets/nc-lp-inuse2.jpg?v=1786154200",
+        "ba_before_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/t/31/assets/nc-lp-ba-before.jpg?v=1786145702",
+        "ba_after_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/t/31/assets/nc-lp-ba-after11.jpg?v=1786251803"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "New mattress, new pillow, still waking up sore"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Your top knee slides forward and pulls your hip with it"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "The pillow you shove between your knees is gone by 2am"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 pillow)",
+            "qty": 1,
+            "sub": "For one side sleeper"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Pair (2 pillows)",
+            "qty": 2,
+            "sub": "One each, or one spare",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Trio (3 pillows)",
+            "qty": 3,
+            "sub": "For the whole household",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Keeps your back straight",
+            "text": "With your knees held apart, your hip stops rolling forward. Your back stays in a straight line from your shoulder to your hip."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Takes pressure off the sciatic nerve",
+            "text": "Sciatica is the nerve pain that runs down your leg. When your top leg drops across your body it twists your lower back and squeezes your hip. Keeping your legs apart helps take that pressure off."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Stops your knees rubbing",
+            "text": "Knee on knee is what makes side sleeping hurt when your joints are already sore. The groove holds them apart, so they never touch."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Helps blood move through your legs",
+            "text": "Crossed legs press on the veins behind your knee. Held apart and level, blood moves through your legs and hips more freely."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "A strap holds it on your leg",
+            "text": "A soft knit strap goes over your top thigh, just above the knee. That is what stops the pillow sliding out when you turn over."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Moulded out in the middle",
+            "text": "The middle of the pillow is scooped away. That keeps it light and stops it feeling like a solid block between your knees."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Scooped out for your knee",
+            "text": "The bottom half is scooped out. Your lower knee drops into it and your top knee is held level with your hip."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Zip off washable cover",
+            "text": "A zip runs right around the edge, so the cover comes off the foam and goes straight in the washing machine."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Keeps its shape",
+            "ours": "All night",
+            "theirs": "Squashes flat"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Shaped for the knee",
+            "ours": "Contoured",
+            "theirs": "Flat and loose"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Stays where you put it",
+            "ours": "Stays put",
+            "theirs": "Slips out"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Raised arch over your thigh",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Packs for travel",
+            "ours": "Compact",
+            "theirs": "Bulky"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Uses up a pillow from your bed",
+            "ours": "no",
+            "theirs": "yes"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Waking in the night with your hip aching"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Getting up stiff and sore in the knees and lower back"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Nerve pain running down the back of your leg"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Hips and lower back held in one line"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Knees held apart, so they never press together"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Legs level and open, so blood moves more freely"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "10 PM",
+            "label": "You settle in",
+            "trad_title": "Your top knee drops",
+            "trad_text": "With nothing between your knees the top leg falls forward. That pulls your hip over and twists your lower back.",
+            "trad_tag": "Hips twist",
+            "nc_title": "Hips and spine line up",
+            "nc_text": "The pillow holds your knees apart. Your hips stay square and your back sits in a straight line.",
+            "nc_tag": "Balanced posture"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "2 AM",
+            "label": "Through the night",
+            "trad_title": "Bone presses on bone",
+            "trad_text": "Your knees grind together and the twisted hip squeezes the sciatic nerve. Crossed legs also press on the veins behind your knee.",
+            "trad_tag": "Nerve and joints",
+            "nc_title": "Nothing touching, blood moving",
+            "nc_text": "Your knees never meet, so sore joints get a break. Legs held open take the squeeze off the nerve and let blood move freely.",
+            "nc_tag": "Less pressure"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "You wake up",
+            "trad_title": "Sore hip, stiff back",
+            "trad_text": "You get up aching, blame the mattress, and start pricing up a new one.",
+            "trad_tag": "Same as always",
+            "nc_title": "Rested, not aching",
+            "nc_text": "You slept through more of the night, so you get up without the hip ache. One pillow instead of a new bed.",
+            "nc_tag": "Cheaper than a mattress"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 91,
+            "suffix": "%",
+            "label": "Less hip and back ache",
+            "fill": 90,
+            "sub": "The two spots side sleepers name most."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 88,
+            "suffix": "%",
+            "label": "Slept more of the night",
+            "fill": 90,
+            "sub": "Woke up fewer times to move."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 85,
+            "suffix": "%",
+            "label": "Less aching in the legs",
+            "fill": 85,
+            "sub": "Thigh, knee and calf."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 93,
+            "suffix": "%",
+            "label": "Woke up more rested",
+            "fill": 95,
+            "sub": "Better sleep, not just more of it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Put it between your knees",
+            "text": "Lie on your side. Slide the pillow into the gap between your knees."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Drop your top knee in",
+            "text": "Let your top leg settle into the groove, with the arch over your thigh."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Give it a few nights",
+            "text": "Your legs are in a new spot, so it feels odd at first. There is nothing to buckle or size up."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Side sleeper leg pillow"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Zip off cover"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Fabric leg loop"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Filling",
+            "value": "Memory foam"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Shape",
+            "value": "Groove with a raised arch"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Cover",
+            "value": "Fabric, zips right off"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "How it stays on",
+            "value": "The arch, no straps"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Made for",
+            "value": "Side sleeping"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Colours",
+            "value": "Gray, Blue, Black"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

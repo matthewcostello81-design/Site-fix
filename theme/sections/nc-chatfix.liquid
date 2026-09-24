@@ -1,0 +1,120 @@
+{% comment %}NC chat fix: <shopify-chat> (keep legacy <shopify-agent> selectors). Bubble 1.5x desktop / 1.3x mobile, corner-tucked. MOBILE host constrained while [open]. Chat interior is a cross-origin IFRAME — JS overlays in the accessible shell: zoom 1.25; in the WELCOME state a branded panel (big centered NC logo + greeting re-rendered centered) covers the off-center original words and the auto product photo; panel height + glow tuned to stop ABOVE Shopify's privacy line (desk 228px, mobile 196px, glow 16px — the bigger glow was washing out the privacy line's first sentence); removed when a conversation starts. Frosted strip under the floating header for the Sign-in pill. Desktop welcome panel extra height only. Greeting copy duplicated in WELCOME_H/WELCOME_P — update if the shop greeting changes. + PDP gutter star nudge + MOBILE trust banner sizing + copy shortening + banner button + Try-it-at-home 3D + dot spreads + Why-it-matters stars. Loads after nc-qbfix/nc-bannerfix.{% endcomment %}
+<style>
+shopify-agent,shopify-chat{transform:none !important}
+shopify-agent::part(activator),shopify-chat::part(activator){transform:translate(8px,8px) scale(1.5);transform-origin:bottom right}
+#ncpdp#ncpdp#ncpdp .nc-promise{border-radius:24px !important;border:none !important;box-shadow:0 24px 48px -28px rgba(15,42,51,.5),0 8px 18px -12px rgba(15,42,51,.25) !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="cf696a59"]) .nc2-sysd-dot.p1{top:38% !important;left:68% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="cf696a59"]) .nc2-sysd-dot.p2{top:24% !important;left:50% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="cf696a59"]) .nc2-sysd-dot.p3{top:55% !important;left:40% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="cf696a59"]) .nc2-sysd-dot.p4{top:68% !important;left:62% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="2daa4442"]) .nc2-sysd-dot.p1{top:22% !important;left:47% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="2daa4442"]) .nc2-sysd-dot.p2{top:46% !important;left:62% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="2daa4442"]) .nc2-sysd-dot.p3{top:36% !important;left:28% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="2daa4442"]) .nc2-sysd-dot.p4{top:62% !important;left:52% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="bb2fbd64"]) .nc2-sysd-dot.p1{top:72% !important;left:38% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="bb2fbd64"]) .nc2-sysd-dot.p2{top:62% !important;left:55% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="bb2fbd64"]) .nc2-sysd-dot.p3{top:78% !important;left:24% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="bb2fbd64"]) .nc2-sysd-dot.p4{top:56% !important;left:70% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="49fb9d91"]) .nc2-sysd-dot.p1{top:40% !important;left:44% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="49fb9d91"]) .nc2-sysd-dot.p2{top:54% !important;left:64% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="49fb9d91"]) .nc2-sysd-dot.p3{top:44% !important;left:20% !important}
+#ncpdp#ncpdp:has(.nc2-sysd-img img[src*="49fb9d91"]) .nc2-sysd-dot.p4{top:70% !important;left:78% !important}
+@media(max-width:760px){
+  shopify-agent::part(activator),shopify-chat::part(activator){transform:translate(12px,12px) scale(1.3)}
+  shopify-chat[open]{position:fixed !important;left:auto !important;top:auto !important;right:8px !important;bottom:76px !important;width:min(340px,calc(100vw - 28px)) !important;height:min(560px,calc(100vh - 150px)) !important;overflow:hidden !important;border-radius:18px !important;box-shadow:0 24px 60px -24px rgba(15,42,51,.55) !important}
+  #ncpdp#ncpdp#ncpdp .nc-strip{padding:20px 16px 21px !important;row-gap:15px !important;column-gap:12px !important}
+  #ncpdp#ncpdp#ncpdp .nc-strip>div{font-size:15px !important;gap:9px !important;justify-content:flex-start !important;text-align:left !important;width:100% !important;max-width:100% !important;white-space:normal !important;line-height:1.3 !important}
+  #ncpdp#ncpdp#ncpdp .nc-strip>div svg{width:23px !important;height:23px !important;flex:none !important}
+  #nc-home#nc-home#nc-home .nch-strip-i{display:flex !important;flex-direction:row !important;align-items:flex-start !important;justify-content:flex-start !important;text-align:left !important;gap:9px !important;width:100% !important;max-width:172px !important;margin:0 auto !important;white-space:normal !important}
+  #nc-home#nc-home#nc-home .nch-strip-i svg{flex:none !important;width:22px !important;height:22px !important;margin:1px 0 0 !important}
+  #nc-home#nc-home#nc-home .nch-strip-i span{display:block !important;line-height:1.35 !important}
+  #nc-home#nc-home#nc-home .nch-banner-in{justify-content:flex-start !important;padding:26px 24px 26px !important;gap:0 !important}
+  #nc-home#nc-home#nc-home .nch-banner-in h2{margin-bottom:8px !important}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-eye{position:relative !important;display:block !important}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-eye::after{content:'\2726';position:absolute;right:0;top:-8px;font-size:32px;line-height:1;color:rgba(44,110,114,.36);transform:rotate(-10deg);pointer-events:none}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-eye::before{content:'\2727';position:absolute;right:44px;top:6px;font-size:16px;line-height:1;color:rgba(44,110,114,.3);pointer-events:none}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-split-text h2{position:relative !important}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-split-text h2::before{content:'\2736';position:absolute;right:2px;top:24%;font-size:25px;line-height:1;color:rgba(44,110,114,.32);transform:rotate(12deg);pointer-events:none}
+  #ncpdp#ncpdp#ncpdp .nc-vsplit .nc-split-text h2::after{content:'\2726';position:absolute;right:36px;top:62%;font-size:18px;line-height:1;color:rgba(44,110,114,.26);transform:rotate(-14deg);pointer-events:none}
+}
+@media(min-width:761px){
+  #ncpdp#ncpdp .nc-split:not(:has(.nc-acc))::before{left:calc(50% - 84px) !important}
+  #ncpdp#ncpdp .nc-split:not(:has(.nc-acc))::after{left:calc(50% - 112px) !important}
+}
+</style>
+<script>
+(function(){
+  var NCLOGO='https://northcovewellness.com/cdn/shop/files/Gemini_Generated_Image_h0ybk0h0ybk0h0yb_1_e37037c2-5f3d-4f00-a7b8-9f30045ed0cc.png?v=1780884722&width=300';
+  var WELCOME_H='Hi there!';
+  {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+  var WELCOME_P='Welcome to North Cove Wellness LLC! You can ask questions about shopping, sizing, shipping, or order status.';
+  function tag(){
+    document.querySelectorAll('.nc-split').forEach(function(s){
+      if(s.querySelector('.nc-introlist'))s.classList.add('nc-vsplit');
+    });
+    if(window.matchMedia&&window.matchMedia('(max-width:760px)').matches){
+      document.querySelectorAll('.nc-strip>div').forEach(function(d){
+        if(/support\s*5\s*days\s*a\s*week/i.test(d.textContent)){
+          for(var i=0;i<d.childNodes.length;i++){
+            var n=d.childNodes[i];
+            if(n.nodeType===3&&/support/i.test(n.nodeValue)){n.nodeValue='5-day support';}
+          }
+        }
+      });
+      document.querySelectorAll('.nch-strip-i span').forEach(function(sp){
+        var t=sp.textContent;
+        if(/free shipping on all orders/i.test(t)){sp.textContent='Free shipping';}
+        {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+      });
+    }
+  }
+  if(document.readyState!=='loading')tag();else document.addEventListener('DOMContentLoaded',tag);
+  setTimeout(tag,800);
+  setInterval(function(){
+    var c=document.querySelector('shopify-chat');
+    if(!c||!c.shadowRoot)return;
+    var rt=c.shadowRoot.querySelector('shopify-agent-runtime');
+    var fr=rt&&rt.shadowRoot?rt.shadowRoot.querySelector('iframe'):null;
+    if(!fr)return;
+    if(fr.style.zoom!=='1.25')fr.style.zoom='1.25';
+    var p=fr.closest('section.panel');
+    var body=fr.parentElement;
+    if(!body)return;
+    var desk=window.matchMedia('(min-width:761px)').matches;
+    var empty=p&&p.className.indexOf('empty-state')>-1;
+    if(desk&&p){
+      if(empty&&p.style.height!=='480px'){p.style.setProperty('height','480px','important');}
+      else if(!empty&&p.style.height==='480px'){p.style.removeProperty('height');}
+    }
+    var br=body.querySelector('.nc-chat-brand');
+    if(empty){
+      if(!br){
+        br=document.createElement('div');
+        br.className='nc-chat-brand';
+        var fam='-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,\'Helvetica Neue\',sans-serif';
+        br.style.cssText='position:absolute;background:#fff;box-shadow:0 0 16px 8px #fff;border-radius:20px;z-index:0;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;overflow:hidden;font-family:'+fam+';'+(desk?'left:14px;right:14px;top:64px;height:228px':'left:12px;right:12px;top:60px;height:196px');
+        var lg=document.createElement('img');
+        lg.src=NCLOGO;
+        lg.style.cssText='height:'+(desk?'112px':'82px')+';width:auto;margin-top:0';
+        var hh=document.createElement('div');
+        hh.textContent=WELCOME_H;
+        hh.style.cssText='font-weight:800;color:#2b2b2b;font-size:'+(desk?'24px':'21px')+';margin:4px 0 6px';
+        var pp=document.createElement('div');
+        pp.textContent=WELCOME_P;
+        pp.style.cssText='color:#4a4a4a;line-height:1.4;font-size:'+(desk?'15px':'13.5px')+';max-width:'+(desk?'400px':'280px')+'';
+        br.appendChild(lg);br.appendChild(hh);br.appendChild(pp);
+        body.appendChild(br);
+      }
+    }else if(br){br.remove();}
+    if(!body.querySelector('.nc-chat-top')){
+      var st=document.createElement('div');
+      st.className='nc-chat-top';
+      st.style.cssText='position:absolute;top:0;left:0;right:0;height:56px;z-index:0;pointer-events:none;background:linear-gradient(to bottom,rgba(255,255,255,.96) 55%,rgba(255,255,255,0))';
+      body.appendChild(st);
+    }
+  },700);
+})();
+</script>
+{% schema %}
+{"name":"NC Chat Fix","settings":[]}
+{% endschema %}

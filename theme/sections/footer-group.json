@@ -1,0 +1,108 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "type": "footer",
+  "name": "t:static_sections.footer.name",
+  "sections": {
+    "footer": {
+      "type": "footer",
+      "blocks": {
+        "footer_links_html": {
+          "type": "html",
+          "settings": {
+            "html": "<style>\n.nc-foot-links{display:flex;flex-wrap:wrap;gap:36px 64px;padding:8px 0}\n.nc-foot-col{min-width:150px}\n.nc-foot-h{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#0F2A33;margin:0 0 14px}\n.nc-foot-links ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}\n.nc-foot-links a{color:#3C5860;text-decoration:none;font-size:14.5px;transition:color .15s ease}\n.nc-foot-links a:hover{color:#2C6E72}\n@media(max-width:600px){\n.nc-foot-links{gap:26px 40px}\n}\n</style>\n<div class=\"nc-foot-links\">\n  <div class=\"nc-foot-col\">\n<p class=\"nc-foot-h\">Help</p>\n<ul>\n<li><a href=\"/pages/rom-guide\">ROM Guide</a></li>\n<li><a href=\"/pages/about-us\">About Us</a></li>\n<li><a href=\"/pages/track-order\">Track Order</a></li>\n</ul>\n</div>\n  <div class=\"nc-foot-col\">\n<p class=\"nc-foot-h\">Policies</p>\n<ul>\n<li><a href=\"/pages/refund-policy\">Refund Policy</a></li>\n<li><a href=\"/pages/shipping-policy\">Shipping Policy</a></li>\n<li><a href=\"/pages/payment-billing\">Payment &amp; Billing</a></li>\n<li><a href=\"/pages/privacy-policy\">Privacy Policy</a></li>\n<li><a href=\"/pages/terms-of-service\">Terms of Service</a></li>\n<li><a href=\"/pages/data-sharing-opt-out\">Your Privacy Choices</a></li>\n</ul>\n</div>\n</div>"
+          }
+        },
+        "socials_newsletter_TL7dni": {
+          "type": "socials_newsletter",
+          "settings": {
+            "title": "Stay Up To Date!",
+            "show_socials": true,
+            "enable_follow_on_shop": true,
+            "show_newsletter": true,
+            "footer_button_style": "primary plain",
+            "enable_newsletter_terms_checkbox": false,
+            "newsletter_terms_text": ""
+          }
+        }
+      },
+      "block_order": [
+        "footer_links_html",
+        "socials_newsletter_TL7dni"
+      ],
+      "settings": {
+        "width": "boxed",
+        "footer_color": "white",
+        "title_font": "primary",
+        "title_size_blocks": "h4",
+        "bottom_color": "scheme-1",
+        "bottom_img_width": 50,
+        "bottom_img_link": "",
+        "enable_country_selector": true,
+        "enable_language_selector": true,
+        "enable_follow_on_shop": false,
+        "show_payment_methods": true,
+        "spacing_desktop": 0,
+        "spacing_mobile": 0
+      }
+    },
+    "nc_chatfix": {"type": "nc-chatfix", "disabled": true, "settings": {}},
+    "pg_cart_fast": {"type": "pg-cart-fast", "settings": {}},
+    "pg_theme": {"type": "pg-theme-css", "settings": {}},
+    "pg_dark": {"type": "pg-dark", "settings": {}},
+    "pg_dark_atc": {"type": "pg-dark-atc", "settings": {}},
+    "pg_mobile": {"type": "pg-mobile", "settings": {}},
+    "pg_acc_place": {"type": "pg-acc-place", "settings": {}},
+    "pg_gallery_mobile": {"type": "pg-gallery-mobile", "settings": {}},
+    "pg_hero_crop": {"type": "pg-hero-crop", "settings": {}},
+    "pg_card_crop": {"type": "pg-card-crop", "settings": {}},
+    "pg_tile_copy": {"type": "pg-tile-copy", "settings": {}},
+    "pg_case_mobile": {"type": "pg-case-mobile", "settings": {}},
+    "pg_page_logo": {"type": "pg-page-logo", "settings": {}},
+    "pg_nav": {"type": "pg-nav", "settings": {}},
+    "pg_reviews_text": {"type": "pg-reviews-text", "settings": {}},
+    "pg_case_add": {"type": "pg-case-add", "settings": {}},
+    "pg_marquee": {"type": "pg-marquee", "settings": {}},
+    "pg_form": {"type": "pg-form", "settings": {}},
+    "pg_page_style": {"type": "pg-page-style", "settings": {}},
+    "pg_wordmark": {"type": "pg-wordmark", "settings": {}},
+    "pg_no_cart_page": {"type": "pg-no-cart-page", "settings": {}},
+    "pg_linefix": {"type": "pg-linefix", "settings": {}},
+    "pg_frame_add": {"type": "pg-frame-add", "settings": {}},
+    "pg_nocontact": {"type": "pg-nocontact", "settings": {}}
+  },
+  "order": [
+    "footer",
+    "nc_chatfix",
+    "pg_cart_fast",
+    "pg_theme",
+    "pg_dark",
+    "pg_dark_atc",
+    "pg_mobile",
+    "pg_acc_place",
+    "pg_gallery_mobile",
+    "pg_hero_crop",
+    "pg_card_crop",
+    "pg_tile_copy",
+    "pg_case_mobile",
+    "pg_page_logo",
+    "pg_nav",
+    "pg_reviews_text",
+    "pg_case_add",
+    "pg_marquee",
+    "pg_form",
+    "pg_page_style",
+    "pg_wordmark",
+    "pg_no_cart_page",
+    "pg_linefix",
+    "pg_frame_add",
+    "pg_nocontact"
+  ]
+}

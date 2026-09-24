@@ -9,13 +9,11 @@
  */
 {
   "sections": {
-    "nc-gallery-fix": {
-      "type": "nc-gallery-fix",
-      "settings": {}
-    },
-    "nc-rvw-topup": {
-      "type": "nc-rvw-topup",
-      "settings": {}
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
     },
     "main-product": {
       "type": "main-product",
@@ -103,7 +101,39 @@
         "usp_1": {
           "type": "usp",
           "settings": {
-            "usp": "<p><strong>Free tracked shipping</strong> on every order</p>"
+            "usp": "<p><strong>Free shipping </strong>on all orders above 50,00</p>"
+          }
+        },
+        "2e2d451c-7968-4d6b-a516-6f6e842c92ee": {
+          "type": "content",
+          "settings": {
+            "enable_tab": true,
+            "collapse": true,
+            "title": "Pay whenever you want",
+            "icon": "none",
+            "header_image_width": 30,
+            "text": "<p>Easily pay within 30 days after you have received your package. <br/><a href=\"/policies/shipping-policy\" title=\"Shipping Policy\"><strong>Read more</strong></a></p>",
+            "page": "",
+            "image_width": 465,
+            "liquid": "",
+            "html": "",
+            "show_contact_form": false
+          }
+        },
+        "eeef3269-90c3-44f1-91c4-65f04ff8b23e": {
+          "type": "content",
+          "settings": {
+            "enable_tab": true,
+            "collapse": true,
+            "title": "Shipping",
+            "icon": "none",
+            "header_image_width": 25,
+            "text": "",
+            "page": "shipping-info",
+            "image_width": 465,
+            "liquid": "",
+            "html": "",
+            "show_contact_form": false
           }
         },
         "f2290434-741b-4731-a534-ad679331e164": {
@@ -144,24 +174,26 @@
         "e9431daf-3b99-40f6-89ff-dab164cda2ff",
         "shipping_timer",
         "usp_1",
+        "2e2d451c-7968-4d6b-a516-6f6e842c92ee",
+        "eeef3269-90c3-44f1-91c4-65f04ff8b23e",
         "f2290434-741b-4731-a534-ad679331e164"
       ],
       "settings": {
         "show_thumbs_desktop": true,
         "show_thumbs_mobile": false,
         "images_layout": "aside",
-        "show_product_description": false,
+        "show_product_description": true,
         "product_description_enable_read_more": false,
-        "pros": "",
-        "cons": "",
-        "specifications": "",
+        "pros": "<p>Sustainably produced, Ideal for everyday use</p>",
+        "cons": "<p>May discolor in direct sunlight</p>",
+        "specifications": "<p>Weight: 200gr, Usage: Indoor & outdoor</p>",
         "product_description_mobile_collapse": false
       }
     },
     "recommendations": {
       "type": "product-recommendations",
       "settings": {
-        "recommended_products_qty": 9,
+        "recommended_products_qty": 6,
         "number_of_items": 4,
         "text_alignment": "start",
         "width": "boxed",
@@ -179,26 +211,30 @@
         "mobile_collapse": false
       }
     },
-    "breadcrumbs": {
-      "type": "breadcrumbs",
+    "recently-viewed": {
+      "type": "section-recently-viewed-products",
       "settings": {
-        "hide_mobile": true
-      }
-    },
-    "judgeme_reviews": {
-      "type": "jdgm-reviews",
-      "settings": {
-        "spacing_desktop": 40,
-        "spacing_mobile": 30
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>Products you've been watching</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 50,
+        "spacing_mobile": 30,
+        "fix_zindex": 0
       }
     }
   },
   "order": [
     "breadcrumbs",
     "main-product",
-    "nc-gallery-fix",
-    "nc-rvw-topup",
-    "judgeme_reviews",
-    "recommendations"
+    "recommendations",
+    "recently-viewed"
   ]
 }

@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness comfort staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Warmth and gentle compression, right where you need it.",
+        "intro_text": "Stiff, tired joints after activity or a long day? The Heated Compression Wrap combines adjustable compression with optional warmth around the knee, elbow or similar joint areas, so you can settle into rest and recovery in comfort at home.",
+        "be_eye": "Built different",
+        "be_head": "Why this wrap",
+        "be_sub": "Four reasons tired, achy joints feel more at ease.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Comfort System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Heated Compression Wrap feel so good.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_013518_cf696a59-3f4c-439a-b78c-370c310da76a.png?v=1782871268",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How heat plus adjustable compression compares to a basic ice pack.",
+        "cmp_ours": "Heated Wrap",
+        "cmp_theirs": "A Basic Ice Pack",
+        "ba_eye": "Before & after",
+        "ba_head": "How rest feels with the wrap",
+        "ba_sub": "What changes when warmth and compression become part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to unwind",
+        "tl_sub": "The same tired joints, with and without a few minutes of warmth and compression.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Wrap it on, pick a heat, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_013202_b24259d9-8363-43d0-ae3a-034e1b4c5275.png?v=1780796642",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182243_f5ebf265-974c-4c0c-971c-2b0f1a7fa0f8.png?v=1784399003",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182503_b8b474b4-d199-45ed-a57c-b1d70fae1f20.png",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182418_15171ba7-dfe4-40af-8d0b-4e65dbf7ded5.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Soothes achy knees and elbows — warm compression where it hurts"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Move easier, sooner — heat that loosens stiff joints"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Adjustable fit and heat — comfort that stays put"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday comfort for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This wrap + Electric Heating Pad — joints and back covered",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Warmth where you want it",
+            "text": "A built-in heating element brings gentle, consistent warmth around the joint, so you can settle into rest and relaxation feeling more at ease."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Gentle, adjustable compression",
+            "text": "The wrap secures snugly around the knee, elbow or similar joint and stays in place, with an extension belt option for a fit that feels right for you."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Set your own heat",
+            "text": "Multiple heat settings let you choose anything from a light, gentle warmth to a cozier level, matching the joint and how it feels that day."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Reusable and easy",
+            "text": "Designed for repeat use as part of your routine, it wraps on in seconds and is simple to adjust whenever you want a comfortable rest session."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Gentle warming element",
+            "text": "A built-in heating element delivers steady, even warmth around the joint to help you feel comfortable during extended rest."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Multiple heat settings",
+            "text": "Choose from a light, gentle warmth to a cozier level, matched to the joint and how it feels that day."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Adjustable secure fit",
+            "text": "Wraps snugly around knee, elbow or similar joints and stays put, with an extension belt option for a more customized fit."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Reusable comfort accessory",
+            "text": "Built for daily use, it wraps on in seconds and slips into your routine for comfortable rest and recovery time."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Warmth plus compression",
+            "ours": "yes",
+            "theirs": "Cold only"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable secure fit",
+            "ours": "yes",
+            "theirs": "Hold in place"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Multiple heat settings",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Reusable for daily use",
+            "ours": "yes",
+            "theirs": "Often single use"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Targets knee, elbow, joints",
+            "ours": "yes",
+            "theirs": "General area"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Extension belt option",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Tired, stiff joints that linger after activity"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Fumbling with a cold pack that slips out of place"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Nothing comfortable to wear during evening rest"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Gentle warmth wrapped right around the joint"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A secure, adjustable fit that stays where you put it"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A cozy, comfortable way to wind down at home"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "6 PM",
+            "label": "After activity",
+            "trad_title": "Stiff and tender",
+            "trad_text": "You finish a walk or workout and your knee feels tight, with nothing comfortable to wrap around it.",
+            "trad_tag": "Stiff and tired",
+            "nc_title": "Warmth right away",
+            "nc_text": "You wrap it on, pick a heat setting and let gentle warmth and compression settle in around the joint.",
+            "nc_tag": "Comfortable again"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "8 PM",
+            "label": "Evening rest",
+            "trad_title": "Restless on the couch",
+            "trad_text": "You try to relax but the joint feels tired and a loose pack keeps shifting around.",
+            "trad_tag": "Hard to settle",
+            "nc_title": "Easy to unwind",
+            "nc_text": "The wrap stays snug and warm while you relax, so you can settle in without fussing with it.",
+            "nc_tag": "Cozy and steady"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "10 PM",
+            "label": "Before bed",
+            "trad_title": "Tossing and turning",
+            "trad_text": "The joint still feels tight as you wind down for the night with nothing to ease it.",
+            "trad_tag": "Still tense",
+            "nc_title": "Wind down warm",
+            "nc_text": "A final session of gentle warmth helps you relax and feel comfortable before bed.",
+            "nc_tag": "Relaxed and ready"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the warmth",
+            "fill": 95,
+            "sub": "Gentle heat they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 83,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt more comfortable",
+            "fill": 90,
+            "sub": "More at ease where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Wrap it on",
+            "text": "Secure the wrap snugly around the joint area."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a heat",
+            "text": "Choose a heat setting that feels comfortable."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Relax",
+            "text": "Settle in and rest while it warms the area."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Heated compression wrap"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Extension belt"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat settings",
+            "value": "Multiple levels"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Fit",
+            "value": "Adjustable wrap"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Areas",
+            "value": "Knee, elbow, joints"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Extension belt",
+            "value": "Included"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "USB rechargeable"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Color",
+            "value": "Gray and Black"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

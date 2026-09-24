@@ -1,0 +1,493 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "duo_pct": 10,
+        "trio_pct": 15,
+        "sold_line": "A North Cove Wellness recovery staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Professional-style percussion, brought home.",
+        "intro_text": "The knot in your shoulder or the soreness after a hard session should not have to wait for an appointment. The Octa Massage Gun delivers deep-tissue percussion with built-in heat therapy and eight interchangeable heads, compact enough for the gym bag and powerful enough to become a daily ritual.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_012734_2daa4442-fd03-423e-ac8c-bedda99f997d.png?v=1781762872",
+        "be_eye": "Built different",
+        "be_head": "Why this massage gun",
+        "be_sub": "Four reasons tight, sore muscles do not stand a chance.",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182251_6c0a8f23-66ea-4339-8aac-cbee867c56b3.png?v=1784399026",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Octa actually work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_012734_2daa4442-fd03-423e-ac8c-bedda99f997d.png?v=1781762872",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How heated, targeted percussion compares to a regular handheld massager.",
+        "cmp_ours": "Octa Massage Gun",
+        "cmp_theirs": "Regular Massagers",
+        "ba_eye": "Before & after",
+        "ba_head": "How recovery feels after two weeks",
+        "ba_sub": "What changes when heated percussion becomes part of your routine.",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_212806_90290606-5db3-49fd-888c-ffd8cbc85e88.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_213337_1e46f147-7486-4e04-8667-2a40948f724c.png",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to recover",
+        "tl_sub": "The same aches, with and without a few minutes of heated percussion.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Pick a head, set the speed, go.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury."
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Crushes deep knots — 8 heads with soothing heat"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Recover in minutes, not days — pro percussion at home"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Quiet enough for the couch — powerful enough for leg day"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday recovery for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This gun + Electric Heating Pad — percussion and heat together",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Warm up and recover",
+            "text": "A few minutes of percussion before training wakes up the muscles, and a session afterward helps ease the tightness that follows a hard workout."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Heat that prepares the muscle",
+            "text": "The built-in hot-compress setting warms stiff tissue first, supporting circulation so the deeper percussion settings land more comfortably, especially on stiff mornings."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Eight heads for the whole body",
+            "text": "Flat and ball heads cover broad muscle groups, bullet and fork heads reach joints and deep knots, and a cushioned head suits sensitive spots, so every area gets the right contact."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Quiet and portable",
+            "text": "Light and quiet enough for the couch, the office or a hotel room, with a rechargeable battery, so your recovery routine goes wherever the week takes you."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Deep-tissue percussion",
+            "text": "A powerful percussion motor drives rapid, deep strokes into tight muscle to help post-workout tension and desk fatigue release faster than hands or a roller."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Built-in heat therapy",
+            "text": "The hot-compress setting warms the muscle before the motor goes to work, a warm-then-work approach that makes deeper settings feel a lot more comfortable."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "8 targeted heads",
+            "text": "Swap attachments in seconds, from flat and ball heads for big muscles to bullet and fork heads for knots and a cushioned head for sensitive areas."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Adjustable intensity",
+            "text": "Multiple intensity levels let you dial from a gentle warm-up to a deeper recovery session, matched to the muscle and how it feels that day."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Deep percussion therapy",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Built-in heat therapy",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Interchangeable heads",
+            "ours": "8 heads",
+            "theirs": "Fixed"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable intensity",
+            "ours": "yes",
+            "theirs": "1-2 modes"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Cordless and portable",
+            "ours": "yes",
+            "theirs": "Often corded"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Quiet during use",
+            "ours": "yes",
+            "theirs": "Loud"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Tight, sore muscles that linger for days after training"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Stiff mornings where deep pressure just feels too harsh"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Booking a massage every time the knots get bad"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Looser muscles and faster bounce-back between sessions"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Heat first, then percussion, so deep work feels comfortable"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "On-demand relief that travels in your bag"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "7 AM",
+            "label": "Pre-workout",
+            "trad_title": "Cold, stiff start",
+            "trad_text": "You jump into training tight and underprepared, and tweak something in the first few sets.",
+            "trad_tag": "Stiff and tight",
+            "nc_title": "Warmed up in minutes",
+            "nc_text": "Heat plus a quick pass on the legs and shoulders wakes the muscles up so you move better from the first rep.",
+            "nc_tag": "Primed to move"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "1 PM",
+            "label": "Desk fatigue",
+            "trad_title": "Knots set in",
+            "trad_text": "Hours at the desk leave your neck and shoulders locked up by the early afternoon.",
+            "trad_tag": "Aching by noon",
+            "nc_title": "Reset at your desk",
+            "nc_text": "Two minutes on the traps and shoulders melts the tension without leaving your chair.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "8 PM",
+            "label": "Post-workout",
+            "trad_title": "Soreness creeping in",
+            "trad_text": "You skip recovery and tomorrow's soreness is already on its way.",
+            "trad_tag": "Sore tomorrow",
+            "nc_title": "Recover before bed",
+            "nc_text": "A short heated session on the legs and back helps you wind down and bounce back faster.",
+            "nc_tag": "Faster recovery"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the heat plus power",
+            "fill": 100,
+            "sub": "Heated percussion they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 83,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 91,
+            "suffix": "%",
+            "label": "Felt looser after use",
+            "fill": 90,
+            "sub": "Less tension where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a head",
+            "text": "Attach one of the eight heads that suits the muscle group."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Set the speed",
+            "text": "Add heat if you like, then start low and increase as the muscle loosens."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Glide slowly",
+            "text": "Move over the area for a minute or two per spot."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Octa massage gun with heat therapy"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "8 interchangeable massage heads"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Heads",
+            "value": "8 interchangeable"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat therapy",
+            "value": "Built-in hot compress"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Intensity",
+            "value": "Multiple levels"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Motor",
+            "value": "Deep-tissue percussion"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Battery",
+            "value": "Rechargeable"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Color",
+            "value": "Black and Gray"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

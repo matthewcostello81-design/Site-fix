@@ -1,0 +1,475 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Melts neck and shoulder tension — heated 3D kneading"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Hands-free relief in 15 minutes — no appointment needed"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Ergonomic hand straps guide the massage right where you need it"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday comfort for one",
+            "flag": "",
+            "best": false
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular",
+            "best": false
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This massager + Electric Heating Pad — neck to lower back",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Kneading you can feel",
+            "text": "Rotating 3D nodes mimic the kneading motion of hands, working across the neck and shoulders so tension has somewhere to go after a long day."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Warmth that relaxes",
+            "text": "Built-in heat adds gentle, soothing warmth on top of the massage, helping the whole area feel more comfortable and at ease."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "True Ergonomic Fit",
+            "text": "It drapes around your neck and works on its own. Utilize the hand straps to deepen the massage!"
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Ergonomic hand straps",
+            "text": "Built-in hand straps let you pull the massager in and steer the kneading nodes to the exact spot on your neck and shoulders that needs it."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "3D kneading nodes",
+            "text": "Rotating nodes deliver a deep, hands-on kneading feel across the neck and shoulders, the spots that take the brunt of desk and screen time."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Built-in heat",
+            "text": "Gentle warmth layers over the massage for a soothing, comfortable session whenever your neck feels tight."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "True Ergonomic Fit",
+            "text": "Contours around your neck for maximum comfort. Deepen the massage by using the hand straps!"
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Hands-free comfort",
+            "text": "Lightweight and contoured to rest on your neck, it leaves your hands free so you can relax while it runs."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "3D kneading massage",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Soothing built-in heat",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Hands-free use",
+            "ours": "yes",
+            "theirs": "Hands busy"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Consistent pressure",
+            "ours": "Every pass",
+            "theirs": "Tires out"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable hand straps",
+            "ours": "yes",
+            "theirs": "n/a"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Reaches the whole neck",
+            "ours": "yes",
+            "theirs": "Hard to reach"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "A tight, tired neck that builds up through every workday"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Rubbing your own neck and shoulders that never quite reaches"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Booking an appointment every time the tension piles up"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A looser, more comfortable neck at the end of the day"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few warm, hands-free minutes at home whenever you need them"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Hands-free comfort whenever your neck needs a reset"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "8 AM",
+            "label": "Morning commute",
+            "trad_title": "Stiff before you start",
+            "trad_text": "A hunched commute and an early screen leave your neck tight before the day even begins.",
+            "trad_tag": "Tight and tense",
+            "nc_title": "Loosened before work",
+            "nc_text": "A few warm kneading minutes on the couch ease the neck so you start the day more comfortable.",
+            "nc_tag": "Relaxed and ready"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "3 PM",
+            "label": "Desk fatigue",
+            "trad_title": "Knots set in",
+            "trad_text": "Hours at the desk and on screens leave your neck and shoulders locked up by mid-afternoon.",
+            "trad_tag": "Aching at the desk",
+            "nc_title": "Reset at your desk",
+            "nc_text": "Drape it on for a few minutes of kneading and warmth and feel the tension ease without leaving your chair.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Wind down",
+            "trad_title": "Tension carries to bed",
+            "trad_text": "You skip any reset and the day's neck tightness follows you onto the pillow.",
+            "trad_tag": "Still tense at night",
+            "nc_title": "Unwind before bed",
+            "nc_text": "A short warm kneading session helps you relax and settle in for the evening.",
+            "nc_tag": "Calm and comfortable"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 94,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the heat",
+            "fill": 100,
+            "sub": "Warmth that adds to the comfort."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 80,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 80,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 91,
+            "suffix": "%",
+            "label": "Felt looser after use",
+            "fill": 90,
+            "sub": "Less tension where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Drape it on",
+            "text": "Rest the massager around your neck and shoulders."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a mode",
+            "text": "Choose your kneading mode and switch on the heat."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Sit back and relax",
+            "text": "Let it knead for a few minutes while you unwind."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "3D kneading heated neck massager"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB power cable"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "User guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Massage",
+            "value": "3D kneading nodes"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat",
+            "value": "Built-in warming"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "Corded"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Cable",
+            "value": "USB power cable"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Use",
+            "value": "Hands-free"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Best for",
+            "value": "Neck and shoulders"
+          }
+        }
+      },
+      "block_order": [
+        "h1", "h2", "h3", "t1", "t2", "t3",
+        "be1", "be2", "be3", "be4",
+        "fe1", "fe2", "fe3", "fe4",
+        "c1", "c2", "c3", "c4", "c5", "c6",
+        "ba1", "ba2", "ba3", "ba4", "ba5", "ba6",
+        "tl1", "tl2", "tl3",
+        "m1", "m2", "m3", "m4",
+        "st1", "st2", "st3",
+        "bx1", "bx2", "bx3",
+        "sp1", "sp2", "sp3", "sp4", "sp5", "sp6"
+      ],
+      "settings": {
+        "sale_tag": "",
+        "sold_line": "A North Cove Wellness everyday comfort staple",
+        "atc_text": "Add to Cart",
+        "tier_label": "Choose your set",
+        "duo_pct": 10,
+        "trio_pct": 15,
+        "b2t": "Free",
+        "b2s": "U.S. shipping",
+        "b3t": "Secure",
+        "b3s": "Encrypted checkout",
+        "s1": "Free fast shipping",
+        "s3": "Quality checked",
+        "s4": "Support 5 days a week",
+        "intro_eye": "Why it matters",
+        "intro_head": "Kneading massage and warmth, anywhere you go.",
+        "intro_text": "Neck feeling tight after a long day at the desk or a screen-heavy commute? The 3D Kneading Heated Neck Massager brings rotating kneading nodes and soothing warmth with ergonomic hand straps, so you can create a relaxing reset at home or at your desk.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_012853_c1898c7c-3cfb-43c1-8ef3-0019fc409e09.png?v=1780796571",
+        "be_eye": "Built different",
+        "be_head": "Why this neck massager",
+        "be_sub": "Four reasons a tight, tired neck does not stand a chance.",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182251_e4821559-ec5c-4661-a37e-d0bfda42ffdd.png?v=1784399024",
+        "system_eye": "The system",
+        "system_head": "The North Cove Comfort System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the neck massager actually feel good.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_004614_939b3285-5032-4c89-81ec-93cf5ef4ede7.png?v=1782871268",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How 3D kneading with heat compares to rubbing your neck by hand.",
+        "cmp_ours": "3D Neck Massager",
+        "cmp_theirs": "Manual Rubbing",
+        "ba_eye": "Before & after",
+        "ba_head": "How your neck feels after two weeks",
+        "ba_sub": "What changes when a few warm kneading minutes become part of your routine.",
+        "ba_before_label": "Before",
+        "ba_after_label": "After",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_214427_dc424d79-ff2e-4707-93dc-a62691e0e951.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260701_214223_a56dda8d-5bed-4fbf-a954-e7b30f2a1a3b.png",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to unwind",
+        "tl_sub": "The same desk-and-commute tension, with and without a few kneading minutes.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Drape it on, pick a mode, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "faq_eye": "Good to know",
+        "faq_head": "",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury."
+      }
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

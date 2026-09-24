@@ -1,0 +1,319 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Sequential air compression"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Adjustable pressure settings"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "One-size boot fits most"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday recovery for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Family (3 units)",
+            "qty": 3,
+            "sub": "For the whole household",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Unwind after long days",
+            "text": "Hours of standing or sitting leave legs feeling heavy. A compression cycle wraps the calves and feet in a rolling squeeze that helps you relax and reset in the evening."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Wave-like massage",
+            "text": "Chambers inflate foot to calf in sequence, creating a wave that mimics a natural pumping motion many find soothing after activity or travel."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Set your intensity",
+            "text": "Adjustable pressure lets you dial the squeeze from gentle to firm, so the massage feels comfortable whether you want light relaxation or a deeper press."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Easy at-home setup",
+            "text": "Sit down, slip the boots on and let the cycle run. The one-size boot design fits most legs and feet, so the whole household can use it."
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 90,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 94,
+            "suffix": "%",
+            "label": "Love the compression",
+            "fill": 95,
+            "sub": "Wave-like squeeze they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 77,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 75,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 85,
+            "suffix": "%",
+            "label": "Felt lighter after use",
+            "fill": 85,
+            "sub": "Relaxed legs where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Slip on the boots",
+            "text": "Wrap each leg and foot into the boot."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Set the pressure",
+            "text": "Choose an intensity that feels comfortable."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Sit back",
+            "text": "Let the compression cycle run for 15 to 20 minutes."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Pair of compression boots"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Control unit and hoses"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Quick start guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Compression",
+            "value": "Sequential air chambers"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Coverage",
+            "value": "Calves, ankles, feet"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Pressure",
+            "value": "Adjustable levels"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Fit",
+            "value": "One size fits most"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Best for",
+            "value": "After standing or activity"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Use",
+            "value": "At-home relaxation"
+          }
+        },
+        "f1": {
+          "type": "faq",
+          "settings": {
+            "q": "Relax after standing",
+            "a": "A compression cycle helps tired legs unwind after long hours on your feet."
+          }
+        },
+        "f2": {
+          "type": "faq",
+          "settings": {
+            "q": "Adjust the intensity",
+            "a": "Pressure settings let you keep the squeeze comfortable."
+          }
+        },
+        "f3": {
+          "type": "faq",
+          "settings": {
+            "q": "Fits most users",
+            "a": "The one-size boot design suits a wide range of leg and foot sizes."
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6",
+        "f1",
+        "f2",
+        "f3"
+      ],
+      "settings": {
+        "sold_line": "A North Cove Wellness lower-body recovery pick",
+        "intro_eye": "Why it matters",
+        "intro_head": "Wave-like compression for tired legs.",
+        "intro_text": "Legs carry you all day. The Air Compression Leg and Foot Massager wraps the calves, ankles and feet in sequential air pressure, creating a rolling, wave-like squeeze that feels good after long hours standing, sitting or on the move.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Slip on, set, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "faq_eye": "How it helps",
+        "faq_head": "A recovery tool you'll actually reach for.",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury."
+      }
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

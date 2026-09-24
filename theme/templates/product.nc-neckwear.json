@@ -1,0 +1,496 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness desk-day staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Hands-free relief for tired necks and shoulders.",
+        "intro_text": "Long hours at a desk leave the neck and shoulders tight and aching. The Heated Kneading Wearable Neck Massager wraps around your neck and traps to deliver a kneading sensation with optional warmth, fully cordless and hands-free, so you can keep working, reading or relaxing while it does its job.",
+        "be_eye": "Built different",
+        "be_head": "Why this neck massager",
+        "be_sub": "Four reasons desk-day tension does not stand a chance.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the wearable neck massager actually work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/heated-wearable-neck-massager-secondary_ec617f09-7922-407a-b965-f9bf49021aab.png?v=1784000475",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How a cordless wearable compares to a corded unit or manual rubbing.",
+        "cmp_ours": "Wearable Neck Massager",
+        "cmp_theirs": "A Corded Massager",
+        "ba_eye": "Before & after",
+        "ba_head": "How your neck feels after two weeks",
+        "ba_sub": "What changes when a few hands-free minutes become part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One work-from-home day, two ways to feel",
+        "tl_sub": "The same desk-day aches, with and without a few hands-free minutes.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Wrap it on, pick a mode, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_013321_4dc95191-d5d5-44ff-8c97-c5a857a4857a.png?v=1780796643",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182250_516c0c9d-52d5-4b95-aa8e-ff6bffef944e.png?v=1784399021",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182419_7ab105e5-a27c-4974-9409-3fda127889b4.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182506_643baab6-8359-4af0-a925-1006b1b3e929.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Unknots a stiff neck — deep kneading with warmth"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Wear it anywhere — hands-free relief while you work"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Built for daily use — light, cordless and quiet"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday relief for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This massager + Birchwood Roller Set — neck to feet",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Relief without lifting a finger",
+            "text": "The wearable design wraps around your neck and shoulders so the kneading nodes do the work while your hands stay free to keep typing, reading or relaxing."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Made for desk and screen time",
+            "text": "Built for the tension that comes from long hours at a desk, it targets the neck and trapezius area where screen-time tightness tends to settle."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Add warmth when you want it",
+            "text": "An optional heat function layers gentle warmth over the kneading sensation, a combination many users find more comfortable and relaxing."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Cordless and ready anywhere",
+            "text": "USB rechargeable with enough battery for multiple sessions per charge, it goes from your home office to the couch without a single cord."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Hands-free wearable design",
+            "text": "It wraps snugly around the neck and shoulders and stays put on its own, so you can use it while you work, read or unwind."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Kneading massage nodes",
+            "text": "The nodes move in a pattern designed to mimic manual massage strokes across the neck and trapezius area."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Optional heat function",
+            "text": "Switch on gentle warmth to layer over the kneading sensation whenever you want a little extra comfort."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Cordless and USB rechargeable",
+            "text": "No plug, no cord, no being tethered to the wall, with enough battery life for multiple sessions per charge."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Fully hands-free use",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Cordless freedom",
+            "ours": "yes",
+            "theirs": "Corded"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Kneading massage nodes",
+            "ours": "yes",
+            "theirs": "Manual effort"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Optional heat",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Wearable, stays in place",
+            "ours": "yes",
+            "theirs": "Held by hand"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "USB rechargeable",
+            "ours": "yes",
+            "theirs": "Plug required"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "A tight, achy neck by the early afternoon at your desk"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Rubbing your own shoulders and never quite reaching the spot"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Stopping work just to deal with screen-time tension"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Looser shoulders that hold up through a full workday"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few hands-free minutes without leaving your chair"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "On-demand comfort that follows you around the house"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "9 AM",
+            "label": "Start of the day",
+            "trad_title": "Stiff from the start",
+            "trad_text": "You sit down already tight from yesterday and your shoulders creep up toward your ears within the first hour.",
+            "trad_tag": "Tense and tight",
+            "nc_title": "Loosen up early",
+            "nc_text": "A few hands-free minutes while you read email warms up the neck so you settle in feeling easier.",
+            "nc_tag": "Relaxed and ready"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "2 PM",
+            "label": "Afternoon slump",
+            "trad_title": "Knots set in",
+            "trad_text": "Hours of screen time leave your neck and traps locked up and you can feel the tension building.",
+            "trad_tag": "Aching by midday",
+            "nc_title": "Reset at your desk",
+            "nc_text": "Wrap it on for a kneading session while you keep working and the afternoon tightness eases off.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "8 PM",
+            "label": "Winding down",
+            "trad_title": "Tension lingers",
+            "trad_text": "The desk-day tightness follows you to the couch and makes it hard to fully relax.",
+            "trad_tag": "Still wound up",
+            "nc_title": "Unwind with warmth",
+            "nc_text": "Switch on the optional heat for a relaxing kneading session as you settle in for the evening.",
+            "nc_tag": "Calm and comfortable"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 93,
+            "suffix": "%",
+            "label": "Love being hands-free",
+            "fill": 95,
+            "sub": "Use it while they work."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 84,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt looser after use",
+            "fill": 90,
+            "sub": "Less tension where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Wrap it on",
+            "text": "Rest the massager around your neck and shoulders."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a mode",
+            "text": "Choose your kneading setting and add heat if you like."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Relax",
+            "text": "Keep working or unwind while it does the rest."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Wearable neck massager"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "User guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Design",
+            "value": "Cordless wearable"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Massage",
+            "value": "Kneading nodes"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat",
+            "value": "Optional warmth"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "USB rechargeable"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Fit",
+            "value": "Universal, adjustable"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Color",
+            "value": "White"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "nc-neckwear-fix": {
+      "type": "nc-neckwear-fix",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "nc-neckwear-fix",
+    "recommendations"
+  ]
+}

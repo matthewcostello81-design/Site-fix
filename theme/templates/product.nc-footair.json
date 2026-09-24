@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness recovery staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Air wave massage for legs and feet.",
+        "intro_text": "Feet and legs carry the whole day. The Foot Therapy Air Wave Massager uses pneumatic airbags to wrap the feet and lower legs in a rolling, wave-like massage, a soothing way to unwind after long hours standing or on the move.",
+        "be_eye": "Built different",
+        "be_head": "Why this air wave massager",
+        "be_sub": "Four reasons tired feet and legs feel cared for at the end of the day.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Air Wave Massager feel so good.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260629_234628_ecb1457b-1f0c-453f-9f9b-c43a21e9314c.png?v=1782776933",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How a wrapping air wave massage compares to a simple foot soak.",
+        "cmp_ours": "Air Wave Massager",
+        "cmp_theirs": "A Foot Soak",
+        "ba_eye": "Before & after",
+        "ba_head": "How your feet feel after two weeks",
+        "ba_sub": "What changes when a daily air wave massage becomes part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to unwind",
+        "tl_sub": "The same tired feet, with and without a few minutes of air wave massage.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Slip in, pick a gear, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260629_234628_ecb1457b-1f0c-453f-9f9b-c43a21e9314c.png?v=1782776933",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260718_182252_dee3eae6-b0c0-4ed4-b800-85f3ede35c16.png?v=1784399013",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182424_5830b8c2-874a-4b7b-b52f-d0e6e4956006.png",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182515_2a3bbc20-d1c9-4d5f-9988-1183a2f75b95.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Revives tired, heavy legs — air-wave compression massage"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Spa-level leg therapy — from your couch"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Custom intensity levels — gentle squeeze to deep relief"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday relaxation for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Complete Recovery Bundle",
+            "qty": 1,
+            "sub": "This massager + Birchwood Roller Set — legs to full body",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Unwind tired feet",
+            "text": "After long hours standing or on the move, a few minutes of rolling air wave massage helps tired feet and legs feel cared for and relaxed."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Wraps feet and legs",
+            "text": "Pneumatic airbags wrap around both the feet and the lower legs, so the gentle, wave-like pressure surrounds more of you than a basic foot rub."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Control the intensity",
+            "text": "Three adjustable gears let you choose anything from a light, gentle squeeze to a firmer, more invigorating wave, matched to how your feet feel that day."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Spa feel at home",
+            "text": "Settle into a chair, slip your feet in and let the air wave massage work hands-free, a spa-like wind-down without leaving the house."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Pneumatic air wave massage",
+            "text": "Airbags inflate and release in a rolling pattern to wrap the feet and lower legs in a soothing, wave-like squeeze."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "3 gears, your control",
+            "text": "Dial it from a gentle, relaxing squeeze to a firmer, more invigorating wave, matched to your feet and the moment."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Wraps feet and lower legs",
+            "text": "The design surrounds both the feet and the lower legs, so the comfort reaches further than a simple foot rub."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Hands-free and spa-like",
+            "text": "Sit back and relax while the massager does the work, a spa-like wind-down you can enjoy at home any evening."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Air compression massage",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Wraps feet and legs",
+            "ours": "yes",
+            "theirs": "Feet only"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Adjustable intensity",
+            "ours": "3 gears",
+            "theirs": "no"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Hands-free",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Spa-like at home",
+            "ours": "yes",
+            "theirs": "Basic"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "No water or mess",
+            "ours": "yes",
+            "theirs": "Needs water"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Tired, heavy feet at the end of a long day standing"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Propping your feet up and hoping the ache settles"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Filling a basin for a foot soak every evening"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Feet and legs that feel relaxed and cared for"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few hands-free minutes at home, whenever you need them"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A spa-like wind-down with no water and no mess"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "6 PM",
+            "label": "After work",
+            "trad_title": "Tired, aching feet",
+            "trad_text": "You get home after hours on your feet and the tiredness in your legs lingers all evening.",
+            "trad_tag": "Heavy and tired",
+            "nc_title": "Unwind in minutes",
+            "nc_text": "Slip your feet in and let the air wave massage wrap your feet and legs so the day starts to melt away.",
+            "nc_tag": "Relaxed and easy"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "8 PM",
+            "label": "Evening relax",
+            "trad_title": "Restless on the sofa",
+            "trad_text": "You try to relax in front of the TV, but your feet still feel tired and you cannot quite settle.",
+            "trad_tag": "Cannot settle",
+            "nc_title": "Settle into comfort",
+            "nc_text": "A gentle gear runs while you relax on the sofa, a soothing wave that helps you wind down.",
+            "nc_tag": "Calm and comfortable"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "10 PM",
+            "label": "Before bed",
+            "trad_title": "Restless feet at night",
+            "trad_text": "You head to bed with tired feet and find it harder to relax and wind down.",
+            "trad_tag": "Tired at night",
+            "nc_title": "Wind down before bed",
+            "nc_text": "A short session on a soft gear helps your feet and legs feel relaxed before you settle in for the night.",
+            "nc_tag": "Ready to rest"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the air wave",
+            "fill": 95,
+            "sub": "Adjustable comfort they control."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 84,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular evening routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt relaxed after use",
+            "fill": 90,
+            "sub": "Tired feet felt cared for."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Slip your feet in",
+            "text": "Settle into a chair and slide your feet and lower legs in."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a gear",
+            "text": "Choose one of three intensity gears to suit the moment."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Sit back and relax",
+            "text": "Let the air wave massage work hands-free for a few minutes."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Foot therapy air wave massager"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Power adapter"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "User guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Massage type",
+            "value": "Pneumatic air wave"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Intensity gears",
+            "value": "3 adjustable"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Coverage",
+            "value": "Feet and lower legs"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "Mains adapter"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Operation",
+            "value": "Hands-free"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Color",
+            "value": "Black"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 9,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

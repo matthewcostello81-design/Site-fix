@@ -1,0 +1,45 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "settings": {
+        "product": "dragon-ball-z-legends-lamp",
+        "show_sellout": true,
+        "sellout_level": "High",
+        "sellout_note": "Selling faster than we can restock",
+        "display_title": "Dragon Ball Z Legends Lamp",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "5.0",
+        "rating_label": "Trusted by over 10,000 customers",
+        "review_total": 29,
+        "default_size": "Goku (Blue Energy)",
+        "gallery_video_url": "https://cdn.shopify.com/videos/c/vp/b8d78151de9e4048ab47eb277409d757/b8d78151de9e4048ab47eb277409d757.HD-720p-3.0Mbps-94088727.mp4",
+        "show_bundle": false,
+        "bundle_title": "Bundle Deal: 2x Dragon Ball Z Legends Lamps",
+        "bundle_pct": 25,
+        "features_text": "<ul><li>3D sculpted Goku or Vegeta figure captured mid-attack, painted in series-accurate colors</li><li>Hand-shaped LED energy beam that lights up in blue or orange</li><li>Matte black base with a metal beam post and a one-touch power button</li><li>Goku (Blue Energy) and Goku (Orange Energy) are USB-C powered: plug in until fully charged, then run cord-free</li><li>Majin Vegeta is battery powered, so it needs no charging cable</li><li>Three characters to collect: Goku (Blue Energy), Goku (Orange Energy) and Majin Vegeta</li><li>Bundle pricing on 2 or 3 lamps, applied automatically at checkout</li></ul>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> for full details.</p>"
+      }
+    },
+    "pg_picksize": {"type": "pg-pick-size", "settings": {}},
+    "pg_dbztiles": {"type": "pg-dbz-tiles", "settings": {}},
+    "pg_dbzreviews": {"type": "pg-dbz-reviews", "settings": {}},
+    "pg_dbzlabels": {"type": "pg-dbz-labels", "settings": {"video_label": "Goku (Blue Energy)"}},
+    "pg_revlink": {"type": "pg-rev-link", "settings": {}},
+    "pg_r36smobile": {"type": "pg-r36s-mobile", "settings": {}},
+    "pg_selloutlast": {"type": "pg-sellout-last", "settings": {}},
+    "pg_r36stitle": {"type": "pg-r36s-title", "settings": {}}
+  },
+  "order": ["pg_landing", "pg_picksize", "pg_dbztiles", "pg_dbzreviews", "pg_dbzlabels", "pg_revlink", "pg_r36smobile", "pg_selloutlast", "pg_r36stitle"]
+}

@@ -1,3 +1,22 @@
+# Returns removed site-wide (owner: "remove everything everywhere for any reason of return")
+
+Theme (unpublished "R36S Ultra page (Claude 9-23)"): every customer-visible
+returns / refund / money-back / 30-day guarantee mention is gone - trust badges
+and rows (grids adjusted), "30-day money back guarantee" bars, comparison-chart
+rows, marquee items, FAQ entries, product-page shipping_text in all product
+templates, the homepage meta description, and the footer link text (now
+"Refund Policy"). pg-acc-place re-anchors the accordion to the payment icons
+now that the guarantee bar is gone. Built by a find/edit/verify sweep over all
+364 theme files; the other session's same-evening contact-removal edits to
+layout/theme.liquid and footer-group.json were kept (edits rebased on them).
+
+Store content (policies, pages, menus, collection and product copy) is updated
+through the Admin API: all sales are final, with one line keeping statutory
+rights ("This does not affect any rights you have under the law of your
+country."), and "All sales are final." at the bottom of every policy page.
+
+---
+
 # R36S Ultra product page (clone of the R36S Pro page)
 
 Built on the draft product "Pocket Era R36S Ultra" (handle pocket-era-r36s-ultra,

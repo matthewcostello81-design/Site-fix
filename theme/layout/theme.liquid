@@ -29,10 +29,11 @@
       description. Fix the Preferences field as well: anything rendering
       outside this layout still reads the old text.
     {%- endcomment -%}
+    {%- comment -%}2026-09-23: returns removed site-wide by owner request{%- endcomment -%}
     {%- liquid
       assign pg_desc = page_description
       if template.name == 'index'
-        assign pg_desc = 'Glowing 3D crystal orbs, holographic wall art and retro handheld consoles. Buy 2, get 1 free on orbs and prints. Free US shipping, 30-day returns.'
+        assign pg_desc = 'Glowing 3D crystal orbs, holographic wall art and retro handheld consoles. Buy 2, get 1 free on orbs and prints. Free US shipping.'
       endif
     -%}
     {%- if pg_desc -%}<meta name="description" content="{{ pg_desc | escape }}">{%- endif -%}
@@ -196,7 +197,6 @@
             isThemeEditor: !!window.Shopify.designMode,
             themeName:     {{ theme.name | json }},
             shopName:      {{ shop.name | json }},
-            shopEmail:     {{ shop.email | json }},
             test:          'false'
           })
         );

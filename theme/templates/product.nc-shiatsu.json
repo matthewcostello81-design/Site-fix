@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness relaxation staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Shiatsu kneading, wherever you sit.",
+        "intro_text": "Tight neck after a long day at the desk, or a stiff lower back on the drive home? The Shiatsu Heated Massage Pillow brings rotating kneading nodes and optional warmth to a compact, strap-on pillow you can use at your desk, on the couch or in the car.",
+        "be_eye": "Built different",
+        "be_head": "Why this shiatsu pillow",
+        "be_sub": "Four reasons a tense neck and tired back finally get a break.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Relaxation System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Shiatsu Pillow actually work.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/shiatsu-heated-massage-pillow-secondary_edd94d86-a207-4df2-843e-7ffc1ada6ae3.png?v=1782695708",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How a strap-on shiatsu pillow compares to booking a masseuse visit.",
+        "cmp_ours": "Shiatsu Pillow",
+        "cmp_theirs": "A Masseuse Visit",
+        "ba_eye": "Before & after",
+        "ba_head": "How relaxation feels after two weeks",
+        "ba_sub": "What changes when shiatsu kneading becomes part of your routine.",
+        "ba_after_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182455_6122a5de-1e66-4986-8a32-931cac80e50e.png",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, three ways to unwind",
+        "tl_sub": "The same aches, with and without a few minutes of kneading.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Strap it on, set the heat, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260629_234615_add0cbc6-9885-4535-a696-6895d7dc4423.png?v=1782776892",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/shiatsu-heated-massage-pillow-secondary_edd94d86-a207-4df2-843e-7ffc1ada6ae3.png?v=1782695708",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182410_daa295f7-410c-4c30-bd3a-38db548a3a18.png"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Rotating shiatsu kneading nodes"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Optional soothing heat setting"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Adjustable straps for hands-free use"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday relaxation for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Family (3 units)",
+            "qty": 3,
+            "sub": "Desk, couch and car",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Knead away the tension",
+            "text": "Rotating nodes work in a circular kneading motion that mimics the feel of hands-on shiatsu, helping a tight neck and tired back feel more at ease."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Add gentle warmth",
+            "text": "An optional heat setting brings soft warmth that is designed to complement the kneading motion, so muscles feel more relaxed while you use it."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Use it anywhere",
+            "text": "The pillow format and adjustable straps let you place it behind your neck on the couch, against your lower back at a desk or strapped to a car seat on a commute."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Hands-free and portable",
+            "text": "Adjustable straps hold it in place so you do not have to, and the compact design moves easily between rooms or packs for travel."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Rotating kneading nodes",
+            "text": "Shiatsu-style nodes rotate in a circular motion to mimic a hands-on kneading massage across the neck, shoulders and back."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Optional heat",
+            "text": "Toggle gentle warmth on or off to complement the kneading, or keep it cool when you just want the massage."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Adjustable straps",
+            "text": "Built-in straps secure the pillow to a chair or car seat so it stays put and your hands stay free."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Simple controls",
+            "text": "Easy buttons let you switch kneading direction, turn heat on or off and adjust the intensity to suit the moment."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Shiatsu kneading on demand",
+            "ours": "yes",
+            "theirs": "By appointment"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Optional heat",
+            "ours": "yes",
+            "theirs": "Sometimes"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Use it anytime",
+            "ours": "Anytime at home",
+            "theirs": "Scheduled only"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Hands-free straps",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Works in the car",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Cost over time",
+            "ours": "One-time",
+            "theirs": "Every visit"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "A tight neck and stiff lower back after long hours sitting"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Booking and driving to a massage every time tension builds"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Ending the commute feeling more tense than when you left"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few minutes of kneading that leaves the neck and back at ease"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Relaxation at your desk or couch, whenever you need it"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Strap it to the car seat and unwind on the drive home"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "8 AM",
+            "label": "The commute",
+            "trad_title": "Stiff before you arrive",
+            "trad_text": "You reach the office with a tight neck and tense shoulders from the drive in.",
+            "trad_tag": "Tense on arrival",
+            "nc_title": "Kneaded on the way",
+            "nc_text": "Strapped to the car seat, the pillow kneads your lower back so you arrive feeling looser.",
+            "nc_tag": "Relaxed and ready"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "1 PM",
+            "label": "At the desk",
+            "trad_title": "Tension builds",
+            "trad_text": "Hours at the desk leave your neck and lower back locked up by the afternoon.",
+            "trad_tag": "Aching by noon",
+            "nc_title": "Reset at your desk",
+            "nc_text": "A few minutes of kneading with gentle heat eases the tension without leaving your chair.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "7 PM",
+            "label": "On the couch",
+            "trad_title": "Carrying the day's tension",
+            "trad_text": "You settle onto the couch still holding the stiffness from a long day.",
+            "trad_tag": "Still tense",
+            "nc_title": "Unwind at home",
+            "nc_text": "Tuck it behind your neck and let the warm kneading help you wind down before bed.",
+            "nc_tag": "Calm and easy"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the heat",
+            "fill": 100,
+            "sub": "Warmth they can turn on and off."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 85,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 85,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Felt looser after use",
+            "fill": 90,
+            "sub": "Less tension where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Strap it on",
+            "text": "Secure the pillow to your chair, couch or car seat."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Set the heat",
+            "text": "Turn warmth on or off and pick your kneading direction."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Lean back and relax",
+            "text": "Settle in and let the nodes knead for a few minutes."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Shiatsu heated massage pillow"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Adjustable strap set"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Power and car adapters"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Massage",
+            "value": "Rotating shiatsu nodes"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat",
+            "value": "Optional on or off"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Mounting",
+            "value": "Adjustable straps"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Use areas",
+            "value": "Neck, back, car seat"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Design",
+            "value": "Compact and portable"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Controls",
+            "value": "Direction, heat, intensity"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

@@ -1,0 +1,429 @@
+{%- comment -%}
+  PG Mobile: mobile polish + late-loading hotfix layer for the dark PocketEra
+  skin. Loads last from footer-group so it wins every tie.
+{%- endcomment -%}
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+/* Single neon "POCKET ERA" wordmark, centred where the logo image was.
+   The logo art itself is hidden - the wordmark is the brand mark now. */
+.pgx-head,.pgh-head,.pgc-head,.pgf-head{position:relative}
+.pgh-logo img,.pgx-logo img,.pgc-logo img,.pgf-head img{display:none !important}
+.pgh-logo,.pgx-logo,.pgc-logo{min-height:210px;display:flex;align-items:center;justify-content:center}
+html body a.pg-wordmark,.pg-wordmark{display:block !important;text-align:center;font-family:'Press Start 2P',monospace;font-size:clamp(40px,4.6vw,78px) !important;line-height:1.15 !important;color:#F6DBFF;text-decoration:none;letter-spacing:-.11em;transform:scaleY(2.6) !important;transform-origin:center !important;text-transform:uppercase;text-shadow:0 0 12px rgba(246,196,255,.9),0 0 30px rgba(199,110,255,.65),0 0 60px rgba(139,68,190,.5);animation:pgFlash 3.2s linear infinite}
+@media(max-width:560px){html body a.pg-wordmark{font-size:30px !important}}
+/* The wordmark is scaled up 2.6x, which on the narrow page-template header
+   (contact, track order, policies) pushed the header wider than the viewport
+   and left the page horizontally scrollable. Clip it to the header box. */
+.pgx-head,.pgh-head,.pgc-head,.pgf-head{overflow:hidden !important;max-width:100% !important}
+html body a.pg-wordmark{max-width:100% !important}
+/* Content templates (track order, contact, policies) render their body text
+   flush against the left edge of the viewport, with the first character
+   clipped, because the page header replaces the native one and the content
+   wrapper loses its container. Give it the same centred column the footer uses.
+   The header section renders INSIDE #content on these templates, so the column
+   goes on the body sections only — constraining #content itself squeezed the
+   announcement bar, wordmark and nav into a narrow strip. */
+html body[class*="template-page"] .shopify-section[id*="main-page"],
+html body[class*="template-page"] .shopify-section[id*="breadcrumbs"]{
+  max-width:1120px !important;margin-left:auto !important;margin-right:auto !important;
+  padding-left:24px !important;padding-right:24px !important;box-sizing:border-box !important
+}
+@media(max-width:760px){
+  html body[class*="template-page"] .shopify-section[id*="main-page"],
+  html body[class*="template-page"] .shopify-section[id*="breadcrumbs"]{padding-left:16px !important;padding-right:16px !important}
+}
+/* The wordmark is drawn at 2.6x scale, which overflowed its 210px box and
+   painted over the nav row beneath it. Give the mark room and float the nav
+   above it so the links are never covered. */
+html body .pgc-logo,html body .pgh-logo,html body .pgx-logo{min-height:252px !important}
+html body .pgc-nav,html body .pgh-nav,html body .pgx-nav,html body .pgf-nav{position:relative !important;z-index:3 !important}
+/* Nav links in the same pixel face as the wordmark. Press Start 2P runs very
+   wide, so it is set well below the Roboto Slab size it replaces. */
+html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{
+  font-family:'Press Start 2P',monospace !important;font-size:11px !important;
+  font-weight:400 !important;letter-spacing:.02em !important;line-height:1.9 !important;
+  text-transform:uppercase !important;text-shadow:0 0 10px rgba(199,110,255,.45);
+  /* Press Start 2P draws a full-cell space, so multi-word links like
+     "Track your order" read as three separate links. Pull the gaps in. */
+  word-spacing:-.32em !important
+}
+/* Wider gaps between the links themselves, now that the gaps inside a link are
+   tight — otherwise "TRACK YOUR ORDER" and "CONTACT" read as one run of words. */
+html body .pgh-nav,html body .pgx-nav,html body .pgc-nav,html body .pgf-nav{gap:54px !important}
+@media(max-width:760px){
+  html body .pgh-nav a,html body .pgx-nav a,html body .pgc-nav a,html body .pgf-nav a{font-size:9px !important}
+  html body .pgh-nav,html body .pgx-nav,html body .pgc-nav,html body .pgf-nav{gap:22px !important}
+}
+/* Footer bottom strip on the page templates: the section id there is not
+   plain "shopify-section-footer", so the dark-skin rules in pg-dark missed it
+   and the copyright + payment band rendered on the theme's light scheme. */
+html body .shopify-section[id*="footer"] ~ .base-font,
+html body .shopify-section[id*="footer"] .base-font{
+  background:#0E0914 !important;background-color:#0E0914 !important;
+  border-top:1px solid rgba(168,120,214,.20) !important;text-align:center !important
+}
+html body .shopify-section[id*="footer"] ~ .base-font p,
+html body .shopify-section[id*="footer"] ~ .base-font span,
+html body .shopify-section[id*="footer"] .base-font p,
+html body .shopify-section[id*="footer"] .base-font span{color:#A296B4 !important}
+html body .shopify-section[id*="footer"] ~ .base-font a,
+html body .shopify-section[id*="footer"] .base-font a{color:#C6B6DA !important}
+html body .base-font .l4pm{
+  display:flex !important;flex-wrap:wrap !important;justify-content:center !important;
+  align-items:center !important;gap:8px !important;width:100% !important;
+  margin:2px auto 0 !important;padding:0 !important;float:none !important;list-style:none !important
+}
+html body .base-font .l4pm li{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  background:#EDE2F8 !important;border:1px solid rgba(168,120,214,.35) !important;
+  border-radius:8px !important;padding:4px 7px !important;margin:0 !important
+}
+/* Two payment rows rendered on the page templates; the extra one is hidden by
+   pg-footer at runtime, this is the no-JS backstop for adjacent duplicates. */
+html body .base-font .l4pm ~ .l4pm{display:none !important}
+</style>
+<style>
+/* ---------- sitewide hotfixes (not mobile-specific) ---------- */
+/* Split banner: cap the height, the natural image ratio made it enormous */
+#pgh .pgh-split-r{min-height:0 !important;height:420px !important;overflow:hidden}
+#pgh .pgh-split-r img{width:100% !important;height:100% !important;object-fit:cover !important}
+#pgh .pgh-split-l{padding:48px 48px !important}
+/* Gallery hero: square center crop so tall photos don't tower */
+.pgx-hero img{aspect-ratio:1/1 !important;height:auto !important;object-fit:cover !important;width:100% !important}
+/* Gallery video tile: square cover crop, no letterbox bars */
+.pgx-vid video{aspect-ratio:1/1 !important;height:auto !important;max-height:none !important;object-fit:cover !important;width:100% !important}
+/* Split banner is clickable through to the R36S page */
+#pgh .pgh-split{cursor:pointer}
+/* Header search bar removed at owner's request */
+.pg-search{display:none !important}
+/* Duplicate BUNDLE & SAVE divider: hide the purple one, keep the bold one */
+#pgx .pgx-divider{display:none !important}
+/* Light-theme hairline above the accordions reads as a white bar on dark */
+#pgx .pgx-acc{border-top:0 !important}
+/* The case still carries the old "free-gift" handle, which the drawer CSS
+   uses to hide the quantity stepper. It is a real $13.99 product now, so
+   the stepper must work. */
+#cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount,
+body.template-cart .form-cart .l4ca > li:has(a[href*="free-gift"]) .semantic-amount{visibility:visible !important}
+/* ...but the badged gift line is fixed at one unit — the discount covers
+   exactly one case. Leaving a stepper there let the shopper raise a line
+   labelled FREE GIFT into units they were charged for, and a remove button
+   that giftSync immediately undoes reads as a broken cart. Extra cases are
+   bought on the ordinary case line below. */
+#cart .l4ca > li:has(.pg-free-tag) .semantic-amount,
+#cart .l4ca > li:has(.pg-free-tag) .input-amount,
+#cart .l4ca > li:has(.pg-free-tag) .remove,
+#cart .l4ca > li:has(.pg-free-tag) .remove-from-cart-link{display:none !important}
+/* Cart: retire the old 1/2/3+ item 10%/15% tier ladder everywhere */
+#cart .nc-tiers,body.template-cart .nc-tiers,.nc-tiers{display:none !important}
+/* Footer bottom strip: the light band under the footer was still theme-default */
+#shopify-section-footer .footer-bottom,#shopify-section-footer [class*="bottom"],
+.shopify-section[id$="__footer"] .footer-bottom{background:#0E0914 !important;background-color:#0E0914 !important;color:#B9A8CE !important;border-top:1px solid rgba(168,120,214,.14) !important}
+#shopify-section-footer .footer-bottom a,.shopify-section[id$="__footer"] .footer-bottom a{color:#C6B6DA !important}
+/* Cart unlock bar: light purple gradient */
+#cart .pg-bar,body.template-cart .pg-bar{background:linear-gradient(120deg,#F6EFFB,#EADCF8 55%,#F3E7FC) !important;border:1px solid rgba(122,47,162,.28) !important;border-radius:14px !important;box-shadow:0 10px 26px -20px rgba(74,28,102,.45) !important}
+#cart .pg-bar .pg-bar-t,body.template-cart .pg-bar .pg-bar-t{color:#3B1553 !important}
+#cart .pg-bar .pg-bar-t b,body.template-cart .pg-bar .pg-bar-t b{color:#7A2FA2 !important}
+#cart .pg-bar .pg-bar-track,body.template-cart .pg-bar .pg-bar-track{background:#E1CFF0 !important}
+#cart .pg-bar .pg-bar-fill,body.template-cart .pg-bar .pg-bar-fill{background:linear-gradient(90deg,#B478E0,#8B44BE 60%,#7A2FA2) !important}
+#cart .pg-bar .pg-bar-dot,body.template-cart .pg-bar .pg-bar-dot{background:#fff !important;border-color:#CBA8E0 !important}
+#cart .pg-bar .pg-bar-dot.on,body.template-cart .pg-bar .pg-bar-dot.on{background:#7A2FA2 !important;border-color:#7A2FA2 !important;box-shadow:0 0 0 4px rgba(122,47,162,.22) !important}
+#cart .pg-bar .pg-bar-lbl span,body.template-cart .pg-bar .pg-bar-lbl span{color:#7B6A8E !important}
+#cart .pg-bar .pg-bar-lbl span.on,body.template-cart .pg-bar .pg-bar-lbl span.on{color:#7A2FA2 !important}
+/* Buy tile showed two MSRP strikethroughs (a stale one plus the live
+   variant's); keep only the last, which tracks the selected variant */
+#pgx .pgx-tile-price .pgx-p-was:not(:last-child){display:none !important}
+/* Extra-case upsell tile: last option before Add to Cart */
+#pgx .pgx-case{display:flex;align-items:center;gap:12px;border:1px solid rgba(168,120,214,.28);background:#16101F;border-radius:12px;padding:12px 14px;margin:0 0 12px;cursor:pointer}
+#pgx .pgx-case.on{border-color:#8B44BE;background:#1C1428;box-shadow:0 0 0 3px rgba(139,68,190,.16)}
+#pgx .pgx-case img{width:52px;height:52px;border-radius:9px;object-fit:cover;flex:none}
+#pgx .pgx-case-t{flex:1;min-width:0}
+#pgx .pgx-case-t b{display:block;font-size:14.5px;color:#F1EDF7}
+#pgx .pgx-case-t small{display:block;font-size:12.5px;color:#A99BC0;margin-top:2px}
+#pgx .pgx-case-p{font-weight:700;color:#C79BEA;font-size:15px;flex:none}
+#pgx .pgx-case-add{flex:none;border:0 !important;background:linear-gradient(120deg,#B478E0 0%,#9B4BC4 35%,#7A2FA2 70%,#4A1C66 100%) !important;background-color:#8B44BE !important;color:#fff !important;font-family:inherit;font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;border-radius:999px !important;padding:11px 26px;cursor:pointer;box-shadow:0 10px 22px -10px rgba(139,68,190,.7) !important;transition:filter .15s ease}
+#pgx .pgx-case-add:hover{filter:brightness(1.1)}
+html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display:none !important;content:none !important;background:none !important}
+#pgx .pgx-case-add[disabled]{opacity:.6;cursor:default}
+/* Bundle tiles: the LED-base chip sits on its own line between the pack
+   name and the savings line, instead of trailing the title and colliding
+   with the price on longer titles. */
+#pgx .pgx-lad-t .pgx-lad-chip{display:block !important;width:max-content;margin:5px 0 3px !important}
+/* Accordions: same width and gutters as the split banner above them */
+#pgh .pgh-acc{max-width:1280px !important;width:100%;margin:26px auto 0 !important;padding:0 24px !important;box-sizing:border-box}
+/* Best Sellers heading: matching soft purple letter glow */
+#pgh .pgh-h2{text-shadow:0 0 14px rgba(180,120,224,.6),0 0 34px rgba(139,68,190,.5),0 0 70px rgba(139,68,190,.35) !important}
+/* Product cards: soft purple glow fading outward, brighter on hover */
+#pgh .pgh-card{border-radius:16px;box-shadow:0 0 0 1px rgba(168,120,214,.22),0 0 26px rgba(139,68,190,.26),0 24px 60px -28px rgba(139,68,190,.55) !important;transition:box-shadow .25s ease,transform .25s ease}
+#pgh .pgh-card:hover{box-shadow:0 0 0 1px rgba(199,155,234,.42),0 0 36px rgba(139,68,190,.44),0 26px 70px -24px rgba(139,68,190,.7) !important}
+
+@media(max-width:900px){
+  /* iOS ignores background-attachment:fixed and repaints badly; scroll + a
+     solid dark html behind everything keeps overscroll areas black */
+  html{background:#0B0710 !important}
+  html,body,#content,main,
+  body.template-cart,body.template-cart #content,body.template-cart main{background-attachment:scroll !important}
+  html,body{overflow-x:hidden !important;max-width:100vw}
+}
+@media(max-width:760px){
+  #pgh .pgh-split-r{height:240px !important}
+}
+@media(max-width:560px){
+  /* 16px inputs stop iOS Safari from zooming the page on focus */
+  .pg-search input,
+  #content form[action*='contact'] input:not([type='checkbox']):not([type='radio']):not([type='submit']),
+  #content form[action*='contact'] textarea,
+  #shopify-section-footer input[type='email'],
+  #shopify-section-footer input[type='text']{font-size:16px !important}
+
+  /* comfortable thumb targets in the cart */
+  .pgm-qty button{width:36px !important;height:34px !important;font-size:18px !important}
+  .pgm-qty span{min-width:32px !important;font-size:14.5px !important}
+  .pgm-del{padding:8px !important;font-size:16px !important}
+  .pgm-vsel{padding:8px 30px 8px 13px !important;font-size:13px !important;max-width:150px !important}
+  .pgm-rec-add{padding:11px 18px !important}
+  .pgm-co{padding:16px 20px !important}
+
+  /* homepage cards: tight, even gutters */
+  .pgh-wrap{padding-left:14px !important;padding-right:14px !important}
+  #pgh .pgh-atc{width:calc(100% - 24px) !important;margin:6px 12px 14px !important;padding:13px 16px !important}
+  #pgh .pgh-card-t{font-size:15.5px !important;margin:11px 0 5px !important}
+  #pgh .pgh-card-p{font-size:15px !important}
+
+  /* header: keep logo, search and icons on one tidy line */
+  .pgh-head-in,.pgx-head-in,.pgc-head-in{padding-left:14px !important;padding-right:14px !important}
+  .pgh-ic,.pgx-ic,.pgc-ic{gap:14px !important}
+
+  /* product page: gallery dots and buy bar clear of the thumb */
+  #pg-sticky{padding-bottom:calc(10px + env(safe-area-inset-bottom)) !important}
+  .pgm-sum{padding-bottom:calc(14px + env(safe-area-inset-bottom)) !important}
+
+  /* footer: stack cleanly */
+  #shopify-section-footer .nc-foot-links{gap:22px 34px !important}
+  #shopify-section-footer button,#shopify-section-footer [class*='button']{width:100% !important;margin-top:8px !important}
+}
+</style>
+
+<script>
+(function(){
+  if (window.pgHotfix) return; window.pgHotfix = 1;
+  /* Announcement marquee: authoritative message list (Summer Sale + countdown,
+     no retired offers). Rebuilds over whatever the base layer rendered. */
+  {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
+  var MSGS=['Free shipping on all orders','Bundle deals with FREE items','Extra 5% off auto-applied at checkout','Free R36S case with purchase of device','15,000+ classic games preloaded'];
+  function marq(){
+    document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
+      if (el.dataset.pgMarq2) return; el.dataset.pgMarq2 = '1';
+      var half = MSGS.map(function(m){ return '<span>'+m+' ✦</span>'; }).join('');
+      el.innerHTML = '<div class="pg-marq">'+half+half+'</div>';
+    });
+  }
+  /* Rolling 15-minute sale countdown; persists per visitor, restarts on expiry */
+  function cd(){
+    var els = document.querySelectorAll('.pg-cd');
+    if (!els.length) return;
+    var end = 0;
+    try{ end = parseInt(localStorage.getItem('pgCdEnd')||'0',10); }catch(e){}
+    var now = Date.now();
+    if (!end || end < now){ end = now + 900000; try{ localStorage.setItem('pgCdEnd', String(end)); }catch(e){} }
+    var s = Math.max(0, Math.floor((end-now)/1000));
+    var t = Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
+    els.forEach(function(e){ e.textContent = t; });
+  }
+  /* The whole split banner links to the R36S product page */
+  document.addEventListener('click', function(e){
+    var sp = e.target.closest('.pgh-split');
+    if (sp && !e.target.closest('a.pgh-split-btn')){
+      e.preventDefault(); e.stopPropagation();
+      window.location.href = '/products/handheld-game-console';
+    }
+  }, true);
+  /* Gallery video: force looping playback even if attributes get stripped */
+  function vloop(){
+    document.querySelectorAll('.pgx-vid video').forEach(function(v){
+      if (v.dataset.pgLoop) return; v.dataset.pgLoop = '1';
+      v.loop = true; v.muted = true; v.setAttribute('playsinline','');
+      v.addEventListener('ended', function(){ v.currentTime = 0; v.play(); });
+      if (v.paused) { var p = v.play(); if (p && p.catch) p.catch(function(){}); }
+    });
+  }
+  /* Inject a flashing wordmark on each side of the logo in every PG header */
+  function wordmark(){
+    document.querySelectorAll('.pgx-head,.pgh-head,.pgc-head,.pgf-head').forEach(function(h){
+      if (h.querySelector('.pg-wordmark')) return;
+      var a = document.createElement('a');
+      a.className = 'pg-wordmark'; a.href = '/'; a.textContent = 'Pocket Era';
+      var logo = h.querySelector('.pgh-logo,.pgx-logo,.pgc-logo');
+      (logo || h).appendChild(a);
+    });
+  }
+  /* Storage options read "64G"; show them as "64GB" (display only) */
+  function gbLabels(){
+    document.querySelectorAll('#pgx select option, #pgx .pg-drop, #pgx .pg-drop *, .pgx-tile-color, .pgm-v').forEach(function(el){
+      if (el.children && el.children.length) return;
+      var t = el.textContent;
+      if (t && /\d+G(?![B\w])/.test(t)) el.textContent = t.replace(/(\d+)G(?![B\w])/g, '$1GB');
+    });
+  }
+  /* Review quote belongs directly under the 5.0 star line */
+  function quoteUp(){
+    var q = document.querySelector('#pgx .pgx-quote'), r = document.querySelector('#pgx .pgx-rating');
+    if (!q || !r) return;
+    if (r.nextElementSibling !== q) r.parentNode.insertBefore(q, r.nextSibling);
+    q.style.setProperty('position','static','important');
+    q.style.setProperty('margin','0 0 16px','important');
+  }
+  /* Optional extra protective case: its own Add button, fired immediately on
+     click. Earlier versions piggybacked on the Add-to-Cart handler, which
+     raced the bundle's own /cart/add.js and lost. This cannot race. */
+  var CASE_VARIANT = 49623692247268;
+  function caseTile(){
+    var m = location.pathname.match(/\/products\/([^\/?#]+)/);
+    if (!m || m[1] !== 'handheld-game-console') return;
+    var atc = document.querySelector('#pgx .pgx-atc');
+    if (!atc || document.querySelector('#pgx .pgx-case')) return;
+    var el = document.createElement('div');
+    el.className = 'pgx-case';
+    el.innerHTML = '<img alt="R36S protective case" src="" style="visibility:hidden">'
+      + '<div class="pgx-case-t"><b>Add a spare protective case</b><small>One case already comes free with your console. This adds a second for $17.99.</small></div>'
+      + '<span class="pgx-case-p">$17.99</span>'   /* $17.99 since 2026-09-14 (was $13.99), the free one stays free */
+      + '<button type="button" class="pgx-case-add">ADD</button>';
+    atc.parentNode.insertBefore(el, atc);
+    fetch('/products/r36s-protective-case-free-gift.js').then(function(r){ return r.json(); }).then(function(p2){
+      var src = p2.featured_image || (p2.images && p2.images[0]);
+      var im = el.querySelector('img');
+      if (src && im){ im.src = src.replace(/(\.[a-z]+)(\?|$)/i, '_120x$1$2'); im.style.visibility = 'visible'; }
+    }).catch(function(){});
+  }
+  /* Delegated in the capture phase: survives the tile being re-created by the
+     polling above, and cannot be swallowed by another handler's
+     stopPropagation. A direct listener on the button did not survive. */
+  var caseBusy = false;
+  document.addEventListener('click', function(ev){
+    var btn = ev.target.closest && ev.target.closest('.pgx-case-add');
+    if (!btn) return;
+    ev.preventDefault(); ev.stopPropagation();
+    if (caseBusy) return;
+    caseBusy = true;
+    btn.textContent = 'ADDING...';
+    fetch('/cart/add.js', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({items: [{id: CASE_VARIANT, quantity: 1}]})})
+      .then(function(r){
+        if (!r.ok) throw 0;
+        btn.innerHTML = 'ADDED \u2713';
+        if (window.pgOpenCart) window.pgOpenCart();
+        setTimeout(function(){ btn.textContent = 'ADD'; caseBusy = false; }, 2500);
+      })
+      .catch(function(){
+        /* Silently reverting to ADD looked like a dead button. Say it failed. */
+        btn.textContent = 'TRY AGAIN';
+        setTimeout(function(){ btn.textContent = 'ADD'; }, 2000);
+        caseBusy = false;
+      });
+  }, true);
+  /* Description / Features / Shipping sit under the gallery, not the buy box */
+  function accLeft(){
+    var acc = document.querySelector('#pgx .pgx-acc'), gal = document.querySelector('#pgx .pgx-gallery');
+    if (!acc || !gal || acc.parentElement === gal) return;
+    if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) return;
+    gal.appendChild(acc);
+    acc.style.setProperty('margin-top', '26px', 'important');
+  }
+  /* The case is offered on the R36S page and in the cart, not as a
+     standalone "You may also like" card */
+  function ymlTrim(){
+    document.querySelectorAll('.pgu-yml a, .pgu-yml-grid a').forEach(function(a){
+      var h = a.getAttribute('href') || '';
+      if (h.indexOf('r36s-protective-case') !== -1) a.style.setProperty('display', 'none', 'important');
+    });
+  }
+  /* The footer's bottom strip (copyright + payment icons) is painted by a
+     theme colour scheme, so no stable class to target. Find any light
+     element inside the footer section and repaint it. */
+  function footDark(){
+    var f = document.querySelector('#shopify-section-footer, .shopify-section[id$="__footer"]');
+    if (!f) return;
+    var all = f.querySelectorAll('*');
+    for (var i = 0; i < all.length; i++){
+      var el = all[i];
+      var bg = getComputedStyle(el).backgroundColor || '';
+      var m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+      if (!m) continue;
+      var lum = (parseInt(m[1],10) * 299 + parseInt(m[2],10) * 587 + parseInt(m[3],10) * 114) / 1000;
+      if (lum > 140){
+        el.style.setProperty('background', '#0E0914', 'important');
+        el.style.setProperty('background-color', '#0E0914', 'important');
+        el.style.setProperty('color', '#B9A8CE', 'important');
+      }
+    }
+  }
+  /* A single case is the free gift; extras are charged. When the line
+     quantity is >1 the FREE GIFT tag is wrong - show the real price. */
+  function caseLine(){
+    var seen = 0;
+    document.querySelectorAll('#cart .l4ca > li, body.template-cart .form-cart .l4ca > li').forEach(function(li){
+      var a = li.querySelector('a[href*="free-gift"]');
+      if (!a) return;
+      seen++;
+      /* Prices must always be readable on case lines - the base theme blanks
+         them for anything matching the gift handle. */
+      li.querySelectorAll('.semantic-amount, .nc-lsave, .cols, .money, .price').forEach(function(el){
+        el.style.setProperty('visibility', 'visible', 'important');
+        el.style.setProperty('display', '', '');
+      });
+      var tag = li.querySelector('.pg-free-tag');
+      if (tag) tag.style.setProperty('display', seen === 1 ? 'inline-flex' : 'none', 'important');
+      var q = li.querySelector('input[type="number"], .semantic-amount input');
+      var n = q ? (parseInt(q.value, 10) || 1) : 1;
+      var tag = li.querySelector('.pg-free-tag');
+      li.querySelectorAll('.semantic-amount, .nc-lsave, .cols').forEach(function(el){
+        el.style.setProperty('visibility', 'visible', 'important');
+      });
+      if (tag) tag.style.setProperty('display', n > 1 ? 'none' : 'inline-flex', 'important');
+    });
+  }
+  /* The copyright / payment-icon band sits outside the footer section, so
+     the footer-scoped sweep never saw it. Find it by its content and darken
+     that block plus any light ancestor up to <body>. */
+  function footBottom(){
+    var nodes = document.querySelectorAll('#shopify-section-footer ~ *, body > *, main > *, #root > *, footer, footer *');
+    var hit = null;
+    for (var i = 0; i < nodes.length; i++){
+      var t = (nodes[i].textContent || '');
+      if (t.length < 400 && /Powered by Shopify|\u00a9\s*\d{4}/.test(t)){ hit = nodes[i]; break; }
+    }
+    if (!hit) return;
+    var el = hit;
+    for (var k = 0; k < 6 && el && el !== document.body; k++){
+      var bg = getComputedStyle(el).backgroundColor || '';
+      var m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+      if (m && (m[4] === undefined || parseFloat(m[4]) > 0.1)){
+        var lum = (parseInt(m[1],10) * 299 + parseInt(m[2],10) * 587 + parseInt(m[3],10) * 114) / 1000;
+        if (lum > 140){
+          el.style.setProperty('background', '#0E0914', 'important');
+          el.style.setProperty('background-color', '#0E0914', 'important');
+          el.style.setProperty('color', '#B9A8CE', 'important');
+        }
+      }
+      el = el.parentElement;
+    }
+    hit.style.setProperty('color', '#B9A8CE', 'important');
+  }
+  function boot(){ marq(); cd(); vloop(); wordmark(); gbLabels(); quoteUp(); caseTile(); accLeft(); ymlTrim(); footDark(); footBottom(); caseLine(); }
+  setTimeout(footBottom, 1600); setTimeout(footBottom, 3400);
+  setInterval(caseLine, 1200);
+  setTimeout(footDark, 1500); setTimeout(footDark, 3200);
+  setInterval(ymlTrim, 1500);
+  setInterval(accLeft, 1500);
+  setInterval(caseTile, 1500);
+  setInterval(function(){ gbLabels(); quoteUp(); }, 1500);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+  setTimeout(boot, 1400);
+  setTimeout(boot, 2600);
+  setInterval(cd, 1000);
+})();
+</script>
+
+{% schema %}
+{"name": "PG Mobile", "settings": []}
+{% endschema %}
+

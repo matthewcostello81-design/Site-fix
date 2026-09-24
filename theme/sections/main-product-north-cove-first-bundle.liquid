@@ -1,0 +1,353 @@
+{%- liquid
+  assign current_variant = product.selected_or_first_available_variant
+  assign product_title = product.title
+  assign product_description = product.description
+  assign short_description = product_description | strip_html | truncatewords: 24
+  assign compare_price = current_variant.compare_at_price | default: product.compare_at_price_max
+  assign sale_price = current_variant.price
+  assign duo_regular = sale_price | times: 2
+  assign duo_price = duo_regular | times: 90 | divided_by: 100
+  assign trio_regular = sale_price | times: 3
+  assign trio_price = trio_regular | times: 85 | divided_by: 100
+  assign has_sale = false
+  if compare_price > sale_price
+    assign has_sale = true
+  endif
+  assign first_media = product.media | first
+  assign second_media = product.media[1]
+  assign third_media = product.media[2]
+  assign product_type = product.type | default: 'Wellness essential'
+-%}
+
+<section class="nc-og-pdp" data-section-id="{{ section.id }}">
+  <div class="nc-og-anno">Summer Recovery Event — <b>better product pages</b>. Free shipping on every order.</div>
+
+  <div class="nc-og-wrap nc-og-hero">
+    <div class="nc-og-gallery">
+      <div class="nc-og-stage">
+        <span class="nc-og-stage-tag">North Cove Wellness</span>
+        {%- if first_media and first_media.media_type == 'image' -%}
+          {{ first_media | image_url: width: 950 | image_tag: id: 'nc-og-main-img', loading: 'eager', alt: product_title }}
+        {%- else -%}
+          <div class="nc-og-noimage">
+            <span>{{ product_type }}</span>
+            <strong>{{ product_title }}</strong>
+            <small>Product media ready to add later</small>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="nc-og-thumbs">
+        {%- if product.media.size > 0 -%}
+          {%- for media in product.media limit: 5 -%}
+            {%- if media.media_type == 'image' -%}
+              <button class="nc-og-thumb{% if forloop.first %} active{% endif %}" type="button" data-src="{{ media | image_url: width: 950 }}">
+                {{ media | image_url: width: 180 | image_tag: loading: 'lazy', alt: product_title }}
+              </button>
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endif -%}
+        {%- if product.media.size == 0 -%}
+          <div class="nc-og-thumb nc-og-thumb-text">Product<br>visual</div>
+          <div class="nc-og-thumb nc-og-thumb-text">Feature<br>callout</div>
+          <div class="nc-og-thumb nc-og-thumb-text">How it<br>works</div>
+          <div class="nc-og-thumb nc-og-thumb-text">Details<br>section</div>
+          <div class="nc-og-thumb nc-og-thumb-text">Trust<br>block</div>
+        {%- endif -%}
+      </div>
+    </div>
+
+    <div class="nc-og-buy">
+      <div class="nc-og-sold">
+        <span class="nc-og-avatars"><i></i><i></i><i></i></span>
+        <span>Popular North Cove product · SKU: <b data-nc-sku>{{ current_variant.sku | default: 'variant selected' }}</b></span>
+      </div>
+
+      <h1>{{ product_title }}</h1>
+
+      {%- if short_description != blank -%}
+        <p class="nc-og-lede">{{ short_description }}</p>
+      {%- else -%}
+        <p class="nc-og-lede">A clean, practical wellness product page with the details shoppers need before checkout.</p>
+      {%- endif -%}
+
+      <div class="nc-og-price-row">
+        <span class="nc-og-price" data-nc-price>{{ sale_price | money }}</span>
+        {%- if has_sale -%}
+          <span class="nc-og-was">{{ compare_price | money }}</span>
+          <span class="nc-og-save">On sale</span>
+        {%- endif -%}
+      </div>
+      <p class="nc-og-tax">Taxes and delivery calculated at checkout.</p>
+
+      <div class="nc-og-quickbens">
+        <div><span>✓</span><b>Free U.S. shipping</b></div>
+        {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+        <div><span>✓</span><b>Secure checkout</b></div>
+      </div>
+
+      {%- form 'product', product, id: 'nc-og-product-form', class: 'nc-og-form', data-base-cents: sale_price -%}
+        {%- unless product.has_only_default_variant -%}
+          <label class="nc-og-label" for="nc-og-variant">Choose option</label>
+          <select id="nc-og-variant" name="id" class="nc-og-select">
+            {%- for variant in product.variants -%}
+              <option
+                value="{{ variant.id }}"
+                {% if variant == current_variant %}selected{% endif %}
+                {% unless variant.available %}disabled{% endunless %}
+                data-price="{{ variant.price | money }}"
+                data-price-cents="{{ variant.price }}"
+                data-sku="{{ variant.sku | escape }}"
+              >
+                {{ variant.title }}{% unless variant.available %} — Sold out{% endunless %}
+              </option>
+            {%- endfor -%}
+          </select>
+        {%- else -%}
+          <input type="hidden" name="id" value="{{ current_variant.id }}">
+        {%- endunless -%}
+
+        <label class="nc-og-label">Bundle discounts</label>
+        <div class="nc-og-tiers">
+          <label class="nc-og-tier sel" data-qty="1" data-discount="0">
+            <input type="radio" name="quantity" value="1" checked>
+            <span><b>Single</b><small>1 item · standard price</small></span>
+            <strong data-nc-tier-total>{{ sale_price | money }}</strong>
+          </label>
+          <label class="nc-og-tier" data-qty="2" data-discount="10">
+            <span class="nc-og-flag">Save 10%</span>
+            <input type="radio" name="quantity" value="2">
+            <span><b>Duo Bundle</b><small>2 items · better value</small></span>
+            <strong><span data-nc-tier-total>{{ duo_price | money }}</span><em>{{ duo_regular | money }}</em></strong>
+          </label>
+          <label class="nc-og-tier" data-qty="3" data-discount="15">
+            <span class="nc-og-flag best">Save 15%</span>
+            <input type="radio" name="quantity" value="3">
+            <span><b>Triple Bundle</b><small>3 items · lowest price each</small></span>
+            <strong><span data-nc-tier-total>{{ trio_price | money }}</span><em>{{ trio_regular | money }}</em></strong>
+          </label>
+        </div>
+        <p class="nc-og-bundle-note">Bundle test: quantity updates now. Checkout discount should be matched with a Shopify automatic discount before publishing.</p>
+
+        <button type="submit" name="add" class="nc-og-atc" {% unless current_variant.available %}disabled{% endunless %}>
+          {%- if current_variant.available -%}
+            Add Bundle to Cart <span data-nc-atc-price>— {{ sale_price | money }}</span>
+          {%- else -%}
+            Sold Out
+          {%- endif -%}
+        </button>
+      {%- endform -%}
+
+      <div class="nc-og-assure">
+        {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+        <div><b>Free</b><small>U.S. shipping</small></div>
+        <div><b>Support</b><small>North Cove care</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nc-og-wrap">
+    <section class="nc-og-block">
+      <div class="nc-og-eyebrow">Why this product matters</div>
+      <h2 class="nc-og-sec">A product page that gives shoppers the full story.</h2>
+      <p class="nc-og-copy">This layout uses the product details already saved in Shopify, then wraps them in a fuller, more polished page so the product does not feel bare while final photos are handled separately.</p>
+    </section>
+
+    <section class="nc-og-feat">
+      <div class="nc-og-feat-media">
+        {%- if second_media and second_media.media_type == 'image' -%}
+          {{ second_media | image_url: width: 900 | image_tag: loading: 'lazy', alt: product_title }}
+        {%- else -%}
+          <div><span>01</span><strong>Benefit-led section</strong><small>Designed block, no empty image gap.</small></div>
+        {%- endif -%}
+      </div>
+      <div>
+        <h3>Clear benefits before the buy button.</h3>
+        <p>Each page gets a benefit-led structure: what it is, why it helps, how to use it, what comes with it, and what shoppers can expect.</p>
+        <ul>
+          <li>Uses the live Shopify product description</li>
+          <li>Shows variant/SKU information for accuracy checks</li>
+          <li>Keeps a premium North Cove visual style without forced new images</li>
+        </ul>
+      </div>
+    </section>
+
+    {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+    <section class="nc-og-feat rev">
+      <div class="nc-og-feat-media">
+        {%- if third_media and third_media.media_type == 'image' -%}
+          {{ third_media | image_url: width: 900 | image_tag: loading: 'lazy', alt: product_title }}
+        {%- else -%}
+          <div><span>02</span><strong>Detail-rich layout</strong><small>Specs, FAQ, and bundle cards.</small></div>
+        {%- endif -%}
+      </div>
+      <div>
+        <h3>Designed to feel complete, not patched together.</h3>
+        <p>No random ship-by dates, no blank blocks, no fake reviews. The page is filled with useful design sections and product-specific information.</p>
+        <ul>
+          <li>Bundle cards near pricing</li>
+          <li>Trust blocks and shipping details</li>
+          <li>Dynamic product specs from Shopify</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="nc-og-meters" id="nc-og-meters-{{ section.id }}">
+      <div class="nc-og-eyebrow">By the numbers</div>
+      <h2 class="nc-og-sec">Built around what shoppers check before buying.</h2>
+      <div class="nc-og-meter-grid">
+        <div class="nc-og-meter"><strong>{{ product.variants.size }}</strong><span>Variants</span><i style="--w:72%"></i><small>Options pulled from Shopify.</small></div>
+        <div class="nc-og-meter"><strong>{{ product.media.size }}</strong><span>Media slots</span><i style="--w:54%"></i><small>Existing images only.</small></div>
+        {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+        <div class="nc-og-meter"><strong>SKU</strong><span>Match ready</span><i style="--w:68%"></i><small>Ready for Zendrop audit.</small></div>
+      </div>
+    </section>
+
+    <section class="nc-og-details">
+      <div>
+        <div class="nc-og-eyebrow">Product details</div>
+        <h2 class="nc-og-sec">The details already on this product, redesigned.</h2>
+      </div>
+      <div class="nc-og-rte rte">
+        {%- if product_description != blank -%}
+          {{ product_description }}
+        {%- else -%}
+          <p>Product details are being finalized. This section will automatically show the Shopify product description once added.</p>
+        {%- endif -%}
+      </div>
+    </section>
+
+    <section class="nc-og-boxgrid">
+      <div><span>1</span><b>Product type</b><small>{{ product_type }}</small></div>
+      <div><span>2</span><b>Vendor</b><small>{{ product.vendor }}</small></div>
+      <div><span>3</span><b>Current SKU</b><small data-nc-sku>{{ current_variant.sku | default: 'Variant selected' }}</small></div>
+      <div><span>4</span><b>Availability</b><small>{% if current_variant.available %}In stock{% else %}Sold out{% endif %}</small></div>
+    </section>
+
+    {% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+    <section class="nc-og-steps">
+      <div><span>1</span><h3>Choose the option</h3><p>Variant selection is handled directly through Shopify.</p></div>
+      <div><span>2</span><h3>Pick quantity</h3><p>Bundle tiers support larger orders without hardcoding product data.</p></div>
+      <div><span>3</span><h3>Checkout securely</h3><p>Trust and shipping details stay visible before purchase.</p></div>
+    </section>
+
+    <section class="nc-og-faq">
+      <details open><summary>How is this product page personalized?</summary><p>It uses this product’s Shopify title, price, variants, SKU, and description automatically.</p></details>
+      <details><summary>Are new images being added?</summary><p>No. This template only uses existing product media if it is already attached in Shopify. Otherwise, designed content blocks fill the space.</p></details>
+      <details><summary>Can Zendrop details be added later?</summary><p>Yes. The correct next step is to match products by SKU between Shopify and Zendrop, then update descriptions only where the supplier match is confirmed.</p></details>
+    </section>
+  </div>
+</section>
+
+{% comment %}2026-09-23: returns removed site-wide by owner request{% endcomment %}
+{% stylesheet %}
+  .nc-og-pdp{--ink:#0f2a33;--soft:#34555e;--teal:#2c6e72;--sea:#6fb3a8;--sand:#f4efe7;--sand2:#e9e1d4;--ember:#d9763a;--line:rgba(15,42,51,.12);background:var(--sand);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+  .nc-og-wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  .nc-og-anno{background:var(--ink);color:var(--sand);text-align:center;font-size:13px;letter-spacing:.04em;padding:9px 16px;font-weight:600}
+  .nc-og-anno b{color:var(--sea)}
+  .nc-og-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:start;padding-top:34px;padding-bottom:18px}
+  .nc-og-gallery{position:sticky;top:84px}
+  .nc-og-stage{position:relative;background:linear-gradient(150deg,#fbf8f2,#e7ddcd);border-radius:18px;overflow:hidden;border:1px solid var(--line);aspect-ratio:1/1;display:flex;align-items:center;justify-content:center}
+  .nc-og-stage img{width:88%;height:88%;object-fit:contain;filter:drop-shadow(0 28px 36px rgba(15,42,51,.22));transition:transform .5s ease}
+  .nc-og-stage:hover img{transform:scale(1.04)}
+  .nc-og-stage-tag{position:absolute;top:16px;left:16px;background:var(--ember);color:#fff;font-size:12px;font-weight:700;letter-spacing:.03em;padding:7px 13px;border-radius:100px;z-index:2}
+  .nc-og-noimage{width:78%;min-height:58%;border-radius:28px;background:rgba(255,255,255,.66);border:1px solid rgba(255,255,255,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:34px;box-shadow:0 24px 60px -34px rgba(15,42,51,.45)}
+  .nc-og-noimage span,.nc-og-eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:14px}
+  .nc-og-noimage strong{font-size:clamp(30px,5vw,54px);line-height:1;letter-spacing:-.04em;margin-bottom:14px}
+  .nc-og-noimage small{color:var(--soft);font-weight:700}
+  .nc-og-thumbs{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+  .nc-og-thumb{aspect-ratio:1/1;border-radius:11px;border:1px solid var(--line);background:linear-gradient(150deg,#fbf8f2,#ece3d4);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden}
+  .nc-og-thumb img{width:80%;height:80%;object-fit:contain}
+  .nc-og-thumb.active{border-color:var(--teal);box-shadow:0 0 0 2px rgba(44,110,114,.25)}
+  .nc-og-thumb-text{font-size:10px;text-align:center;font-weight:700;color:var(--soft)}
+  .nc-og-sold{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--soft);font-weight:600;margin-bottom:12px}
+  .nc-og-avatars{display:flex}.nc-og-avatars i{width:24px;height:24px;border-radius:50%;border:2px solid var(--sand);margin-left:-8px;background:var(--sea)}.nc-og-avatars i:nth-child(2){background:var(--ember)}.nc-og-avatars i:nth-child(3){background:var(--teal)}.nc-og-avatars i:first-child{margin-left:0}
+  .nc-og-buy h1{font-size:clamp(30px,4vw,42px);line-height:1.02;letter-spacing:-.03em;margin:0 0 14px;font-weight:800}
+  .nc-og-lede{font-size:17px;color:var(--soft);line-height:1.58;margin:0 0 18px}
+  .nc-og-price-row{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}.nc-og-price{font-weight:900;font-size:34px}.nc-og-was{color:var(--soft);text-decoration:line-through;font-size:19px}.nc-og-save{background:rgba(217,118,58,.14);color:#be5f28;font-weight:800;font-size:13px;padding:5px 11px;border-radius:8px}.nc-og-tax{font-size:12.5px;color:var(--soft);margin-bottom:20px}
+  .nc-og-quickbens{display:grid;gap:11px;margin:20px 0;padding:18px;background:#fff;border:1px solid var(--line);border-radius:14px}.nc-og-quickbens div{display:flex;align-items:center;gap:12px;font-size:14.5px}.nc-og-quickbens span{width:24px;height:24px;border-radius:8px;background:rgba(44,110,114,.12);color:var(--teal);display:flex;align-items:center;justify-content:center;font-weight:900}
+  .nc-og-label{display:block;font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);margin:18px 0 9px}.nc-og-select{width:100%;padding:13px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+  .nc-og-tiers{display:grid;gap:11px}.nc-og-tier{position:relative;border:1.5px solid var(--line);border-radius:13px;padding:15px 16px;cursor:pointer;background:#fff;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center}.nc-og-tier.sel{border-color:var(--teal);box-shadow:0 0 0 2px rgba(44,110,114,.18)}.nc-og-tier input{accent-color:var(--teal)}.nc-og-tier small{display:block;color:var(--soft)}.nc-og-tier strong{text-align:right}.nc-og-tier em{display:block;color:var(--soft);font-size:12px;text-decoration:line-through;font-style:normal;font-weight:700}.nc-og-flag{position:absolute;top:-10px;right:14px;font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--ember);padding:3px 9px;border-radius:6px}.nc-og-flag.best{background:var(--teal)}.nc-og-bundle-note{font-size:12px;line-height:1.45;color:var(--soft);margin:10px 0 0}
+  .nc-og-atc{margin-top:18px;width:100%;border:none;background:var(--ember);color:#fff;font-weight:900;font-size:18px;letter-spacing:.01em;padding:18px;border-radius:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:12px;box-shadow:0 18px 50px -22px rgba(15,42,51,.35)}.nc-og-atc span{font-weight:700;font-size:14px;opacity:.85}.nc-og-atc:disabled{opacity:.55;cursor:not-allowed}
+  .nc-og-assure{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:18px;text-align:center}.nc-og-assure div{padding:13px 8px;border:1px solid var(--line);border-radius:11px;background:#fff}.nc-og-assure b{display:block;font-size:13px}.nc-og-assure small{font-size:11.5px;color:var(--soft)}
+  .nc-og-block{padding:78px 0}.nc-og-sec{font-size:clamp(28px,4vw,44px);line-height:1.02;letter-spacing:-.03em;font-weight:800;max-width:19ch;margin:0 0 16px}.nc-og-copy{font-size:17px;color:var(--soft);max-width:58ch}
+  .nc-og-feat{display:grid;grid-template-columns:1fr 1fr;gap:46px;align-items:center;padding:0 0 78px}.nc-og-feat.rev .nc-og-feat-media{order:2}.nc-og-feat-media{aspect-ratio:4/3;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:linear-gradient(150deg,#fbf8f2,#e7ddcd);display:flex;align-items:center;justify-content:center;text-align:center}.nc-og-feat-media img{width:78%;height:78%;object-fit:contain;filter:drop-shadow(0 22px 30px rgba(15,42,51,.2))}.nc-og-feat-media div{padding:28px}.nc-og-feat-media span{display:inline-flex;width:42px;height:42px;border-radius:13px;background:rgba(44,110,114,.12);color:var(--teal);align-items:center;justify-content:center;font-weight:900;margin-bottom:16px}.nc-og-feat-media strong{display:block;font-size:28px;line-height:1.05}.nc-og-feat-media small{display:block;color:var(--soft);margin-top:8px}.nc-og-feat h3{font-size:clamp(24px,3vw,32px);line-height:1.1;margin:0 0 14px;font-weight:800}.nc-og-feat p{color:var(--soft);font-size:16px;margin-bottom:14px}.nc-og-feat ul{list-style:none;display:grid;gap:9px;margin:0;padding:0}.nc-og-feat li{display:flex;gap:10px;font-size:15px;font-weight:600}.nc-og-feat li:before{content:\"\";flex:none;width:8px;height:8px;border-radius:50%;background:var(--sea);margin-top:8px}
+  .nc-og-meters{background:var(--ink);color:var(--sand);border-radius:26px;padding:clamp(34px,5vw,64px);margin-bottom:78px}.nc-og-meters .nc-og-eyebrow{color:var(--sea)}.nc-og-meter-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:42px}.nc-og-meter strong{display:block;font-weight:900;font-size:clamp(34px,5vw,52px);line-height:1;color:#fff}.nc-og-meter span{display:block;font-size:12.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sea);margin:10px 0 14px}.nc-og-meter i{display:block;width:var(--w);height:7px;border-radius:100px;background:linear-gradient(90deg,var(--sea),var(--ember))}.nc-og-meter small{display:block;font-size:13.5px;color:rgba(244,239,231,.72);margin-top:12px;line-height:1.45}
+  .nc-og-details{display:grid;grid-template-columns:.72fr 1.28fr;gap:42px;padding:42px;background:#fff;border:1px solid var(--line);border-radius:22px;margin-bottom:18px}.nc-og-rte{color:var(--soft);line-height:1.7}.nc-og-rte h1,.nc-og-rte h2,.nc-og-rte h3{color:var(--ink)}
+  .nc-og-boxgrid,.nc-og-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}.nc-og-steps{grid-template-columns:repeat(3,1fr)}.nc-og-boxgrid div,.nc-og-steps div{padding:22px;background:#fff;border:1px solid var(--line);border-radius:16px}.nc-og-boxgrid span,.nc-og-steps span{display:inline-flex;width:32px;height:32px;border-radius:10px;background:rgba(44,110,114,.1);color:var(--teal);font-weight:900;align-items:center;justify-content:center;margin-bottom:12px}.nc-og-boxgrid b,.nc-og-boxgrid small{display:block}.nc-og-boxgrid small{color:var(--soft);overflow-wrap:anywhere}.nc-og-steps h3{margin:0 0 8px;font-size:20px}.nc-og-steps p{margin:0;color:var(--soft)}
+  .nc-og-promise{background:var(--sand2);border-radius:26px;padding:clamp(34px,5vw,60px);text-align:center;margin-bottom:22px}.nc-og-seal{width:74px;height:74px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:32px;font-weight:900}.nc-og-promise .nc-og-sec{margin-left:auto;margin-right:auto;text-align:center}.nc-og-promise p{color:var(--soft);max-width:54ch;margin:0 auto}
+  .nc-og-faq{padding-bottom:78px}.nc-og-faq details{border-top:1px solid var(--line);padding:22px 6px}.nc-og-faq summary{cursor:pointer;font-weight:900;font-size:18px}.nc-og-faq p{color:var(--soft);margin:10px 0 0}
+  @media(max-width:900px){.nc-og-hero,.nc-og-feat,.nc-og-details{grid-template-columns:1fr}.nc-og-gallery{position:static}.nc-og-feat.rev .nc-og-feat-media{order:0}.nc-og-boxgrid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.nc-og-wrap{padding:0 16px}.nc-og-meter-grid,.nc-og-boxgrid,.nc-og-steps,.nc-og-assure{grid-template-columns:1fr}.nc-og-tier{grid-template-columns:auto 1fr}.nc-og-tier strong{grid-column:2}.nc-og-details{padding:24px}}
+{% endstylesheet %}
+
+<script>
+  document.addEventListener('click', function(event) {
+    var thumb = event.target.closest('.nc-og-thumb[data-src]');
+    if (thumb) {
+      var section = thumb.closest('.nc-og-pdp');
+      var main = section.querySelector('#nc-og-main-img');
+      if (main) main.src = thumb.getAttribute('data-src');
+      section.querySelectorAll('.nc-og-thumb').forEach(function(item) { item.classList.remove('active'); });
+      thumb.classList.add('active');
+    }
+    var tier = event.target.closest('.nc-og-tier');
+    if (tier) {
+      var group = tier.closest('.nc-og-tiers');
+      group.querySelectorAll('.nc-og-tier').forEach(function(item) { item.classList.remove('sel'); });
+      tier.classList.add('sel');
+      updateBundlePrice(tier.closest('.nc-og-pdp'));
+    }
+  });
+  function ncMoney(cents) {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
+  }
+  function updateBundlePrice(section) {
+    if (!section) return;
+    var form = section.querySelector('.nc-og-form');
+    var selected = section.querySelector('.nc-og-tier.sel');
+    if (!form || !selected) return;
+    var base = parseInt(form.getAttribute('data-base-cents') || '0', 10);
+    var qty = parseInt(selected.getAttribute('data-qty') || '1', 10);
+    var discount = parseInt(selected.getAttribute('data-discount') || '0', 10);
+    var regular = base * qty;
+    var total = Math.round(regular * (100 - discount) / 100);
+    section.querySelectorAll('[data-nc-atc-price]').forEach(function(item) { item.textContent = '— ' + ncMoney(total); });
+  }
+  document.addEventListener('change', function(event) {
+    if (event.target.id === 'nc-og-variant') {
+      var option = event.target.options[event.target.selectedIndex];
+      var section = event.target.closest('.nc-og-pdp');
+      var price = option.getAttribute('data-price');
+      var priceCents = option.getAttribute('data-price-cents');
+      var sku = option.getAttribute('data-sku') || 'Variant selected';
+      var form = section.querySelector('.nc-og-form');
+      if (form && priceCents) form.setAttribute('data-base-cents', priceCents);
+      section.querySelectorAll('[data-nc-sku]').forEach(function(item) { item.textContent = sku; });
+      section.querySelectorAll('[data-nc-price]').forEach(function(item) { item.textContent = price; });
+      section.querySelectorAll('.nc-og-tier').forEach(function(tier) {
+        var qty = parseInt(tier.getAttribute('data-qty') || '1', 10);
+        var discount = parseInt(tier.getAttribute('data-discount') || '0', 10);
+        var regular = parseInt(priceCents || '0', 10) * qty;
+        var total = Math.round(regular * (100 - discount) / 100);
+        var totalEl = tier.querySelector('[data-nc-tier-total]');
+        var strikeEl = tier.querySelector('em');
+        if (totalEl) totalEl.textContent = ncMoney(total);
+        if (strikeEl) strikeEl.textContent = ncMoney(regular);
+      });
+      updateBundlePrice(section);
+    }
+  });
+</script>
+
+{% schema %}
+{
+  "name": "North Cove First Bundle",
+  "settings": [],
+  "presets": [
+    {
+      "name": "North Cove First Bundle"
+    }
+  ]
+}
+{% endschema %}

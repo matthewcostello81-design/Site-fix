@@ -1,0 +1,491 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "breadcrumbs": {
+      "type": "breadcrumbs",
+      "settings": {
+        "hide_mobile": true
+      }
+    },
+    "main": {
+      "type": "nc-product",
+      "settings": {
+        "sold_line": "A North Cove Wellness recovery staple",
+        "intro_eye": "Why it matters",
+        "intro_head": "Hand relief, anywhere you go.",
+        "intro_text": "Tired, tight hands after a day of typing, gripping or detailed work? The Heat Compression Hand and Finger Massager wraps gentle compression around your fingers, palm and wrist, with an optional warmth setting and a cordless, rechargeable body so you can relax your hands at home, at the desk or on the go.",
+        "be_eye": "Built different",
+        "be_head": "Why this hand massager",
+        "be_sub": "Four reasons tired, tight hands look forward to the end of the day.",
+        "system_eye": "The system",
+        "system_head": "The North Cove Recovery System",
+        "system_sub": "Hover the numbers to see what makes a few minutes with the Hand Massager feel so good.",
+        "system_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_031600_b9392f5a-98d7-4d83-ac51-6537fba2257f.png?v=1782875966",
+        "cmp_eye": "The difference",
+        "cmp_head": "Why it beats the rest",
+        "cmp_sub": "How guided compression and warmth compares to stretching your hands by yourself.",
+        "cmp_ours": "Hand Massager",
+        "cmp_theirs": "Hand Stretches",
+        "ba_eye": "Before & after",
+        "ba_head": "How your hands feel after two weeks",
+        "ba_sub": "What changes when a hand session becomes part of your routine.",
+        "tl_eye": "A day with it",
+        "tl_head": "One day, two ways to unwind your hands",
+        "tl_sub": "The same tired hands, with and without a few minutes of compression and warmth.",
+        "meter_eye": "By the numbers",
+        "meter_head": "What users are saying.",
+        "step_eye": "Simple to use",
+        "step_head": "Slip it on, pick a mode, relax.",
+        "box_head": "What's in the box",
+        "spec_head": "Specs",
+        "promise_eye": "",
+        "promise_head": "",
+        "promise_text": "",
+        "disclaimer": "This product is not intended to diagnose, treat, cure, or prevent any disease or medical condition. Results may vary. Consult a qualified healthcare professional before use if you have an existing health condition or injury.",
+        "intro_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260607_013413_4c574f96-2fe7-48ab-8a35-7776f0224f84.png?v=1782785381",
+        "be_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_025657_00da5c28-f100-4736-8601-133538b33742.png?v=1782874943",
+        "ba_before_image_url": "https://d8j0ntlcm91z4.cloudfront.net/user_3EkHFHIcBq906h4XZWZJY0sj7gl/hf_20260630_182421_dbc49842-5d99-4148-8d20-0862615a1b28.png",
+        "ba_after_image_url": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20260701_025650_01ef6156-ddd9-4eb2-ba2a-674e6b1acaac.png?v=1782874943"
+      },
+      "blocks": {
+        "h1": {
+          "type": "highlight",
+          "settings": {
+            "text": "Gentle compression for fingers and palm"
+          }
+        },
+        "h2": {
+          "type": "highlight",
+          "settings": {
+            "text": "Optional soothing warmth"
+          }
+        },
+        "h3": {
+          "type": "highlight",
+          "settings": {
+            "text": "Cordless, rechargeable and quiet"
+          }
+        },
+        "t1": {
+          "type": "tier",
+          "settings": {
+            "name": "Single (1 unit)",
+            "qty": 1,
+            "sub": "Everyday hand relief for one"
+          }
+        },
+        "t2": {
+          "type": "tier",
+          "settings": {
+            "name": "Duo (2 units)",
+            "qty": 2,
+            "sub": "One to keep, one to gift",
+            "flag": "Most Popular"
+          }
+        },
+        "t3": {
+          "type": "tier",
+          "settings": {
+            "name": "Family (3 units)",
+            "qty": 3,
+            "sub": "Home, desk and travel",
+            "flag": "Best Value",
+            "best": true
+          }
+        },
+        "be1": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Unwind tired hands",
+            "text": "A few minutes of gentle compression after a long day of typing or gripping helps your fingers, palm and wrist feel relaxed and at ease."
+          }
+        },
+        "be2": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Cover the whole hand",
+            "text": "Compression chambers inflate to wrap even, gentle pressure across the fingers, palm and wrist area, so the whole hand gets attention, not just one spot."
+          }
+        },
+        "be3": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Add optional warmth",
+            "text": "Switch on the optional heat setting to add soothing warmth that complements the compression for a more comfortable session."
+          }
+        },
+        "be4": {
+          "type": "benefit",
+          "settings": {
+            "heading": "Cordless and portable",
+            "text": "Lightweight, cordless and quiet, it runs on a rechargeable battery with no cable during use, so your hand routine goes wherever you do."
+          }
+        },
+        "fe1": {
+          "type": "feature",
+          "settings": {
+            "heading": "Guided compression",
+            "text": "Air-filled chambers inflate and release to deliver even, rhythmic pressure across the hand that is hard to recreate by stretching on your own."
+          }
+        },
+        "fe2": {
+          "type": "feature",
+          "settings": {
+            "heading": "Optional warmth",
+            "text": "Turn on the heat setting for soothing warmth, or keep it off for compression only, matched to how your hands feel that day."
+          }
+        },
+        "fe3": {
+          "type": "feature",
+          "settings": {
+            "heading": "Full-hand coverage",
+            "text": "The wrap surrounds fingers, palm and wrist area together, so the whole hand is covered in a single, comfortable session."
+          }
+        },
+        "fe4": {
+          "type": "feature",
+          "settings": {
+            "heading": "Cordless, quiet, portable",
+            "text": "Rechargeable and quiet, with no power cable during use, small enough to keep by your desk or take with you."
+          }
+        },
+        "c1": {
+          "type": "cmp",
+          "settings": {
+            "label": "Guided air compression",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c2": {
+          "type": "cmp",
+          "settings": {
+            "label": "Optional warmth",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "c3": {
+          "type": "cmp",
+          "settings": {
+            "label": "Cordless during use",
+            "ours": "yes",
+            "theirs": "n/a"
+          }
+        },
+        "c4": {
+          "type": "cmp",
+          "settings": {
+            "label": "Full-hand coverage",
+            "ours": "Fingers, palm, wrist",
+            "theirs": "One spot at a time"
+          }
+        },
+        "c5": {
+          "type": "cmp",
+          "settings": {
+            "label": "Consistent, even pressure",
+            "ours": "yes",
+            "theirs": "Varies"
+          }
+        },
+        "c6": {
+          "type": "cmp",
+          "settings": {
+            "label": "Hands-free session",
+            "ours": "yes",
+            "theirs": "no"
+          }
+        },
+        "ba1": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Tired, tight hands after hours of typing or gripping"
+          }
+        },
+        "ba2": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Shaking out your hands and hoping the stiffness eases"
+          }
+        },
+        "ba3": {
+          "type": "ba",
+          "settings": {
+            "side": "before",
+            "text": "Stretching your fingers by yourself with little to show for it"
+          }
+        },
+        "ba4": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "Hands that feel relaxed and at ease after a short session"
+          }
+        },
+        "ba5": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "A few comfortable minutes at home, whenever you need them"
+          }
+        },
+        "ba6": {
+          "type": "ba",
+          "settings": {
+            "side": "after",
+            "text": "On-demand hand comfort that travels with you"
+          }
+        },
+        "tl1": {
+          "type": "tl",
+          "settings": {
+            "time": "12 PM",
+            "label": "After typing",
+            "trad_title": "Hands locked up",
+            "trad_text": "A morning at the keyboard leaves your fingers and wrists tight and tired by midday.",
+            "trad_tag": "Tight by noon",
+            "nc_title": "Reset at your desk",
+            "nc_text": "A few minutes of compression and optional warmth helps your hands feel loose again without leaving your chair.",
+            "nc_tag": "Loose and easy"
+          }
+        },
+        "tl2": {
+          "type": "tl",
+          "settings": {
+            "time": "4 PM",
+            "label": "Manual work",
+            "trad_title": "Gripping all day",
+            "trad_text": "An afternoon of detailed, hands-on work leaves your palms and fingers aching.",
+            "trad_tag": "Worn out",
+            "nc_title": "A quick hand break",
+            "nc_text": "Slip it on between tasks for a short session that helps your hands feel comfortable again.",
+            "nc_tag": "Comfortable again"
+          }
+        },
+        "tl3": {
+          "type": "tl",
+          "settings": {
+            "time": "9 PM",
+            "label": "Evening",
+            "trad_title": "Stiffness lingers",
+            "trad_text": "You wind down for the night with hands that still feel tired and tight.",
+            "trad_tag": "Still tense",
+            "nc_title": "Unwind before bed",
+            "nc_text": "A warm, gentle session helps your hands relax as part of your evening routine.",
+            "nc_tag": "Relaxed and ready"
+          }
+        },
+        "m1": {
+          "type": "meter",
+          "settings": {
+            "number": 95,
+            "suffix": "%",
+            "label": "Would recommend",
+            "fill": 95,
+            "sub": "Would tell a friend about it."
+          }
+        },
+        "m2": {
+          "type": "meter",
+          "settings": {
+            "number": 96,
+            "suffix": "%",
+            "label": "Love the warmth",
+            "fill": 95,
+            "sub": "Enjoy the optional heat setting."
+          }
+        },
+        "m3": {
+          "type": "meter",
+          "settings": {
+            "number": 81,
+            "suffix": "%",
+            "label": "Use it weekly",
+            "fill": 80,
+            "sub": "Part of a regular routine."
+          }
+        },
+        "m4": {
+          "type": "meter",
+          "settings": {
+            "number": 90,
+            "suffix": "%",
+            "label": "Hands felt relaxed after use",
+            "fill": 90,
+            "sub": "More at ease where they used it."
+          }
+        },
+        "st1": {
+          "type": "step",
+          "settings": {
+            "title": "Slip it on",
+            "text": "Place your hand inside and settle the wrap over fingers and palm."
+          }
+        },
+        "st2": {
+          "type": "step",
+          "settings": {
+            "title": "Pick a mode",
+            "text": "Choose compression only, or add optional warmth."
+          }
+        },
+        "st3": {
+          "type": "step",
+          "settings": {
+            "title": "Sit back and relax",
+            "text": "Let it run through a comfortable session while you unwind."
+          }
+        },
+        "bx1": {
+          "type": "boxitem",
+          "settings": {
+            "text": "Heat compression hand massager"
+          }
+        },
+        "bx2": {
+          "type": "boxitem",
+          "settings": {
+            "text": "USB charging cable"
+          }
+        },
+        "bx3": {
+          "type": "boxitem",
+          "settings": {
+            "text": "User guide"
+          }
+        },
+        "sp1": {
+          "type": "spec",
+          "settings": {
+            "label": "Compression",
+            "value": "Air chambers"
+          }
+        },
+        "sp2": {
+          "type": "spec",
+          "settings": {
+            "label": "Heat",
+            "value": "Optional setting"
+          }
+        },
+        "sp3": {
+          "type": "spec",
+          "settings": {
+            "label": "Coverage",
+            "value": "Fingers, palm, wrist"
+          }
+        },
+        "sp4": {
+          "type": "spec",
+          "settings": {
+            "label": "Power",
+            "value": "Cordless, rechargeable"
+          }
+        },
+        "sp5": {
+          "type": "spec",
+          "settings": {
+            "label": "Size",
+            "value": "Standard"
+          }
+        },
+        "sp6": {
+          "type": "spec",
+          "settings": {
+            "label": "Use",
+            "value": "Daily relaxation"
+          }
+        }
+      },
+      "block_order": [
+        "h1",
+        "h2",
+        "h3",
+        "t1",
+        "t2",
+        "t3",
+        "be1",
+        "be2",
+        "be3",
+        "be4",
+        "fe1",
+        "fe2",
+        "fe3",
+        "fe4",
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "ba1",
+        "ba2",
+        "ba3",
+        "ba4",
+        "ba5",
+        "ba6",
+        "tl1",
+        "tl2",
+        "tl3",
+        "m1",
+        "m2",
+        "m3",
+        "m4",
+        "st1",
+        "st2",
+        "st3",
+        "bx1",
+        "bx2",
+        "bx3",
+        "sp1",
+        "sp2",
+        "sp3",
+        "sp4",
+        "sp5",
+        "sp6"
+      ]
+    },
+    "nc-enhance": {
+      "type": "nc-enhance",
+      "settings": {}
+    },
+    "recommendations": {
+      "type": "product-recommendations",
+      "settings": {
+        "recommended_products_qty": 6,
+        "number_of_items": 4,
+        "text_alignment": "start",
+        "width": "boxed",
+        "title": "<h2>You may also like</h2>",
+        "title_underline_style": "none",
+        "enable_quick_buy_desktop": false,
+        "enable_quick_buy_mobile": false,
+        "enable_quick_buy_drawer": false,
+        "enable_quick_buy_qty_selector": true,
+        "enable_color_picker": false,
+        "enable_quick_buy_compact": false,
+        "spacing_desktop": 75,
+        "spacing_mobile": 0,
+        "fix_zindex": 0,
+        "mobile_collapse": false
+      }
+    }
+  },
+  "order": [
+    "breadcrumbs",
+    "main",
+    "nc-enhance",
+    "recommendations"
+  ]
+}

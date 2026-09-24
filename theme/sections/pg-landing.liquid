@@ -139,7 +139,8 @@
   .pgx-atc[disabled]{opacity:.5;cursor:default}
   .pgx-err{display:none;color:var(--pgx-red);font-size:14px;margin:4px 0 8px}
 
-  .pgx-info{display:grid;grid-template-columns:1fr 1fr 1fr;border:1px solid var(--pgx-line);border-radius:12px;margin:16px 0;overflow:hidden}
+  {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
+  .pgx-info{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--pgx-line);border-radius:12px;margin:16px 0;overflow:hidden}
   .pgx-info-c{padding:20px 10px;text-align:center;border-left:1px solid var(--pgx-line)}
   .pgx-info-c:first-child{border-left:0}
   .pgx-info-ic{width:52px;height:52px;border-radius:50%;background:#f5eefa;display:flex;align-items:center;justify-content:center;margin:0 auto 10px}
@@ -467,11 +468,7 @@
           <div class="pgx-info-h">Ships By</div>
           <div class="pgx-info-t" id="pgx-shipdate"></div>
         </div>
-        <div class="pgx-info-c">
-          <div class="pgx-info-ic"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5"/><path d="M18 3v4h-4"/><path d="M20 12a8 8 0 0 1-14 5"/><path d="M6 21v-4h4"/></svg></div>
-          <div class="pgx-info-h">Easy Returns</div>
-          <div class="pgx-info-t">30-Day Returns</div>
-        </div>
+        {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
         <div class="pgx-info-c">
           <div class="pgx-info-ic pgx-info-flags"><img src="{{ 'flag-us.svg' | asset_url }}" alt="United States flag"><img src="{{ 'flag-ca.svg' | asset_url }}" alt="Canada flag"><img src="{{ 'flag-en-gb.svg' | asset_url }}" alt="United Kingdom flag"></div>
           <div class="pgx-info-h">Free Shipping</div>
@@ -483,8 +480,7 @@
         {%- for type in shop.enabled_payment_types -%}{{ type | payment_type_svg_tag }}{%- endfor -%}
       </div>
 
-      <div class="pgx-guar">30-day money back guarantee</div>
-
+      {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
       <div class="pgx-acc" id="pgx-desc">
         <details open>
           <summary>&#128377;&#65039; Description</summary>
@@ -844,6 +840,7 @@
 <script type="application/json" id="pgx-vimg">{ {%- for v in prod.variants -%}{%- if v.featured_image -%}{{ v.option1 | json }}:{{ v.featured_image | image_url: width: 116 | json }},{%- endif -%}{%- endfor -%}"":""}</script>
 <script>(function(){var el=document.getElementById('pgx-vimg');if(!el)return;var MAP;try{MAP=JSON.parse(el.textContent);}catch(e){return;}function paint(sel){var box=sel.closest('.pgx-opt');if(!box)return;var img=box.querySelector('img');if(!img)return;var u=MAP[sel.value];if(u&&img.getAttribute('src')!==u){img.setAttribute('src',u);img.removeAttribute('srcset');}}function all(){document.querySelectorAll('.pgx-opt select').forEach(paint);}document.addEventListener('change',function(e){var t=e.target;if(t&&t.matches&&t.matches('.pgx-opt select'))paint(t);},true);all();setInterval(all,900);})();</script>
 {%- endif -%}
+{%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
 {% schema %}
 {
   "name": "PG Landing",
@@ -866,7 +863,7 @@
     {"type": "text", "id": "bundle_title", "label": "Bundle tile title", "default": "Bundle Deal: 2x R36S"},
     {"type": "range", "id": "bundle_pct", "label": "Bundle discount percent (must match a live automatic discount)", "min": 0, "max": 50, "step": 1, "default": 10},
     {"type": "richtext", "id": "features_text", "label": "Features content", "default": "<p>15,000+ classic games preloaded, spanning 21+ retro systems from NES and SNES to Game Boy, PS1 and PSP<br>Bright 3.5 inch IPS screen (640x480) with classic D-pad controls<br>RK3326 quad-core chip and 1GB RAM for smooth emulation<br>Expandable storage via MicroSD up to 256GB<br>Custom firmware friendly (ArkOS) with USB-C Wi-Fi dongle support for multiplayer<br>3200mAh battery for around 6 hours of play</p>"},
-    {"type": "richtext", "id": "shipping_text", "label": "Shipping content", "default": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. Every purchase is covered by our 30-day money-back guarantee. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> and <a href=\"/pages/refund-policy\">Return and Refund Policy</a> for full details.</p>"}
+    {"type": "richtext", "id": "shipping_text", "label": "Shipping content", "default": "<p>Free tracked shipping on every order, shipped from our US-based team. Orders are processed within 1 to 2 business days. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> for full details.</p>"}
   ],
   "blocks": [
     {
