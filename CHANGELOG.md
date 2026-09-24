@@ -1,3 +1,16 @@
+# R36S Ultra launched
+
+Owner published "R36S Ultra page (Claude 9-23)" (now MAIN) and said go. The
+Ultra (9242674823396) is ACTIVE on Online Store + Snapchat Ads, mirroring the
+R36S Pro; its four add-ons (clear case, hard shell, protector, protection kit)
+are ACTIVE on Online Store. Duo Pack and Duo Max automatic discounts were
+already active. Live check through the fetch action: product page 200 on the
+new theme, all 8 variants available at $109.99 / $139.99, no review markup, no
+returns wording on the Ultra, R36H, Pro, home or refund pages. The fetch action
+now records HTTP status per URL instead of failing on the first 404.
+
+---
+
 # Returns removed site-wide (owner: "remove everything everywhere for any reason of return")
 
 Theme (unpublished "R36S Ultra page (Claude 9-23)"): every customer-visible
