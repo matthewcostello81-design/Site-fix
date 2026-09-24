@@ -47,10 +47,18 @@ matching story section with a comparison table.
 - The retired `nc-*` wellness templates (all their products are in draft).
 
 ## Applied to
-Shopify draft theme `165951144164` ("R36S Ultra page (Claude 9-23)") via the
-Admin API (themeFilesUpsert). The 16 files were byte-identical between this
-draft and the live theme (`164327686372`) before the change, and each upload
-was verified by MD5 against the local file.
+Pushed to Shopify draft theme `165951144164` ("R36S Ultra page (Claude 9-23)")
+via the Admin API (themeFilesUpsert). The 16 files were byte-identical between
+that draft and the then-live theme (`164327686372`) before the change.
+
+Other sessions then layered further edits on the same draft (a site-wide
+"returns removed" pass, a `hide_reviews` setting on `pg-landing`, a new
+`pg-ultra` template, Fall Sale marquee copy) and published the result as theme
+`165957402852` ("Copy of Banner no free items (Claude 9-24)"). Every file in
+this list was re-fetched from that live theme and grepped: none of the
+money-back guarantee copy remains, and the only differences from the repo copies
+are those later edits by other sessions. The copies in `theme/` are the versions
+pushed by this change, not the later live versions.
 
 Files changed:
 - sections/pg-landing.liquid
