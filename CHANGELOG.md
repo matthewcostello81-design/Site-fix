@@ -1,3 +1,11 @@
+# Announcement banner: "Free R36S case" replaced with "Fall Sale"
+
+pg-mobile.liquid's marquee message list (the authoritative list that rebuilds
+every announcement bar) swaps "Free R36S case with purchase of device" for
+"Fall Sale".
+
+---
+
 # Refund Policy page: "Problems With Your Order" section removed
 
 Owner asked to remove the "contact us" link; the section only existed to point

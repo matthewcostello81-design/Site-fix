@@ -207,10 +207,10 @@ html body #pgx .pgx-case-add::before,html body #pgx .pgx-case-add::after{display
 <script>
 (function(){
   if (window.pgHotfix) return; window.pgHotfix = 1;
-  /* Announcement marquee: authoritative message list (Summer Sale + countdown,
+  /* Announcement marquee: authoritative message list (Fall Sale + countdown,
      no retired offers). Rebuilds over whatever the base layer rendered. */
   {%- comment -%} 2026-09-23: returns removed site-wide by owner request {%- endcomment -%}
-  var MSGS=['Free shipping on all orders','Bundle deals with FREE items','Extra 5% off auto-applied at checkout','Free R36S case with purchase of device','15,000+ classic games preloaded'];
+  var MSGS=['Free shipping on all orders','Bundle deals with FREE items','Extra 5% off auto-applied at checkout','Fall Sale','15,000+ classic games preloaded'];
   function marq(){
     document.querySelectorAll('.pgh-announce,.pgx-announce,.pgc-announce,.pgf-announce').forEach(function(el){
       if (el.dataset.pgMarq2) return; el.dataset.pgMarq2 = '1';
