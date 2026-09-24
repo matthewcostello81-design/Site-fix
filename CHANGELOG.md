@@ -1,3 +1,11 @@
+# Refund Policy page: "Problems With Your Order" section removed
+
+Owner asked to remove the "contact us" link; the section only existed to point
+there, so the heading and sentence were dropped. The page now reads: all sales
+final, statutory-rights line, "All sales are final."
+
+---
+
 # RAM spec reads "up to 1GB" on all three consoles
 
 Owner: RAM varies between batches, so every spec says "up to 1GB" instead of
