@@ -1,8 +1,9 @@
 # one per line: <url> <output name>
-https://thepocketera.com/products/pocket-era-r36s-ultra?cb=0924b live-ultra.html
-https://thepocketera.com/products/pocket-era-r36s-ultra.js?cb=0924b live-ultra.js.json
-https://thepocketera.com/?cb=0924b live-home.html
-https://thepocketera.com/pages/refund-policy?cb=0924b live-refund.html
-https://thepocketera.com/products/pocket-era-r36h?cb=0924b live-r36h.html
-https://thepocketera.com/pages/faq?cb=0924b live-faq.html
-https://thepocketera.com/products/pocket-era-r36-pro-2?cb=0924b live-pro.html
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36pro2-silicone_5c321a38-6fc4-415c-a226-ef64cb8f8cad.jpg?v=1789846825&width=600 pro-sil.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/r36pro2-hardshell-one.jpg?v=1790028180&width=600 pro-hard.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36pro2-protector_0cb5f8b1-c212-441e-b130-19321911d85c.jpg?v=1789846828&width=600 pro-prot.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/r36pro2-kit-gemini3.jpg?v=1790026619&width=600 pro-kit.jpg
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36u-case-clear.png?v=1790031633&width=600 ul-clear.png
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36u-case-hardshell.png?v=1790031633&width=600 ul-hard.png
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36u-screen-protector-2pack.png?v=1790031634&width=600 ul-prot.png
+https://cdn.shopify.com/s/files/1/0815/5706/1860/files/pe-r36u-protection-kit.png?v=1790031634&width=600 ul-kit.png

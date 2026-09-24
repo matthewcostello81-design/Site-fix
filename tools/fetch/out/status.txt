@@ -1,7 +1,0 @@
-200 live-ultra.html
-200 live-ultra.js.json
-200 live-home.html
-200 live-refund.html
-200 live-r36h.html
-404 live-faq.html
-200 live-pro.html
