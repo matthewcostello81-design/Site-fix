@@ -1,3 +1,46 @@
+# Cart drawer: 5% off, shipping protection and subtotal back in the pinned pane
+
+## Problem
+The cart drawer's summary rows (the 10-minute "EXTRA 5% OFF" countdown chip,
+the Shipping Protection toggle, and the Subtotal / Extra 5% Off box) had come
+loose from the pinned bottom pane. On a long cart they scrolled away with the
+items; on a short cart they floated above a blank gap. The Total and Secure
+Checkout stayed pinned below them either way, so the summary read as broken.
+
+## Cause
+An edit made earlier on 2026-09-24 added a `pgSeatAbove` helper to
+`assets/pgx-pg-drawer.js` that seats those three rows in the scroll flow just
+above the pane's flex spacer, to keep the pane short. The spacer then grows
+between them and the pane on a short cart, and on a long cart they are simply
+part of the scrolling list. pg-cart-timer, pg-cart-total and pg-drawer's own
+pgPane all seat through that helper, so all three rows moved together.
+
+## Fix
+`pgSeatAbove` now seats the rows INSIDE `.sticky-in-panel`, in a fixed order,
+directly above the theme's totals list:
+
+    countdown chip -> Shipping Protection -> Subtotal / Extra 5% Off
+    -> Total -> Secure Checkout -> express pay -> card icons
+
+A row that is already in place is left alone, so the observers that watch the
+drawer see no churn. The duplicate (guarded, dead) copy of the helper further
+down the file was removed. The existing compact styling for these rows inside
+the pane (pg-drawer; pg-cart-mobile under 760px; pg-cart-timer under 414px)
+applies again because they are back where those rules look for them.
+
+Verified with a jsdom simulation of the drawer: a fresh drawer, a drawer left
+in the old layout, a late-arriving toggle, and a pane with no totals list all
+end in the same order, and repeat calls make zero DOM mutations.
+
+## Applied to
+Shopify draft theme `165991940324` ("Cart pane rows back (Claude 9-24)"),
+duplicated from the live theme `165957664996` ("JS to assets - fast nav
+(Claude 9-24)") so it carries everything live has. Not published.
+
+Files changed: assets/pgx-pg-drawer.js (mirrored at theme/assets/pgx-pg-drawer.js)
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
