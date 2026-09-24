@@ -1,3 +1,16 @@
+# R36S Ultra add-ons use the R36S Pro photos
+
+Owner asked for the same photos as the R36S Pro on the Ultra case and
+accessories. The Pro silicone case, hard shell, screen protector and kit images
+were copied (new media, Ultra alt text) onto the Ultra clear case, hard shell,
+screen protector (2-pack) and protection kit; the old white-background Ultra
+photos were detached from the products but kept in Files. The theme tiles, story
+and cart add-ons read featured_image, so no theme change was needed. Owner was
+told the Pro case photo shows a black silicone case on an R36S Pro while the
+Ultra case is sold as clear, and chose to use the Pro photos anyway.
+
+---
+
 # R36S Ultra launched
 
 Owner published "R36S Ultra page (Claude 9-23)" (now MAIN) and said go. The
