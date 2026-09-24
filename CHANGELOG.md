@@ -1,3 +1,11 @@
+# Announcement banner: "Bundle deals with FREE items" removed
+
+Owner still saw a free-items message in the banner after the Fall Sale swap;
+the marquee list in pg-mobile.liquid drops it. Remaining messages: free
+shipping, extra 5% at checkout, Fall Sale, 15,000+ games.
+
+---
+
 # Announcement banner: "Free R36S case" replaced with "Fall Sale"
 
 pg-mobile.liquid's marquee message list (the authoritative list that rebuilds
