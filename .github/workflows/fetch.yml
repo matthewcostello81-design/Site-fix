@@ -19,7 +19,9 @@ jobs:
         run: |
           mkdir -p tools/fetch/out
           grep -v '^#' tools/fetch/urls.txt | while read -r url name; do
-            [ -n "$url" ] && curl -fsSL -o "tools/fetch/out/$name" "$url"
+            [ -n "$url" ] || continue
+            code=$(curl -sSL -A 'Mozilla/5.0 (fetch-check)' -o "tools/fetch/out/$name" -w '%{http_code}' "$url" || echo ERR)
+            echo "$code $name" | tee -a tools/fetch/out/status.txt
           done
           ls -la tools/fetch/out
       - name: Commit
