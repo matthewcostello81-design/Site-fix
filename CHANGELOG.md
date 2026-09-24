@@ -1,3 +1,15 @@
+# RAM spec reads "up to 1GB" on all three consoles
+
+Owner: RAM varies between batches, so every spec says "up to 1GB" instead of
+an exact 1GB. Product descriptions (R36S Pro spec list; R36S Ultra intro,
+"Smooth play" line and spec list) were updated live through the Admin API; the
+R36H description has no RAM line. Theme: features_text in product.pg-pro2,
+pg-r36h and pg-ultra templates, the Ultra story feature card, and the
+pg-landing features default. Customer review text that mentions RAM was left
+as written.
+
+---
+
 # R36S Ultra add-ons use the R36S Pro photos
 
 Owner asked for the same photos as the R36S Pro on the Ultra case and
