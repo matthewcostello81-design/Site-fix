@@ -10,10 +10,16 @@ now that the guarantee bar is gone. Built by a find/edit/verify sweep over all
 364 theme files; the other session's same-evening contact-removal edits to
 layout/theme.liquid and footer-group.json were kept (edits rebased on them).
 
-Store content (policies, pages, menus, collection and product copy) is updated
-through the Admin API: all sales are final, with one line keeping statutory
-rights ("This does not affect any rights you have under the law of your
-country."), and "All sales are final." at the bottom of every policy page.
+Store content updated through the Admin API: the footer policy pages (Refund,
+Shipping, Terms, Privacy, Payment & Billing) now say all sales are final, keep
+one statutory-rights line on the Refund Policy ("This does not affect any
+rights you have under the law of your country."), and end with "All sales are
+final."; the Refund page is retitled "Refund Policy"; "returns" is dropped from
+the Contact page; both footer menus read "Refund Policy"; the Summer Sale
+collection and three draft product descriptions lose their money-back copy.
+The checkout-linked Shopify policies (Settings > Policies) could not be edited
+because the API token lacks write_legal_policies, so the owner updates those in
+admin.
 
 ---
 
