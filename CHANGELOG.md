@@ -1,3 +1,53 @@
+# R36S Ultra page: reflect the removed reviews; review card prints real stars
+
+## What changed in Judge.me
+The owner removed 48 of the Ultra's imported reviews on 2026-09-25. Judge.me
+re-synced the product metafields at 02:56 UTC: 369 reviews at 4.14 became 321
+at 4.34 (histogram 232 / 31 / 21 / 8 / 29). pg-landing, pg-rev-link and
+pg-ultra-shots read those metafields at render time, so the rating line, the
+"verified reviews" count, the histogram, the review grid and the photo strip
+update by themselves. Two things did not.
+
+## Fix
+- `templates/product.pg-ultra.json`: the fallback figures (shown only if the
+  Judge.me metafields go missing) now read 4.3 / 321, and the fallback quote
+  from Emely Jacobs, one of the removed reviews, is replaced verbatim with a
+  review that is still published (Corazon Casper, 5 stars).
+- `assets/pgx-pg-page-polish.js` (section 8, the rotating review card under
+  the buy box): it printed five stars beside every quote whatever the review
+  said, so the Ultra's 1-star "the device arrived damaged" and 3-star "fake SD
+  card" reviews rotated as five-star quotes, and on the published theme the
+  orb page's two 2-star reviews ("scratches on the glass", "base was completely
+  broken") do the same. Each quote now carries the rating its own grid card
+  shows and prints it (a 4-star shows 4 filled stars); reviews under four stars
+  are left out of this featured card and stay in the grid, the histogram and
+  the count. A card whose stars cannot be read is left out rather than guessed
+  at. This file is shared by every pg-landing page, so the orb, R36S Pro and
+  R36H cards change the same way.
+
+Verified with a jsdom simulation of the card against the stored file: before,
+the 3-star and 1-star quotes rotated with five stars; after, only 4-star and up
+rotate, each with its real stars, and duplicates still collapse.
+
+## Still in the Ultra's feed (for the owner, not changed here)
+- Steve Abbott, 5 stars: a review of an Anbernic "RG SP" clamshell, not the
+  Ultra. It entered the review_widget_json_ld slice after the cleanup, so it
+  shows in the grid and rotates in the featured card.
+- Zack Kerluke, 5 stars: "... and not some random obsolete bit of garbage
+  instead", a wrong-item complaint rated 5. It rotates in the featured card.
+- Lena Pollich (1 star) and Yuri Goodwin (3 stars): in the grid with their
+  real stars, no longer featured.
+
+## Applied to
+Shopify draft theme `166000885988` ("Copy of Copy of Cart pane rows back
+(Claude 9-24)"). Not published; the published theme still hides the Ultra's
+reviews until this draft goes live.
+
+Files changed: templates/product.pg-ultra.json, assets/pgx-pg-page-polish.js
+(mirrored under theme/)
+
+---
+
 # R36S Ultra page: show the imported Judge.me reviews, in the R36S page's format
 
 ## Problem
