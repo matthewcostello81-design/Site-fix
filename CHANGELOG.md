@@ -1,3 +1,48 @@
+# Crystal Legends Orb: name pill and picker jump for Dragonair and Raichu (product data, live)
+
+## Problem
+On the live orb page, the two newly added characters (Dragonair, Raichu) showed
+"CRYSTAL LEGENDS ORB" in the name pill over their photos instead of their own
+names, and picking either one in the bundle picker did not move the photo strip
+to its photo, unlike every other character.
+
+## Cause
+Both come from pg-gallery-tweaks, which names each strip photo from the product
+media's ALT TEXT ("Crystal PokeOrb – Arceus" -> "Arceus", the part after the
+dash), and jumps the strip on a pick by matching the picked name against those
+same names. The two new photos were uploaded with blank alt text, which Liquid
+fills with the product title, so their name read "Crystal Legends Orb" and no
+photo was ever named "Dragonair" or "Raichu" for the picker to find. Their
+variant images were already assigned correctly.
+
+## Fix
+Product data only, applied directly to the live product (no theme change, no
+publish): alt text set with `fileUpdate` on the two media, in the same format
+as the other 37:
+
+    MediaImage 73534459674852  "Crystal PokeOrb – Dragonair"
+    MediaImage 73534611816676  "Crystal PokeOrb – Raichu"
+
+Verified by re-reading the product media and by replaying pg-gallery-tweaks'
+own script in jsdom against the before and after data: before, both slides read
+"Crystal Legends Orb" and picking them left the strip where it was; after, they
+read "Dragonair" / "Raichu" and a pick jumps to the right slide. The two files
+share a name stem ("Keep-the-product-in-the-FIRST-reference"), and the strip
+requests each photo at its exact filename, so the exact-match lookup is the path
+taken and the looser stem fallback cannot swap them.
+
+## Noted, not changed
+- Adding an orb in future: set its photo's alt text to "Crystal PokeOrb – Name"
+  or the pill and the picker jump will miss it the same way.
+- Arcanine has no photo on the product at all (no variant image, no media), so
+  picking it cannot move the strip.
+- The page still says 36 characters (benefits row, features text); the product
+  now has 39 options. That copy is in the theme.
+
+Files changed: none (product media alt text via the Admin API)
+
+---
+
 # R36S Ultra page: reflect the removed reviews; review card prints real stars
 
 ## What changed in Judge.me
