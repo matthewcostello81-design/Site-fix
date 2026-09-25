@@ -1,3 +1,51 @@
+# R36S Ultra page: show the imported Judge.me reviews, in the R36S page's format
+
+## Problem
+The owner imported the R36S Ultra's reviews into Judge.me (369 reviews, 4.1
+average) and the Ultra product page showed none of them: no "369 verified
+reviews" line under the title, no rotating review card, no buyer-photo strip
+and no review breakdown (histogram plus grid) at the bottom, all of which the
+R36S Pro and R36H Pro pages have.
+
+## Cause
+When the Ultra page was built (2026-09-23) its Judge.me data belonged to the
+Flip SP, so `templates/product.pg-ultra.json` set `hide_reviews: true` on the
+shared `pg-landing` section, and `sections/pg-ultra-story.liquid` was cloned
+from the Pro story with the "Buyer Reviews" photo strip cut out. The data is
+the Ultra's own now (Judge.me's product_name in the feed reads "Pocket Era
+R36S Ultra"), but the page was still wired to hide it.
+
+## Fix
+- `templates/product.pg-ultra.json`: `hide_reviews` off, so `pg-landing`
+  renders its rating line (pg-rev-link makes it "369 verified reviews" and a
+  jump link), the rotating review card and the `#pg-reviews` block with the
+  histogram and the review cards, all from `judgeme.review_widget_data` and
+  `review_widget_json_ld`. Fallback settings match the feed (4.1, 369) and
+  eight real five-star reviews from the feed are the fallback quote blocks,
+  the way the other console templates carry them. Registers the new section.
+- `sections/pg-ultra-shots.liquid` (new) + `assets/pgx-pg-ultra-shots.js`
+  (new): the "Buyer Reviews" photo strip with the "Loved by Gamers" pill and
+  the looping rail, ported from the Pro story (`pg-p2s-` rules renamed to
+  `pg-uls-`) as its own small section instead of rewriting the 55KB Ultra
+  story file. Every photo of every synced review, in feed order; the pill
+  prints the feed's own average and count and then follows the page's rating
+  line. Seated after the Add to cart button (desktop) or the last tile, order 6
+  on phones, exactly where the Pro page puts it.
+
+The Ultra story section and its script are untouched; the story's own
+`lower()` already seats the story above the review block when one exists.
+
+## Applied to
+Shopify draft theme `166000885988` ("Copy of Copy of Cart pane rows back
+(Claude 9-24)"). The theme named in the request had been published mid-task
+(writes to the live theme are blocked), so the fresh copy made from it is the
+draft that carries this change. Not published.
+
+Files changed: sections/pg-ultra-shots.liquid (new), assets/pgx-pg-ultra-shots.js (new),
+templates/product.pg-ultra.json (mirrored under theme/)
+
+---
+
 # Cart drawer: 5% off, shipping protection and subtotal back in the pinned pane
 
 ## Problem

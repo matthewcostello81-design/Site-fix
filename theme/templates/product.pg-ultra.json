@@ -1,0 +1,156 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {
+          "type": "review",
+          "settings": {
+            "name": "Norman Jacobs",
+            "stars": 5,
+            "text": "The product arrived well-packaged and exactly as advertised. Many games are included and it offers good value for money."
+          }
+        },
+        "rev2": {
+          "type": "review",
+          "settings": {
+            "name": "Agustin Nitzsche",
+            "stars": 5,
+            "text": "Great works well lots of psp games and ps1 games all the pokemon games"
+          }
+        },
+        "rev3": {
+          "type": "review",
+          "settings": {
+            "name": "Emely Jacobs",
+            "stars": 5,
+            "text": "Shipped way faster than i thought! box and handheld were in perfect condition. was a breeze to install games and start playing. highly highly recommend to fans of gba games."
+          }
+        },
+        "rev4": {
+          "type": "review",
+          "settings": {
+            "name": "Elfreda Adams",
+            "stars": 5,
+            "text": "Excellent. lots of custom firmware options to play around with"
+          }
+        },
+        "rev5": {
+          "type": "review",
+          "settings": {
+            "name": "Latrisha Grimes",
+            "stars": 5,
+            "text": "Arrived fairly quickly in perfect condition. works really well. make sure to choose ra game instead of game rooms because it seems to run better"
+          }
+        },
+        "rev6": {
+          "type": "review",
+          "settings": {
+            "name": "Wade Hodkiewicz",
+            "stars": 5,
+            "text": "Works perfectly. love it!"
+          }
+        },
+        "rev7": {
+          "type": "review",
+          "settings": {
+            "name": "Giuseppe Kirlin",
+            "stars": 5,
+            "text": "It arrived very quickly, my boyfriend loved it."
+          }
+        },
+        "rev8": {
+          "type": "review",
+          "settings": {
+            "name": "Laverne Gulgowski",
+            "stars": 5,
+            "text": "My 5 years old loves it"
+          }
+        }
+      },
+      "block_order": [
+        "rev1",
+        "rev2",
+        "rev3",
+        "rev4",
+        "rev5",
+        "rev6",
+        "rev7",
+        "rev8"
+      ],
+      "settings": {
+        "product": "pocket-era-r36s-ultra",
+        "hide_reviews": false,
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "4.1",
+        "rating_label": "369 reviews",
+        "review_total": 369,
+        "default_size": "",
+        "gallery_video_url": "",
+        "show_bundle": false,
+        "bundle_title": "",
+        "bundle_pct": 0,
+        "features_text": "<p>15,000+ classic games preloaded (up to 40,000 on the 128GB bundles), with 20+ retro systems, from NES and SNES to Game Boy Advance, N64, PS1 and Dreamcast<br>4 inch IPS screen (720x720), OCA fully laminated<br>RK3326 Cortex-A35 1.5GHz chip, Mali-G31 MP2 graphics and up to 1GB LPDDR3 RAM for smooth play<br>8GB built-in eMMC system storage with system recovery<br>Built-in 2.4G Wi-Fi for multiplayer, no adapter needed<br>Dual joysticks with 7-color LED lights<br>Built-in 8W speaker<br>3000mAh battery for about 5 hours of play, about 1 hour to charge<br>Type-C charging, Type-C OTG data port and 3.5mm headphone jack<br>Runs multiple open-source Linux systems</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> for full details.</p>"
+      }
+    },
+    "pg_revlink": {
+      "type": "pg-rev-link",
+      "settings": {}
+    },
+    "pg_r36smobile": {
+      "type": "pg-r36s-mobile",
+      "settings": {}
+    },
+    "pg_selloutlast": {
+      "type": "pg-sellout-last",
+      "settings": {}
+    },
+    "pg_r36stitle": {
+      "type": "pg-r36s-title",
+      "settings": {}
+    },
+    "pg_ultratiles": {
+      "type": "pg-ultra-tiles",
+      "settings": {
+        "duo_off": "7.00",
+        "duomax_off": "20.00"
+      }
+    },
+    "pg_picksize": {
+      "type": "pg-pick-size",
+      "settings": {}
+    },
+    "pg_ultrastory": {
+      "type": "pg-ultra-story",
+      "settings": {}
+    },
+    "pg_ultrashots": {
+      "type": "pg-ultra-shots",
+      "settings": {}
+    }
+  },
+  "order": [
+    "pg_landing",
+    "pg_picksize",
+    "pg_revlink",
+    "pg_r36smobile",
+    "pg_selloutlast",
+    "pg_r36stitle",
+    "pg_ultratiles",
+    "pg_ultrastory",
+    "pg_ultrashots"
+  ]
+}
