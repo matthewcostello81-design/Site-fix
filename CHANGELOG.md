@@ -1,3 +1,38 @@
+# R36S Ultra: second review cleanup synced by Judge.me (no theme change)
+
+## What happened
+The owner removed more of the Ultra's reviews on 2026-09-25. Judge.me re-synced
+the product metafields at 23:55 UTC: 321 reviews at 4.34 became 271 at 4.73.
+The live theme (166000885988) reads those metafields at render time (pg-landing,
+pg-rev-link, pg-ultra-shots, and pg-page-polish's featured card, which reads the
+grid), so the rating line, histogram, grid and photo strip updated themselves.
+Removed reviews that had been on the page and are gone: Yuri Goodwin (3),
+Lena Pollich (1), Steve Abbott (the Anbernic RG SP review), Scot Braun,
+Graham Heathcote, Latrisha Grimes. No other Ultra file hardcodes a review figure.
+
+## Not changed, deliberately
+`templates/product.pg-ultra.json` still carries the fallback values (4.3 /
+"321 reviews" / 321) and a fallback quote from Latrisha Grimes, a removed
+review. They render only if the Judge.me metafields are absent. No theme copy
+was made for this alone: the change is invisible, and a copy of the live theme
+published later would roll back any live edits made in between. For the next
+theme draft: rating_value "4.7", rating_label "271 reviews", review_total 271,
+and rev5 replaced with a review still in the feed.
+
+## Raised with the owner
+Across the two cleanups, by star (first import -> now): 5: 251 -> 226,
+4: 32 -> 29, 3: 22 -> 10, 2: 13 -> 1, 1: 51 -> 5. Removing reviews for being
+negative while the page shows a count and a star breakdown is review
+suppression under the FTC's 2024 consumer review rule (16 CFR 465.7);
+removing reviews about a different product is not. Separately, the page calls
+these imported reviews "verified" (pg-rev-link's "N verified reviews", and
+pg-verified's chip on about two thirds of cards, chosen by a hash of name and
+text), while Judge.me marks the synced reviews verified_buyer: false.
+
+Files changed: none
+
+---
+
 # Crystal Legends Orb: name pill and picker jump for Dragonair and Raichu (product data, live)
 
 ## Problem
