@@ -1,0 +1,153 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pg_landing": {
+      "type": "pg-landing",
+      "blocks": {
+        "rev1": {
+          "type": "review",
+          "settings": {
+            "name": "Nilsa Johns",
+            "stars": 5,
+            "text": "I recommend it to everyone, the console came working perfectly and was very well presented, it came with a manual/poster, two controllers, power cable and HDMI 😍 the box was well preserved."
+          }
+        },
+        "rev2": {
+          "type": "review",
+          "settings": {
+            "name": "Lourie Klein",
+            "stars": 5,
+            "text": "Very nostalgic! good quality for the price would definitely recommend!"
+          }
+        },
+        "rev3": {
+          "type": "review",
+          "settings": {
+            "name": "Roland Auer",
+            "stars": 5,
+            "text": "It serves its purpose, despite being a replica. It works perfectly and is visually very accurate. Great value for the price."
+          }
+        },
+        "rev4": {
+          "type": "review",
+          "settings": {
+            "name": "Emma Rice",
+            "stars": 5,
+            "text": "I loved it, my daughter had to have it, it's a classic."
+          }
+        },
+        "rev5": {
+          "type": "review",
+          "settings": {
+            "name": "Joey Cremin",
+            "stars": 5,
+            "text": "Works like a charm, arrived in perfect conditions."
+          }
+        },
+        "rev6": {
+          "type": "review",
+          "settings": {
+            "name": "Lanelle Heller",
+            "stars": 5,
+            "text": "everything is great, top-notch packaging, fast delivery"
+          }
+        },
+        "rev7": {
+          "type": "review",
+          "settings": {
+            "name": "Sarai Yundt",
+            "stars": 5,
+            "text": "works perfectly, good quality."
+          }
+        },
+        "rev8": {
+          "type": "review",
+          "settings": {
+            "name": "Darin Schmitt",
+            "stars": 5,
+            "text": "Enough to go back 35 years"
+          }
+        }
+      },
+      "block_order": [
+        "rev1",
+        "rev2",
+        "rev3",
+        "rev4",
+        "rev5",
+        "rev6",
+        "rev7",
+        "rev8"
+      ],
+      "settings": {
+        "product": "pocketera-retrobox",
+        "hide_reviews": false,
+        "display_title": "",
+        "announce_text": "Free shipping on all orders",
+        "logo_image": "shopify://shop_images/hf_20260811_225331_a27f76c6-bf92-4cb2-a70b-3a904866c31e.png",
+        "logo_text": "PocketEra",
+        "rating_value": "4.7",
+        "rating_label": "30 reviews",
+        "review_total": 30,
+        "default_size": "",
+        "gallery_video_url": "",
+        "show_bundle": false,
+        "bundle_title": "",
+        "bundle_pct": 0,
+        "features_text": "<p>Mini retro TV console: plugs straight into your TV over HDMI for HD output<br>30 classic games built in on each edition, ready to play out of the box<br>8-Bit Edition: grey classic-style console with one wired D-pad controller and 30 built-in 8-bit games<br>16-Bit Edition: light grey classic-style console with two wired controllers and 30 built-in 16-bit games for 2-player play<br>Save feature: save your progress and pick up where you left off<br>Menu in 18 languages<br>Powered by any USB 5V/2A adapter<br>No downloads, no accounts, no setup</p>",
+        "shipping_text": "<p>Free tracked shipping on every order to the United States, Canada, and the United Kingdom. Orders are processed within 1 to 2 business days and ship directly from our supplier. See our <a href=\"/pages/shipping-policy\">Shipping Policy</a> for full details.</p>"
+      }
+    },
+    "pg_picksize": {
+      "type": "pg-pick-size",
+      "settings": {}
+    },
+    "pg_revlink": {
+      "type": "pg-rev-link",
+      "settings": {}
+    },
+    "pg_r36smobile": {
+      "type": "pg-r36s-mobile",
+      "settings": {}
+    },
+    "pg_selloutlast": {
+      "type": "pg-sellout-last",
+      "settings": {}
+    },
+    "pg_r36stitle": {
+      "type": "pg-r36s-title",
+      "settings": {}
+    },
+    "pg_retroboxtiles": {
+      "type": "pg-retrobox-tiles",
+      "settings": {}
+    },
+    "pg_retroboxstory": {
+      "type": "pg-retrobox-story",
+      "settings": {}
+    },
+    "pg_retroboxshots": {
+      "type": "pg-retrobox-shots",
+      "settings": {}
+    }
+  },
+  "order": [
+    "pg_landing",
+    "pg_picksize",
+    "pg_revlink",
+    "pg_r36smobile",
+    "pg_selloutlast",
+    "pg_r36stitle",
+    "pg_retroboxtiles",
+    "pg_retroboxstory",
+    "pg_retroboxshots"
+  ]
+}

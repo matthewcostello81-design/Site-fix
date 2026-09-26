@@ -1,0 +1,136 @@
+{%- comment -%}
+  PG RetroBox Buyer Photos (2026-09-26): the review pieces the R36S Pro page
+  has and the RetroBox page did not, registered in
+  templates/product.pg-retrobox.json only. The strip is
+  sections/pg-ultra-shots.liquid (the R36S Ultra's port of the Pro story's
+  strip) with pg-uls- renamed pg-rbp-, data-uls data-rbp, and the script
+  pgx-pg-retrobox-shots.js.
+
+  WHY. The RetroBox page was built on 2026-09-26 before the product had any
+  reviews: its template set hide_reviews, and pg-retrobox-story left out the
+  Pro story's buyer photo strip and its "Customer Reviews" title. The owner
+  imported the RetroBox's reviews into Judge.me the same evening (30 of them,
+  4.73 average; the feed's product_name reads "PocketEra RetroBox") and asked
+  for the R36S page's format: "reviews show in breakdown at bottom and theres
+  a verified reviews section at top of page. also theres a sliodehow of
+  reviews near middle of page". hide_reviews is off in the template now, so
+  pg-landing renders the rating line (pg-rev-link makes it "30 verified
+  reviews" and a jump link), the rotating review card and the review grid
+  with its histogram. This file adds the other two pieces, without rewriting
+  the 31KB story section; the story's notes about them being left out are
+  history now, and its lower() already seats the story above the grid.
+
+  1. THE "CUSTOMER REVIEWS" TITLE over the grid: the Pro story's rules,
+     restated. Printed whether or not the strip renders.
+  2. THE BUYER PHOTO STRIP: every photo of every review Judge.me has synced
+     for this product (judgeme.review_widget_data: the photo reviews first,
+     then page one), one card per photo, each linking to the review grid.
+     Nothing is invented: the stars, the name and the text are the review's
+     own, and the pill over the rail prints the feed's own average and count,
+     then follows the page's rating line once pg-rev-link has rendered it.
+     The feed is shown as it comes (no allow list), and nothing renders while
+     it holds fewer than three photos. Seated after the Add to cart button (a
+     desktop) or the last tile, order 6 on phones, and looped, all exactly as
+     on the Ultra (see the script).
+
+  NOTE, as on the Pro and Ultra pages: the photos are served from
+  ae-pic-a1.aliexpress-media.com, so these are imported supplier reviews, not
+  reviews collected by this store.
+{%- endcomment -%}
+<style>
+  /* the reviews open with a real title, centred, and no rule across the page
+     (pg-pro2-story's rules, as on the Pro and Ultra pages) */
+  #pgx #pg-reviews{border-top:0;margin-top:8px;padding-top:34px}
+  #pgx #pg-reviews:before{content:"Customer Reviews";display:block;margin:0 0 28px;text-align:center;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-.01em;color:#fff}
+  @media (max-width:900px){
+    #pgx #pg-reviews{margin-top:4px;padding-top:28px}
+    #pgx #pg-reviews:before{font-size:26px;margin-bottom:22px}
+  }
+</style>
+{%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
+{%- assign jm_all = '' | split: '' -%}
+{%- if jm -%}
+  {%- if jm.photo_gallery -%}{%- assign jm_all = jm_all | concat: jm.photo_gallery -%}{%- endif -%}
+  {%- if jm.reviews -%}{%- assign jm_all = jm_all | concat: jm.reviews -%}{%- endif -%}
+{%- endif -%}
+{%- assign shots = 0 -%}
+{%- capture shots_html -%}
+{%- assign seen2 = '|' -%}
+{%- for r in jm_all -%}
+{%- assign key2 = '|' | append: r.uuid | append: '|' -%}
+{%- unless seen2 contains key2 -%}
+{%- assign seen2 = seen2 | append: r.uuid | append: '|' -%}
+{%- if r.body != blank -%}{%- assign r_text = r.body -%}{%- else -%}{%- assign r_text = r.body_html | strip_html | strip -%}{%- endif -%}
+{%- assign r_stars = r.rating | plus: 0 -%}
+{%- for pic in r.pictures_urls -%}
+{%- assign pic_url = pic.huge | default: pic.original | default: pic.compact | default: pic.small -%}
+{%- if pic_url != blank -%}
+{%- assign shots = shots | plus: 1 -%}
+<a class="pg-rbp-shot" href="#pg-reviews">
+  <img src="{{ pic_url }}" alt="Customer photo from {{ r.reviewer_name | default: 'a verified buyer' | escape }}" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="400" height="500">
+  <span class="pg-rbp-cap">
+    <span class="st">{%- for s in (1..5) -%}{%- if s <= r_stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+    <span class="nm">{{ r.reviewer_name | default: 'Verified buyer' | escape }}</span>
+    {%- if r_text != blank -%}<span class="tx">{{ r_text | escape }}</span>{%- endif -%}
+  </span>
+</a>
+{%- endif -%}
+{%- endfor -%}
+{%- endunless -%}
+{%- endfor -%}
+{%- endcapture -%}
+{%- if shots > 2 -%}
+{%- assign rbp_avg = jm.average_rating | times: 1.0 | round: 1 -%}
+<style>
+  /* the strip: the Pro page's rules, renamed. min-width:0 and overflow:hidden
+     keep a horizontal scroller from widening the buy column (pg-page-polish
+     does the same for the Pro's strip). */
+  #pgx .pg-rbp-shots{margin:16px 0 4px;min-width:0;max-width:100%;overflow:hidden;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  #pgx .pg-rbp-shots-h{display:flex;align-items:baseline;justify-content:flex-end;gap:10px;margin:0 2px 9px}
+  /* under the headline the caption keeps only its "Swipe" hint, right-aligned;
+     the BUYER REVIEWS words read as a second title and are hidden */
+  #pgx .pg-rbp-shots-h b{display:none;font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff}
+  #pgx .pg-rbp-shots-h span{font-size:12px;font-weight:600;color:#C79BEA;white-space:nowrap}
+  /* the "loved by" header over the photo rail: our purple pill with the page's
+     own rating and review count, the purple gradient second line. No invented
+     customer counts. */
+  #pgx .pg-rbp-loved{text-align:center;margin:30px 0 6px}
+  #pgx .pg-rbp-loved-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:linear-gradient(120deg,#7A2FA2,#9B4BC4 55%,#B478E0);color:#fff;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1;box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
+  #pgx .pg-rbp-loved-pill .st{font-size:13px;letter-spacing:.08em}
+  #pgx .pg-rbp-loved h3{margin:12px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:27px;line-height:1.1;font-weight:800;letter-spacing:-.01em;color:#fff}
+  #pgx .pg-rbp-loved h3 span{display:block;background:linear-gradient(100deg,#F3E8FF 0%,#D9B3F5 30%,#B06CE8 60%,#8B3FB8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  /* the rail loops (the set is printed five times; the script keeps the rail on
+     the middle copy). It does not scroll by itself. Cards are a fixed width:
+     cqw is 46% of the rail where container units work, 44vw the fallback. */
+  #pgx .pg-rbp-rail{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;container-type:inline-size;
+    scrollbar-width:none;-ms-overflow-style:none;margin:0 -2px;padding:0 2px 4px}
+  #pgx .pg-rbp-rail::-webkit-scrollbar{display:none}
+  #pgx .pg-rbp-track,#pgx .pg-rbp-set{display:flex;gap:10px;width:max-content}
+  #pgx .pg-rbp-shot{flex:0 0 auto;width:min(210px,44vw);width:min(210px,46cqw);display:block;text-decoration:none !important;
+    background:#16101F;border:1px solid rgba(255,255,255,.09);border-radius:14px;overflow:hidden;color:#F1EDF7}
+  #pgx .pg-rbp-shot img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#0D0714}
+  #pgx .pg-rbp-cap{padding:8px 10px 10px}
+  #pgx .pg-rbp-cap .st{color:#C79BEA;font-size:12.5px;letter-spacing:.06em;line-height:1}
+  #pgx .pg-rbp-cap .nm{display:block;margin-top:4px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pg-rbp-cap .tx{margin:3px 0 0;font-size:12px;line-height:1.4;color:#CFC4DE;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  @media (max-width:900px){
+    /* on a phone the buy column is a flex column: the strip follows the tiles'
+       run (5) and leads the accordions (6), as on the Pro page */
+    #pgx#pgx .pgx-buy > .pg-rbp-shots{order:6;margin:6px 0 18px}
+  }
+</style>
+<div id="pg-rbp-shots-src" hidden>
+  <div class="pg-rbp-shots" data-rbp="shots">
+    <div class="pg-rbp-loved"><span class="pg-rbp-loved-pill"><span class="st" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span data-rbp-loved="pill">Rated {{ rbp_avg }}/5 &middot; {{ jm.number_of_reviews }} reviews</span></span><h3>Loved by Gamers<span>Just Like You</span></h3></div>
+    <div class="pg-rbp-shots-h"><b>Buyer Reviews</b><span>Swipe &rarr;</span></div>
+    {%- capture shots_clone -%}{{ shots_html | replace: '<a class="pg-rbp-shot"', '<a tabindex="-1" class="pg-rbp-shot"' }}{%- endcapture -%}
+    <div class="pg-rbp-rail" data-rbp-loop><div class="pg-rbp-track"><div class="pg-rbp-set">{{ shots_html }}</div><div class="pg-rbp-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-rbp-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-rbp-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-rbp-set" aria-hidden="true">{{ shots_clone }}</div></div></div>
+  </div>
+</div>
+<script src="{{ 'pgx-pg-retrobox-shots.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{% schema %}
+{"name": "PG RetroBox Buyer Photos", "settings": [], "presets": [{"name": "PG RetroBox Buyer Photos"}]}
+{% endschema %}

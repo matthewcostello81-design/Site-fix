@@ -1,3 +1,72 @@
+# PocketEra RetroBox: show the imported Judge.me reviews in the R36S page's format
+
+Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished), the
+same draft as the RetroBox fixes below. The live theme was not touched.
+
+## Problem
+The owner imported the RetroBox's reviews into Judge.me: 30 reviews, 4.73
+average, 22 five-star and 8 four-star, 7 with photos. The feed's product_name
+is "PocketEra RetroBox". The page showed none of them. It had no "verified
+reviews" line at the top, no review slideshow mid-page, and no breakdown at
+the bottom.
+
+## Cause
+The page was built earlier the same day, before the product had reviews:
+- `templates/product.pg-retrobox.json` set `hide_reviews: true` on pg-landing.
+- pg-retrobox-story left out the Pro story's buyer photo strip and its
+  "Customer Reviews" title.
+
+## Fix
+Done the same way as on the R36S Ultra page.
+- `templates/product.pg-retrobox.json`
+  - `hide_reviews` is off, so pg-landing renders the rating line, the
+    rotating review card and the `#pg-reviews` block with its histogram.
+    pg-rev-link makes the rating line "30 verified reviews" and a jump link.
+  - The fallback figures (used only if the Judge.me metafields go missing)
+    read 4.7 / "30 reviews" / 30.
+  - The fallback quote blocks are eight five-star reviews from the feed,
+    verbatim. None of them names a game system, matching the story's
+    no-franchise rule.
+  - The new section is registered.
+- `sections/pg-retrobox-shots.liquid` (new) and
+  `assets/pgx-pg-retrobox-shots.js` (new)
+  - They are pg-ultra-shots with `pg-uls-` renamed `pg-rbp-`: the "Loved by
+    Gamers" buyer photo strip with its rating pill and looping rail. It holds
+    every review photo in feed order and is seated under Add to cart (order 6
+    on phones).
+  - The section also carries the Pro story's "Customer Reviews" title rules
+    for `#pg-reviews`.
+  - The story section is untouched: its `lower()` already seats the story
+    above the review grid when there is one.
+
+## Verified
+- All three files re-fetched after upload: MD5 matches the local copies.
+- The new section and pg-landing's review Liquid were rendered with liquidjs
+  against the real Judge.me metafields, then run in jsdom with pg-rev-link and
+  the new script.
+  - Rating line: "4.7" and "30 verified reviews", linking to #pg-reviews.
+  - Grid: "4.7 / 30 Reviews", histogram 22/8/0/0/0, 30 cards with no
+    duplicates, 7 of them with photos.
+  - Rotating card: 30 quotes, all 4 stars and up, so all are eligible for the
+    featured card.
+  - Strip: 17 photos, 5 rail copies, pill "Rated 4.7/5 · 30 reviews", seated
+    right after #pgx-err, rail centred on the middle copy.
+  - Fallback path (no Judge.me data): 8 fallback cards, no strip, title CSS
+    kept.
+
+## Raised with the owner
+- The 30 reviews are AliExpress imports that Judge.me marks
+  verified_buyer: false. The page still says "30 verified reviews", and
+  pg-verified adds "Verified" chips, as on the other console pages.
+- Gene Macejkovic's review text is only "PocketEra RetroBox", which looks like
+  an import artifact. It captions 5 strip photos.
+- Dana Rowe describes plugging into "component" on the TV. The RetroBox is
+  HDMI.
+
+Files changed: theme/templates/product.pg-retrobox.json, theme/sections/pg-retrobox-shots.liquid (new), theme/assets/pgx-pg-retrobox-shots.js (new)
+
+---
+
 # PocketEra RetroBox: hero pill, edition photo switch, cart photo, 5% note, $159.99 compare-at
 
 Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished). The
