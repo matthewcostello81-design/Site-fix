@@ -33,6 +33,17 @@
      desktop) or the last tile, order 6 on phones, and looped, all exactly as
      on the Ultra (see the script).
 
+  3. NO ROTATING REVIEW CARD on this page (owner, later the same evening,
+     with a screenshot: "remove the mini slideshow i highlighted"). That is
+     pg-landing's .pgx-quote, which pg-mobile re-seats under the rating line,
+     pg-theme-css may move below the product and pg-page-polish rotates. It
+     is HIDDEN, not deleted, so none of those scripts loses the node it
+     expects; none of them sets its display inline, so the rule below holds.
+     The other console pages keep their card.
+
+  The owner also removed one review then (Lore Predovic's): Judge.me
+  re-synced to 29 at 4.72 and every piece here follows the feed by itself.
+
   NOTE, as on the Pro and Ultra pages: the photos are served from
   ae-pic-a1.aliexpress-media.com, so these are imported supplier reviews, not
   reviews collected by this store.
@@ -47,6 +58,8 @@
     #pgx #pg-reviews{margin-top:4px;padding-top:28px}
     #pgx #pg-reviews:before{font-size:26px;margin-bottom:22px}
   }
+  /* no rotating review card on this page (see 3 above) */
+  #pgx#pgx .pgx-quote{display:none !important}
 </style>
 {%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
 {%- assign jm_all = '' | split: '' -%}

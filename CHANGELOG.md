@@ -1,3 +1,51 @@
+# PocketEra RetroBox: one review removed, rotating review card taken off
+
+Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished).
+
+## What changed
+- The owner removed Lore Predovic's review (5 stars, "Awesome good superb .
+  worth it", 1 photo) in Judge.me. Judge.me re-synced at 21:36 UTC: 29 reviews
+  at 4.72, histogram 21/8/0/0/0, 16 photos. pg-landing, pg-rev-link and
+  pg-retrobox-shots read the metafields at render time, so the rating line,
+  grid and strip follow on their own. The removed review was not one of the
+  template's fallback quotes.
+- The owner asked, with a screenshot, to "remove the mini slideshow i
+  highlighted": the rotating review card (pg-landing's `.pgx-quote`) under
+  the photo strip.
+
+## Fix
+- `sections/pg-retrobox-shots.liquid`: `#pgx#pgx .pgx-quote{display:none
+  !important}`, scoped to the RetroBox page. The other console pages keep
+  their card.
+  - The card is hidden rather than deleted because three scripts expect it:
+    pg-mobile's quoteUp() re-seats it and stamps inline position and margin,
+    pg-theme-css's moveQuote() moves it, and pg-page-polish rotates it.
+  - None of them sets `display` inline, and the only other display rule on
+    the card is pg-landing's plain `display:flex`, so the rule holds.
+- `templates/product.pg-retrobox.json`: the fallback count reads 29
+  ("29 reviews" / 29). The fallback rating stays 4.7.
+
+## Verified
+- Both files re-fetched after upload: MD5 matches the local copies.
+- Re-rendered with the new metafields (liquidjs and jsdom):
+  - Rating line "4.7", "29 verified reviews".
+  - Grid "4.7 / 29 Reviews", histogram 21/8/0/0/0, 29 unique cards.
+  - Strip: 16 photos, pill "Rated 4.7/5 · 29 reviews".
+  - "Lore Predovic" appears nowhere in the rendered page.
+- Real Chromium (Playwright), using the theme's own CSS from pg-landing,
+  pg-theme-css, pg-tile-copy, pg-r36s-mobile, pg-tiktok-pdp, pg-reviews-text
+  and pg-mobile, plus the inline styles pg-mobile stamps:
+  - The card computes to display:none, height 0, at 390px and 1280px, whether
+    or not moveQuote() has moved it.
+  - The rating line, strip, grid and "Customer Reviews" title all still show.
+  - Control: without the rule, the card shows at 113 to 120px.
+- jsdom's own cascade ignores !important and specificity, so it cannot judge
+  this rule. That is why the check runs in Chromium.
+
+Files changed: theme/sections/pg-retrobox-shots.liquid, theme/templates/product.pg-retrobox.json
+
+---
+
 # PocketEra RetroBox: show the imported Judge.me reviews in the R36S page's format
 
 Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished), the
