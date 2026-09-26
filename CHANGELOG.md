@@ -1,3 +1,35 @@
+# PocketEra RetroBox: strikethrough prices end in .99
+
+Owner, 2026-09-26: "make strikethrough prices round to .99 instead of random
+cents".
+
+## Product data (live on every theme)
+| Edition | Price | Compare-at | Saving |
+|---|---|---|---|
+| 8-Bit | $129.99 | $173.99 (was $173.32) | 25.3% |
+| 16-Bit | $139.99 | $186.99 (was $186.66) | 25.1% |
+
+Each compare-at is the price / 0.75, rounded UP to the next .99. Rounding to
+the NEAREST .99 would give $172.99 and $185.99, which save 24.9% and 24.7%.
+The tile's SAVE pill rounds down, so it would read "SAVE 24%" while the cart,
+which rounds, read "Save 25%".
+
+## Theme
+`sections/pg-retrobox-tiles.liquid` on "Copy of Copy of RetroBox page
+(Claude 9-26)" (188129280228, unpublished): the price note carries the new
+figures and the rounding rule. Comment only.
+
+## Verified
+- The file was re-fetched after upload: MD5 matches the local copy.
+- Tiles, rendered with liquidjs and run in jsdom:
+  - 8-Bit: $129.99, $173.99 struck, "SAVE 25%".
+  - 16-Bit: $139.99, $186.99 struck, "2 PLAYERS · SAVE 25%".
+- The cart's Save % is 25 for both.
+
+Files changed: theme/sections/pg-retrobox-tiles.liquid
+
+---
+
 # PocketEra RetroBox: new prices ($129.99 / $139.99) with a 25% strikethrough
 
 Theme: "Copy of Copy of RetroBox page (Claude 9-26)" (188129280228,
