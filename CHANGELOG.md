@@ -1,3 +1,72 @@
+# PocketEra RetroBox: hero pill, edition photo switch, cart photo, 5% note, $159.99 compare-at
+
+Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished). The
+live theme (188122235108) was not touched. Product: PocketEra RetroBox
+(`pocketera-retrobox`, template `pg-retrobox`).
+
+## Problems
+1. The pill on the hero photo (both consoles) read "16-Bit Edition". The
+   section built its photo-to-edition map with `alt contains '16-Bit Edition'`,
+   and the hero's alt, "PocketEra RetroBox 8-Bit and 16-Bit Editions",
+   contains that string.
+2. Picking the 8-Bit (or 16-Bit) tile changed the selection only; the photo
+   above stayed where it was.
+3. The cart showed the hero for both editions: neither variant had an image,
+   so Shopify fell back to the product's first photo. That value also feeds
+   `/cart.js`, which pg-cart-addons' syncImages() writes back onto every cart
+   line, so a Liquid-only fix in side-cart would have been undone.
+4. The owner asked to make sure the extra 5% applies, and for a $159.99
+   strikethrough.
+
+## Fix
+- `sections/pg-retrobox-tiles.liquid`: a photo is an edition's only when the
+  alt text before " - " equals a variant's Edition (case-insensitive). Every
+  photo is listed; non-edition photos carry `name` ("Pocket Era RetroBox",
+  spelled like the store's other "Pocket Era ..." titles). The tier notes now
+  end "plus an extra 5% off at checkout", as on the R36S Pro.
+- `assets/pgx-pg-retrobox-tiles.js`: the pill shows the edition or `name`.
+  Tapping a tile (or Enter/Space, or a story button via pgRbSelect) shows that
+  edition's first photo: the big photo on desktop; on phones the carousel
+  scrolls to that slide (instant jump, as the orb picker does). The in-tile
+  Add to cart only selects, so adding never moves the photo.
+- Product data (live on every theme, by request): variant images assigned
+  (8-Bit -> "...mini TV console with controller", 16-Bit -> "...mini TV console
+  with 2 controllers"), so the cart and checkout show the chosen edition. The
+  compare-at price on both editions is now $159.99 against $119.99. The tiles
+  now strike $159.99 with a SAVE 25% pill. In the cart, nc-cro's cartWasFix
+  reads the line's compare-at and prints "$159.99 / $119.99 / Save 25%",
+  replacing the old "$119.99 / $119.99 / Save 0%".
+
+## Verified
+- Both files re-fetched after upload: MD5 matches the local copies.
+- The new Liquid was rendered with liquidjs, and the script was run in jsdom.
+  - Before the fix, the phone slides read "16-Bit Edition | 8-Bit | 8-Bit |
+    16-Bit | 16-Bit".
+  - After the fix they read "Pocket Era RetroBox | 8-Bit Edition | 8-Bit
+    Edition | 16-Bit Edition | 16-Bit Edition".
+  - Desktop: tile picks, Enter, and pgRbSelect switch the big photo and its
+    pill. Thumbnail clicks still work.
+  - Phone: the strip scrolls to slide 4 for the 16-Bit and to slide 2 for the
+    8-Bit. The in-tile Add to cart leaves the photo where it is.
+  - With the compare-at set, each tile reads "$119.99 / $159.99 struck", and
+    the pills read "SAVE 25%" and "2 PLAYERS · SAVE 25%".
+- draftOrderCalculate (nothing saved), one of each edition:
+  - "Extra 5% off entire order" applied, -$11.99.
+  - The line images are the two edition photos.
+  - The hero is still the product's first photo.
+
+## Not changed, flagged
+- "Save 0%" on full-price cart lines, site-wide. nc-linesave draws its
+  was/now/Save row whenever total_discount > 0, and the automatic 5% alone
+  triggers that. nc-cro repairs the row only when the line has a compare-at.
+- The product title is "PocketEra RetroBox" (no space). The pill and the other
+  products use "Pocket Era", so the cart and checkout title differ from the
+  pill.
+
+Files changed: theme/sections/pg-retrobox-tiles.liquid, theme/assets/pgx-pg-retrobox-tiles.js
+
+---
+
 # R36S Ultra: second review cleanup synced by Judge.me (no theme change)
 
 ## What happened

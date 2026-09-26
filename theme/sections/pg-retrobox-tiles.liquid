@@ -1,0 +1,166 @@
+{%- comment -%}
+  PG RetroBox Tiles (2026-09-26): the PocketEra RetroBox page's offer tiles,
+  cloned from sections/pg-pro2-tiles.liquid (the R36S Pro page) the same way
+  pg-r36h-tiles was: the pack tiles' markup and styling, class prefix pg-p2 ->
+  pg-rb, data-p2-* -> data-rb-*, script pgx-pg-retrobox-tiles.js.
+
+  Registered in templates/product.pg-retrobox.json only.
+
+  WHAT IS DIFFERENT FROM THE PRO 2. The RetroBox has ONE option, "Edition"
+  (8-Bit Edition / 16-Bit Edition, same price), and no storage sizes, colours,
+  bundles, duo discounts, protection kit or add-on cases. So:
+    - there is one tile per EDITION, and the tile IS the variant picker: the
+      selected tile is the variant Add to cart posts. No colour dropdowns
+      (pgDrop), no 1 Console / Duo Pack switch, no add-on rows, no kit line;
+    - the tiles are matched to the variants by the Edition value printed in
+      data-rb-ed, so a variant that is missing or renamed simply leaves its
+      tile out rather than selling the wrong thing;
+    - the heading over the tiles reads "Choose Your Edition", not "Bundle &
+      Save" (there is no bundle);
+    - each tier note ends "plus an extra 5% off at checkout", as on the Pro 2
+      (owner 2026-09-26: "make sure the 5% discount applies"). The store's
+      automatic "Extra 5% off entire order" covers all items; a draft-order
+      calculation of one of each edition took it ($239.98, -$11.99);
+    - the pill on the big photo names the EDITION whose photo is showing (the
+      Pro 2 names the colour), read from the product images' alt text, which
+      starts "8-Bit Edition - ..." / "16-Bit Edition - ...". Any other photo
+      (the hero of both consoles) carries the product's name instead, "Pocket
+      Era RetroBox" (owner 2026-09-26);
+    - picking an edition (its tile, or a button in the story) brings that
+      edition's first photo up, on the big photo or in the phone carousel.
+
+  WHAT IS STOOD DOWN ON THIS PAGE, AND WHY (unchanged from the Pro 2):
+    - pgLadder (pg-theme-css) would build a Buy 2 Get 1 ladder, mirroring
+      discounts this product does not carry. window.pgLadder is claimed first.
+    - pgDuo (pg-theme-css) would decorate the first native tile. Claimed too.
+    - pg-landing's own Single tile ([data-pgx-tile="single"]) is hidden by CSS
+      and its #pgx-atc handler never runs: the window-capture listener in the
+      script takes every Add to cart click first.
+    - pg-tile-copy's generic .pgx-deal-note is hidden by the data-pg-tiernotes
+      flag; each tile carries its own note instead.
+
+  Prices are printed from the variants (Liquid, then repainted by the script),
+  so they follow the admin: both editions are $119.99 against a $159.99
+  compare-at (set 2026-09-26, owner: "make strikethrough price 159.99"), so
+  each tile strikes $159.99 and its pill reads SAVE 25%. With no compare-at
+  the strike and the SAVE pill go away by themselves.
+{%- endcomment -%}
+{%- assign p = product -%}
+{%- if p and p.variants.size > 0 -%}
+{%- assign rb_v8 = nil -%}{%- assign rb_v16 = nil -%}
+{%- for v in p.variants -%}
+  {%- if v.option1 == '8-Bit Edition' -%}{%- assign rb_v8 = v -%}{%- endif -%}
+  {%- if v.option1 == '16-Bit Edition' -%}{%- assign rb_v16 = v -%}{%- endif -%}
+{%- endfor -%}
+<style>
+  /* pg-landing's native single tile: replaced by the tiles below */
+  #pgx .pgx-buy > .pgx-tile[data-pgx-tile="single"]{display:none !important}
+  #pgx .pgx-tile.pg-rb{cursor:pointer}
+  #pgx .pgx-tile.pg-rb .pgx-duo-t b{font-size:17px}
+  /* the edition's name on the big photo: a pill centred over the top of the
+     photo naming the edition whose shot is showing; the product's name on the
+     shot of both consoles together */
+  #pgx .pgx-hero{position:relative}
+  /* on a phone pg-r36s-mobile hides the hero and turns the thumb strip into
+     the swipe carousel (html.pg-r36-gal), so every edition SLIDE carries its
+     own pill; the hero's pill serves the desktop */
+  html.pg-r36-gal #pgx .pgx-thumbs > button{position:relative}
+  #pgx .pgx-thumbs > button .pg-rb-hcap{display:none}
+  html.pg-r36-gal #pgx .pgx-thumbs > button .pg-rb-hcap.on{display:inline-block}
+  #pgx .pg-rb-hcap{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:3;display:none;padding:9px 17px;border-radius:999px;white-space:nowrap;
+    background:rgba(13,7,20,.74);border:1px solid rgba(199,155,234,.55);color:#fff;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:15px;font-weight:800;letter-spacing:.05em;line-height:1;
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);pointer-events:none}
+  #pgx .pg-rb-hcap.on{display:inline-block}
+  /* the second tile sits close under the first, the hanging pill clears the box above */
+  #pgx#pgx .pgx-buy > .pgx-tile.pg-rb + .pgx-tile.pg-rb{margin-top:6px !important}
+  #pgx .pg-rb .pg-rb-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:7px 0 0}
+  /* the chip sits at the tile's left edge beside the struck price when there is one */
+  #pgx .pg-rb .pg-rb-meta{margin-top:-20px;padding-right:64px}
+  #pgx .pg-rb .pg-rb-meta small{flex-basis:calc(100% + 64px)}
+  /* no struck price (no compare-at set): the chip drops under the name instead of hugging the strike line */
+  #pgx .pg-rb .pgx-duo-head:not(:has(s[data-rb-was]:not(:empty))) + .pg-rb-meta{margin-top:7px;padding-right:0}
+  #pgx .pg-rb .pgx-duo-head:not(:has(s[data-rb-was]:not(:empty))) + .pg-rb-meta small{flex-basis:100%}
+  #pgx .pg-rb .pg-rb-meta .pgx-lad-chip{display:inline-block !important;margin:0 !important}
+  /* chip sizes as on the R36S Pro and Flip SP: 12.5px, 12px under 450px, 11.5px under 390px */
+  #pgx#pgx .pg-rb .pg-rb-meta .pgx-lad-chip{font-size:12.5px !important}
+  @media (max-width:449px){ #pgx#pgx .pg-rb .pg-rb-meta .pgx-lad-chip{font-size:12px !important;letter-spacing:0 !important;padding-left:8px !important;padding-right:8px !important} }
+  @media (max-width:389px){
+    #pgx#pgx .pg-rb .pg-rb-meta .pgx-lad-chip{font-size:11.5px !important}
+    #pgx .pg-rb .pg-rb-meta{margin-top:5px;padding-right:0}
+    #pgx .pg-rb .pg-rb-meta small{flex-basis:100%}
+  }
+  #pgx .pg-rb .pg-rb-meta small{flex:0 0 100%;display:block;margin:2px 0 0;font-size:12.5px;line-height:1.6;font-weight:600;color:#fff}
+  /* what the edition includes: a two-column check list, shown on the selected
+     tile like the tier note */
+  #pgx .pg-rb-inc{display:none;width:max-content;max-width:100%;margin:12px auto 0;padding:0;list-style:none;grid-template-columns:auto auto;justify-content:center;gap:7px 24px}
+  #pgx .pgx-tile.pgx-sel .pg-rb-inc{display:grid}
+  #pgx .pg-rb-inc li{position:relative;padding-left:20px;font-size:13.5px;font-weight:600;color:#F1EDF7;line-height:1.3}
+  #pgx .pg-rb-inc li:before{content:"\2713";position:absolute;left:0;top:0;color:#C79BEA;font-weight:800}
+  #pgx .pg-rb-inc li b{font-weight:800}
+  @media (max-width:389px){ #pgx .pg-rb .pg-rb-inc li{font-size:12px} }
+  /* the line under the name stays on one line down to 375px */
+  @media (max-width:380px){
+    #pgx .pg-rb .pgx-duo-t small{font-size:12.5px}
+  }
+  @media (max-width:600px){
+    #pgx .pg-rb-inc{gap:6px 14px}
+    #pgx .pg-rb-inc li{font-size:12.5px;padding-left:17px;white-space:nowrap}
+  }
+</style>
+
+<div class="pg-rb-src" id="pg-rb-src" hidden>
+  {%- if rb_v8 -%}
+  <div class="pgx-tile pgx-duo pg-rb pgx-sel" data-rb="e8" data-rb-ed="8-Bit Edition" data-rb-label="" role="radio" aria-checked="true" tabindex="0">
+    <span class="pgx-lad-badge" data-rb-badge style="display:none"></span>
+    <span class="pgx-duo-ribbon"></span>
+    <div class="pgx-duo-head"><span class="pgx-duo-dot"></span>
+      <div class="pgx-duo-t"><b>8-Bit Edition</b></div>
+      <div class="pgx-duo-px"><b data-rb-now>{{ rb_v8.price | money }}</b><s data-rb-was>{%- if rb_v8.compare_at_price > rb_v8.price -%}{{ rb_v8.compare_at_price | money }}{%- endif -%}</s><span class="pgx-lad-chip pgx-each"></span></div>
+    </div>
+    <div class="pg-rb-meta"><span class="pgx-lad-chip">30 8-Bit Games &middot; 1 Controller</span><small>The grey classic, plugs into your TV</small></div>
+    <ul class="pg-rb-inc">
+      <li><b>30</b> Built-In Games</li>
+      <li><b>1</b> Wired Controller</li>
+      <li>HD Output via HDMI</li>
+      <li>Save Your Progress</li>
+      <li>18-Language Menu</li>
+      <li>Free Shipping</li>
+    </ul>
+    <div class="pgx-tier-note"><b>One RetroBox 8-Bit Edition</b> with 30 classic 8-bit games built in and a wired controller, plus an extra <b>5% off</b> at checkout.</div>
+  </div>
+  {%- endif -%}
+
+  {%- if rb_v16 -%}
+  <div class="pgx-tile pgx-duo pg-rb{% unless rb_v8 %} pgx-sel{% endunless %}" data-rb="e16" data-rb-ed="16-Bit Edition" data-rb-label="2 PLAYERS" role="radio" aria-checked="{% if rb_v8 %}false{% else %}true{% endif %}" tabindex="0">
+    <span class="pgx-lad-badge" data-rb-badge>2 PLAYERS</span>
+    <span class="pgx-duo-ribbon"></span>
+    <div class="pgx-duo-head"><span class="pgx-duo-dot"></span>
+      <div class="pgx-duo-t"><b>16-Bit Edition</b></div>
+      <div class="pgx-duo-px"><b data-rb-now>{{ rb_v16.price | money }}</b><s data-rb-was>{%- if rb_v16.compare_at_price > rb_v16.price -%}{{ rb_v16.compare_at_price | money }}{%- endif -%}</s><span class="pgx-lad-chip pgx-each"></span></div>
+    </div>
+    <div class="pg-rb-meta"><span class="pgx-lad-chip">30 16-Bit Games &middot; 2 Controllers</span><small>Purple buttons, built for 2 players</small></div>
+    <ul class="pg-rb-inc">
+      <li><b>30</b> Built-In Games</li>
+      <li><b>2</b> Wired Controllers</li>
+      <li>2-Player Ready</li>
+      <li>HD Output via HDMI</li>
+      <li>Save Your Progress</li>
+      <li>Free Shipping</li>
+    </ul>
+    <div class="pgx-tier-note"><b>One RetroBox 16-Bit Edition</b> with 30 classic 16-bit games and two wired controllers for couch co-op, plus an extra <b>5% off</b> at checkout.</div>
+  </div>
+  {%- endif -%}
+</div>
+
+{%- comment -%} the pill on each product photo. An edition photo is one whose alt text STARTS with an Edition value: the part before " - " must equal a variant's Edition ("8-Bit Edition - ...", "16-Bit Edition - ..."). `contains` read the hero's "... 8-Bit and 16-Bit Editions" as the 16-Bit, so the photo of both consoles said "16-Bit Edition". Every photo is listed; the ones that are no edition's carry rb_name. {%- endcomment -%}
+{%- assign rb_name = 'Pocket Era RetroBox' -%}
+<script type="application/json" id="pg-rb-data">
+{"variants":[{%- for v in p.variants -%}{"id":{{ v.id }},"e":{{ v.option1 | json }},"p":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"av":{{ v.available | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],"name":{{ rb_name | json }},"shots":[{%- for image in p.images -%}{%- assign rb_pre = image.alt | default: '' | split: ' – ' | first | split: ' - ' | first | strip | downcase -%}{%- assign rb_ed = '' -%}{%- for v in p.variants -%}{%- assign rb_vo = v.option1 | downcase -%}{%- if rb_pre != '' and rb_pre == rb_vo -%}{%- assign rb_ed = v.option1 -%}{%- endif -%}{%- endfor -%}{"src":{{ image | image_url: width: 1400 | json }},"e":{{ rb_ed | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}
+</script>
+
+<script src="{{ 'pgx-pg-retrobox-tiles.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{% schema %}
+{"name": "PG RetroBox Tiles", "settings": [], "presets": [{"name": "PG RetroBox Tiles"}]}
+{% endschema %}
