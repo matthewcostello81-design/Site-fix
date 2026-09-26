@@ -1,0 +1,373 @@
+{%- comment -%}
+  PG RetroBox Story (2026-09-26): the selling sections of the PocketEra
+  RetroBox page, cloned from sections/pg-pro2-story.liquid (the R36S Pro page)
+  the way pg-r36h-story was: same layout, CSS and joined-module design, class
+  prefix pg-p2s -> pg-rbs, data-p2s-* -> data-rbs-*, script
+  pgx-pg-retrobox-story.js. Registered in templates/product.pg-retrobox.json
+  only.
+
+  THE RETROBOX IS A MINI TV CONSOLE, NOT A HANDHELD. It plugs into a TV over
+  HDMI, has no screen and no battery, and comes in two editions (8-Bit: one
+  wired controller; 16-Bit: two wired controllers), 30 built-in games each,
+  save feature, USB 5V/2A power, 18-language menu. Every claim below is one of
+  those. Nothing from the R36S pages is carried over (game counts, screen,
+  chip, battery, microSD, firmware). No game or franchise is named anywhere.
+
+  THE PIECES, EACH SEATED BY THE SCRIPT AT THE BOTTOM:
+    1. BENEFITS (.pg-rbs-ben): four icons under the title: 30 Classic Games,
+       Plugs Into Your TV, Save Your Progress, Ready Out of the Box.
+    2. NO BUYER PHOTO STRIP. The Pro 2 builds one from Judge.me photo reviews;
+       this product has no reviews of its own, so the strip, its "Loved by
+       gamers" header (which printed the page's rating) and the "Customer
+       Reviews" heading are left out entirely.
+    3. THE STORY (#pg-rbs), one joined module:
+       - Your childhood, upgraded: nostalgia headline and lead, with the 16-Bit
+         desk photo;
+       - Pick your era (replaces the Pro 2's "Do the math" used-handheld price
+         comparison, which quoted a market price for a vintage handheld that
+         has no honest equivalent here): the two editions as price cards, each
+         a button that selects its tile and scrolls to it; the card of the
+         selected tile is the lit one. Prices are printed from the variants.
+         Its headline read "One Simple Price." while both editions were
+         $119.99; they have been priced apart since 2026-09-26 (8-Bit $129.99,
+         16-Bit $139.99, by request), so it reads "Choose Yours.", shorter
+         than the old line, so it still fits one line on a 360px phone;
+       - Under the hood: four spec tiles (30 Games, HD Output, Save Game,
+         18 Languages);
+       - In the box (replaces the Pro 2's accessory chapter, which sold the
+         Max Bundle's cases): one card per edition with its studio photo;
+       - Side by side: the two editions next to a used original console.
+         Rows are only ones that are plainly true; no market prices.
+       - Choose Your Edition button back up to the tiles.
+
+  WHERE THINGS SIT. As on the Pro 2: the story is moved into #pgx under the
+  product. The Pro 2 anchors it above the review grid (#pg-reviews); with no
+  reviews on this page it is seated straight after .pgx-main instead, and
+  You may also like (built late by pg-theme-css) follows it.
+
+  PHOTOS are found by their alt text on the product ("8-Bit Edition - ...
+  gaming desk" and so on), with the Shopify CDN file as the fallback, so the
+  page still shows the right shot if the product's images are reordered.
+{%- endcomment -%}
+{%- if product -%}
+{%- assign rbs_cdn = 'https://cdn.shopify.com/s/files/1/0815/5706/1860/files/' -%}
+{%- assign rbs_img8 = nil -%}{%- assign rbs_img8d = nil -%}{%- assign rbs_img16 = nil -%}{%- assign rbs_img16d = nil -%}
+{%- for image in product.images -%}
+  {%- if image.alt contains '16-Bit Edition' -%}
+    {%- if image.alt contains 'desk' -%}{%- assign rbs_img16d = image -%}{%- else -%}{%- assign rbs_img16 = image -%}{%- endif -%}
+  {%- elsif image.alt contains '8-Bit Edition' -%}
+    {%- if image.alt contains 'desk' -%}{%- assign rbs_img8d = image -%}{%- else -%}{%- assign rbs_img8 = image -%}{%- endif -%}
+  {%- endif -%}
+{%- endfor -%}
+{%- comment -%} each photo as a 900px and a 600px URL: the product image when found, else the CDN file {%- endcomment -%}
+{%- if section.settings.hero_image -%}{%- assign rbs_hero = section.settings.hero_image | image_url: width: 900 -%}{%- assign rbs_hero6 = section.settings.hero_image | image_url: width: 600 -%}
+{%- elsif rbs_img16d -%}{%- assign rbs_hero = rbs_img16d | image_url: width: 900 -%}{%- assign rbs_hero6 = rbs_img16d | image_url: width: 600 -%}
+{%- else -%}{%- assign rbs_hero = rbs_cdn | append: 'hf_20260926_175805_c870f294-9957-4a82-b4a4-5b0a1142142f.png?width=900' -%}{%- assign rbs_hero6 = rbs_cdn | append: 'hf_20260926_175805_c870f294-9957-4a82-b4a4-5b0a1142142f.png?width=600' -%}{%- endif -%}
+{%- if section.settings.story_image -%}{%- assign rbs_story = section.settings.story_image | image_url: width: 900 -%}{%- assign rbs_story6 = section.settings.story_image | image_url: width: 600 -%}
+{%- elsif rbs_img8d -%}{%- assign rbs_story = rbs_img8d | image_url: width: 900 -%}{%- assign rbs_story6 = rbs_img8d | image_url: width: 600 -%}
+{%- else -%}{%- assign rbs_story = rbs_cdn | append: 'hf_20260926_180846_d29b2711-8709-4a41-9b27-a9ea0ca4a933.png?width=900' -%}{%- assign rbs_story6 = rbs_cdn | append: 'hf_20260926_180846_d29b2711-8709-4a41-9b27-a9ea0ca4a933.png?width=600' -%}{%- endif -%}
+{%- if rbs_img8 -%}{%- assign rbs_box8 = rbs_img8 | image_url: width: 600 -%}{%- else -%}{%- assign rbs_box8 = rbs_cdn | append: 'hf_20260926_180847_c4d3e607-2e94-4f0e-834b-73eb70c52a60.png?width=600' -%}{%- endif -%}
+{%- if rbs_img16 -%}{%- assign rbs_box16 = rbs_img16 | image_url: width: 600 -%}{%- else -%}{%- assign rbs_box16 = rbs_cdn | append: 'hf_20260926_175910_950fa892-84dd-4f15-8fca-4158bda08928.png?width=600' -%}{%- endif -%}
+{%- comment -%} the two editions' live prices, for the price cards and the chart {%- endcomment -%}
+{%- assign rbs_p8 = product.price_min -%}{%- assign rbs_p16 = product.price_min -%}
+{%- for v in product.variants -%}
+  {%- if v.option1 == '8-Bit Edition' -%}{%- assign rbs_p8 = v.price -%}{%- endif -%}
+  {%- if v.option1 == '16-Bit Edition' -%}{%- assign rbs_p16 = v.price -%}{%- endif -%}
+{%- endfor -%}
+<style>
+  /* ---------------- 1. benefits ---------------- */
+  /* four across, icon over label; the icon scales with its column */
+  #pgx .pg-rbs-ben{list-style:none !important;margin:6px 0 18px !important;padding:0 !important;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+  #pgx .pg-rbs-ben li{list-style:none !important;display:flex;flex-direction:column;align-items:center;text-align:center;gap:9px;margin:0 !important;padding:0 !important;min-width:0;
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;font-weight:600;line-height:1.3;color:#CFC4DE}
+  #pgx .pg-rbs-ben li:before{content:none !important}
+  #pgx .pg-rbs-ben .ic{flex:none;width:74%;max-width:64px;aspect-ratio:1/1;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:rgba(139,68,190,.3);border:0;
+    box-shadow:inset 0 0 0 1px rgba(199,155,234,.38),0 0 20px 0 rgba(139,68,190,.45)}
+  #pgx .pg-rbs-ben .ic svg{width:56%;height:56%;stroke:#D9B4FF;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #pgx .pg-rbs-ben li > span:last-child{display:block;min-width:0;max-width:100%}
+  #pgx .pg-rbs-ben b{display:block;margin-bottom:2px;font-size:12px;line-height:1.2;font-weight:800;color:#fff;text-wrap:balance}
+  /* the number of games: its own line, white like the rest of the label */
+  #pgx .pg-rbs-ben b i{display:block;font-style:normal;color:#fff;white-space:nowrap}
+  #pgx#pgx .pgx-buy > .pgx-title{text-wrap:balance}
+
+  /* ---------------- 3. the story ---------------- */
+  .pg-rbs{font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;color:#F1EDF7;background:#0B0710}
+  /* inside #pgx the page's own dark gradient shows through; the solid fill is
+     only for the moment before the script seats it there */
+  #pgx .pg-rbs{background:transparent}
+  .pg-rbs *{box-sizing:border-box}
+  #pgx .pg-rbs{padding:26px 0 6px}
+  /* one module, joined chapters: the first carries the rounded top and the
+     last the rounded bottom, a hairline divides them, and every one opens
+     with the purple glow at its top */
+  .pg-rbs-sec{position:relative;width:calc(100% - 48px);max-width:1120px;margin:0 auto;padding:58px 44px 54px;text-align:center;overflow:hidden;
+    border:1px solid rgba(199,155,234,.22);border-bottom-width:0;border-radius:0;
+    background:radial-gradient(90% 62% at 50% 0%,rgba(155,75,196,.22),rgba(155,75,196,0) 72%),rgba(255,255,255,.03)}
+  .pg-rbs-sec + .pg-rbs-sec{border-top-color:rgba(199,155,234,.14)}
+  .pg-rbs-sec:first-child{border-radius:28px 28px 0 0}
+  .pg-rbs-sec:last-child{border-bottom-width:1px;border-radius:0 0 28px 28px;margin-bottom:28px;box-shadow:0 34px 80px -60px rgba(139,68,190,.95)}
+  .pg-rbs-sec:before{content:"";position:absolute;left:50%;top:0;width:96px;height:3px;margin-left:-48px;border-radius:0 0 4px 4px;
+    background:linear-gradient(90deg,#9B4BC4,#D9B3F5)}
+  .pg-rbs-eye{display:inline-block;margin:0 0 16px;padding:7px 14px;border-radius:999px;
+    border:1px solid rgba(199,155,234,.42);background:rgba(155,75,196,.16);
+    font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:11px;line-height:1.2;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#C79BEA}
+  .pg-rbs h2{margin:0 auto 14px;max-width:820px;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:40px;line-height:1.12;font-weight:800;letter-spacing:-.01em;color:#fff;text-wrap:balance}
+  .pg-rbs h2 span{background:linear-gradient(100deg,#F3E8FF 0%,#D9B3F5 30%,#B06CE8 60%,#8B3FB8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  .pg-rbs-lead{margin:0 auto;max-width:640px;font-size:16.5px;line-height:1.6;color:#CFC4DE;text-wrap:pretty}
+  .pg-rbs-lead b{color:#fff}
+  /* the closing line of the childhood panel, the same on every console page */
+  .pg-rbs-mem{margin:18px 0 0;padding-left:14px;border-left:3px solid #9B4BC4;font-size:17px;line-height:1.45;font-weight:700;font-style:italic;color:#D9B3F5}
+  @media (max-width:900px){
+    .pg-rbs-mem{margin:16px auto 0;padding:0;border:0;font-size:15.5px;text-align:center}
+  }
+
+  .pg-rbs-split{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:center;text-align:left}
+  .pg-rbs-split h2,.pg-rbs-split .pg-rbs-lead{margin-left:0;margin-right:0}
+  .pg-rbs-photo{border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,.09);background:#16101F;box-shadow:0 30px 70px -40px rgba(139,68,190,.8)}
+  .pg-rbs-photo img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover}
+  .pg-rbs-hero .pg-rbs-photo{order:-1}
+  .pg-rbs-math{display:flex;gap:12px;margin:22px 0 0}
+  .pg-rbs-math div{flex:1;min-width:0;padding:14px 16px;border-radius:14px;background:#16101F;border:1px solid rgba(255,255,255,.09);cursor:pointer;
+    -webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease}
+  .pg-rbs-math small,.pg-rbs-math em,.pg-rbs-math .go{white-space:nowrap}
+  /* the card of the edition selected in the buy box is the lit one */
+  .pg-rbs-math div.us{border-color:rgba(199,155,234,.55);background:linear-gradient(140deg,#1D1230,#16101F)}
+  .pg-rbs-math div:hover,.pg-rbs-math div:focus-visible{border-color:#C79BEA;box-shadow:0 14px 30px -18px rgba(155,75,196,.95);transform:translateY(-2px);outline:0}
+  .pg-rbs-math div:active{transform:translateY(0)}
+  .pg-rbs-math .go{display:block;margin-top:9px;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#C79BEA}
+  /* the top bar is pinned, so a jump to the tiles stops short of it */
+  #pgx .pgx-bs{scroll-margin-top:76px}
+  .pg-rbs-math small{display:block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#B9AECB}
+  .pg-rbs-math div.us small{color:#C79BEA}
+  .pg-rbs-math strong{display:block;margin-top:4px;font-size:26px;font-weight:800;color:#fff;line-height:1.1}
+  .pg-rbs-math em{display:block;margin-top:3px;font-style:normal;font-size:12.5px;color:#CFC4DE}
+
+  .pg-rbs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:34px 0 0}
+  /* spec tiles: a big stat over a short description */
+  .pg-rbs-feat{position:relative;padding:32px 18px 30px;border-radius:22px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(155,75,196,.14),rgba(155,75,196,0) 60%),#16101F;border:1px solid rgba(199,155,234,.18)}
+  .pg-rbs-feat .ic{width:72px;height:72px;margin:0 auto 16px;border-radius:20px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,#C48EEA 0%,#A85DD3 35%,#8F3FB8 65%,#5A2280 100%);box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
+  .pg-rbs-feat .ic svg{width:54px;height:54px;stroke:#fff;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  /* the stat words carry a slow white-to-lavender sweep */
+  .pg-rbs-feat h3{margin:0 0 8px;font-family:inherit;font-size:26px;line-height:1.1;font-weight:800;letter-spacing:-.01em;text-wrap:balance;
+    background:linear-gradient(100deg,#fff 0%,#D9B3F5 25%,#fff 50%,#D9B3F5 75%,#fff 100%);background-size:200% 100%;background-position:0% 50%;
+    -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent;
+    animation:pg-rbs-statflow 4s linear infinite}
+  @keyframes pg-rbs-statflow{from{background-position:0% 50%}to{background-position:200% 50%}}
+  @media (prefers-reduced-motion:reduce){.pg-rbs-feat h3{animation:none}}
+  .pg-rbs-feat p{margin:0;font-size:15px;line-height:1.5;color:#CFC4DE;text-wrap:balance}
+
+  /* in the box: one card per edition, photo left, name and one line right */
+  .pg-rbs-cases{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:860px;margin:30px auto 0;text-align:left}
+  .pg-rbs-case{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;align-items:center;padding:16px;border-radius:18px;background:#16101F;border:1px solid rgba(255,255,255,.09)}
+  .pg-rbs-case img{display:block;width:124px;height:124px;border-radius:14px;object-fit:cover;background:#0D0714}
+  .pg-rbs-case .tag{display:inline-block;margin:0 0 7px;padding:4px 9px;border-radius:999px;background:rgba(155,75,196,.2);border:1px solid rgba(199,155,234,.4);font-size:10.5px;line-height:1.2;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#C79BEA}
+  .pg-rbs-case h3{margin:0 0 5px;font-family:inherit;font-size:16px;line-height:1.25;font-weight:800;color:#fff}
+  .pg-rbs-case p{margin:0;font-size:13px;line-height:1.5;color:#CFC4DE}
+  .pg-rbs-tbl{max-width:720px;margin:34px auto 0;text-align:left}
+  .pg-rbs-row{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);align-items:stretch}
+  .pg-rbs-row > div{display:flex;align-items:center;justify-content:center;padding:14px 8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:14px;line-height:1.3}
+  .pg-rbs-row > div:first-child{justify-content:flex-start;padding-left:4px;font-weight:600;color:#F1EDF7}
+  .pg-rbs-row > div.us{background:#1A1129;border-left:1px solid rgba(199,155,234,.45);border-right:1px solid rgba(199,155,234,.45)}
+  .pg-rbs-row.hd > div{border-bottom:0;padding:16px 8px;font-size:13.5px;font-weight:800;text-align:center;color:#fff}
+  .pg-rbs-row.hd > div.us{border-top:1px solid rgba(199,155,234,.45);border-radius:16px 16px 0 0}
+  .pg-rbs-row.hd > div.them{color:#B9AECB;font-weight:700}
+  .pg-rbs-row:last-child > div{border-bottom:0}
+  .pg-rbs-row:last-child > div.us{border-bottom:1px solid rgba(199,155,234,.45);border-radius:0 0 16px 16px}
+  .pg-rbs-tbl .y,.pg-rbs-tbl .n{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+  .pg-rbs-tbl .y{background:linear-gradient(135deg,#9B4BC4,#7A2FA2)}
+  .pg-rbs-tbl .n{background:#2A2236}
+  .pg-rbs-tbl .y svg,.pg-rbs-tbl .n svg{width:13px;height:13px;fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+  .pg-rbs-tbl .n svg{stroke:#8E829F}
+/* the three-column chart, as on the R36S Pro page: the two editions (each with a shop button that picks it) and a used original console */
+.pg-rbs-tbl3{max-width:840px}
+.pg-rbs-tbl3 .pg-rbs-row{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.pg-rbs-tbl3 .pg-rbs-row > div{padding:12px 6px;font-size:13.5px;text-align:center;line-height:1.3;color:#CFC4DE}
+.pg-rbs-tbl3 .pg-rbs-row > div:first-child{text-align:left;color:#F1EDF7;overflow-wrap:anywhere}
+.pg-rbs-tbl3 .pg-rbs-row > div.us{font-weight:700;color:#fff}
+.pg-rbs-tbl3 .pg-rbs-row.hd > div{color:#fff;flex-direction:column}
+.pg-rbs-tbl3 .pg-rbs-row.hd > div i{display:block;margin-top:3px;font-style:normal;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#B9AECB}
+.pg-rbs-tbl3 .pg-rbs-row.hd > div.us i{color:#C79BEA}
+.pg-rbs-tbl3 .pg-rbs-row.shop > div{padding:14px 6px}
+.pg-rbs-mini{display:inline-flex;align-items:center;justify-content:center;padding:9px 12px;border-radius:10px;cursor:pointer;
+background:linear-gradient(120deg,#9B4BC4,#7A2FA2);color:#fff !important;font-size:11.5px;line-height:1.2;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none !important;white-space:nowrap;
+box-shadow:0 10px 22px -12px rgba(139,68,190,.9);-webkit-user-select:none;user-select:none}
+.pg-rbs-mini:hover{filter:brightness(1.1)}
+@media (max-width:900px){
+.pg-rbs-tbl3 .pg-rbs-row{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)}
+.pg-rbs-tbl3 .pg-rbs-row > div{padding:10px 3px;font-size:11.5px}
+.pg-rbs-tbl3 .pg-rbs-row.hd > div{font-size:11.5px;padding:11px 3px}
+.pg-rbs-tbl3 .pg-rbs-row.hd > div i{font-size:9px;letter-spacing:.04em}
+.pg-rbs-tbl3 .pg-rbs-row.shop > div{padding:12px 3px}
+.pg-rbs-mini{padding:8px 6px;font-size:9.5px;letter-spacing:.03em;white-space:normal;text-align:center}
+}
+
+  .pg-rbs-cta{display:inline-flex;align-items:center;justify-content:center;gap:9px;margin:36px 0 0;padding:16px 34px;border-radius:12px;cursor:pointer;
+    background-color:#7A2FA2;background-image:linear-gradient(120deg,#9B4BC4 0%,#7A2FA2 30%,#4A1C66 50%,#7A2FA2 70%,#9B4BC4 100%);background-size:240% 240%;
+    color:#fff !important;font-size:15px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;text-decoration:none !important;
+    box-shadow:0 16px 34px -14px rgba(139,68,190,.8);-webkit-user-select:none;user-select:none}
+  .pg-rbs-cta:hover{filter:brightness(1.08)}
+  @media (max-width:900px){
+    #pgx .pgx-buy > .pg-rbs-ben{order:2}
+    /* the trust block follows the tiles, as on the R36S Pro page */
+    #pgx#pgx .pgx-buy > .pgx-guar{order:5;margin-bottom:18px !important}
+    #pgx#pgx .pgx-buy > .pgx-acc{order:5;margin-top:0 !important}
+    #pgx#pgx .pgx-buy > .pg-sell-slot{order:5;margin-top:0 !important;margin-bottom:8px !important}
+    #pgx#pgx .pgx-buy > .pgx-info{order:5;margin-top:14px}
+    #pgx#pgx .pgx-buy > .pgx-pay{order:5}
+    #pgx .pg-rbs{padding-top:18px}
+    .pg-rbs-sec{width:calc(100% - 24px);padding:36px 18px 32px}
+    .pg-rbs-sec:first-child{border-radius:22px 22px 0 0}
+    .pg-rbs-sec:last-child{border-radius:0 0 22px 22px;margin-bottom:16px}
+    /* on a phone the words come first and the picture closes the panel */
+    .pg-rbs-hero .pg-rbs-photo{order:0}
+    .pg-rbs-hero .pg-rbs-photo img{aspect-ratio:4/5}
+    .pg-rbs h2{font-size:27px;line-height:1.15}
+    /* the purple sentence starts its own line, and fits on one */
+    .pg-rbs h2 span{display:block}
+    .pg-rbs-lead{font-size:15px}
+    .pg-rbs-split{grid-template-columns:1fr;gap:24px;text-align:center}
+    .pg-rbs-split h2,.pg-rbs-split .pg-rbs-lead{margin-left:auto;margin-right:auto}
+    .pg-rbs-math{text-align:left;gap:10px}
+    .pg-rbs-math div{padding:14px 12px}
+    .pg-rbs-math small{font-size:10.5px;letter-spacing:.06em}
+    .pg-rbs-math em{font-size:12px}
+    .pg-rbs-math .go{font-size:11px;letter-spacing:.06em}
+    .pg-rbs-grid{grid-template-columns:1fr 1fr;gap:12px;margin-top:26px}
+    .pg-rbs-feat{padding:24px 8px 22px;border-radius:20px}
+    .pg-rbs-feat .ic{width:60px;height:60px;margin-bottom:12px;border-radius:17px}
+    .pg-rbs-feat .ic svg{width:46px;height:46px}
+    .pg-rbs-feat h3{font-size:clamp(20px,5.8vw,24px);margin-bottom:6px}
+    .pg-rbs-feat p{font-size:13.5px;line-height:1.45}
+    .pg-rbs-cases{grid-template-columns:1fr;gap:12px;margin-top:22px}
+    .pg-rbs-case{grid-template-columns:96px minmax(0,1fr);gap:13px;padding:13px}
+    .pg-rbs-case img{width:96px;height:96px}
+    .pg-rbs-case h3{font-size:15px}
+    .pg-rbs-case p{font-size:12.5px}
+    .pg-rbs-tbl{margin-top:26px}
+    .pg-rbs-row > div{font-size:13px;padding:12px 6px}
+    .pg-rbs-row.hd > div{font-size:12.5px;padding:13px 6px}
+    .pg-rbs-cta{display:flex;width:100%;margin-top:28px;padding:16px 12px}
+  }
+  /* phones: the bold label only, in two short lines under a big icon. The
+     second line is a bare text node, so it is hidden by zeroing the span's
+     type and giving the label its size back. */
+  @media (max-width:600px){
+    #pgx .pg-rbs-ben{gap:6px}
+    #pgx .pg-rbs-ben li{gap:8px}
+    #pgx .pg-rbs-ben li > span:last-child{font-size:0;line-height:0}
+    #pgx .pg-rbs-ben b{margin:0;font-size:11.5px;line-height:1.22}
+  }
+  @media (max-width:370px){
+    #pgx .pg-rbs-ben b{font-size:10.5px}
+  }
+  @media (max-width:380px){
+    .pg-rbs h2{font-size:25px}
+    .pg-rbs-math strong{font-size:22px}
+  }
+  /* the very narrow phones */
+  @media (max-width:340px){
+    #pgx .pg-rbs-ben b{font-size:10px}
+    .pg-rbs-math small{font-size:9.5px;letter-spacing:.03em}
+    .pg-rbs-math em{font-size:11px}
+  }
+</style>
+
+<div id="pg-rbs-src" hidden>
+  <ul class="pg-rbs-ben" data-rbs="ben">
+    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M7.4 6h9.2a5 5 0 0 1 4.9 6l-.8 4.6a2.8 2.8 0 0 1-5 1.2L14.4 16H9.6l-1.3 1.8a2.8 2.8 0 0 1-5-1.2L2.5 12a5 5 0 0 1 4.9-6z" fill="rgba(255,255,255,.16)"/><path d="M7.6 9.5v4.2M5.5 11.6h4.2"/><circle cx="15.2" cy="10.2" r=".95" fill="#fff" stroke="none"/><circle cx="17.9" cy="11.9" r=".95" fill="#fff" stroke="none"/><circle cx="15.2" cy="13.6" r=".95" fill="#fff" stroke="none"/><circle cx="12.5" cy="11.9" r=".95" fill="#fff" stroke="none"/><path d="M8 6V5.2a1 1 0 0 1 1-1h1.2M16 6V5.2a1 1 0 0 0-1-1h-1.2"/></svg></span><span><b><i>30 Classic</i> Games</b>Built in on each edition</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="4.5" width="19" height="12.5" rx="2.2" fill="rgba(255,255,255,.14)"/><path d="M8 20.5h8M12 17v3.5"/><path d="M9 8.5l6 2.5-6 2.5z" fill="#fff" stroke="none"/></svg></span><span><b>Plugs Into<br>Your TV</b>HD output over HDMI</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h11.2L20 7.3V19.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" fill="rgba(255,255,255,.14)"/><path d="M8 3.5v4.2h7V3.5"/><rect x="7.2" y="12.4" width="9.6" height="6.2" rx="1" fill="#fff" stroke="none"/></svg></span><span><b>Save Your<br>Progress</b>Pick up where you left off</span></li>
+    <li><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12.6" r="7.9" fill="rgba(255,255,255,.14)"/><path d="M8.9 8.6a5.1 5.1 0 1 0 6.2 0"/><path d="M12 5.6v6" stroke-width="2"/></svg></span><span><b>Ready Out<br>of the Box</b>No downloads, no accounts</span></li>
+  </ul>
+</div>
+
+<div class="pg-rbs" id="pg-rbs">
+  <section class="pg-rbs-sec pg-rbs-hero">
+    <div class="pg-rbs-split">
+      <div>
+        <span class="pg-rbs-eye">Your childhood, upgraded</span>
+        <h2>The Couch Co-op Nights You Grew Up With. <span>Back on Your TV.</span></h2>
+        <p class="pg-rbs-lead">Saturday mornings on the living room carpet. Passing the controller after every lost life. Sleepovers that ran way past bedtime. <b>30 classic games built in</b>, on the big screen the minute you plug&nbsp;in.</p>
+        <p class="pg-rbs-mem">The games you remember. The feeling you forgot.</p>
+      </div>
+      <div class="pg-rbs-photo">
+        <img src="{{ rbs_hero }}" srcset="{{ rbs_hero6 }} 600w, {{ rbs_hero }} 900w" sizes="(max-width: 900px) 92vw, 520px" alt="PocketEra RetroBox 16-Bit Edition on a gaming desk" loading="lazy" decoding="async" width="900" height="1125">
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-rbs-sec">
+    <div class="pg-rbs-split">
+      <div>
+        <span class="pg-rbs-eye">Pick your era</span>
+        <h2>Two Classic Editions. <span>Choose Yours.</span></h2>
+        <p class="pg-rbs-lead">Both come with 30 games built in and ship free. Pick the one you grew up with, or the one you always&nbsp;wanted.</p>
+        <div class="pg-rbs-math">
+          <div class="us" role="button" tabindex="0" data-rbs-cta data-rbs-pick="e8" aria-label="8-Bit Edition, {{ rbs_p8 | money_without_trailing_zeros }}. Choose the 8-Bit Edition"><small>8-Bit Edition</small><strong>{{ rbs_p8 | money_without_trailing_zeros }}</strong><em>30 built-in games<br>1 controller</em><span class="go">Choose 8-Bit &rarr;</span></div>
+          <div role="button" tabindex="0" data-rbs-cta data-rbs-pick="e16" aria-label="16-Bit Edition, {{ rbs_p16 | money_without_trailing_zeros }}. Choose the 16-Bit Edition"><small>16-Bit Edition</small><strong>{{ rbs_p16 | money_without_trailing_zeros }}</strong><em>30 built-in games<br>2 controllers</em><span class="go">Choose 16-Bit &rarr;</span></div>
+        </div>
+      </div>
+      <div class="pg-rbs-photo">
+        <img src="{{ rbs_story }}" srcset="{{ rbs_story6 }} 600w, {{ rbs_story }} 900w" sizes="(max-width: 900px) 92vw, 520px" alt="PocketEra RetroBox 8-Bit Edition on a gaming desk" loading="lazy" decoding="async" width="900" height="900">
+      </div>
+    </div>
+  </section>
+
+  <section class="pg-rbs-sec">
+    <span class="pg-rbs-eye">Under the hood</span>
+    <h2>Plug In, Power On. <span>Press Start.</span></h2>
+    <p class="pg-rbs-lead">The parts that matter once the controller is in your&nbsp;hands.</p>
+    <div class="pg-rbs-grid">
+      <div class="pg-rbs-feat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7.4 6h9.2a5 5 0 0 1 4.9 6l-.8 4.6a2.8 2.8 0 0 1-5 1.2L14.4 16H9.6l-1.3 1.8a2.8 2.8 0 0 1-5-1.2L2.5 12a5 5 0 0 1 4.9-6z" fill="rgba(255,255,255,.16)"/><path d="M7.6 9.5v4.2M5.5 11.6h4.2"/><circle cx="15.2" cy="10.2" r=".95" fill="#fff" stroke="none"/><circle cx="17.9" cy="11.9" r=".95" fill="#fff" stroke="none"/><circle cx="15.2" cy="13.6" r=".95" fill="#fff" stroke="none"/><circle cx="12.5" cy="11.9" r=".95" fill="#fff" stroke="none"/></svg></span><h3>30 Games</h3><p>Built in on each edition, ready to play.</p></div>
+      <div class="pg-rbs-feat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2.5" y="4" width="19" height="13" rx="2" fill="rgba(255,255,255,.16)"/><rect x="5" y="6.3" width="14" height="8.4" rx="1" fill="rgba(255,255,255,.14)" stroke="none"/><path d="M10.6 8.5v4.4l3.8-2.2z" fill="rgba(255,255,255,.92)" stroke="none"/><path d="M12 17v3.2M8 20.5h8"/></svg></span><h3>HD Output</h3><p>Plugs into any TV with an HDMI port.</p></div>
+      <div class="pg-rbs-feat"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 3.5h11.2L20 7.3V19.5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1z" fill="rgba(255,255,255,.16)"/><path d="M8 3.5v4.2h7V3.5"/><rect x="7.2" y="12.4" width="9.6" height="6.2" rx="1" fill="rgba(255,255,255,.55)" stroke="none"/></svg></span><h3>Save Game</h3><p>Save your progress, pick it up later.</p></div>
+      <div class="pg-rbs-feat"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="rgba(255,255,255,.16)"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9M12 3c-2.6 2.6-3.9 5.6-3.9 9s1.3 6.4 3.9 9"/></svg></span><h3>18 Languages</h3><p>A menu the whole family can read.</p></div>
+    </div>
+  </section>
+
+  <section class="pg-rbs-sec">
+    <span class="pg-rbs-eye">In the box</span>
+    <h2>Pick Your Classic. <span>Plug It In.</span></h2>
+    <p class="pg-rbs-lead">Each edition is a small classic-style console with wired controllers and 30 games built in. It runs on any USB 5V/2A&nbsp;adapter.</p>
+    <div class="pg-rbs-cases">
+      <div class="pg-rbs-case"><img src="{{ rbs_box8 }}" alt="PocketEra RetroBox 8-Bit Edition with its controller" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">8-Bit Edition</span><h3>The Grey Classic</h3><p>Grey and dark grey console plus one wired controller with a D-pad and two red A and B buttons. 30 built-in 8-bit games.</p></div></div>
+      <div class="pg-rbs-case"><img src="{{ rbs_box16 }}" alt="PocketEra RetroBox 16-Bit Edition with two controllers" loading="lazy" decoding="async" width="360" height="360"><div><span class="tag">16-Bit Edition</span><h3>The Purple-Button Classic</h3><p>Light grey console with purple Power and Reset buttons, and two wired controllers for 2-player nights. 30 built-in 16-bit games.</p></div></div>
+    </div>
+    <span class="pg-rbs-cta" role="button" tabindex="0" data-rbs-cta>Choose Your Edition <span>&rarr;</span></span>
+  </section>
+
+  <section class="pg-rbs-sec pg-rbs-end">
+    <span class="pg-rbs-eye">Side by side</span>
+    <h2>Why the RetroBox <span>Stands Out.</span></h2>
+<p class="pg-rbs-lead">Both editions, next to tracking down a used original console and its&nbsp;games.</p>
+{%- comment -%} Cells: Y = tick, N = cross, S8 / S16 = the button that picks that edition, anything else prints as text. Only rows that are plainly true of both sides; no market prices. {%- endcomment -%}
+{%- capture rbs_y -%}<span class="y" aria-label="Yes"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>{%- endcapture -%}
+{%- capture rbs_n -%}<span class="n" aria-label="No"><svg viewBox="0 0 24 24"><path d="M7 7l10 10M17 7L7 17"/></svg></span>{%- endcapture -%}
+{%- capture rbs_rows -%}Games in the box~30 built in~30 built in~Sold separately|Controllers in the box~1 wired~2 wired~Varies|HDMI to a modern TV~Y~Y~N|Save from the menu~Y~Y~N|Menu languages~18~18~No menu|Power~USB 5V/2A~USB 5V/2A~Own adapter|New, free shipping~Y~Y~N|Price~{{ rbs_p8 | money_without_trailing_zeros }}~{{ rbs_p16 | money_without_trailing_zeros }}~Varies, used|~S8~S16~{%- endcapture -%}
+<div class="pg-rbs-tbl pg-rbs-tbl3" role="table" aria-label="PocketEra RetroBox 8-Bit and 16-Bit Editions compared with a used original console">
+<div class="pg-rbs-row hd" role="row"><div role="columnheader"></div><div class="us" role="columnheader">8-Bit<i>RetroBox</i></div><div class="us" role="columnheader">16-Bit<i>RetroBox</i></div><div class="them" role="columnheader">Original<i>Used console</i></div></div>
+{%- assign rbs_rowlist = rbs_rows | split: '|' -%}
+{%- for row in rbs_rowlist -%}
+{%- assign cells = row | split: '~' -%}
+<div class="pg-rbs-row{% if cells[1] == 'S8' %} shop{% endif %}" role="row"><div role="cell">{{ cells[0] }}</div>{%- for i in (1..3) -%}{%- assign cell = cells[i] -%}<div role="cell"{% if i < 3 %} class="us"{% endif %}>{%- if cell == 'Y' -%}{{ rbs_y }}{%- elsif cell == 'N' -%}{{ rbs_n }}{%- elsif cell == 'S8' -%}<span class="pg-rbs-mini" role="button" tabindex="0" data-rbs-cta data-rbs-pick="e8">Shop 8-Bit</span>{%- elsif cell == 'S16' -%}<span class="pg-rbs-mini" role="button" tabindex="0" data-rbs-cta data-rbs-pick="e16">Shop 16-Bit</span>{%- else -%}{{ cell }}{%- endif -%}</div>{%- endfor -%}</div>
+{%- endfor -%}
+</div>
+    <span class="pg-rbs-cta" role="button" tabindex="0" data-rbs-cta>Choose Your Edition <span>&rarr;</span></span>
+  </section>
+</div>
+
+<script src="{{ 'pgx-pg-retrobox-story.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{% schema %}
+{
+  "name": "PG RetroBox Story",
+  "settings": [
+    {"type": "image_picker", "id": "hero_image", "label": "Photo in Your childhood, upgraded (optional)"},
+    {"type": "image_picker", "id": "story_image", "label": "Photo beside Pick your era (optional)"}
+  ],
+  "presets": [{"name": "PG RetroBox Story"}]
+}
+{% endschema %}

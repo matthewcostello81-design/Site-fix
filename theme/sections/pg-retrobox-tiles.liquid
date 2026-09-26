@@ -7,7 +7,7 @@
   Registered in templates/product.pg-retrobox.json only.
 
   WHAT IS DIFFERENT FROM THE PRO 2. The RetroBox has ONE option, "Edition"
-  (8-Bit Edition / 16-Bit Edition, same price), and no storage sizes, colours,
+  (8-Bit Edition / 16-Bit Edition), and no storage sizes, colours,
   bundles, duo discounts, protection kit or add-on cases. So:
     - there is one tile per EDITION, and the tile IS the variant picker: the
       selected tile is the variant Add to cart posts. No colour dropdowns
@@ -40,10 +40,13 @@
       flag; each tile carries its own note instead.
 
   Prices are printed from the variants (Liquid, then repainted by the script),
-  so they follow the admin: both editions are $119.99 against a $159.99
-  compare-at (set 2026-09-26, owner: "make strikethrough price 159.99"), so
-  each tile strikes $159.99 and its pill reads SAVE 25%. With no compare-at
-  the strike and the SAVE pill go away by themselves.
+  so they follow the admin: the 8-Bit is $129.99 against a $173.32
+  compare-at and the 16-Bit $139.99 against $186.66 (owner 2026-09-26: "make
+  the strikethrough price reflect a 25% discount"; each compare-at is the
+  price / 0.75, rounded UP to the cent, because the pill rounds down and
+  $186.65 would read SAVE 24%). Each tile strikes its own compare-at and its
+  pill reads SAVE 25%. With no compare-at the strike and the SAVE pill go
+  away by themselves.
 {%- endcomment -%}
 {%- assign p = product -%}
 {%- if p and p.variants.size > 0 -%}

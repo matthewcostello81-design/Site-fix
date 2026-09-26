@@ -1,3 +1,48 @@
+# PocketEra RetroBox: new prices ($129.99 / $139.99) with a 25% strikethrough
+
+Theme: "Copy of Copy of RetroBox page (Claude 9-26)" (188129280228,
+unpublished). "Copy of RetroBox page (Claude 9-26)" (188125806820) is now the
+published theme.
+
+## Product data (live on every theme, by request)
+| Edition | Price | Compare-at | Saving |
+|---|---|---|---|
+| 8-Bit | $129.99 (was $119.99) | $173.32 (was $159.99) | exactly 25% |
+| 16-Bit | $139.99 (was $119.99) | $186.66 (was $159.99) | 25.003% |
+
+Each compare-at is the price / 0.75, rounded UP to the cent. The tile's SAVE
+pill rounds down, so $186.65 (24.999%) would have read "SAVE 24%".
+
+## Theme
+- `sections/pg-retrobox-story.liquid`: the "Pick your era" headline read
+  "Two Classic Editions. One Simple Price.", which is no longer true with two
+  prices. It now reads "Two Classic Editions. Choose Yours.", shorter than the
+  old line, so it still fits one line on a 360px phone. The price cards and the
+  comparison table already print each variant's own price.
+- `sections/pg-retrobox-tiles.liquid`: comments only. "Same price" is gone,
+  and the price note gives the new figures and the rounding rule.
+- Nothing else prints a price on this page. pg-landing's own tiles are
+  hidden, and its bottom sticky bar is switched off site-wide.
+
+## Verified
+- Both files re-fetched after upload: MD5 matches the local copies.
+- Tiles, rendered with liquidjs and run in jsdom:
+  - 8-Bit: $129.99, $173.32 struck, "SAVE 25%".
+  - 16-Bit: $139.99, $186.66 struck, "2 PLAYERS · SAVE 25%".
+- Story panel: "Two Classic Editions. Choose Yours." with cards $129.99 and
+  $139.99.
+- Cart Save %: nc-cro rounds to 25 for both editions.
+- draftOrderCalculate (nothing saved), one of each edition: $269.98, then
+  "Extra 5% off entire order" -$13.49, subtotal $256.49.
+
+## Note
+The published theme still carries "One Simple Price." until this draft is
+published. Theme files on the published theme cannot be written from here.
+
+Files changed: theme/sections/pg-retrobox-story.liquid (new to the repo), theme/sections/pg-retrobox-tiles.liquid
+
+---
+
 # PocketEra RetroBox: one review removed, rotating review card taken off
 
 Theme: "Copy of RetroBox page (Claude 9-26)" (188125806820, unpublished).
