@@ -1,0 +1,128 @@
+{%- comment -%}
+  PG R36H Ultra Buyer Photos (2026-09-27): the "Loved by Gamers" photo strip
+  for the R36H Ultra page, registered in templates/product.pg-r36h-ultra.json
+  only. It is sections/pg-ultra-shots.liquid (the R36S Ultra page's strip)
+  with the class prefix pg-uls- renamed pg-hus-, data-uls- renamed data-hus-,
+  and its own script, assets/pgx-pg-r36h-ultra-shots.js.
+
+  WHY (owner, 2026-09-27: "just imported reviews for R36H Ultra ... copy the
+  review structure of R36S Ultra"). The R36H Ultra page was built with its
+  reviews switched on, so pg-landing's rating line, rotating review card and
+  review grid, and pg-rev-link's "n verified reviews" line, filled in by
+  themselves when Judge.me synced the product (34 reviews, 4.68). The one
+  review piece that differed from the R36S Ultra page was the photo strip:
+  pg-r36h-ultra-story carries the R36H Pro's strip (data-rhs="shots"), a
+  plain snap-scrolling rail that ends at its last photo, where the R36S
+  Ultra's loops (the photo set printed five times, the rail kept on the
+  middle copy). This section is that looping strip, and while it renders it
+  hides the story's own strip, so the page shows one strip, the R36S Ultra's.
+  The story's strip is hidden rather than taken out of the story section:
+  its script still seats it (twice, in the first half second) and updates
+  its pill, and neither needs it to be visible. Both strips read the same
+  photos (judgeme.review_widget_data: the photo reviews first, then page
+  one) and both need three or more, so they come and go together.
+
+  WHAT IT SHOWS, as on the R36S Ultra. Every photo of every review Judge.me
+  has synced for this product, one card per photo, each linking to the
+  review grid at the bottom; the stars, name and text are the review's own;
+  the pill prints the feed's own average and count, then follows the page's
+  rating line once pg-rev-link has rendered it. Nothing while the feed holds
+  fewer than three photos.
+
+  WHERE IT SITS. The script seats it in the buy column after the Add to cart
+  button (a desktop), or after the last bundle tile; on a phone it takes
+  order 6, straight after the tiles' run and ahead of the accordions, the
+  same seat the story's strip had.
+
+  NOTE: the photos are served from ae-pic-a1.aliexpress-media.com; these are
+  imported supplier reviews, which Judge.me marks verified_buyer: false.
+{%- endcomment -%}
+{%- assign jm = product.metafields.judgeme.review_widget_data.value -%}
+{%- assign jm_all = '' | split: '' -%}
+{%- if jm -%}
+  {%- if jm.photo_gallery -%}{%- assign jm_all = jm_all | concat: jm.photo_gallery -%}{%- endif -%}
+  {%- if jm.reviews -%}{%- assign jm_all = jm_all | concat: jm.reviews -%}{%- endif -%}
+{%- endif -%}
+{%- assign shots = 0 -%}
+{%- capture shots_html -%}
+{%- assign seen2 = '|' -%}
+{%- for r in jm_all -%}
+{%- assign key2 = '|' | append: r.uuid | append: '|' -%}
+{%- unless seen2 contains key2 -%}
+{%- assign seen2 = seen2 | append: r.uuid | append: '|' -%}
+{%- if r.body != blank -%}{%- assign r_text = r.body -%}{%- else -%}{%- assign r_text = r.body_html | strip_html | strip -%}{%- endif -%}
+{%- assign r_stars = r.rating | plus: 0 -%}
+{%- for pic in r.pictures_urls -%}
+{%- assign pic_url = pic.huge | default: pic.original | default: pic.compact | default: pic.small -%}
+{%- if pic_url != blank -%}
+{%- assign shots = shots | plus: 1 -%}
+<a class="pg-hus-shot" href="#pg-reviews">
+  <img src="{{ pic_url }}" alt="Customer photo from {{ r.reviewer_name | default: 'a verified buyer' | escape }}" loading="lazy" decoding="async" referrerpolicy="no-referrer" width="400" height="500">
+  <span class="pg-hus-cap">
+    <span class="st">{%- for s in (1..5) -%}{%- if s <= r_stars -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</span>
+    <span class="nm">{{ r.reviewer_name | default: 'Verified buyer' | escape }}</span>
+    {%- if r_text != blank -%}<span class="tx">{{ r_text | escape }}</span>{%- endif -%}
+  </span>
+</a>
+{%- endif -%}
+{%- endfor -%}
+{%- endunless -%}
+{%- endfor -%}
+{%- endcapture -%}
+{%- if shots > 2 -%}
+{%- assign hus_avg = jm.average_rating | times: 1.0 | round: 1 -%}
+<style>
+  /* the story's own strip (pg-r36h-ultra-story, data-rhs="shots"): replaced by
+     this one on this page, see the note at the top */
+  #pgx [data-rhs="shots"]{display:none !important}
+  /* the strip: the Pro page's rules, renamed. min-width:0 and overflow:hidden
+     keep a horizontal scroller from widening the buy column (pg-page-polish
+     does the same for the Pro's strip). */
+  #pgx .pg-hus-shots{margin:16px 0 4px;min-width:0;max-width:100%;overflow:hidden;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif}
+  #pgx .pg-hus-shots-h{display:flex;align-items:baseline;justify-content:flex-end;gap:10px;margin:0 2px 9px}
+  /* under the headline the caption keeps only its "Swipe" hint, right-aligned;
+     the BUYER REVIEWS words read as a second title and are hidden */
+  #pgx .pg-hus-shots-h b{display:none;font-size:14px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff}
+  #pgx .pg-hus-shots-h span{font-size:12px;font-weight:600;color:#C79BEA;white-space:nowrap}
+  /* the "loved by" header over the photo rail: our purple pill with the page's
+     own rating and review count, the purple gradient second line. No invented
+     customer counts. */
+  #pgx .pg-hus-loved{text-align:center;margin:30px 0 6px}
+  #pgx .pg-hus-loved-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:999px;background:linear-gradient(120deg,#7A2FA2,#9B4BC4 55%,#B478E0);color:#fff;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;font-weight:700;letter-spacing:.02em;line-height:1;box-shadow:0 12px 26px -14px rgba(155,75,196,.9)}
+  #pgx .pg-hus-loved-pill .st{font-size:13px;letter-spacing:.08em}
+  #pgx .pg-hus-loved h3{margin:12px 0 0;font-family:'Poppins','Segoe UI',Helvetica,Arial,sans-serif;font-size:27px;line-height:1.1;font-weight:800;letter-spacing:-.01em;color:#fff}
+  #pgx .pg-hus-loved h3 span{display:block;background:linear-gradient(100deg,#F3E8FF 0%,#D9B3F5 30%,#B06CE8 60%,#8B3FB8 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+  /* the rail loops (the set is printed five times; the script keeps the rail on
+     the middle copy). It does not scroll by itself. Cards are a fixed width:
+     cqw is 46% of the rail where container units work, 44vw the fallback. */
+  #pgx .pg-hus-rail{overflow-x:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;container-type:inline-size;
+    scrollbar-width:none;-ms-overflow-style:none;margin:0 -2px;padding:0 2px 4px}
+  #pgx .pg-hus-rail::-webkit-scrollbar{display:none}
+  #pgx .pg-hus-track,#pgx .pg-hus-set{display:flex;gap:10px;width:max-content}
+  #pgx .pg-hus-shot{flex:0 0 auto;width:min(210px,44vw);width:min(210px,46cqw);display:block;text-decoration:none !important;
+    background:#16101F;border:1px solid rgba(255,255,255,.09);border-radius:14px;overflow:hidden;color:#F1EDF7}
+  #pgx .pg-hus-shot img{display:block;width:100%;aspect-ratio:4/5;object-fit:cover;background:#0D0714}
+  #pgx .pg-hus-cap{padding:8px 10px 10px}
+  #pgx .pg-hus-cap .st{color:#C79BEA;font-size:12.5px;letter-spacing:.06em;line-height:1}
+  #pgx .pg-hus-cap .nm{display:block;margin-top:4px;font-size:12.5px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #pgx .pg-hus-cap .tx{margin:3px 0 0;font-size:12px;line-height:1.4;color:#CFC4DE;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  @media (max-width:900px){
+    /* on a phone the buy column is a flex column: the strip follows the tiles'
+       run (5) and leads the accordions (6), as on the Pro page */
+    #pgx#pgx .pgx-buy > .pg-hus-shots{order:6;margin:6px 0 18px}
+  }
+</style>
+<div id="pg-hus-shots-src" hidden>
+  <div class="pg-hus-shots" data-hus="shots">
+    <div class="pg-hus-loved"><span class="pg-hus-loved-pill"><span class="st" aria-hidden="true">&#9733;&#9733;&#9733;&#9733;&#9733;</span><span data-hus-loved="pill">Rated {{ hus_avg }}/5 &middot; {{ jm.number_of_reviews }} reviews</span></span><h3>Loved by Gamers<span>Just Like You</span></h3></div>
+    <div class="pg-hus-shots-h"><b>Buyer Reviews</b><span>Swipe &rarr;</span></div>
+    {%- capture shots_clone -%}{{ shots_html | replace: '<a class="pg-hus-shot"', '<a tabindex="-1" class="pg-hus-shot"' }}{%- endcapture -%}
+    <div class="pg-hus-rail" data-hus-loop><div class="pg-hus-track"><div class="pg-hus-set">{{ shots_html }}</div><div class="pg-hus-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-hus-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-hus-set" aria-hidden="true">{{ shots_clone }}</div><div class="pg-hus-set" aria-hidden="true">{{ shots_clone }}</div></div></div>
+  </div>
+</div>
+<script src="{{ 'pgx-pg-r36h-ultra-shots.js' | asset_url }}" defer="defer"></script>
+{%- endif -%}
+{% schema %}
+{"name": "PG R36H Ultra Photos", "settings": [], "presets": [{"name": "PG R36H Ultra Photos"}]}
+{% endschema %}

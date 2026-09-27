@@ -1,3 +1,90 @@
+# R36H Ultra page: imported Judge.me reviews in the R36S Ultra format (theme "R36H Ultra reviews (Claude 9-27)")
+
+Owner, 2026-09-27: "just imported reviews for R36H Ultra. make them show on
+site and copy the review structure of R36S Ultra." Judge.me synced the
+product at 16:32 UTC: 34 reviews, 4.68 average, histogram 26/5/3/0/0.
+
+## What was already there
+The R36H Ultra page was built on 2026-09-26 with `hide_reviews` off, so the
+review pieces fill in from the Judge.me metafields when the page renders. No
+publish is needed for them.
+- The rating line under the title. pg-rev-link turns it into "34 verified
+  reviews", linking to the breakdown.
+- The rotating review card.
+- The "Loved by Gamers" photo strip, from pg-r36h-ultra-story.
+- The breakdown at the bottom: 4.7 / 34 Reviews with the histogram.
+
+The review CSS on the two pages is identical. So is the bottom order:
+story, then "You may also like", then reviews.
+
+## What differed, and the fix
+- **Photo strip.** The R36H Ultra story carries the R36H Pro's strip: a
+  plain snap-scrolling rail that stops at its last photo. The R36S Ultra's
+  strip (pg-ultra-shots) loops: the photo set is printed five times and the
+  rail is kept on the middle copy.
+  - New `sections/pg-r36h-ultra-shots.liquid` and
+    `assets/pgx-pg-r36h-ultra-shots.js`. They are pg-ultra-shots with the
+    prefix `pg-uls-` renamed `pg-hus-`.
+  - While the new strip renders, it hides the story's strip
+    (`[data-rhs="shots"]`). The story section itself is untouched, and its
+    script still seats the old strip; nothing needs it to be visible.
+  - Both strips read the same photos and need three or more, so they come
+    and go together.
+  - The schema name is "PG R36H Ultra Photos", because Shopify caps it at 25
+    characters.
+- **Template fallbacks.** `templates/product.pg-r36h-ultra.json` carried no
+  fallback figures and no fallback quotes. It now has 4.7 / "34 reviews" /
+  34 and eight five-star reviews from the feed, verbatim, as the R36S Ultra
+  template does. These render only if the Judge.me metafields go missing.
+  The new section is registered after the story.
+
+## Verified
+- Built on a fresh copy of the live theme ("Save % match (Claude 9-27)").
+  All 952 file checksums matched live before the upload, including the two
+  homepage files changed at 16:43.
+- All three uploaded files match the local copies by MD5.
+- liquidjs and jsdom, against the real metafields:
+  - Rating line "4.7" and "34 verified reviews", linking to #pg-reviews.
+  - Breakdown "4.7 / 34 Reviews", histogram 26/5/3/0/0.
+  - 27 review cards with no duplicates (Judge.me syncs part of the 34), 11
+    with photos.
+  - 27 rotating quotes, 25 of them eligible for the featured card (4 stars
+    and up).
+  - Strip: 20 photos, the same photos in the same order as the story's
+    strip, 5 rail copies, pill "Rated 4.7/5 · 34 reviews".
+  - The strip is seated right after #pgx-err, still there after the story
+    script's second seat, with the rail centred on the middle copy.
+  - Fallback path (no metafields): 4.7 / 34, 8 cards, 8 quotes, no strip,
+    no hide rule.
+- Real Chromium at 390px and 1280px, with the theme's CSS:
+  - New theme: the story's strip computes to display:none, and the new
+    strip shows with the rail centred.
+  - Today (control): the story's strip shows.
+  - Both: the rating line, card, grid and "Customer Reviews" title show,
+    with no horizontal scroll.
+
+## Raised with the owner
+These reviews are in the feed and rotate or show on the page:
+- Kenya Bauch (5): says the unit was returned.
+- Clyde Rolfson (5): quotes a $50 price.
+- Mack Green (4): names AliExpress.
+- Shayne Rohan (5): names another seller ("boyhom").
+- Craig Kautzer (5): calls it a "laptop".
+- Harland Kohler (5) and Jeffery Hackett (3): identical text and photo under
+  two names.
+- Joannie Champlin (5): the text is only "Pocket Era R36H Ultra". It
+  captions 4 strip photos.
+
+The reviews are AliExpress imports that Judge.me marks verified_buyer:
+false, while the page says "verified", as on the other console pages.
+
+Files changed:
+- theme/sections/pg-r36h-ultra-shots.liquid (new)
+- theme/assets/pgx-pg-r36h-ultra-shots.js (new)
+- theme/templates/product.pg-r36h-ultra.json
+
+---
+
 # SAVE % pills round like the cart (theme "Save % match (Claude 9-27)")
 
 Owner, 2026-09-27: "make them match". The product-page SAVE pills rounded
