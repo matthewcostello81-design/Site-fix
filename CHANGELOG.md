@@ -1,3 +1,44 @@
+# R36S Pro: Single $79.99, every bundle $5 less per console (product data, live)
+
+Owner, 2026-09-27: "make price of R36S pro single to 79.99. drop the bundle
+prices accordingly." Read as: every console is $5 cheaper, in every tile.
+Compare-at prices are unchanged, so the SAVE pills rise.
+
+| Tile | Was | Now | Struck | Pill (tile, rounds down) |
+|---|---|---|---|---|
+| Single Device (64GB) | $84.99 | $79.99 | $113.99 | SAVE 29% (was 25%) |
+| Duo Pack (2 singles, $5 off each) | $159.98 | $149.98 | $227.98 | SAVE 34% (was 29%) |
+| Max Bundle (128GB) | $129.99 | $124.99 | $208.96 | MOST POPULAR · SAVE 40% (was 37%) |
+| Duo Max (2 Max, $30 off each) | $199.98 | $189.98 | $417.92 | BEST DEAL · SAVE 54% (was 52%) |
+
+- Only the variant prices changed: 5 Single and 5 Max colours.
+- The Duo prices follow by themselves. The automatic discounts "R36S Pro -
+  Duo Pack Savings" ($5 each) and "R36S Pro - Duo Max Savings" ($30 each)
+  are unchanged, and so are the tiles' duo_off / duomax_off settings that
+  mirror them.
+- No theme file prints a fixed Pro price. pg-pro2-tiles and pg-pro2-story
+  read the variants live. The dollar amounts in their notes are dated
+  history.
+
+## Verified
+draftOrderCalculate, nothing saved:
+- One Single: $79.99, less the Extra 5% ($3.99), comes to $76.00.
+- A Duo Pack: $159.98, less the Duo Pack Savings ($10), is $149.98; less the
+  Extra 5% ($7.49), $142.49.
+- A Duo Max: $249.98, less the Duo Max Savings ($60), is $189.98; less the
+  Extra 5% ($9.49), $180.49.
+
+## Note
+- The tiles round savings down. The cart (nc-cro) rounds to the nearest
+  percent.
+- So the Single reads SAVE 29% on the page and Save 30% in the cart. The Duo
+  Max reads 54% on the page and 55% in the cart.
+- Neither side is changed here.
+
+Files changed: none
+
+---
+
 # PocketEra RetroBox: strikethrough prices end in .99
 
 Owner, 2026-09-26: "make strikethrough prices round to .99 instead of random
