@@ -13,7 +13,11 @@
   if (!VARS.length) return;
 
   function money(c){ return '$' + (c / 100).toFixed(2); }
-  function pct(p, cap){ return cap > p ? Math.floor((cap - p) / cap * 100) : 0; }
+  /* whole percents, ROUNDED to the nearest, as the cart rounds its "Save n%"
+     (nc-cro, nc-linesave, pg-cart-total), so a tile and its cart line always
+     agree (2026-09-27, owner: "make them match": rounded down, the R36S Pro
+     Single read SAVE 29% here and Save 30% in the cart) */
+  function pct(p, cap){ return cap > p ? Math.round((cap - p) / cap * 100) : 0; }
   function setText(el, txt){ if (el && el.textContent !== txt) el.textContent = txt; }
 
   /* THE TILE IS THE VARIANT: one tile per Edition value, matched by name */
@@ -40,6 +44,37 @@
 
   function tiles(){ return Array.prototype.slice.call(document.querySelectorAll('#pgx .pgx-buy > .pgx-tile.pg-rb')); }
   function selected(){ return document.querySelector('#pgx .pgx-buy > .pgx-tile.pg-rb.pgx-sel'); }
+
+  /* THE EXTRA CONTROLLER (2026-09-26, owner: "add extra controller for 19.99
+     as an upsale option check box"): a checkbox row (the R36H's .pg-tadd look)
+     inside the tile(s) the section gives one to, posting the one-variant
+     "RetroBox Extra Controller" (DATA.ctrl) with the console when ticked.
+     One state for the page: ticking it on one tile ticks it on all. The row
+     sits under the in-tile Add to cart on a phone (pg-r36s-mobile's
+     .pg-r36-atc), as on the R36H; a tap on it never selects the tile. */
+  var CTRL = DATA.ctrl || null, ctrlOn = false;
+  function ctrlRows(){ return Array.prototype.slice.call(document.querySelectorAll('#pgx .pg-rb [data-rb-add="ctrl"]')); }
+  function ctrlSync(){
+    ctrlRows().forEach(function(r){
+      if (r.classList.contains('on') !== ctrlOn) r.classList.toggle('on', ctrlOn);
+      var a = ctrlOn ? 'true' : 'false';
+      if (r.getAttribute('aria-checked') !== a) r.setAttribute('aria-checked', a);
+    });
+  }
+  function ctrlBind(row){
+    if (row.pgRbBound) return; row.pgRbBound = 1;
+    function flip(e){ e.preventDefault(); e.stopPropagation(); ctrlOn = !ctrlOn; ctrlSync(); }
+    row.addEventListener('click', flip);
+    row.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter') flip(e); });
+  }
+  /* under the in-tile Add to cart when pg-r36s-mobile has put one in */
+  function ctrlSeat(){
+    ctrlRows().forEach(function(r){
+      var tile = r.closest('.pg-rb'), btn = tile && tile.querySelector(':scope > .pg-r36-atc');
+      if (btn && btn.nextElementSibling !== r) tile.insertBefore(r, btn.nextSibling);
+    });
+  }
+  function ctrlWanted(tile){ return !!(ctrlOn && CTRL && CTRL.id && CTRL.av && tile && tile.querySelector('[data-rb-add="ctrl"]')); }
 
   function select(tile){
     document.querySelectorAll('#pgx .pgx-tile.pgx-sel').forEach(function(x){ x.classList.remove('pgx-sel'); x.setAttribute('aria-checked', 'false'); });
@@ -74,6 +109,7 @@
       t.addEventListener('click', function(e){ select(t); if (!fromAtc(e)) showEdition(t.getAttribute('data-rb-ed')); });
       t.addEventListener('keydown', function(e){ if (e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); select(t); if (!fromAtc(e)) showEdition(t.getAttribute('data-rb-ed')); } });
       paint(t);
+      Array.prototype.slice.call(t.querySelectorAll('[data-rb-add="ctrl"]')).forEach(ctrlBind);
     });
     if (native) { native.classList.remove('pgx-sel'); native.setAttribute('aria-checked', 'false'); }
     /* exactly one tile selected, even if the first edition was left out */
@@ -93,7 +129,8 @@
   /* ONE OWNER FOR ADD TO CART. Window, capture phase: first node in the
      propagation path, so it runs before pg-landing's handler on #pgx-atc and
      before every document-level listener in the footer group. Posts the
-     selected edition's variant, quantity 1. */
+     selected edition's variant, quantity 1, and the extra controller when its
+     box is ticked on that tile. */
   var busy = false;
   window.addEventListener('click', function(e){
     if (!e.target || !e.target.closest) return;
@@ -120,7 +157,7 @@
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       credentials: 'same-origin',
-      body: JSON.stringify({items: [{id: v.id, quantity: 1}]})
+      body: JSON.stringify({items: ctrlWanted(tile) ? [{id: v.id, quantity: 1}, {id: CTRL.id, quantity: 1}] : [{id: v.id, quantity: 1}]})
     }).then(function(r){
       busy = false;
       if (lbl) lbl.textContent = old || 'Add to cart';
@@ -202,7 +239,7 @@
 
   function boot(){
     var seated = seat();
-    setInterval(function(){ try { heroCap(); } catch (e){} }, 300);
+    setInterval(function(){ try { heroCap(); ctrlSeat(); ctrlSync(); } catch (e){} }, 300);
     var n = 0;
     var t = setInterval(function(){
       if (!seated) seated = seat();

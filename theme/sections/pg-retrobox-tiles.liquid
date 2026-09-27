@@ -43,10 +43,20 @@
   so they follow the admin: the 8-Bit is $129.99 against a $173.99
   compare-at and the 16-Bit $139.99 against $186.99 (owner 2026-09-26: "make
   the strikethrough price reflect a 25% discount", then "round to .99";
-  each compare-at is the price / 0.75 rounded UP to the next .99, because
-  the pill rounds down: $172.99 and $185.99 would read SAVE 24%). Each tile
-  strikes its own compare-at and its pill reads SAVE 25% (25.3% and 25.1%).
+  each compare-at is the price / 0.75 rounded UP to the next .99, chosen
+  while the pill still rounded down). Each tile strikes its own compare-at
+  and its pill reads SAVE 25% (25.3% and 25.1%). Since 2026-09-27 the pill
+  rounds to the nearest percent, as the cart does, so the two always agree.
   With no compare-at the strike and the SAVE pill go away by themselves.
+
+  THE EXTRA CONTROLLER (2026-09-26, owner: "add extra controller for 19.99
+  as an upsale option check box"): a checkbox row on the 16-Bit Edition tile
+  (the controller photo is the 16-bit style pad) for the product
+  retrobox-extra-controller ($19.99, compare-at $29.99, SKU
+  PE-RETROBOX-CTRL). Ticked, Add to cart posts it with the console as a line
+  of its own. Price, strike and picture are read from the product, so they
+  follow the admin; the row is left out if the product is unpublished or
+  unavailable. To offer it on the 8-Bit tile too, copy the row into that tile.
 {%- endcomment -%}
 {%- assign p = product -%}
 {%- if p and p.variants.size > 0 -%}
@@ -55,6 +65,8 @@
   {%- if v.option1 == '8-Bit Edition' -%}{%- assign rb_v8 = v -%}{%- endif -%}
   {%- if v.option1 == '16-Bit Edition' -%}{%- assign rb_v16 = v -%}{%- endif -%}
 {%- endfor -%}
+{%- assign rb_ctrl = all_products['retrobox-extra-controller'] -%}
+{%- assign rb_ctrl_v = rb_ctrl.selected_or_first_available_variant -%}
 <style>
   /* pg-landing's native single tile: replaced by the tiles below */
   #pgx .pgx-buy > .pgx-tile[data-pgx-tile="single"]{display:none !important}
@@ -131,6 +143,10 @@
       <li>Free Shipping</li>
     </ul>
     <div class="pgx-tier-note"><b>One RetroBox 8-Bit Edition</b> with 30 classic 8-bit games built in and a wired controller, plus an extra <b>5% off</b> at checkout.</div>
+    {%- comment -%} the same extra-controller checkbox on the 8-Bit tile (owner, 2026-09-27: "add the extra controller upsell to the 8 bit edition too"); the script keeps one state for every row {%- endcomment -%}
+    {%- if rb_ctrl and rb_ctrl.available and rb_ctrl_v -%}
+    <div class="pg-tadd" role="checkbox" aria-checked="false" tabindex="0" data-rb-add="ctrl"><span class="pg-tadd-ck" aria-hidden="true"></span><img alt="" src="{{ rb_ctrl.featured_image | image_url: width: 160 }}"><span class="pg-tadd-t">Add Extra Controller</span><span class="pg-tadd-p">{%- if rb_ctrl_v.compare_at_price > rb_ctrl_v.price -%}<s>{{ rb_ctrl_v.compare_at_price | money }}</s>{%- endif -%}<b>{{ rb_ctrl_v.price | money }}</b></span></div>
+    {%- endif -%}
   </div>
   {%- endif -%}
 
@@ -142,7 +158,7 @@
       <div class="pgx-duo-t"><b>16-Bit Edition</b></div>
       <div class="pgx-duo-px"><b data-rb-now>{{ rb_v16.price | money }}</b><s data-rb-was>{%- if rb_v16.compare_at_price > rb_v16.price -%}{{ rb_v16.compare_at_price | money }}{%- endif -%}</s><span class="pgx-lad-chip pgx-each"></span></div>
     </div>
-    <div class="pg-rb-meta"><span class="pgx-lad-chip">30 16-Bit Games &middot; 2 Controllers</span><small>Purple buttons, built for 2 players</small></div>
+    <div class="pg-rb-meta"><span class="pgx-lad-chip">30 16-Bit Games &middot; 2 Controllers</span><small>Built for 2-player couch co-op</small></div>
     <ul class="pg-rb-inc">
       <li><b>30</b> Built-In Games</li>
       <li><b>2</b> Wired Controllers</li>
@@ -152,6 +168,9 @@
       <li>Free Shipping</li>
     </ul>
     <div class="pgx-tier-note"><b>One RetroBox 16-Bit Edition</b> with 30 classic 16-bit games and two wired controllers for couch co-op, plus an extra <b>5% off</b> at checkout.</div>
+    {%- if rb_ctrl and rb_ctrl.available and rb_ctrl_v -%}
+    <div class="pg-tadd" role="checkbox" aria-checked="false" tabindex="0" data-rb-add="ctrl"><span class="pg-tadd-ck" aria-hidden="true"></span><img alt="" src="{{ rb_ctrl.featured_image | image_url: width: 160 }}"><span class="pg-tadd-t">Add Extra Controller</span><span class="pg-tadd-p">{%- if rb_ctrl_v.compare_at_price > rb_ctrl_v.price -%}<s>{{ rb_ctrl_v.compare_at_price | money }}</s>{%- endif -%}<b>{{ rb_ctrl_v.price | money }}</b></span></div>
+    {%- endif -%}
   </div>
   {%- endif -%}
 </div>
@@ -159,7 +178,7 @@
 {%- comment -%} the pill on each product photo. An edition photo is one whose alt text STARTS with an Edition value: the part before " - " must equal a variant's Edition ("8-Bit Edition - ...", "16-Bit Edition - ..."). `contains` read the hero's "... 8-Bit and 16-Bit Editions" as the 16-Bit, so the photo of both consoles said "16-Bit Edition". Every photo is listed; the ones that are no edition's carry rb_name. {%- endcomment -%}
 {%- assign rb_name = 'Pocket Era RetroBox' -%}
 <script type="application/json" id="pg-rb-data">
-{"variants":[{%- for v in p.variants -%}{"id":{{ v.id }},"e":{{ v.option1 | json }},"p":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"av":{{ v.available | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],"name":{{ rb_name | json }},"shots":[{%- for image in p.images -%}{%- assign rb_pre = image.alt | default: '' | split: ' – ' | first | split: ' - ' | first | strip | downcase -%}{%- assign rb_ed = '' -%}{%- for v in p.variants -%}{%- assign rb_vo = v.option1 | downcase -%}{%- if rb_pre != '' and rb_pre == rb_vo -%}{%- assign rb_ed = v.option1 -%}{%- endif -%}{%- endfor -%}{"src":{{ image | image_url: width: 1400 | json }},"e":{{ rb_ed | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}
+{"variants":[{%- for v in p.variants -%}{"id":{{ v.id }},"e":{{ v.option1 | json }},"p":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"av":{{ v.available | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}],"ctrl":{"id":{{ rb_ctrl_v.id | default: 0 }},"p":{{ rb_ctrl_v.price | default: 0 }},"av":{% if rb_ctrl and rb_ctrl.available %}true{% else %}false{% endif %}},"name":{{ rb_name | json }},"shots":[{%- for image in p.images -%}{%- assign rb_pre = image.alt | default: '' | split: ' – ' | first | split: ' - ' | first | strip | downcase -%}{%- assign rb_ed = '' -%}{%- for v in p.variants -%}{%- assign rb_vo = v.option1 | downcase -%}{%- if rb_pre != '' and rb_pre == rb_vo -%}{%- assign rb_ed = v.option1 -%}{%- endif -%}{%- endfor -%}{"src":{{ image | image_url: width: 1400 | json }},"e":{{ rb_ed | json }}}{%- unless forloop.last -%},{%- endunless -%}{%- endfor -%}]}
 </script>
 
 <script src="{{ 'pgx-pg-retrobox-tiles.js' | asset_url }}" defer="defer"></script>

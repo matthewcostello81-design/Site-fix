@@ -1,3 +1,48 @@
+# SAVE % pills round like the cart (theme "Save % match (Claude 9-27)")
+
+Owner, 2026-09-27: "make them match". The product-page SAVE pills rounded
+the saving down; the cart's "Save n%" (nc-cro, nc-linesave, pg-cart-total)
+rounds to the nearest percent. So the R36S Pro Single read SAVE 29% on the
+page and Save 30% in the cart.
+
+Fix: every console tile script now rounds to the nearest percent, the same
+as the cart. The cart is unchanged (three writers, one of them inside the
+260KB nc-cro section).
+
+| Tile | Price vs struck | Page before | Page now = cart |
+|---|---|---|---|
+| R36S Pro Single | $79.99 vs $113.99 | 29% | 30% |
+| R36S Pro Duo Max | $189.98 vs $417.92 | 54% | 55% |
+| R36H Pro Single | $109.99 vs $147.99 | 25% | 26% |
+
+Every other pill (R36S Pro Duo Pack and Max, R36H Pro, R36S Ultra, R36H
+Ultra, RetroBox) already agreed and reads the same as before.
+
+- Built on a fresh copy of the live theme ("Orb card framing (Claude
+  9-26)"), theme 188153364708, unpublished. Publish it to go live.
+- The only code change in each script is the pct() line (Math.floor to
+  Math.round) and its note. The pro2, r36h and ultra scripts also have their
+  two "·" escapes stored as the literal "·" the files already use
+  elsewhere (the upload path converts them; same string in JS).
+- pg-retrobox-tiles.liquid: the price note no longer says the pill rounds
+  down.
+
+## Verified
+- Checksums of all six files on the theme match the local copies.
+- pct_match: each script's pill against the cart's rounding, for every
+  tile at current prices: all match.
+
+Files changed:
+- theme/assets/pgx-pg-pro2-tiles.js
+- theme/assets/pgx-pg-r36h-tiles.js
+- theme/assets/pgx-pg-r36h-ultra-tiles.js
+- theme/assets/pgx-pg-ultra-tiles.js
+- theme/assets/pgx-pg-retrobox-tiles.js (also brings the repo copy up to
+  live: the extra-controller upsell from another session)
+- theme/sections/pg-retrobox-tiles.liquid (same)
+
+---
+
 # R36S Pro: Single $79.99, every bundle $5 less per console (product data, live)
 
 Owner, 2026-09-27: "make price of R36S pro single to 79.99. drop the bundle
