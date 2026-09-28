@@ -1,3 +1,45 @@
+# Cart: R36H Ultra kit and shared add-ons open the right console page
+
+## Problem
+Tapping the **R36H Ultra Protection Kit** line in the cart (the $0 kit that
+rides beside an Ultra Max Bundle) landed on the stock product template: the
+Ultra kit was created on 2026-09-27, after the redirect list in
+`layout/theme.liquid` was written, so it was never added. Separately, the Ultra
+sells the R36H Pro's hard shell case and screen protector as its single
+add-ons (there are no Ultra-specific add-on products), and their pages always
+redirected to the **R36H Pro** page, even for a shopper who is buying an Ultra.
+
+## Cause
+`layout/theme.liquid` bounces each cart-only kit/add-on handle to a fixed
+console URL. `r36h-ultra-max-kit` was missing from the R36H group, and the
+R36H group had a single hard-coded target (`/products/pocket-era-r36h`).
+
+## Fix
+One line in `layout/theme.liquid` (live theme file, not tracked here), on the
+unpublished copy **"R36H Ultra kit redirect (Claude 9-28)"** of the live
+theme, to be previewed and published from the admin:
+
+- `r36h-ultra-max-kit` added to the R36H redirect group; it always goes to
+  `/products/pocket-era-r36h-ultra`. `r36h-max-kit` still always goes to the Pro.
+- The shared single add-ons (`r36h-hard-shell-travel-case`,
+  `r36h-screen-protector`, `r36h-silicone-case`) now pick their target from the
+  cart: the first R36H console found in `cart.items` (Shopify lists the most
+  recently added line first) wins, so an Ultra buyer lands on the Ultra page and
+  a Pro buyer on the Pro page. With no R36H console in the cart they go to the
+  Pro page, as before.
+
+Also in this session (Shopify data only, no theme change): the Ultra kit shared
+the Pro kit's image file, so both Max Bundle cart lines showed the same photo.
+The Ultra kit now has its own image (`files/r36h-ultra-kit.png`, case ~20%
+larger in frame, tray cut for the wider 4:3 console) and the Pro kit's file was
+detached from the Ultra kit product.
+
+## Applied to
+Live theme file `layout/theme.liquid` (via the unpublished copy above).
+No files in this repo changed.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
