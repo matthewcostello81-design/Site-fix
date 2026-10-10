@@ -1,3 +1,42 @@
+# Mini: steeper Save % on the Max and Duo Max (crossed-out price from the parts)
+
+## Request
+Owner, 2026-10-10: "the mini save% should increase ... in the max and duo max so
+it incentivizes. Just make the cross out price higher or whatever based on those
+individual components."
+
+## Before
+The Max Bundle's compare-at was $84.97 = console $44.99 + hard shell case
+$19.99 + extra controller $19.99, so the ladder barely moved as you went up:
+Single 22% / Duo Pack 27% / Max 29% / Duo Max 32%.
+
+## Change
+1. Admin (productVariantsBulkUpdate): the three Max Bundle variants' compare-at
+   price is now $104.97 = console $44.99 + hard shell travel case $29.99 +
+   extra wired controller & AV cable $29.99. $29.99 is the list price the
+   store's own hard shell cases and the RetroBox Extra Controller already
+   carry, so each component is valued the way it is sold on its own. Live now.
+   Ladder: Single 22% / Duo Pack 27% / Max 42% / Duo Max 45%.
+2. Theme (sections/pe-mini-bundles.liquid): the "what each piece sells for"
+   cards under the Max section printed "$19.99 value" as fixed text. They are
+   now rewritten from the variants, each extra = (Max compare-at minus Single
+   compare-at) / 2, so they read $29.99 today and follow the admin if the
+   compare-at changes again. Everything else that prints the crossed-out price
+   (row pills, strikethroughs, the sticky bar, the cart's Sale Savings and You
+   saved rows, the cart upsell cards) already reads the variant compare-at and
+   needs nothing.
+
+## Where
+Draft theme "Mini value ladder 42/45% (Claude 10-10)" (id 188680110308). It was
+checksum-compared against the live theme: identical on all 764 files except
+templates/index.json, which was behind the live homepage (the Mini card's gloves
+image); that file was synced from live before the edit, so publishing the draft
+changes only the Mini value cards. Publishing is the owner's step (the API
+blocks theme publish). Until it is published the live page still says "$19.99
+value" on those two cards beside the new $104.97 strikethrough.
+
+---
+
 # Mini: Duo Pack / Duo Max saving dropped out of the cart next to another deal
 
 ## Problem
