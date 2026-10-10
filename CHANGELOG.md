@@ -1,3 +1,35 @@
+# Discounts: no product deal stacks with another product deal
+
+## Request
+Owner, 2026-10-10: "none of the products should combine deals w other products."
+This reverses the earlier change that let the Mini duo discounts combine.
+
+## Change (admin only, no theme files)
+combinesWith.productDiscounts set to false on every product deal that had it on:
+- Mini - Duo Pack Savings, Mini - Duo Max Savings (reverted)
+- R36S Pro - Duo Pack Savings, R36S Pro - Duo Max Savings
+- DBZ Lamp - 2 Pack $77.98, DBZ Lamp - 3 Pack $104.97
+- PokeOrb - Buy 2 Get 1 Free, PokeOrb - Buy 5 Get 4 Free
+- Wall Art - Buy 2 Get 1 Free, Power Ball - Buy 2 Get 1 Free
+- code 1NWTGWAGYCJB (single-use 10%, unused)
+The other duo deals (Flip SP, R36H Pro, R36S Ultra, R36H Ultra, Gastly, Clutch
+Buds, Clutch Pro) were already off. Order and shipping combining left on, so
+the site-wide "Extra 5% off entire order" still applies on top of any one deal,
+as every product page advertises.
+
+Not changed: the "Upsell.com" app discount (managed by the Upsell.com app,
+never used).
+
+## Verified (draftOrderCalculate, automatic discounts on)
+Each product's own deal is unchanged: Mini Duo Pack 32.49 x2, Mini Duo Max
+57.49 x2, R36S Pro Duo Pack 74.99 x2, R36S Pro Duo Max 94.99 x2, DBZ 2 lamps
+38.99 x2, 3 lamps 34.99 x3, Power Ball 3 for 79.98, Wall Art 3 for 69.98.
+Cross-product carts now get one deal only: Mini duo + Pro duo -> Pro keeps
+74.99, Mini back to 34.99. Pro singles + Pro Max in one cart -> Duo Max only.
+The orb checks after the change were not run.
+
+---
+
 # Mini: steeper Save % on the Max and Duo Max (crossed-out price from the parts)
 
 ## Request
