@@ -1,3 +1,27 @@
+# Discounts: every product's deal applies, even with other deals in the cart
+
+## Request
+Owner, 2026-10-10: "if they order 2 different products with 2 different deals
+they should get both." Replaces the "no stacking" entry below.
+
+## Change (admin only)
+combinesWith.productDiscounts = true on all 22 automatic product deals (every
+console Duo Pack / Duo Max, DBZ lamp packs, Gastly, Clutch Buds, Clutch Pro,
+orb / wall art / power ball / buds BxGy) and on code 1NWTGWAGYCJB (back to its
+original setting). Order and shipping combining unchanged, so the Extra 5%
+still applies on top.
+
+Shopify still gives each line only its single best product deal, so deals on
+the same product do not double up.
+
+## Verified (draftOrderCalculate)
+Mini Duo + Pro Duo: 32.49 x2 + 74.99 x2. Flip Duo + Mini Duo Max: 119.99 x2 +
+57.49 x2. R36S Ultra Duo + R36H Ultra Duo Max: 102.99 x2 + 144.99 x2. Pro
+singles + Pro Max: 74.99 x2 + 94.99 x2. 3 DBZ lamps 34.99 each. Clutch Buds
+2 = 89.98, 3 = 99.98. Gastly 2 = 89.98 with Clutch Pro 2 = 149.99.
+
+---
+
 # Discounts: no product deal stacks with another product deal
 
 ## Request
