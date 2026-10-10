@@ -1,3 +1,43 @@
+# Mini: Duo Pack / Duo Max saving dropped out of the cart next to another deal
+
+## Problem
+The Pocket Era Mini page prices the Duo Pack at $64.98 (two Singles, $2.50 off
+each) and the Duo Max at $114.98 (two Max Bundles, $2.50 off each), and says the
+saving is applied automatically in the cart. In the cart the two Mini lines came
+back at full price ($34.99 / $59.99 each) whenever the cart also held any other
+product-level automatic discount: an R36S Pro Duo Pack or Duo Max, or even the
+Mini's own other duo (Duo Pack + Duo Max in one cart only discounted one of them).
+Alone in the cart the Mini duo priced correctly, which is why it looked random.
+
+## Cause
+Not a theme bug. The two Shopify automatic discounts behind the Mini page,
+"Mini - Duo Pack Savings" and "Mini - Duo Max Savings", were created with
+"Combines with: Product discounts" switched OFF. Shopify only stacks two
+product discounts when BOTH allow it; otherwise it keeps the single largest one.
+The R36S Pro duo discounts have the switch ON, so the Pro always won and the
+Mini pair lost its $5.00. Verified with the Admin API's draftOrderCalculate
+(acceptAutomaticDiscounts: true) before and after.
+
+## Fix
+Admin change only (discountAutomaticBasicUpdate), no theme file touched:
+- Mini - Duo Pack Savings (gid://shopify/DiscountAutomaticNode/1535579357412):
+  combinesWith.productDiscounts false -> true
+- Mini - Duo Max Savings  (gid://shopify/DiscountAutomaticNode/1535579390180):
+  combinesWith.productDiscounts false -> true
+
+After the change: Mini Duo + R36S Pro Duo in one cart = $32.49 x2 + $74.99 x2;
+Mini Duo Pack + Duo Max = $32.49 x2 + $57.49 x2; Mini Duo Max + Pro Duo Max =
+$57.49 x2 + $94.99 x2. All match the product pages.
+
+## Still open (same switch, not changed)
+The duo discounts for the Flip SP, R36H Pro, R36S Ultra, R36H Ultra, Gastly
+Vapor Lamp, Clutch Buds and Clutch Pro Controller also have "Combines with:
+Product discounts" OFF, so any two of those families in one cart (or one of them
+with the Mini) still drops one family's duo saving. Flipping the same switch on
+each of them fixes it; left for the owner to confirm.
+
+---
+
 # Cart drawer: stop discount/progress flicker (safe override)
 
 ## Problem
