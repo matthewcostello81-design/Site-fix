@@ -19,11 +19,20 @@ prices unchanged at owner's request; compare-at only:
 Result on the tiles: Single 31% (unchanged), Max 39%, Duo Max 46%
 ($539.98 struck, $289.98 after the $20-each Duo Max automatic discount).
 
-## Still open
-The Max tile's note reads "Saves $105.00 vs buying separately". The console
+## Follow-up: Max tile note wording
+The Max tile's note read "Saves $105.00 vs buying separately". The console
 plus its two accessories at their own list prices total about $230, so that
-wording overstates the saving. The R36S Ultra says "off the list price"
-instead; same copy change suggested here, left for the owner to confirm.
+wording overstated the saving. Changed to "off the list price", the R36S
+Ultra's wording, in `sections/pg-r36h-ultra-tiles.liquid` (live theme file,
+not tracked in this repo). Live-theme writes are blocked from the Admin API
+connector, so the edit is on an unpublished theme for the owner to publish:
+"R36H Ultra list-price FIX (Claude 10-10b)"
+(gid://shopify/OnlineStoreTheme/188689219812). That is the previous live
+theme, which was swapped out when a fresh duplicate of it was published
+mid-task; its files matched the new live theme's checksums before the edit.
+The live theme was renamed "Live 10-10 (before list-price fix)" so the two
+are not confused. Uploaded file checksum verified against the local edit
+(md5 827d61713a9126e27193233ee4b10457).
 
 ---
 
