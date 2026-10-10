@@ -1,3 +1,32 @@
+# R36H Ultra: bundle discount ladder ran backwards (Max < Single)
+
+## Problem
+The R36H Ultra bundle tiles read Single SAVE 31%, Max SAVE 25%, Duo Max SAVE
+34%. The Max Bundle looked like a worse deal than the Single, unlike the R36S
+Ultra, whose savings rise with each tier (27% / 36% / 45%).
+
+## Cause
+Not a theme bug. `pg-r36h-ultra-tiles` badges each tile live from the variant
+price and compare-at price. Both R36H Ultra tiers carried the same flat $55 off
+($179.99 -> $124.99, $219.99 -> $164.99), so the larger Max base gave a
+smaller percent.
+
+## Fix
+Admin change only (productVariantsBulkUpdate), no theme file touched. Sale
+prices unchanged at owner's request; compare-at only:
+- Max Bundle (128GB), all 7 colours: compareAtPrice $219.99 -> $269.99
+
+Result on the tiles: Single 31% (unchanged), Max 39%, Duo Max 46%
+($539.98 struck, $289.98 after the $20-each Duo Max automatic discount).
+
+## Still open
+The Max tile's note reads "Saves $105.00 vs buying separately". The console
+plus its two accessories at their own list prices total about $230, so that
+wording overstates the saving. The R36S Ultra says "off the list price"
+instead; same copy change suggested here, left for the owner to confirm.
+
+---
+
 # Mini: Duo Pack / Duo Max saving dropped out of the cart next to another deal
 
 ## Problem
