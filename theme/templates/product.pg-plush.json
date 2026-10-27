@@ -1,0 +1,39 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
+{
+  "sections": {
+    "pr_product": {
+      "type": "pr-product",
+      "settings": {
+        "subtitle": "Soft, huggable character plush",
+        "crumb": "Collectibles",
+        "crumb_url": "/collections/collectibles",
+        "bundles": "Single Plushie ~ ~ 1 ~ 0 ~ 0 ~ 0 ~ One plushie, any character ~ ~ ~ |Buy 2 ~ ~ 2 ~ 10 ~ 0 ~ 1 ~ Two plushies, 10% off both ~ Most popular ~ ~ pct|Buy 3 ~ ~ 3 ~ 15 ~ 0 ~ 0 ~ Three plushies, 15% off each ~ Best deal ~ ~ pct",
+        "pains": "star ~ 25 characters ~ Mix any in a bundle|tape ~ Small or Large ~ 20 cm or 40 cm|set ~ Bundle & save ~ Up to 15% off|warm ~ Super soft ~ Velvety short plush",
+        "specs": "Material ~ Short velvety plush outer, PP cotton filling|Sizes ~ Small 20 cm, Large 40 cm|Characters ~ 25, from Pikachu, Snorlax and Gengar to Charizard, Mew and the Eevee family; Pikachu, Snorlax, Mew, Cubone, Venusaur and Jigglypuff come in both sizes|Age ~ Recommended 14+",
+        "box": "Your plushie in the character and size you pick",
+        "shipping": "Free tracked shipping on every order. Orders leave the warehouse in 1 to 2 business days and most arrive within 7 to 12 days. You get a tracking link by email the moment it ships.",
+        "swatch_label": "Character",
+        "also": "legends-ball-cushion,pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift,legends-eden-hoodie,pocket-era-r36s-ultra-x,pocket-era-r36-pro-2",
+        "lead": "https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-gloves-pikachu.jpg?v=1792895808",
+        "play_title": "Pick your character.",
+        "play_tabs": "Pikachu ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-studio-pikachu.jpg?v=1792945068 | Charizard ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-studio-charizard.jpg?v=1792945068 | Eevee ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-studio-eevee.jpg?v=1792945067 | Snorlax ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-studio-snorlax.jpg?v=1792951915 | Charmander ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-studio-charmander.png?v=1792945068 | Squirtle ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20261024_204624_d5e43e25-c072-4daa-9566-048e004c5a79.png?v=1792945068",
+        "tabs2_title": "See the real size.",
+        "tabs2": "Pikachu ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-size-Pikachu_S.jpg?v=1792945068|Snorlax ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-size-Snorlax_S.jpg?v=1792945068|Jigglypuff ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-cmp-Jigglypuff.jpg?v=1792945069|Mew ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-size-Mew_S.jpg?v=1792945068|Venusaur ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/hf_20261024_204724_bbee124a-3a86-4a47-b4e3-16c19f500efd.png?v=1792945068|Cubone ~ https://cdn.shopify.com/s/files/1/0815/5706/1860/files/plush-size-Cubone_S.jpg?v=1792945068",
+        "mods": "play,tabs2",
+        "kickers": "play ~ 25 characters|tabs2 ~ Small or Large",
+        "float": "pr-float-pikachu.png"
+      }
+    }
+  },
+  "order": [
+    "pr_product"
+  ]
+}

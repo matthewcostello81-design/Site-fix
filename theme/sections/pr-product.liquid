@@ -1,0 +1,486 @@
+{%- comment -%}
+  Pocket Era redesign (2026-10-23) - THE product page, v2 (owner: "redo all the product pages so they are
+  all the same and more simple, don't keep all the modules we had, copy how rad global did it").
+  rad-global order and nothing more: photos, title / price / colour / pack / add to bag, a 2x2 icon grid,
+  the drop-down boxes (Description, Tech specs, In the box, Shipping), reviews, you may also like.
+  Desktop = photos stacked left + sticky buy column; phone = one big photo with a counter and arrows.
+  Every product-specific word comes from the template settings; one file for every product.
+  Pack rows (settings.bundles): label ~ option1 value ~ qty ~ dollars off ~ kit 1/0 ~ default 1/0 ~ sub ~ tag ~ pay units ~ offmode
+    - option1 value empty = the product's only option is the colour (hoodie, orb)
+    - pay units = BXGY rows (Buy 2 Get 1 = qty 3, pay 2); offmode "total" = dollars off the whole row
+  Adding to cart posts the variant x qty, the $0 kit beside a kit row, any ticked add-on, then window.pgOpenCart.
+{%- endcomment -%}
+{%- assign p = product -%}
+{%- assign s = section.settings -%}
+{%- assign short_title = s.title | default: p.title | remove_first: 'Pocket Era ' -%}{%- unless short_title contains 'Ball Cushion' -%}{%- assign short_title = short_title | remove_first: 'Legends ' -%}{%- endunless -%}{%- comment -%} owner 2026-10-25: it is the Legends Ball Cushion, keep "Legends" {%- endcomment -%}
+{%- assign color_opt = blank -%}{%- assign color_pos = 0 -%}
+{%- for option in p.options_with_values -%}{%- if option.name contains 'Color' or option.name contains 'Colour' or option.name contains 'Character' or option.name == 'Style' -%}{%- assign color_opt = option -%}{%- assign color_pos = forloop.index -%}{%- endif -%}{%- endfor -%}
+{%- comment -%} a second option named Size (plushies and ball cushions since 2026-10-24: Small / Large) shows as a switch above the packs; every pack row then carries the chosen size as its bundle {%- endcomment -%}
+{%- assign size_opt = blank -%}{%- assign size_pos = 0 -%}
+{%- for option in p.options_with_values -%}{%- if option.name == 'Size' and color_pos == 1 and forloop.index == 2 -%}{%- assign size_opt = option -%}{%- assign size_pos = 2 -%}{%- endif -%}{%- endfor -%}
+{%- assign kit = blank -%}{%- if s.kit_handle != blank -%}{%- assign kit = all_products[s.kit_handle] -%}{%- endif -%}
+{%- assign kit_id = kit.selected_or_first_available_variant.id | default: 0 -%}
+{%- assign jm = p.metafields.judgeme.review_widget_data.value -%}
+{%- assign rn = 0 -%}{%- assign ravg = 0.0 -%}
+{%- if jm -%}{%- assign rn = jm.number_of_reviews | plus: 0 -%}{%- assign ravg = jm.average_rating | plus: 0.0 -%}{%- endif -%}
+{%- assign first_v = p.selected_or_first_available_variant -%}
+{%- if color_pos == 1 -%}{%- assign first_color = first_v.option1 -%}{%- else -%}{%- assign first_color = first_v.option2 -%}{%- endif -%}
+{%- assign pains = s.pains | default: '' | split: '|' -%}
+{%- assign rows = s.bundles | default: '' | split: '|' -%}
+{%- assign adds = s.addons | default: '' | split: '|' -%}
+{%- assign specs = s.specs | default: '' | split: '|' -%}
+{%- assign also = s.also | default: '' | split: ',' -%}
+{%- assign seedn = 0 -%}{%- if s.photo_reviews != blank -%}{%- assign seeds = s.photo_reviews | split: ' | ' -%}{%- assign seedn = seeds.size -%}{%- endif -%}
+{%- assign plus = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V2.5M3.5 7 8 2.5 12.5 7M5 9.5h6"/></svg>' -%}
+{%- comment -%} v3 (2026-10-23 owner round): glove photo first (lead), the product clip second, interactive modules, the pinned Select bundle pill {%- endcomment -%}
+{%- assign lead = s.lead | strip -%}{%- assign lead_name = '' -%}{%- assign lsep = '?' -%}
+{%- if lead != blank -%}{%- assign lead_name = lead | split: '?' | first | split: '/' | last -%}{%- if lead contains '?' -%}{%- assign lsep = '&' -%}{%- endif -%}{%- endif -%}
+{%- assign clip = s.clip | strip -%}{%- assign clip_url = '' -%}
+{%- if clip != blank -%}{%- if clip contains '//' -%}{%- assign clip_url = clip -%}{%- else -%}{%- assign clip_url = clip | asset_url -%}{%- endif -%}{%- endif -%}
+{%- assign dup = 0 -%}{%- assign lead_alt = '' -%}{%- if lead_name != '' -%}{%- for m in p.media -%}{%- if m.preview_image.src contains lead_name -%}{%- assign dup = 1 -%}{%- assign lead_alt = m.alt -%}{%- endif -%}{%- endfor -%}{%- endif -%}
+{%- assign media_n = p.media.size | minus: dup -%}{%- if lead != blank -%}{%- assign media_n = media_n | plus: 1 -%}{%- endif -%}{%- if clip_url != blank -%}{%- assign media_n = media_n | plus: 1 -%}{%- endif -%}
+{%- assign fl = s.float | strip -%}{%- if fl != blank -%}{%- assign media_n = media_n | plus: 1 -%}{%- endif -%}
+{%- comment -%} plushies + ball cushions (2026-10-25): every photo carries the character's name. Every product with more than one photo gets the thumbnail strip that jumps to any photo (owner "shouldn't all have the photo strip") {%- endcomment -%}
+{%- comment -%} the orb's characters get names too (owner 2026-10-25 "orbs dont have names on photo either") {%- endcomment -%}
+{%- assign nm_vals = blank -%}{%- if size_opt != blank or s.swatch_label == 'Character' -%}{%- assign nm_vals = color_opt.values -%}{%- endif -%}
+{%- comment -%} floating gallery (owner 2026-10-25 "have both plushies floating side by side then just have a lifestyle w big one as priority"): a product with
+   photos whose alt ends ", floating" (plushies, ball cushions) shows only those and the ones whose alt ends ", gallery" (one lifestyle per character, the Large
+   one first), in product media order: each character's float (the side-by-side when it comes in both sizes), then its room. Every character stays in the
+   gallery and a pick jumps to it (owner rejected a per-character filter and a separate At home strip) {%- endcomment -%}
+{%- comment -%} every product follows it since 2026-10-25 ("for all things on this site: color of item floating in white background, then lifestyle, then next color"):
+   a colour product names its photos by colour; the product clip, if any, plays after the colours {%- endcomment -%}
+{%- assign fl_mode = false -%}
+{%- for m in p.media -%}{%- if m.alt contains ', floating' -%}{%- assign fl_mode = true -%}{%- break -%}{%- endif -%}{%- endfor -%}
+{%- if fl_mode and nm_vals == blank -%}{%- if color_opt != blank -%}{%- assign nm_vals = color_opt.values -%}{%- else -%}{%- assign fl_mode = false -%}{%- endif -%}{%- endif -%}
+{%- if fl_mode -%}{%- assign media_n = 0 -%}{%- for m in p.media -%}{%- if m.alt contains ', floating' or m.alt contains ', gallery' -%}{%- assign media_n = media_n | plus: 1 -%}{%- endif -%}{%- endfor -%}{%- if clip_url != blank -%}{%- assign media_n = media_n | plus: 1 -%}{%- endif -%}{%- endif -%}
+
+<div class="pr pr-page-product" id="pr">
+  <div class="pr-wrap">
+    <nav class="pr-crumbs" aria-label="Breadcrumb"><a href="/">Home</a><span>/</span>{%- if s.crumb_url != blank -%}<a href="{{ s.crumb_url }}">{{ s.crumb | default: 'Shop' }}</a><span>/</span>{%- endif -%}<span>{{ short_title }}</span></nav>
+    <div class="pr-pdp">
+
+      {%- comment -%} the thumbnail strip is only on the orbs and the plushies (owner 2026-10-25 "take out photo strip on each page unless it's the orbs and pokemon plushies", then "take off image strip above title for poke balls") {%- endcomment -%}
+      {%- assign strip_on = false -%}{%- if media_n > 1 -%}{%- case template.suffix -%}{%- when 'pg-plush', 'pg-crystal' -%}{%- assign strip_on = true -%}{%- endcase -%}{%- endif -%}
+      <section class="pr-gal{% if strip_on %} pr-gal-rail{% endif %}" aria-label="Product photos">
+        <div class="pr-gal-track">
+          {%- if fl_mode -%}
+          {%- comment -%} the product's first media (the gloves shot) is not in this gallery, so the first slide shown is tracked by hand for fetchpriority {%- endcomment -%}
+          {%- assign fl_seen = false -%}
+          {%- for m in p.media -%}
+            {%- if m.alt contains ', gallery' -%}
+              {%- capture mn -%}{%- render 'pr-photo-name', vals: nm_vals, alt: m.alt, as: 'text' -%}{%- endcapture -%}
+              <div data-media="{{ m.id }}" data-name="{{ mn | escape }}" data-pick="{{ mn | escape }}|room"><img src="{{ m | image_url: width: 1200 }}" srcset="{{ m | image_url: width: 720 }} 720w, {{ m | image_url: width: 1200 }} 1200w, {{ m | image_url: width: 1600 }} 1600w, {{ m | image_url: width: 2048 }} 2048w" sizes="(min-width: 900px) 56vw, 100vw" width="1200" height="1200" alt="{{ m.alt | remove: ', gallery' | escape }}" {% if fl_seen %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>{%- if size_opt == blank and mn != '' -%}<span class="pr-gal-name">{{ mn }}</span>{%- endif -%}</div>
+              {%- assign fl_seen = true -%}
+              {%- continue -%}
+            {%- endif -%}
+            {%- unless m.alt contains ', floating' -%}{%- continue -%}{%- endunless -%}
+            {%- capture mn -%}{%- render 'pr-photo-name', vals: nm_vals, alt: m.alt, as: 'text' -%}{%- endcapture -%}
+            {%- assign fparts = m.alt | split: ', ' -%}{%- assign fsz = '' -%}{%- if fparts.size > 2 -%}{%- assign fsz = fparts[1] -%}{%- endif -%}{%- assign fcm = '' -%}{%- if fparts.size > 3 -%}{%- assign fcm = fparts[2] -%}{%- endif -%}
+            {%- assign fpair = false -%}{%- if fsz contains 'side by side' -%}{%- assign fpair = true -%}{%- endif -%}
+            {%- assign fw = '' -%}{%- assign ffn = m.preview_image.src | split: '?' | first | split: '/' | last | split: '.' | first -%}{%- if ffn contains '-w' -%}{%- assign fw = ffn | split: '-w' | last | split: '_' | first -%}{%- endif -%}
+            <div data-media="{{ m.id }}" data-name="{{ mn | escape }}" data-pick="{{ mn | escape }}|{% if fpair %}pair{% else %}{{ fsz }}{% endif %}" class="pr-gal-fl{% if fpair %} pr-gal-fl-pair{% endif %}"{% if fpair %} style="{% render 'pr-pair-shade', name: mn %}"{% elsif fw != '' %} style="--sw:{{ fw }}%"{% endif %}><img src="{{ m | image_url: width: 1200 }}" srcset="{{ m | image_url: width: 720 }} 720w, {{ m | image_url: width: 1200 }} 1200w" sizes="(min-width: 900px) 50vw, 100vw" width="1200" height="1200" alt="{{ m.alt | remove: ', floating' | escape }}" {% if fl_seen %}loading="lazy"{% else %}fetchpriority="high"{% endif %}><span class="pr-gal-name">{{ mn }}{% if fpair %} · {{ fsz | remove: ' side by side' | replace: ' and ', ' + ' }}{% elsif fsz != '' %} · {{ fsz }}{% if fcm != '' %} · {{ fcm }}{% endif %}{% endif %}</span></div>
+            {%- assign fl_seen = true -%}
+          {%- endfor -%}
+          {%- if clip_url != blank -%}
+            <div data-media="clip" class="pr-gal-clip"><video muted loop playsinline preload="none" {% if s.clip_poster != blank %}poster="{{ s.clip_poster }}"{% endif %} aria-label="{{ p.title | escape }} up close"><source src="{{ clip_url }}" type="video/mp4"></video></div>
+          {%- endif -%}
+          {%- else -%}
+          {%- if fl != blank -%}
+            <div data-media="float" class="pr-gal-float{% if size_opt != blank %} pr-gal-float-cut{% endif %}"><img src="{{ fl | file_img_url: '1200x' }}" srcset="{{ fl | file_img_url: '720x' }} 720w, {{ fl | file_img_url: '1200x' }} 1200w" sizes="(min-width: 900px) 56vw, 100vw" width="1200" height="1200" alt="{{ p.selected_or_first_available_variant.option1 | escape }}" fetchpriority="high">{%- if size_opt != blank -%}<span class="pr-gal-name">{{ p.selected_or_first_available_variant.option1 }}</span>{%- endif -%}</div>
+          {%- endif -%}
+          {%- if lead != blank -%}
+            <div data-media="lead"><img src="{{ lead }}{{ lsep }}width=1200" srcset="{{ lead }}{{ lsep }}width=720 720w, {{ lead }}{{ lsep }}width=1200 1200w, {{ lead }}{{ lsep }}width=1600 1600w" sizes="(min-width: 900px) 56vw, 100vw" width="1200" height="1200" alt="{{ lead_alt | default: p.title | escape }}" {% if fl != blank %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>{%- if nm_vals != blank -%}{%- render 'pr-photo-name', vals: nm_vals, alt: lead_alt -%}{%- endif -%}</div>
+          {%- endif -%}
+          {%- if clip_url != blank -%}
+            <div data-media="clip" class="pr-gal-clip"><video muted loop playsinline preload="none" {% if s.clip_poster != blank %}poster="{{ s.clip_poster }}"{% endif %} aria-label="{{ p.title | escape }} up close"><source src="{{ clip_url }}" type="video/mp4"></video></div>
+          {%- endif -%}
+          {%- for m in p.media -%}
+            {%- if lead_name != '' and m.preview_image.src contains lead_name -%}{%- continue -%}{%- endif -%}
+            {%- if m.media_type == 'image' -%}
+              <div data-media="{{ m.id }}"><img src="{{ m | image_url: width: 1200 }}" srcset="{{ m | image_url: width: 720 }} 720w, {{ m | image_url: width: 1200 }} 1200w, {{ m | image_url: width: 1600 }} 1600w, {{ m | image_url: width: 2048 }} 2048w" sizes="(min-width: 900px) 56vw, 100vw" width="1200" height="1200" alt="{{ m.alt | default: p.title | escape }}" {% if forloop.first and lead == blank %}fetchpriority="high"{% else %}loading="lazy"{% endif %}>{%- if nm_vals != blank -%}{%- render 'pr-photo-name', vals: nm_vals, alt: m.alt -%}{%- endif -%}</div>
+            {%- elsif m.media_type == 'video' -%}
+              <div data-media="{{ m.id }}">{{ m | video_tag: autoplay: true, loop: true, muted: true, controls: false, playsinline: true, preload: 'metadata' }}</div>
+            {%- endif -%}
+          {%- endfor -%}
+          {%- endif -%}
+        </div>
+        <div class="pr-gal-bar">
+          <span class="pr-gal-n">1 \ {{ media_n }}</span>
+          <div class="pr-gal-arr">
+            <button type="button" class="pr-gal-prev" aria-label="Previous photo"><svg viewBox="0 0 26 14"><path d="M25 7H2M7 1 1 7l6 6"/></svg></button>
+            <button type="button" class="pr-gal-next" aria-label="Next photo"><svg viewBox="0 0 26 14"><path d="M1 7h23M19 1l6 6-6 6"/></svg></button>
+          </div>
+        </div>
+        {%- if strip_on -%}<div class="pr-gal-thumbs" aria-label="All photos"></div>{%- endif -%}
+      </section>
+
+      <section class="pr-buy" data-pr-product="{{ p.id }}">
+        <div class="pr-buy-top">
+          <div>
+            <h1 class="pr-title">{{ short_title }}</h1>
+            {%- if s.subtitle != blank -%}<p class="pr-sub">{{ s.subtitle }}</p>{%- endif -%}
+          </div>
+          {%- if s.tag != blank -%}<span class="pr-tag">{{ s.tag }}</span>{%- endif -%}
+        </div>
+        {%- if rn > 0 -%}
+          <a class="pr-rate" href="#pr-reviews"><b aria-hidden="true" class="pr-stars" style="--pct:{{ ravg | times: 20 | at_most: 100 }}%">{%- assign rr = ravg | round -%}{%- for i in (1..5) -%}{%- if i <= rr -%}&#9733;{%- else -%}&#9734;{%- endif -%}{%- endfor -%}</b> {{ ravg | round: 1 }} &middot; {{ rn }} reviews</a>
+        {%- elsif seedn > 0 -%}
+          <a class="pr-rate" href="#pr-reviews"><b aria-hidden="true" class="pr-stars" style="--pct:100%">&#9733;&#9733;&#9733;&#9733;&#9733;</b> 5.0 &middot; {{ seedn }} reviews</a>
+        {%- endif -%}
+        <div class="pr-price">{%- if first_v.compare_at_price > first_v.price -%}<s>{{ first_v.compare_at_price | money }}</s>{%- endif -%}<span class="pr-price-now">{{ first_v.price | money }}</span></div>
+
+        {%- if pains.size > 0 and pains[0] != blank -%}
+        <div class="pr-bens">
+          {%- for pn in pains limit: 4 -%}
+            {%- assign f = pn | split: '~' -%}
+            {%- assign k = f[0] | strip | downcase -%}
+            <div>{%- case k -%}
+                {%- when 'games' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M38 12v25a3 3 0 0 1-3 3"/><rect x="8" y="6" width="26" height="31" rx="2.5"/><path d="M8 12h26M12 6v3.5M16 6v3.5M20 6v3.5M24 6v3.5M28 6v3.5"/><rect x="12" y="16" width="18" height="12" rx="1.5"/><path d="M14.5 25.5l4.5-5 3 3 2-2 3.5 4"/><circle cx="26" cy="19.5" r="1.4"/><path d="M14 37v4.5h14V37M17.5 41.5v-2.5M21 41.5v-2.5M24.5 41.5v-2.5"/></svg>
+                {%- when 'screen' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="6" width="38" height="28" rx="3.5"/><rect x="9" y="10" width="30" height="20" rx="1"/><path d="M12 26.5l6-7 4 4.5 3-3 5.5 5.5"/><circle cx="31" cy="15.5" r="2.2"/><path d="M12 13.5h3M12 16h2"/><path d="M5 41h38M5 38.5v5M43 38.5v5M9 41l3-2M9 41l3 2M39 41l-3-2M39 41l-3 2"/></svg>
+                {%- when 'battery' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="14" width="36" height="20" rx="3.5"/><path d="M40 20h3a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-3"/><path d="M9 19v10M13.5 19v10M18 19v10"/><path d="M29 17l-4.5 7.5h5.5L25.5 31"/></svg>
+                {%- when 'light' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="27" r="10"/><circle cx="24" cy="27" r="5.5"/><path d="M21.5 25.5a3 3 0 0 1 3-2"/><circle cx="24" cy="27" r="14" stroke-dasharray="1.5 3.2"/><path d="M24 4.5v4.5M11 9.5l3 3M37 9.5l-3 3M5 21h4M39 21h4"/><path d="M14 44h20"/></svg>
+                {%- when 'wifi' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 18.5a27 27 0 0 1 38 0"/><path d="M10.5 24a19 19 0 0 1 27 0"/><path d="M16 29.5a11 11 0 0 1 16 0"/><circle cx="24" cy="35.5" r="2.6"/><path d="M38 31v11M34 38l4 4 4-4"/></svg>
+                {%- when 'ship' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M4 12h24v20H4zM28 19h8l6 7v6H28z"/><circle cx="12" cy="35" r="3.5"/><circle cx="34" cy="35" r="3.5"/><path d="M8 18h10M8 23h7"/></svg>
+                {%- when 'remote' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="15" y="4" width="18" height="40" rx="5"/><circle cx="24" cy="12" r="3"/><path d="M19.5 20h3M25.5 20h3M19.5 25h3M25.5 25h3M19.5 30h3M25.5 30h3"/><path d="M21 37h6"/><path d="M38 9a8 8 0 0 1 0 10M41.5 6a13 13 0 0 1 0 16"/></svg>
+                {%- when 'timer' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="21" cy="27" r="15"/><path d="M21 17v10l6.5 4"/><path d="M17 6.5h8M21 6.5V12M34.5 13.5l2.5-2.5"/><path d="M42 5.5a6.5 6.5 0 1 0 4 11.5 7.5 7.5 0 0 1-4-11.5z"/></svg>
+                {%- when 'usb' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="16" y="3.5" width="16" height="9" rx="4.5"/><path d="M20.5 8h7"/><path d="M14.5 12.5h19v10a3 3 0 0 1-3 3h-13a3 3 0 0 1-3-3z"/><path d="M19 17.5h10"/><path d="M24 25.5v6c0 6 10 5 10 12"/><path d="M13 33l-3.5 5.5h5L11 44"/></svg>
+                {%- when 'warm' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h36v26l-8 8H6z"/><path d="M34 42v-6a2 2 0 0 1 2-2h6"/><path d="M10 15c2.5-2.5 4.5 2.5 7 0s4.5 2.5 7 0 4.5 2.5 7 0 4.5 2.5 7 0M10 22c2.5-2.5 4.5 2.5 7 0s4.5 2.5 7 0 4.5 2.5 7 0 4.5 2.5 7 0M10 29c2.5-2.5 4.5 2.5 7 0s4.5 2.5 7 0 4.5 2.5 7 0M10 36c2.5-2.5 4.5 2.5 7 0s4.5 2.5 7 0"/></svg>
+                {%- when 'size' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M17 17V6.5a2.5 2.5 0 0 1 2.5-2.5h9A2.5 2.5 0 0 1 31 6.5V17"/><rect x="19.5" y="6.5" width="9" height="7" rx="1"/><path d="M7 17h34v13c0 7-7 11-17 13-10-2-17-6-17-13z"/><path d="M10.5 21.5h27" stroke-dasharray="2 2.2"/><circle cx="10.5" cy="19" r="1.2"/><circle cx="37.5" cy="19" r="1.2"/></svg>
+                {%- when 'speaker' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="9" width="18" height="30" rx="3"/><circle cx="14" cy="17" r="3"/><circle cx="14" cy="29.5" r="6"/><circle cx="14" cy="29.5" r="1.6"/><path d="M29 18.5a8 8 0 0 1 0 11M33.5 14a14.5 14.5 0 0 1 0 20M38 9.5a21 21 0 0 1 0 29"/></svg>
+                {%- when 'star' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M19 6l2.8 8.2L30 17l-8.2 2.8L19 28l-2.8-8.2L8 17l8.2-2.8z"/><path d="M36 26l1.6 4.4L42 32l-4.4 1.6L36 38l-1.6-4.4L30 32l4.4-1.6z"/><circle cx="38" cy="9" r="1.6"/><circle cx="9" cy="37" r="1.6"/><circle cx="21" cy="42" r="1.1"/><path d="M38 9l-6 6M9 37l12 5" stroke-dasharray="1.4 2.6"/></svg>
+                {%- when 'rotate' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="21" r="12"/><rect x="16" y="15.5" width="16" height="11" rx="5.5"/><path d="M19 19a3 3 0 0 1 3-2"/><path d="M7 33c5 7 29 7 34 0"/><path d="M36.5 30.5l4.5 2.5-3 4.5"/><path d="M11 29.5c-1.5 1-2.5 2-3.5 3"/></svg>
+                {%- when 'orb' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="19" r="14"/><path d="M15 12a11 11 0 0 1 6.5-4.5"/><path d="M18.5 24l3.5-7 2.5 4 2.5-3 3 6"/><circle cx="24" cy="14" r="1.3"/><path d="M13 35.5h22l-2.5 8h-17z"/><path d="M16.5 32.5h15"/><path d="M15.5 39.5h17"/></svg>
+                {%- when 'glow' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M11 34h26l-3 9H14z"/><ellipse cx="24" cy="34" rx="13" ry="3"/><path d="M24 7v18M15 10.5l4 13M33 10.5l-4 13M8 17l7.5 8.5M40 17l-7.5 8.5"/><path d="M17 39h14"/></svg>
+                {%- when 'shelf' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="12" r="7"/><path d="M19.5 9.5a5 5 0 0 1 3-2.5"/><path d="M18.5 22l1.5-4h8l1.5 4"/><path d="M7 22h34v4H7zM10 26v18M38 26v18M10 35h28"/><rect x="18" y="28.5" width="12" height="4" rx="1"/><circle cx="24" cy="30.5" r=".6"/></svg>
+                {%- when 'set' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="18.5" r="10.5"/><path d="M17.5 14a8 8 0 0 1 4.5-3.8"/><path d="M19 31.5h10"/><path d="M16.5 34.5h15l-2 8.5h-11z"/><circle cx="7.5" cy="29" r="5.5"/><path d="M4.6 27.2a3.5 3.5 0 0 1 1.9-2"/><path d="M3 37.5h9l-1.3 5.5h-6.4z"/><circle cx="40.5" cy="29" r="5.5"/><path d="M37.6 27.2a3.5 3.5 0 0 1 1.9-2"/><path d="M36 37.5h9l-1.3 5.5h-6.4z"/></svg>
+                {%- when 'hood' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 9c3-4 13-4 16 0 3.5 2.5 5.5 6 5.5 10.5v3l5.5 5.5-3.5 6-4-3.5V44h-23V30.5l-4 3.5-3.5-6 5.5-5.5v-3C10.5 15 12.5 11.5 16 9z"/><path d="M18 11c0 8 12 8 12 0"/><path d="M21.5 17v6.5M26.5 17v6.5"/><path d="M17.5 35.5h13l1.5 5.5h-16z"/></svg>
+                {%- when 'pad' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 15h18c5.5 0 8.5 4.5 9.5 11l1 7.5c.6 4.5-4.5 6.5-7.5 3.5l-5-5H17l-5 5c-3 3-8.1 1-7.5-3.5l1-7.5c1-6.5 4-11 9.5-11z"/><path d="M14 21v7M10.5 24.5h7"/><circle cx="33" cy="21.5" r="1.4"/><circle cx="36.5" cy="25" r="1.4"/><circle cx="29.5" cy="25" r="1.4"/><circle cx="33" cy="28.5" r="1.4"/><path d="M21.5 23.5h5"/></svg>
+                {%- when 'sd' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 5h16l6 6v29a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z"/><path d="M18 5v5M22 5v5M26 5v5M30 5v5"/><path d="M24.5 20v13M18 26.5h13"/></svg>
+                {%- when 'rainbow' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M5 35a19 19 0 0 1 38 0"/><path d="M11 35a13 13 0 0 1 26 0"/><path d="M17 35a7 7 0 0 1 14 0"/><path d="M3 39h42"/><path d="M38 9l1.2 2.8L42 13l-2.8 1.2L38 17l-1.2-2.8L34 13l2.8-1.2z"/></svg>
+                {%- when 'tape' -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="24" r="13"/><circle cx="18" cy="24" r="4.5"/><path d="M18 11h26v8H31"/><path d="M35 11v4M39 11v4M43 11v3"/><path d="M44 19v3"/></svg>
+                {%- else -%}<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="18"/><path d="M16 24.5l5.5 5.5 11-12"/></svg>
+                {%- endcase -%}<b>{{ f[1] | strip }}</b>{%- if f[2] != blank -%}<small>{{ f[2] | strip }}</small>{%- endif -%}</div>
+          {%- endfor -%}
+        </div>
+        {%- endif -%}
+        {%- if color_opt != blank -%}
+        <div class="pr-blk">
+          <div class="pr-lbl">{{ s.swatch_label | default: 'Color' }} <span class="pr-sw-name">{{ first_color }}</span></div>
+          {%- assign con = color_opt.name | downcase -%}{%- assign plain_sw = false -%}{%- if con == 'color' or con == 'colour' -%}{%- assign plain_sw = true -%}{%- endif -%}
+          <div class="pr-sw{% if plain_sw %} pr-sw-dots{% endif %}" role="radiogroup" aria-label="{{ s.swatch_label | default: 'Color' | escape }}">
+            {%- for c in color_opt.values -%}
+              {%- assign cv = blank -%}{%- assign c_ok = false -%}
+              {%- for v in p.variants -%}{%- if color_pos == 1 -%}{%- assign vc = v.option1 -%}{%- else -%}{%- assign vc = v.option2 -%}{%- endif -%}{%- if vc == c -%}{%- if v.available -%}{%- assign c_ok = true -%}{%- endif -%}{%- if cv == blank or v.featured_media -%}{%- assign cv = v -%}{%- endif -%}{%- endif -%}{%- endfor -%}
+              {%- comment -%} a colour nobody can buy in any pack is not shown (owner 2026-10-24: R36S Ultra green showed but could not be picked; it came off the Ultra on 2026-10-12) {%- endcomment -%}
+              {%- unless c_ok -%}{%- continue -%}{%- endunless -%}
+              {%- assign sw_img = blank -%}{%- if cv.featured_media -%}{%- assign sw_img = cv.featured_media -%}{%- else -%}{%- assign cin = ' in ' | append: c -%}{%- for m in p.media -%}{%- if sw_img == blank and m.alt contains cin -%}{%- assign sw_img = m -%}{%- endif -%}{%- endfor -%}{%- if sw_img == blank -%}{%- assign cw = c | split: ' ' | last -%}{%- for m in p.media -%}{%- if sw_img == blank and m.alt contains cw -%}{%- assign sw_img = m -%}{%- endif -%}{%- endfor -%}{%- endif -%}{%- endif -%}
+              <button type="button" role="radio" aria-checked="{% if first_color == c %}true{% else %}false{% endif %}" data-color="{{ c | escape }}" aria-label="{{ c | escape }}" title="{{ c | escape }}">
+                {%- assign hx = c | handleize | replace: 'shadow-black','#17141c' | replace: 'ice-white','#f1eff5' | replace: 'mystic-purple','#7c4dff' | replace: 'crimson-red','#c62839' | replace: 'emerald-green','#1f8a5b' | replace: 'sapphire-blue','#2b57c9' | replace: 'solar-orange','#f08a24' | replace: 'cocoa-brown','#6b4a3a' | replace: 'blush-pink','#e9a7b8' | replace: 'sand-beige','#d9c7a7' -%}{%- capture hx2 -%}{%- render 'pr-swatch-hex', h: p.handle, c: c -%}{%- endcapture -%}{%- if hx2 != blank -%}{%- assign hx = hx2 | strip -%}{%- endif -%}{%- if plain_sw or sw_img == blank -%}<i style="background:{{ hx }}"></i>{%- else -%}<img src="{{ sw_img | image_url: width: 140 }}" width="70" height="70" alt="" loading="lazy">{%- endif -%}
+              </button>
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- endif -%}
+
+        {%- if size_pos == 2 -%}
+        <div class="pr-blk pr-szw-blk">
+          <div class="pr-lbl">Pick your size</div>
+          <div class="pr-szw" role="radiogroup" aria-label="Size">
+            {%- for sv in size_opt.values -%}
+            <button type="button" class="pr-szw-b" role="radio" aria-checked="{% if first_v.option2 == sv %}true{% else %}false{% endif %}" data-size="{{ sv | escape }}"><b>{{ sv }}</b><span class="pr-szw-cm"></span><span class="pr-szw-p"></span></button>
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- endif -%}
+        <div class="pr-blk">
+          {%- if rows.size > 0 and rows[0] != blank -%}
+          <div class="pr-lbl">{{ s.rows_label | default: 'Pick your pack' }}</div>
+          <div class="pr-rows" role="radiogroup" aria-label="Pack">
+            {%- for r in rows -%}
+              {%- assign f = r | split: '~' -%}
+              {%- assign off_c = f[3] | default: '0' | strip | times: 100 | round -%}
+              {%- assign row_b = f[1] | strip -%}{%- if row_b == blank and size_pos == 2 -%}{%- assign row_b = first_v.option2 -%}{%- endif -%}
+              <div class="pr-row" role="radio" tabindex="0" aria-checked="false" data-bundle="{{ row_b | escape }}" data-qty="{{ f[2] | default: '1' | strip }}" data-off="{{ off_c }}" data-kit="{{ f[4] | default: '0' | strip }}" data-default="{{ f[5] | default: '0' | strip }}" data-pay="{{ f[8] | strip }}" data-offmode="{{ f[9] | default: 'each' | strip }}">
+                <span class="pr-radio"></span>
+                <span class="pr-row-t">{{ f[0] | strip }}{%- if f[7] != blank -%}<span class="pr-tag pr-tag-soft">{{ f[7] | strip }}</span>{%- endif -%}</span>
+                <span class="pr-row-p"></span>
+                {%- comment -%} "protection kit" in a pack row opens what is in it (owner 2026-10-26 "we don't say what the protection kit is ... a question mark next to it where they click and it tells them what's in it") {%- endcomment -%}
+                {%- assign row_s = f[6] | strip | escape -%}{%- if kit != blank and row_s contains 'protection kit' -%}{%- assign row_s = row_s | replace: 'protection kit', '<button type="button" class="pr-kit-q" data-kit-q aria-haspopup="dialog">protection kit<i aria-hidden="true"></i></button>' -%}{%- endif -%}
+                {%- if f[6] != blank -%}<span class="pr-row-s">{{ row_s }}</span>{%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+          {%- if kit != blank -%}
+          <div class="pr-kit" hidden role="dialog" aria-modal="true" aria-labelledby="pr-kit-h">
+            <div class="pr-kit-card">
+              <button type="button" class="pr-kit-x" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+              {%- if kit.featured_image -%}<img class="pr-kit-img" src="{{ kit.featured_image | image_url: width: 1000 }}" srcset="{{ kit.featured_image | image_url: width: 600 }} 600w, {{ kit.featured_image | image_url: width: 1000 }} 1000w" sizes="(min-width: 560px) 520px, 100vw" alt="{{ kit.featured_image.alt | escape }}" width="1000" height="{{ 1000 | divided_by: kit.featured_image.aspect_ratio | round }}" loading="lazy">{%- endif -%}
+              <p class="pr-kit-k">Free with the Max Bundle</p>
+              <h3 id="pr-kit-h">What's in the protection kit</h3>
+              {%- assign kit_items = s.kit_items | split: '|' -%}
+              {%- if kit_items.size > 0 -%}<ul class="pr-kit-list">{%- for it in kit_items -%}<li>{{ it | strip }}</li>{%- endfor -%}</ul>{%- else -%}<p class="pr-kit-d">{{ kit.description | strip_html }}</p>{%- endif -%}
+              <p class="pr-kit-n">Duo Max comes with two kits, one for each console.</p>
+            </div>
+          </div>
+          {%- endif -%}
+          {%- elsif p.variants.size > 1 and color_opt == blank -%}
+          <div class="pr-lbl">{{ p.options_with_values[0].name }}</div>
+          <div class="pr-rows" role="radiogroup" aria-label="{{ p.options_with_values[0].name | escape }}">
+            {%- for v in p.variants -%}
+              <div class="pr-row" role="radio" tabindex="0" aria-checked="false" data-bundle="{{ v.option1 | escape }}" data-qty="1" data-off="0" data-kit="0" data-default="{% if v == first_v %}1{% else %}0{% endif %}" data-pay="" data-offmode="each"><span class="pr-radio"></span><span class="pr-row-t">{{ v.option1 }}</span><span class="pr-row-p"></span></div>
+            {%- endfor -%}
+          </div>
+          {%- else -%}
+          <div class="pr-rows pr-rows-hidden" hidden><div class="pr-row" role="radio" aria-checked="true" data-bundle="" data-qty="1" data-off="0" data-kit="0" data-default="1" data-pay="" data-offmode="each"><span class="pr-row-p"></span></div></div>
+          {%- endif -%}
+        </div>
+
+        {%- if adds.size > 0 and adds[0] != blank -%}
+        <div class="pr-blk">
+          <div class="pr-lbl">Add to it <span>optional</span></div>
+          <div class="pr-adds">
+            {%- for a in adds -%}
+              {%- assign f = a | split: '~' -%}
+              {%- assign hk = f[0] | strip -%}
+              {%- assign ap = all_products[hk] -%}
+              {%- if ap != blank and ap.available -%}
+                {%- assign av = ap.selected_or_first_available_variant -%}
+                <div class="pr-add" role="checkbox" tabindex="0" aria-checked="false" data-variant="{{ av.id }}" data-price="{{ av.price }}">
+                  <span class="pr-check"></span>
+                  <img src="{{ ap.featured_image | image_url: width: 96 }}" width="48" height="48" alt="" loading="lazy">
+                  <span><span class="pr-add-t">{{ f[1] | default: ap.title | strip }}</span>{%- if f[2] != blank -%}<br><span class="pr-add-s">{{ f[2] | strip }}</span>{%- endif -%}</span>
+                  <span class="pr-add-p">{%- if av.compare_at_price > av.price -%}<s>{{ av.compare_at_price | money }}</s>{%- endif -%}+{{ av.price | money }}{%- if av.compare_at_price > av.price -%}<i class="pr-row-save">Save {{ av.compare_at_price | minus: av.price | times: 100.0 | divided_by: av.compare_at_price | round }}%</i>{%- endif -%}</span>
+                </div>
+              {%- endif -%}
+            {%- endfor -%}
+          </div>
+        </div>
+        {%- endif -%}
+
+        <div class="pr-cta">
+          <button type="button" class="pr-btn pr-btn-wide pr-atc" data-label="{{ s.cta | default: 'Add to bag' }}">{{ s.cta | default: 'Add to bag' }}</button>
+          <p class="pr-cta-note">{{ s.cta_note | default: 'Free tracked shipping · ships in 1 to 2 business days' }}</p>
+        </div>
+
+
+
+        <div class="pr-acc">
+          <details {% if s.open_desc %}open{% endif %}>
+            <summary>Description {{ plus }}</summary>
+            <div class="pr-acc-body">{%- if s.description != blank -%}{{ s.description }}{%- else -%}{%- comment -%} the stored descriptions are long pages that open with a heading repeating the product name (strip_html glued it to the next line: "Long SessionsA hoodie"). Headings are skipped and whole paragraphs kept until about 40 words, stopping at the next heading, so nothing is cut mid-sentence; the rest lives in Tech specs / In the box {%- endcomment -%}
+              {%- assign dsrc = p.description | replace: '<h1', '@@B@@@@H@@<h1' | replace: '<h2', '@@B@@@@H@@<h2' | replace: '<h3', '@@B@@@@H@@<h3' | replace: '<h4', '@@B@@@@H@@<h4' | replace: '</h1>', '@@B@@' | replace: '</h2>', '@@B@@' | replace: '</h3>', '@@B@@' | replace: '</h4>', '@@B@@' | replace: '</p>', '@@B@@' | replace: '</div>', '@@B@@' | replace: '</li>', '@@B@@' | replace: '<br>', ' ' | replace: '<br/>', ' ' | replace: '<br />', ' ' | strip_html | replace: '&nbsp;', ' ' -%}
+              {%- assign dblocks = dsrc | split: '@@B@@' -%}{%- assign dwords = 0 -%}
+              {%- for b in dblocks -%}
+                {%- assign bt = b | strip -%}
+                {%- if bt == blank -%}{%- continue -%}{%- endif -%}
+                {%- if bt contains '@@H@@' -%}{%- if dwords > 0 -%}{%- break -%}{%- endif -%}{%- continue -%}{%- endif -%}
+                {%- assign bw = bt | split: ' ' | size -%}{%- assign dtot = dwords | plus: bw -%}
+                {%- if dwords > 0 and dtot > 75 -%}{%- break -%}{%- endif -%}
+                <p>{{ bt }}</p>
+                {%- assign dwords = dtot -%}
+                {%- if dwords >= 40 -%}{%- break -%}{%- endif -%}
+              {%- endfor -%}
+            {%- endif -%}</div>
+          </details>
+          {%- if specs.size > 0 and specs[0] != blank -%}
+          <details>
+            <summary>{%- if size_opt != blank -%}Specs{%- else -%}Tech specs{%- endif %} {{ plus }}</summary>{%- comment -%} plushies and ball cushions are not tech (owner 2026-10-25) {%- endcomment -%}
+            <div class="pr-acc-body"><table>{%- for sp in specs -%}{%- assign f = sp | split: '~' -%}<tr><td>{{ f[0] | strip }}</td><td>{{ f[1] | strip }}</td></tr>{%- endfor -%}</table></div>
+          </details>
+          {%- endif -%}
+          {%- if s.box != blank -%}
+          <details>
+            <summary>In the box {{ plus }}</summary>
+            <div class="pr-acc-body"><ul>{%- assign bx = s.box | split: '|' -%}{%- for b in bx -%}<li>{{ b | strip }}</li>{%- endfor -%}</ul></div>
+          </details>
+          {%- endif -%}
+          <details>
+            <summary>Shipping &amp; returns {{ plus }}</summary>
+            <div class="pr-acc-body"><p>{{ s.shipping | default: 'Free tracked shipping on every order. Orders leave the warehouse in 1 to 2 business days and most arrive within 7 to 12 days. You get a tracking link by email the moment it ships.' }}</p><p class="pr-final">All sales final.</p></div>
+          </details>
+          {%- if s.faq != blank -%}
+          {%- assign fq = s.faq | split: '|' -%}
+          {%- for q in fq -%}{%- assign f = q | split: '~' -%}
+          <details><summary>{{ f[0] | strip }} {{ plus }}</summary><div class="pr-acc-body"><p>{{ f[1] | strip }}</p></div></details>
+          {%- endfor -%}
+          {%- endif -%}
+        </div>
+      </section>
+    </div>
+  </div>
+
+  {%- assign sizes = s.sizes | default: '' | split: '|' -%}
+  {%- assign has_sizes = false -%}{%- if sizes.size > 1 and sizes[0] != blank -%}{%- assign has_sizes = true -%}{%- endif -%}
+  {%- assign m1_rows = '' -%}
+  {%- if s.play_tabs != blank -%}{%- assign m1_rows = s.play_tabs -%}
+  {%- elsif s.play_on != blank and s.play_off != blank -%}{%- capture m1_rows -%}{{ s.play_on_label | default: 'Room lights on' }} ~ {{ s.play_on }} | {{ s.play_off_label | default: 'Lights down' }} ~ {{ s.play_off }}{%- endcapture -%}{%- endif -%}
+  {%- assign m2_rows = s.tabs2 | default: '' -%}
+  {%- assign mod_list = s.mods | default: '' | remove: ' ' -%}
+  {%- if mod_list == '' -%}{%- if m1_rows != '' -%}{%- assign mod_list = 'play' -%}{%- endif -%}{%- if has_sizes -%}{%- assign mod_list = mod_list | append: ',size' -%}{%- elsif m2_rows != '' -%}{%- assign mod_list = mod_list | append: ',tabs2' -%}{%- endif -%}{%- endif -%}
+  {%- assign mods_a = mod_list | split: ',' -%}
+  {%- assign kicks = s.kickers | default: '' | split: '|' -%}
+  {%- if mods_a.size > 0 -%}
+  <section class="pr-sec pr-sec-tight pr-mods"><div class="pr-wrap"><div class="pr-mods-grid">
+    {%- for mk in mods_a -%}
+      {%- if mk == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign kick_html = '' -%}{%- for kx in kicks -%}{%- assign kf = kx | split: '~' -%}{%- assign kn = kf[0] | strip -%}{%- if kn == mk and kf[1] != blank -%}{%- capture kick_html -%}<p class="pr-kick">{{ kf[1] | strip }}</p>{%- endcapture -%}{%- endif -%}{%- endfor -%}
+      {%- case mk -%}
+      {%- when 'size' -%}
+      {%- if has_sizes -%}
+        {%- assign simg = s.size_img | strip -%}{%- assign simg_u = '' -%}{%- if simg contains '//' -%}{%- assign simg_u = simg -%}{%- elsif simg != blank -%}{%- assign simg_u = simg | asset_url -%}{%- endif -%}
+        {%- assign max_in = 0.0 -%}{%- for z in sizes -%}{%- assign f = z | split: '~' -%}{%- assign iv = f[1] | strip | times: 1.0 -%}{%- if iv > max_in -%}{%- assign max_in = iv -%}{%- endif -%}{%- endfor -%}
+        <div class="pr-mod pr-size" data-pr-size data-max="{{ max_in }}">
+          {{ kick_html }}<h2 class="pr-h2">{{ s.size_title | default: 'Screen size.' }}</h2>
+          <div class="pr-size-stage"><div class="pr-size-frame">{%- if simg_u != blank -%}<img class="pr-size-ghost" src="{{ simg_u }}" alt="" aria-hidden="true" loading="lazy">{%- endif -%}<div class="pr-size-box" style="--r:1">{%- if simg_u != blank -%}<img src="{{ simg_u }}" alt="" loading="lazy">{%- endif -%}<span class="pr-size-tag"></span></div></div></div>
+          <div class="pr-tabs" role="tablist">{%- for z in sizes -%}{%- assign f = z | split: '~' -%}{%- assign zi = f[1] | strip -%}{%- assign zl = f[0] | strip -%}<button type="button" role="tab" aria-selected="{% if forloop.last %}true{% else %}false{% endif %}" data-i="{{ forloop.index0 }}" data-in="{{ zi }}" data-tag="{{ zi }}&Prime; {{ zl | escape }}"><b>{{ zi }}&Prime;</b> {{ zl }}</button>{%- endfor -%}</div>
+        </div>
+      {%- endif -%}
+      {%- when 'math' -%}
+        {%- assign mrows = s.math_rows | default: '' | split: '|' -%}
+        {%- if mrows.size > 0 -%}
+        {%- assign mtot = 0 -%}{%- for r in mrows -%}{%- assign f = r | split: '~' -%}{%- assign mv = f[1] | strip | plus: 0 -%}{%- assign mtot = mtot | plus: mv -%}{%- endfor -%}
+        {%- assign mp = p.price_min -%}
+        <div class="pr-mod pr-math" data-pr-math data-price="{{ mp }}">
+          {{ kick_html }}<h2 class="pr-h2">{{ s.math_title | default: 'Do the math.' }}</h2>
+          <div class="pr-math-list" role="group" aria-label="Systems it plays">{%- for r in mrows -%}{%- assign f = r | split: '~' -%}<button type="button" class="pr-math-sys" aria-pressed="true" data-v="{{ f[1] | strip }}"><span>{{ f[0] | strip }}</span><b>${{ f[1] | strip }}</b></button>{%- endfor -%}</div>
+          <div class="pr-math-cmp">
+            <div class="pr-math-line pr-math-them"><div class="pr-math-top"><span>{{ s.math_them | default: 'Those consoles, bought used' }}</span><b data-math-total>${{ mtot }}</b></div><div class="pr-math-track"><i data-math-them style="width:100%"></i></div><small>{{ s.math_them_sub | default: 'Hardware only. Not one game.' }}</small></div>
+            <div class="pr-math-line pr-math-us"><div class="pr-math-top"><span>{{ short_title }}</span><b>{{ mp | money }}</b></div><div class="pr-math-track"><i data-math-us style="width:{{ mp | times: 1.0 | divided_by: mtot | round: 1 }}%"></i></div><small>{{ s.math_us_sub | default: 'Every system in one, games preloaded.' }}</small></div>
+          </div>
+          {%- if s.math_note != blank -%}<p class="pr-mod-note">{{ s.math_note }}</p>{%- endif -%}
+        </div>
+        {%- endif -%}
+      {%- when 'hem' -%}
+        {%- assign hrows = s.hem_rows | default: '' | split: '|' -%}
+        {%- if hrows.size > 0 -%}
+        <div class="pr-mod pr-hem" data-pr-hem data-len="{{ s.hem_len | default: '125' }}">
+          {{ kick_html }}<h2 class="pr-h2">{{ s.hem_title | default: 'Where the hem lands.' }}</h2>
+          <div class="pr-hem-stage"><svg viewBox="0 0 260 250" role="img" aria-label="How long the hoodie is on you"></svg><span class="pr-hem-tag"></span></div>
+          <div class="pr-tabs" role="tablist">{%- for r in hrows -%}{%- assign f = r | split: '~' -%}<button type="button" role="tab" aria-selected="{% if forloop.index == 2 %}true{% else %}false{% endif %}" data-h="{{ f[1] | strip }}" data-tag="{{ f[2] | strip | escape }}">{{ f[0] | strip }}</button>{%- endfor -%}</div>
+          {%- if s.hem_note != blank -%}<p class="pr-mod-note">{{ s.hem_note }}</p>{%- endif -%}
+        </div>
+        {%- endif -%}
+      {%- when 'play' or 'tabs2' -%}
+        {%- if mk == 'play' -%}{%- assign rows_s = m1_rows -%}{%- assign mt = s.play_title -%}{%- else -%}{%- assign rows_s = m2_rows -%}{%- assign mt = s.tabs2_title -%}{%- endif -%}
+        {%- if rows_s != '' -%}
+        {%- assign rws = rows_s | split: '|' -%}
+        <div class="pr-mod pr-tabmod" data-pr-tabmod>
+          {{ kick_html }}{%- if mt != blank -%}<h2 class="pr-h2">{{ mt }}</h2>{%- endif -%}
+          <div class="pr-tm-stage">
+          {%- for r in rws -%}{%- assign f = r | split: '~' -%}{%- assign u = f[1] | strip -%}{%- assign uu = u -%}
+            {%- if u contains '//' -%}{%- if u contains '/s/files/' -%}{%- if u contains '?' -%}{%- assign uu = u | append: '&width=1200' -%}{%- else -%}{%- assign uu = u | append: '?width=1200' -%}{%- endif -%}{%- endif -%}{%- else -%}{%- assign uu = u | asset_url -%}{%- endif -%}
+            {%- comment -%} owner 2026-10-25 "all photos on the site need to be top of the line resolution": the 2048 px module photos are offered at full size to retina screens {%- endcomment -%}
+            {%- assign tss = '' -%}{%- if u contains '/s/files/' -%}{%- assign tsep = '?' -%}{%- if u contains '?' -%}{%- assign tsep = '&' -%}{%- endif -%}{%- capture tss -%}{{ u }}{{ tsep }}width=800 800w, {{ u }}{{ tsep }}width=1200 1200w, {{ u }}{{ tsep }}width=1600 1600w, {{ u }}{{ tsep }}width=2048 2048w{%- endcapture -%}{%- endif -%}
+            <img class="pr-tm-img{% if forloop.first %} on{% endif %}" data-i="{{ forloop.index0 }}" src="{{ uu }}"{% if tss != '' %} srcset="{{ tss }}" sizes="(min-width: 1025px) 46vw, 100vw"{% endif %} alt="{{ f[0] | strip | escape }}" loading="lazy">
+          {%- endfor -%}
+          </div>
+          <div class="{% if rws.size == 2 %}pr-switch{% else %}pr-tabs{% endif %}" role="tablist">{%- for r in rws -%}{%- assign f = r | split: '~' -%}<button type="button" role="tab" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" data-i="{{ forloop.index0 }}">{{ f[0] | strip }}</button>{%- endfor -%}</div>
+        </div>
+        {%- endif -%}
+      {%- endcase -%}
+    {%- endfor -%}
+  </div></div></section>
+  {%- endif -%}
+
+  {%- comment -%} owner 2026-10-24 "the you may also like bar should be full" (desktop and phone): the hand-picked list first, then every other live product from Shop all
+     (add-ons, shipping protection, drafts and this product skipped), up to 8 cards {%- endcomment -%}
+  {%- assign also_pool = s.also | default: '' -%}
+  {%- for cp in collections['shop-all'].products -%}{%- unless cp.tags contains 'addon' or cp.tags contains 'nc-protection' or cp.handle == 'shipping-protection' -%}{%- assign also_pool = also_pool | append: ',' | append: cp.handle -%}{%- endunless -%}{%- endfor -%}
+  {%- assign also = also_pool | split: ',' -%}{%- assign also_seen = ',' | append: p.handle | append: ',' -%}{%- assign also_n = 0 -%}
+  {%- if also.size > 0 -%}
+  {%- assign afl = '' -%}{%- assign asub = '' -%}{%- case p.handle -%}{%- when 'pocket-era-r36s-ultra-x' -%}{%- assign afl = 'pr-cut-ultramax.png' -%}{%- assign asub = '4.5-inch · up to 40K games' -%}{%- when 'pocket-era-r36s-ultra' -%}{%- assign afl = 'pr-cut-r36s-ultra.png' -%}{%- assign asub = '4-inch · up to 40K games' -%}{%- when 'pocket-era-r36-pro-2' -%}{%- assign afl = 'pr-cut-r36s-pro.png' -%}{%- assign asub = '3.5-inch · up to 40K games' -%}{%- when 'pocket-era-r36h' -%}{%- assign afl = 'pr-cut-r36h-pro.png' -%}{%- assign asub = '3.5-inch · up to 20K games' -%}{%- when 'pocket-era-r36h-ultra' -%}{%- assign afl = 'pr-cut-r36h-ultra.png' -%}{%- assign asub = '4.2-inch · up to 30K games' -%}{%- when 'pocket-era-astronaut-galaxy-projector' -%}{%- assign afl = 'pr-cut-projector.png' -%}{%- assign asub = 'Nebula · 8 modes' -%}{%- when 'legends-eden-hoodie' -%}{%- assign afl = 'pr-cut-hoodie.png' -%}{%- assign asub = 'Hoodie blanket' -%}{%- when 'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift' -%}{%- assign afl = 'pr-cut-orb-v2.png' -%}{%- assign asub = 'Lit crystal orb' -%}{%- when 'mega-legends-plushie' -%}{%- assign afl = 'pr-cut-plush.png' -%}{%- assign asub = '25 characters · Small or Large' -%}{%- when 'legends-ball-cushion' -%}{%- assign afl = 'pr-cut-ball.png' -%}{%- assign asub = '4 designs · Small or Large' -%}{%- endcase -%}
+  {%- assign me_img = p.featured_image | image_url: width: 700 -%}{%- if afl != '' -%}{%- assign me_img = afl | file_img_url: '700x' -%}{%- endif -%}
+  <section class="pr-sec pr-also" data-pr-also data-me-url="{{ p.url }}" data-me-title="{{ short_title | escape }}" data-me-img="{{ me_img }}" {%- assign mv = p.selected_or_first_available_variant -%}data-me-price="{{ mv.price | money | escape }}"{% if mv.compare_at_price > mv.price %}{%- assign msv = mv.compare_at_price | minus: mv.price -%} data-me-cap="{{ mv.compare_at_price | money | escape }}" data-me-save="Save {{ msv | money_without_trailing_zeros | escape }} ({{ msv | times: 100 | divided_by: mv.compare_at_price }}%)"{% endif %} data-me-sub="{{ asub | escape }}" data-me-float="{% if afl != '' %}1{% endif %}"><div class="pr-wrap">
+    <p class="pr-slash">You may also like</p>
+    <div class="pr-also-tabs" role="tablist"><button type="button" role="tab" aria-selected="true" data-also="rec">Recommended</button><button type="button" role="tab" aria-selected="false" data-also="recent" hidden>Recently viewed</button></div>
+    <div class="pr-also-rail" data-also-pane="rec">
+      {%- for h in also -%}{%- assign hk = h | strip -%}{%- if hk == blank or also_n >= 8 -%}{%- continue -%}{%- endif -%}{%- assign hkey = ',' | append: hk | append: ',' -%}{%- if also_seen contains hkey -%}{%- continue -%}{%- endif -%}{%- assign ap = all_products[hk] -%}{%- if ap != blank and ap.available and ap.handle != p.handle -%}{%- assign also_seen = also_seen | append: hk | append: ',' -%}{%- assign also_n = also_n | plus: 1 -%}
+      {%- assign afl = '' -%}{%- assign asub = '' -%}{%- case ap.handle -%}{%- when 'pocket-era-r36s-ultra-x' -%}{%- assign afl = 'pr-cut-ultramax.png' -%}{%- assign asub = '4.5-inch · up to 40K games' -%}{%- when 'pocket-era-r36s-ultra' -%}{%- assign afl = 'pr-cut-r36s-ultra.png' -%}{%- assign asub = '4-inch · up to 40K games' -%}{%- when 'pocket-era-r36-pro-2' -%}{%- assign afl = 'pr-cut-r36s-pro.png' -%}{%- assign asub = '3.5-inch · up to 40K games' -%}{%- when 'pocket-era-r36h' -%}{%- assign afl = 'pr-cut-r36h-pro.png' -%}{%- assign asub = '3.5-inch · up to 20K games' -%}{%- when 'pocket-era-r36h-ultra' -%}{%- assign afl = 'pr-cut-r36h-ultra.png' -%}{%- assign asub = '4.2-inch · up to 30K games' -%}{%- when 'pocket-era-astronaut-galaxy-projector' -%}{%- assign afl = 'pr-cut-projector.png' -%}{%- assign asub = 'Nebula · 8 modes' -%}{%- when 'legends-eden-hoodie' -%}{%- assign afl = 'pr-cut-hoodie.png' -%}{%- assign asub = 'Hoodie blanket' -%}{%- when 'pokemon-crystal-ball-3d-pikachu-gengar-mewtwo-night-light-lamp-pokeball-3d-glass-pokemon-crystal-ball-statue-kids-birthday-gift' -%}{%- assign afl = 'pr-cut-orb-v2.png' -%}{%- assign asub = 'Lit crystal orb' -%}{%- when 'mega-legends-plushie' -%}{%- assign afl = 'pr-cut-plush.png' -%}{%- assign asub = '25 characters · Small or Large' -%}{%- when 'legends-ball-cushion' -%}{%- assign afl = 'pr-cut-ball.png' -%}{%- assign asub = '4 designs · Small or Large' -%}{%- endcase -%}
+      <a class="pr-acard" href="{{ ap.url }}">
+        <div class="pr-acard-ph{% if afl != '' %} pr-float{% endif %}">{%- if afl != '' -%}<img src="{{ afl | file_img_url: '700x' }}" alt="{{ ap.title | escape }}" loading="lazy" width="700" height="700">{%- else -%}<img src="{{ ap.featured_image | image_url: width: 700 }}" alt="{{ ap.title | escape }}" loading="lazy" width="700" height="700">{%- endif -%}</div>
+        <h3>{%- if ap.title contains 'Ball Cushion' -%}{{ ap.title | remove_first: 'Pocket Era ' }}{%- else -%}{{ ap.title | remove_first: 'Pocket Era ' | remove_first: 'Legends ' }}{%- endif -%}</h3>
+        {%- if asub != '' -%}<p class="pr-acard-sub">{{ asub }}</p>{%- endif -%}
+        {%- assign av = ap.selected_or_first_available_variant -%}
+        <p class="pr-acard-price">{%- if av.compare_at_price > av.price -%}<s>{{ av.compare_at_price | money }}</s>{%- endif -%}<span>{{ av.price | money }}</span>{%- if av.compare_at_price > av.price -%}{%- assign sv = av.compare_at_price | minus: av.price -%}<i class="pr-acard-save">Save {{ sv | money_without_trailing_zeros }} ({{ sv | times: 100 | divided_by: av.compare_at_price }}%)</i>{%- endif -%}</p><span class="pr-acard-btn">Shop now</span>
+      </a>
+      {%- endif -%}{%- endfor -%}
+    </div>
+    <div class="pr-also-rail" data-also-pane="recent" hidden></div>
+  </div></section>
+  {%- endif -%}
+
+  <section class="pr-sec pr-sec-tight" id="pr-reviews"><div class="pr-wrap">
+    <p class="pr-eyebrow">Reviews</p>
+    <h2 class="pr-h2">{%- if rn > 0 -%}{{ ravg | round: 1 }} from {{ rn }} buyers.{%- elsif seedn > 0 -%}5.0 from {{ seedn }} buyers.{%- else -%}What buyers say.{%- endif -%}</h2>
+    <div class="pr-reviews" id="pr-rv-wall" data-shop="{{ shop.permanent_domain }}" data-pid="{{ p.id }}" data-title="{{ p.title | escape }}" data-n="{{ rn }}" {% if jm %}data-v="{{ jm.metafield_updated_at }}"{% endif %}>
+      <div class="pr-rv-list">{%- if s.photo_reviews != blank -%}{%- assign shots = s.photo_reviews | split: ' | ' -%}{%- for sh in shots -%}{%- assign f = sh | split: '~' -%}<article class="pr-rvw pr-rvw-seed"><div class="pr-rvw-top"><span class="pr-rvw-stars" aria-label="5 out of 5">&#9733;&#9733;&#9733;&#9733;&#9733;</span>{%- assign nm = f[1] | strip -%}<span class="pr-rvw-meta">{%- if nm != blank -%}{{ nm }}{%- endif -%}</span></div><p>{{ f[0] | strip }}</p>{%- if f[2] != blank -%}<div class="pr-rvw-pics"><img src="{{ f[2] | strip }}&width=200" alt="Buyer photo" loading="lazy" width="96" height="96"></div>{%- endif -%}</article>{%- endfor -%}{%- endif -%}</div>
+      <div class="pr-rv-more"><button type="button" class="pr-btn pr-btn-ghost pr-btn-sm pr-rv-btn" hidden>Show more reviews</button></div>
+    </div>
+  </div></section>
+
+</div>
+
+<script type="application/json" id="pr-data">{"kit":{{ kit_id }},"colorOpt":{{ color_pos }},"variants":[{%- for v in p.variants -%}{"id":{{ v.id }},"p":{{ v.price }},"cap":{{ v.compare_at_price | default: 0 }},"o1":{{ v.option1 | json }},"o2":{{ v.option2 | json }},"cm":{{ v.metafields.custom.size_cm.value | default: '' | json }},"av":{{ v.available }},"media":{{ v.featured_media.id | default: 0 }}}{% unless forloop.last %},{% endunless %}{%- endfor -%}]}</script>
+
+{% schema %}
+{
+  "name": "PR Product",
+  "settings": [
+    {"type": "text", "id": "title", "label": "Title override", "info": "Empty = product title without 'Pocket Era' / 'Legends'"},
+    {"type": "text", "id": "subtitle", "label": "Line under the title"},
+    {"type": "text", "id": "tag", "label": "Tag chip (New, Bundle...)"},
+    {"type": "text", "id": "crumb", "label": "Breadcrumb parent", "default": "Shop"},
+    {"type": "text", "id": "crumb_url", "label": "Breadcrumb parent URL", "default": "/collections/shop-all"},
+    {"type": "text", "id": "swatch_label", "label": "Swatch label", "default": "Color"},
+    {"type": "text", "id": "rows_label", "label": "Pack rows label", "default": "Pick your pack"},
+    {"type": "textarea", "id": "bundles", "label": "Pack rows", "info": "label ~ option1 value (empty when the only option is the colour) ~ qty ~ dollars off ~ kit 1/0 ~ default 1/0 ~ sub ~ tag ~ pay units (BXGY) ~ offmode each|total; rows split by |"},
+    {"type": "text", "id": "kit_handle", "label": "$0 protection kit handle (rides with kit=1 rows)"},
+    {"type": "text", "id": "kit_items", "label": "What's in the protection kit (items split by |)"},
+    {"type": "textarea", "id": "addons", "label": "Add-on rows", "info": "handle ~ label ~ sub line, rows split by |"},
+    {"type": "text", "id": "cta", "label": "Button", "default": "Add to bag"},
+    {"type": "text", "id": "cta_note", "label": "Line under the button", "default": "Free tracked shipping · ships in 1 to 2 business days"},
+    {"type": "textarea", "id": "pains", "label": "Icon grid (4)", "info": "icon ~ title ~ small line, split by |. Icons: games screen battery light wifi speaker size remote timer usb warm star rotate orb glow shelf set hood pad tape sd rainbow"},
+    {"type": "richtext", "id": "description", "label": "Description override", "info": "Empty = product description"},
+    {"type": "checkbox", "id": "open_desc", "label": "Description open by default", "default": false},
+    {"type": "textarea", "id": "specs", "label": "Tech specs", "info": "name ~ value, split by |"},
+    {"type": "textarea", "id": "box", "label": "In the box", "info": "items split by |"},
+    {"type": "textarea", "id": "shipping", "label": "Shipping text"},
+    {"type": "textarea", "id": "faq", "label": "Extra drop-downs", "info": "question ~ answer, split by |"},
+    {"type": "textarea", "id": "photo_reviews", "label": "Seed reviews", "info": "Used when Judge.me has none. text ~ name ~ photo URL, rows split by |"},
+    {"type": "textarea", "id": "also", "label": "You may also like handles, comma separated"},
+    {"type": "text", "id": "lead", "label": "Lead photo URL (glove shot, shown first)"},
+    {"type": "text", "id": "clip", "label": "Clip (mp4 asset name or URL, 2nd slide)"},
+    {"type": "text", "id": "clip_poster", "label": "Clip poster URL"},
+    {"type": "text", "id": "float", "label": "Floating cutout file name (2nd slide)"},
+    {"type": "textarea", "id": "play_tabs", "label": "Module 1 tabs", "info": "label ~ image URL or asset, rows split by |; overrides photo A/B"},
+    {"type": "text", "id": "tabs2_title", "label": "Module 2 heading (non-consoles)"},
+    {"type": "textarea", "id": "tabs2", "label": "Module 2 tabs", "info": "label ~ image URL or asset, rows split by |; used when there are no size tabs"},
+    {"type": "text", "id": "play_on", "label": "Switch module: photo A"},
+    {"type": "text", "id": "play_off", "label": "Switch module: photo B"},
+    {"type": "text", "id": "play_eyebrow", "label": "Switch eyebrow", "default": "Lights down"},
+    {"type": "text", "id": "play_title", "label": "Switch heading", "default": "Lights down. Rings on."},
+    {"type": "text", "id": "play_text", "label": "Switch line"},
+    {"type": "text", "id": "play_on_label", "label": "Switch label A", "default": "Room lights on"},
+    {"type": "text", "id": "play_off_label", "label": "Switch label B", "default": "Lights down"},
+    {"type": "textarea", "id": "sizes", "label": "Size tabs", "info": "label ~ inches ~ caption, split by |; last = this product"},
+    {"type": "text", "id": "size_img", "label": "Size module screen image (asset or URL)"},
+    {"type": "text", "id": "size_eyebrow", "label": "Size eyebrow", "default": "Screen size"},
+    {"type": "text", "id": "size_title", "label": "Size heading", "default": "See the difference."},
+    {"type": "text", "id": "size_text", "label": "Size line", "default": "The same game, sized by the diagonal. Tap a size."},
+    {"type": "text", "id": "mods", "label": "Module order", "info": "comma list: play, tabs2, size, math, hem"},
+    {"type": "textarea", "id": "kickers", "label": "Module kickers", "info": "module ~ small line, split by |"},
+    {"type": "text", "id": "math_title", "label": "Math heading"},
+    {"type": "textarea", "id": "math_rows", "label": "Math systems", "info": "name ~ used price, split by |"},
+    {"type": "text", "id": "math_them", "label": "Math them label"},
+    {"type": "text", "id": "math_them_sub", "label": "Math them line"},
+    {"type": "text", "id": "math_us_sub", "label": "Math us line"},
+    {"type": "text", "id": "math_note", "label": "Math source line"},
+    {"type": "text", "id": "hem_title", "label": "Hem heading"},
+    {"type": "textarea", "id": "hem_rows", "label": "Hem tabs", "info": "label ~ height cm ~ caption, split by |"},
+    {"type": "text", "id": "hem_len", "label": "Hem length cm"},
+    {"type": "text", "id": "hem_note", "label": "Hem note"}
+  ],
+  "presets": [{"name": "PR Product"}]
+}
+{% endschema %}
+

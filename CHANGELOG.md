@@ -1,3 +1,84 @@
+# Mega-Legends Plushie: Gengar added under Small
+
+## Request
+Owner, 2026-10-27: "just added gengar plushie to shopify products make it show
+under the small section on Mega legends plushie product page."
+
+## How the page works
+The Character swatches, the Small / Large switch and the floating gallery on
+the plushie page (sections/pr-product.liquid, template pg-plush) are built from
+the Mega-Legends Plushie product itself: one swatch per Character value that
+has a buyable variant, the switch from the Size option, the gallery from the
+photos whose alt ends ", floating" / ", gallery". So Gengar shows under Small
+once the product carries a Gengar / Small variant; no page logic changed.
+
+## Change (admin, live now)
+Mega-Legends Plushie (gid://shopify/Product/15393892434148):
+- New variant Gengar / Small: $29.99, compare-at $39.99 (same as every
+  Small), SKU 14:29#Gengar;152:201336174#30cm (the supplier's 30 cm Gengar,
+  the way every other variant carries its supplier SKU), cost $16.25, policy
+  continue, 127 in stock at Pocket Era (mirrors the supplier), variant
+  metafield custom.size_cm "20 cm" so the Small button prints the same size
+  as the other Smalls. Gengar is the 25th and last Character value.
+- Two photos in the house style, both made from the supplier's own product
+  photo (background removed with Higgsfield, composed in its sandbox):
+  - plush-small-Gengar.jpg, alt "Gengar plushie, Small, 20 cm": the shared
+    purple studio backdrop (rebuilt from plush-small-Pikachu.jpg with the
+    plush inpainted away), white measure bar and "Small · 20 cm" pill at the
+    same pixel positions as the other Small studio shots. Set as the
+    variant's image (swatch thumbnail, cart line).
+  - fl-plush-gengar-small-w75.png, alt "Gengar plushie, Small, 20 cm,
+    floating": 1200 px square, subject 70% tall with its bottom at 84%,
+    centred, like every single-size float; "-w75" = the subject's width
+    share, which the gallery uses for the floor shadow (pr.css --sw).
+  No lifestyle ", gallery" photo was made for Gengar.
+- Description: "There are 25 characters, from Pikachu, Snorlax and Gengar
+  to ..."; SEO description "Soft Pokémon plushies in 25 characters, ...".
+- DSers: Gengar / Small mapped (Advanced, Global) to AliExpress product
+  1005007257296909, variant 14:29#Gengar;152:201336174#30cm, like the other
+  30 variants. The 30 existing mappings were not touched.
+- The raw supplier import "30/80cm Pokemon Gengar Stuffed Plush Toys ..."
+  (gid://shopify/Product/15400417853668) was live with the supplier's title
+  and its $16.25 price; set to draft like the other 20 raw plush imports.
+  Reversible from the admin if a standalone Gengar listing is wanted.
+
+## Change (theme, unpublished copy, owner publishes)
+"Gengar small (Claude 10-27a)" (gid://shopify/OnlineStoreTheme/189504684260),
+duplicated from the live "Kit photo whole (Claude 10-26i)":
+- templates/product.pg-plush.json: icon grid "25 characters", Specs
+  "Characters ~ 25, from Pikachu, Snorlax and Gengar to ...", module kicker
+  "play ~ 25 characters".
+- sections/pr-product.liquid: the plushie's "You may also like" card line
+  "25 characters · Small or Large" (two places). Nothing else in the file.
+Until it is published the live theme prints "24 characters" in those spots;
+everything else (swatch, size switch, gallery, price) is live already.
+
+## Not done
+- Gengar / Large (the supplier's 40 cm, $27.59 cost) was not added; the
+  request named Small only.
+- No lifestyle photo for Gengar in the gallery.
+
+## Verified
+- Admin: productVariantsBulkCreate returned the variant with every field
+  above (sku, 29.99 / 39.99, continue, 127 at Pocket Era, size_cm "20 cm",
+  cost 16.25, position 31, availableForSale true). Product option Character
+  now lists 25 values ending in Gengar; 31 variants.
+- Photos: both viewed at full size before upload (Higgsfield sandbox);
+  plush-small-Gengar.jpg 2048x2048 READY, set as the variant's only media;
+  fl-plush-gengar-small-w75.png 1200x1200 READY on the product with the
+  floating alt; the temporary copy of the supplier photo deleted.
+- DSers apply_product_mapping: "updated and read back", updated variant
+  67948151242980 only.
+- Theme copy: templates/product.pg-plush.json md5 1093f29366a8349f0fceb3638db12544
+  (3597 bytes) equals the file in this repo.
+- Raw import productUpdate returned status DRAFT.
+- Pending at commit time: the sections/pr-product.liquid upload to the theme
+  copy (byte-for-byte diff) and an independent read-only check of the live
+  product, the DSers mapping and the page logic (incl. assets/pr.js); see the
+  next entry or commit for the result.
+
+---
+
 # Discounts: every product's deal applies, even with other deals in the cart
 
 ## Request
