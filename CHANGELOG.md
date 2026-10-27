@@ -49,9 +49,25 @@ duplicated from the live "Kit photo whole (Claude 10-26i)":
   "Characters ~ 25, from Pikachu, Snorlax and Gengar to ...", module kicker
   "play ~ 25 characters".
 - sections/pr-product.liquid: the plushie's "You may also like" card line
-  "25 characters · Small or Large" (two places). Nothing else in the file.
-Until it is published the live theme prints "24 characters" in those spots;
-everything else (swatch, size switch, gallery, price) is live already.
+  "25 characters · Small or Large" (two places), and the pr-data JSON that
+  feeds pr.js gains "img" per variant (the variant's own photo at 240 px).
+- assets/pr.js + a new file files/pr-pick-sprite-1027.jpg (owner 2026-10-27
+  "make the gengar pic show down here too. the image is blank here"): the
+  "Your plushie" row, the pick strip and the character grid take their
+  thumbnails from one sprite of label-free studio crops keyed by name
+  (pr-pick-sprite-1025.jpg, 6 x 5 cells of 240 px, 29 names). Gengar was not
+  on it, and the fallback looked for the variant's photo among the gallery
+  slides, which in float mode hold only the ", floating" / ", gallery" shots,
+  so the box came up empty. Now: the sprite's one free cell (the last) holds
+  Gengar, cut from the studio shot without the bar and pill at the same
+  framing as the other cells, saved as a new file name so no CDN cache can
+  serve the old sheet; SPR.u points at it and 'gengar' is appended to SPR.k.
+  And thumbOf falls back to the variant's own photo (pr-data "img") when its
+  media is not a gallery slide, so the next character gets a thumbnail even
+  before anyone rebuilds the sprite. The old sprite file is left in place.
+Until the copy is published the live theme prints "24 characters" in those
+spots and shows the blank picker box for Gengar; everything else (swatch,
+size switch, gallery, price, cart) is live already.
 
 ## Not done
 - Gengar / Large (the supplier's 40 cm, $27.59 cost) was not added; the
@@ -72,10 +88,26 @@ everything else (swatch, size switch, gallery, price) is live already.
 - Theme copy: templates/product.pg-plush.json md5 1093f29366a8349f0fceb3638db12544
   (3597 bytes) equals the file in this repo.
 - Raw import productUpdate returned status DRAFT.
-- Pending at commit time: the sections/pr-product.liquid upload to the theme
-  copy (byte-for-byte diff) and an independent read-only check of the live
-  product, the DSers mapping and the page logic (incl. assets/pr.js); see the
-  next entry or commit for the result.
+- Theme copy uploads verified byte-for-byte (fetched back, diff empty,
+  same sha256): sections/pr-product.liquid first pass 57,912 bytes; the
+  pr.js and second pr-product.liquid pass are recorded in the commit that
+  carries them.
+- Independent read-only re-check (three parallel verifiers, 2026-10-27):
+  live product: option Character has 25 values ending in Gengar, 31
+  variants, the Gengar / Small fields as above, the float 1200x1200 READY,
+  the temporary supplier photo gone, description and SEO at 25, the other 30
+  variants at 29.99 / 39.99 and 49.99 / 66.99, raw import DRAFT with its 4
+  variants. DSers: 31 variants, each exactly one Advanced Global AliExpress
+  mapping, the 30 old ones unchanged, Gengar on 1005007257296909 /
+  14:29#Gengar;152:201336174#30cm. Page logic (pr-product.liquid, pr.js,
+  pr.css, pr-photo-name): the Gengar swatch renders with the studio photo,
+  Gengar is selectable under Small and behaves like the other Small-only
+  characters under Large, the float slide gets the pill "Gengar · Small ·
+  20 cm" and --sw:75%, a pick jumps to it without a lifestyle photo, no
+  other name matches "Gengar". The one failure it found was the blank
+  picker thumbnail, fixed above.
+- The sprite cell, the float and the studio shot were each viewed at full
+  size before upload.
 
 ---
 
