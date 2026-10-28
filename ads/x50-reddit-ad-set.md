@@ -21,6 +21,8 @@ nitrile gloves and walnut desk like the existing gallery shots, plus candid
 - Shopify admin > Content > Files, filenames `x50-reddit-01` to `-15`
   (NOT attached to the product, the product page is unchanged).
 - Higgsfield generations, same account, job ids below.
+- In this repo: `ads/x50-reddit-photos/` (15 JPEGs, 1200 x 1200, under 500 KB
+  each, Reddit-ready) and `ads/x50-reddit-photos.zip` (the same 15 zipped).
 
 Reddit image ads take JPG or PNG, 1:1 at 1080 x 1080 or larger, max 3 MB.
 The PNG masters are about 6.5 MB, so use the JPEG link (Shopify resizes on the
