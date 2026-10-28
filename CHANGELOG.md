@@ -1,3 +1,26 @@
+# X50 Ultra Max: 15-photo Reddit ad set
+
+## Request
+Owner, 2026-10-28: "make 15 photos for ad for the x50. make the design the
+same as actual design, make the photos match our theme and perfect for reddit
+ads."
+
+## What was made (no theme files touched)
+15 square 2048 x 2048 photographic stills of the Pocket Era X50 Ultra Max (Ice
+White), generated in Higgsfield (nano_banana_pro) from the product's own
+listing images with a strict keep-the-product-exact lock, each one checked
+against the reference for grips, sticks, D-pad, Y/X/B/A, RGB bars and the
+on-screen game. Look matches the live site: white-to-lavender studio shots,
+violet LED ambient scenes, black-glove and walnut-desk hero shots, plus candid
+in-use shots for Reddit. No drawn text, badges or logos.
+
+## Applied to
+Shopify admin > Content > Files, filenames `x50-reddit-01` to `x50-reddit-15`.
+Not attached to the product; the product page and theme are unchanged.
+Full shot list, links and Reddit-ready 1080 JPEG links: `ads/x50-reddit-ad-set.md`.
+
+---
+
 # Discounts: every product's deal applies, even with other deals in the cart
 
 ## Request
