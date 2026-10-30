@@ -1,0 +1,155 @@
+{%- comment -%}
+  PR ROM Guide (2026-10-23 redesign): /pages/rom-guide in the white + purple design.
+  Same support copy as the old dark sections/pg-rom-guide.liquid (adding games, the EASYROMS / DiskGenius fix,
+  removing games, folder names, troubleshooting, four rules). The pr wrapper class switches the layout to the new
+  header, footer and pr.css. Styles: assets/pr.css, "pass 23 ROM guide".
+{%- endcomment -%}
+{%- assign s = section.settings -%}
+{%- assign plus = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V2.5M3.5 7 8 2.5 12.5 7M5 9.5h6"/></svg>' -%}
+<div class="pr pr-page-rom" id="pr">
+  <section class="pr-rom-hero"><div class="pr-wrap">
+    <p class="pr-eyebrow">Support</p>
+    <h1 class="pr-rom-h1">{{ s.title | default: 'ROM Guide' }}</h1>
+    <p class="pr-rom-sub">{{ s.subtitle }}</p>
+    <nav class="pr-chips pr-rom-jump" aria-label="On this page">
+      <a href="#rom-add">Adding games</a><a href="#rom-easyroms">Can't see EASYROMS?</a><a href="#rom-remove">Removing games</a><a href="#rom-folders">Folder names</a><a href="#rom-faq">Troubleshooting</a>
+    </nav>
+  </div></section>
+
+  <div class="pr-wrap">
+    <div class="pr-rom-facts">
+      <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M14 6h15l7 7v29H14z"/><path d="M19 6v7h-3M23.5 6v7M28 6v7"/><path d="M19 24h12M19 30h12M19 36h8"/></svg><b>Everything lives on the card</b><span>Your games are not inside the console. They sit on the microSD card, so adding or removing them is just copying files.</span></div>
+      <div><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="4"/><path d="M6 18h36"/><circle cx="11.5" cy="14" r="1.3"/><circle cx="16" cy="14" r="1.3"/><path d="M13 27h14M13 32h9"/></svg><b>Look for EASYROMS</b><span>The card is split into several partitions. The one holding your games is labelled <code>EASYROMS</code>. That is the only one you need.</span></div>
+      <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6v22"/><path d="M16 21l8 8 8-8"/><path d="M8 33v5a3 3 0 0 0 3 3h26a3 3 0 0 0 3-3v-5"/></svg><b>Drag, drop, done</b><span>Drop a game file into the folder for its system, eject the card safely, then refresh the game list on the console.</span></div>
+    </div>
+
+    <section class="pr-rom-sec" id="rom-add">
+      <p class="pr-kick">Step by step</p>
+      <h2 class="pr-h2">Adding games to your console</h2>
+      <p class="pr-rom-lede">You will need the microSD card that came with your console, a card reader or an SD adapter, and a computer. The whole job takes about five minutes.</p>
+      <ol class="pr-rom-steps">
+        <li><b>Power the console off</b><p>Shut it down properly from the menu rather than pulling the card out while it is running. Pulling a live card is the most common way to corrupt a library.</p></li>
+        <li><b>Take out the games card</b><p>Your handheld has two microSD slots. The <strong>second slot</strong> (often marked <code>TF2</code> or <code>ROMS</code>) is the one holding the games. Push the card in gently to release it.</p></li>
+        <li><b>Plug it into your computer</b><p>Use a USB card reader or your laptop's SD slot with an adapter. Give it a few seconds to appear.</p></li>
+        <li><b>Open the EASYROMS partition</b><p>In File Explorer or Finder, open the drive named <code>EASYROMS</code>. If you cannot see it, skip to the <a href="#rom-easyroms">DiskGenius section</a> below. That is normal and there is a free fix.</p></li>
+        <li><b>Find the folder for the system</b><p>Inside <code>EASYROMS</code> you will see a <code>roms</code> folder, and inside that a folder per console: <code>nes</code>, <code>snes</code>, <code>gba</code>, <code>psx</code> and so on. The <a href="#rom-folders">folder table</a> lists them.</p></li>
+        <li><b>Drop your game files in</b><p>Copy the game file straight into the matching folder. One file per game. Most systems want the game unzipped; arcade games (MAME / FinalBurn) are the exception and stay zipped.</p></li>
+        <li><b>Eject the card safely</b><p>Use <strong>Safely Remove Hardware</strong> on Windows, or drag to the trash / press eject on a Mac. Do not just unplug the reader, the copy may not have finished writing.</p></li>
+        <li><b>Refresh the game list</b><p>Put the card back in the second slot and switch on. In the console menu go to <strong>Options &rarr; Update Game List</strong> (some firmware calls it <em>Refresh Gamelist</em>). Your new games appear under their system.</p></li>
+      </ol>
+    </section>
+
+    <section class="pr-rom-sec" id="rom-easyroms">
+      <p class="pr-kick">The one that trips everyone up</p>
+      <h2 class="pr-h2">Can't see a drive called EASYROMS?</h2>
+      <p class="pr-rom-lede">This is completely normal and your card is fine. The console runs Linux, so the games partition is formatted in a Linux file system that Windows and macOS cannot read on their own. Your computer shows only the small boot partition, or nothing at all, and may pop up a message offering to format the card.</p>
+      <div class="pr-rom-panel">
+        <div class="pr-rom-bar"><span>The free fix: DiskGenius</span></div>
+        <div class="pr-rom-panel-in">
+          <p>DiskGenius is a free Windows tool that can read the console's partitions. The free edition is all you need. There is nothing to buy and no subscription for this job.</p>
+          <ol class="pr-rom-dg">
+            <li>Download the <strong>free edition of DiskGenius</strong> from <a href="{{ s.diskgenius_url | default: 'https://www.diskgenius.com/free.php' }}" target="_blank" rel="noopener nofollow">diskgenius.com</a> and install it on your PC.</li>
+            <li>Plug the microSD card into your computer, then open DiskGenius.</li>
+            <li>In the panel on the left, find your microSD card. Under it you will see its partitions listed. One of them is <code>EASYROMS</code>.</li>
+            <li>Click <code>EASYROMS</code>. The file browser on the right now shows the <code>roms</code> folder and every system folder inside it.</li>
+            <li>Open the folder for the system you want, then use <strong>Copy Files To Current Partition</strong> (or drag your game files straight in).</li>
+            <li>To remove a game, right-click it and choose <strong>Delete Files</strong>.</li>
+            <li>Let the operation finish and save, then eject the card from Windows before pulling the reader out.</li>
+            <li>Put the card back in the console and run <strong>Options &rarr; Update Game List</strong>.</li>
+          </ol>
+          <div class="pr-rom-warn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5l9 16H3z"/><path d="M12 10v4.2M12 16.6v.2"/></svg><p><strong>Never click Format.</strong> If Windows pops up &ldquo;You need to format the disk before you can use it&rdquo;, choose <strong>Cancel</strong>. Formatting erases every game on the card and the console will not boot afterwards.</p></div>
+          <div class="pr-rom-note"><p><strong>On a Mac?</strong> macOS cannot read these partitions either, and there is no free DiskGenius for Mac. The simplest routes are to borrow a Windows PC, use a Linux machine (which reads the card natively), or install a third-party Linux file-system driver for macOS.</p><p><strong>On Linux?</strong> Nothing extra needed. Plug the card in and the <code>EASYROMS</code> partition mounts by itself.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="pr-rom-sec" id="rom-remove">
+      <p class="pr-kick">Freeing up space</p>
+      <h2 class="pr-h2">Removing games</h2>
+      <p class="pr-rom-lede">Deleting is the same trip in reverse. Take the card out, open <code>EASYROMS</code>, and delete what you no longer want.</p>
+      <ol class="pr-rom-steps">
+        <li><b>Open the system folder</b><p>Go to <code>EASYROMS</code> &rarr; <code>roms</code> &rarr; the folder for that system, and find the game file.</p></li>
+        <li><b>Delete the game file</b><p>Delete just the game. If a game came as several files (for example a <code>.bin</code> and a <code>.cue</code> pair), delete all of them together.</p></li>
+        <li><b>Tidy up its artwork</b><p>Box art and screenshots live in a <code>media</code> or <code>images</code> folder alongside the games, named after the game. Deleting those too reclaims the space; leaving them behind is harmless.</p></li>
+        <li><b>Eject, then refresh</b><p>Eject the card safely, put it back, and run <strong>Options &rarr; Update Game List</strong> so the deleted titles drop off the menu.</p></li>
+      </ol>
+      <div class="pr-rom-note"><p><strong>Keep the preloaded library safe.</strong> Before you start deleting, it is worth copying the whole <code>roms</code> folder to your computer as a backup. If you ever remove something you wanted, you can simply copy it back.</p></div>
+    </section>
+
+    <section class="pr-rom-sec" id="rom-folders">
+      <p class="pr-kick">Reference</p>
+      <h2 class="pr-h2">Which folder does it go in?</h2>
+      <p class="pr-rom-lede">Folder names follow the emulator's own naming, not the console's marketing name. These are the ones you will use most. If a folder does not exist on your card, that system is not set up on that firmware, so do not create it by hand.</p>
+      <div class="pr-rom-table"><table>
+        <thead><tr><th>System</th><th>Folder</th><th>Usual file types</th></tr></thead>
+        <tbody>
+          <tr><td>NES / Famicom</td><td><code>nes</code></td><td>.nes, .fds</td></tr>
+          <tr><td>Super Nintendo</td><td><code>snes</code></td><td>.sfc, .smc</td></tr>
+          <tr><td>Nintendo 64</td><td><code>n64</code></td><td>.z64, .n64, .v64</td></tr>
+          <tr><td>Game Boy / Color</td><td><code>gb</code> / <code>gbc</code></td><td>.gb, .gbc</td></tr>
+          <tr><td>Game Boy Advance</td><td><code>gba</code></td><td>.gba</td></tr>
+          <tr><td>Nintendo DS</td><td><code>nds</code></td><td>.nds</td></tr>
+          <tr><td>Genesis / Mega Drive</td><td><code>megadrive</code></td><td>.md, .gen, .bin</td></tr>
+          <tr><td>Master System</td><td><code>mastersystem</code></td><td>.sms</td></tr>
+          <tr><td>Game Gear</td><td><code>gamegear</code></td><td>.gg</td></tr>
+          <tr><td>PlayStation 1</td><td><code>psx</code></td><td>.chd, or .bin + .cue together</td></tr>
+          <tr><td>PSP</td><td><code>psp</code></td><td>.iso, .cso</td></tr>
+          <tr><td>Arcade (MAME / FinalBurn)</td><td><code>mame</code> / <code>fbneo</code></td><td>.zip, leave these zipped</td></tr>
+          <tr><td>Neo Geo</td><td><code>neogeo</code></td><td>.zip</td></tr>
+          <tr><td>TurboGrafx-16 / PC Engine</td><td><code>pcengine</code></td><td>.pce</td></tr>
+          <tr><td>Atari 2600</td><td><code>atari2600</code></td><td>.a26, .bin</td></tr>
+          <tr><td>Dreamcast</td><td><code>dreamcast</code></td><td>.chd, .gdi</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <section class="pr-rom-sec" id="rom-faq">
+      <p class="pr-kick">Troubleshooting</p>
+      <h2 class="pr-h2">If something isn't working</h2>
+      <div class="pr-acc">
+        <details><summary>I copied a game but it isn't in the menu {{ plus }}</summary><div class="pr-acc-body"><p>Run <strong>Options &rarr; Update Game List</strong> first, or restart the console. The menu only reads the card at start-up. If it still does not appear, check three things: the file is in the right system folder, the file type is one that system accepts (see the table above), and the game is unzipped if it is not an arcade ROM.</p></div></details>
+        <details><summary>Windows says the card needs formatting {{ plus }}</summary><div class="pr-acc-body"><p>Click <strong>Cancel</strong>. Windows is only saying it does not recognize the Linux partitions, not that anything is broken. Use <a href="#rom-easyroms">DiskGenius</a> to open the card instead. Formatting would erase the whole library.</p></div></details>
+        <details><summary>My PlayStation games won't launch {{ plus }}</summary><div class="pr-acc-body"><p>PS1 games need either a single <code>.chd</code> file, or a <code>.bin</code> and <code>.cue</code> pair kept together in the same folder. A lone <code>.bin</code> with no <code>.cue</code> beside it will not start. Multi-disc games need every disc file present.</p></div></details>
+        <details><summary>The console won't boot after I copied files {{ plus }}</summary><div class="pr-acc-body"><p>Almost always the card was pulled out before the copy finished writing, or it is not seated properly. Power off, re-seat the card in the second slot, and try again. If it still will not start, put the card back in your computer and check the files copied over completely.</p></div></details>
+        <details><summary>Which slot is the games card in? {{ plus }}</summary><div class="pr-acc-body"><p>The <strong>second slot</strong>, usually marked <code>TF2</code>. The first slot holds the system card that boots the console; you do not need to touch it, and you should not reformat it.</p></div></details>
+        <details><summary>Can I use a bigger microSD card? {{ plus }}</summary><div class="pr-acc-body"><p>Yes. Cards up to 256GB work. The straightforward way is to clone your existing card to the larger one with DiskGenius, then expand the <code>EASYROMS</code> partition to fill the extra space. Keep the original card untouched until the new one is confirmed working.</p></div></details>
+        <details><summary>Where do save files go? {{ plus }}</summary><div class="pr-acc-body"><p>Saves and save states are written back to the card automatically, next to the games or in a dedicated saves folder depending on your firmware. They are worth including whenever you back the card up.</p></div></details>
+        <details><summary>Which games am I allowed to add? {{ plus }}</summary><div class="pr-acc-body"><p>Only games you own. Copyright rules on game files vary by country, so please check what applies where you live before downloading anything. Homebrew and public-domain titles are freely available and a great place to start.</p></div></details>
+      </div>
+    </section>
+
+    <section class="pr-rom-sec">
+      <p class="pr-kick">Keep it simple</p>
+      <h2 class="pr-h2">Four rules that prevent every common problem</h2>
+      <div class="pr-bens pr-rom-rules">
+        <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6v16"/><path d="M15 12.5a15 15 0 1 0 18 0"/></svg><b>Power off first</b><small>Never remove the card while the console is running.</small></div>
+        <div><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="12" y="6" width="24" height="36" rx="3"/><path d="M17 6v6M21 6v6M25 6v6M29 6v6"/><path d="M8 40L40 8"/></svg><b>Never format</b><small>Cancel any prompt that offers to format or erase the card.</small></div>
+        <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10h24l8 8v20a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2z"/><path d="M15 10v9h15v-9"/><rect x="14" y="26" width="20" height="14"/><path d="M18 31h12M18 35h8"/></svg><b>Back it up</b><small>Copy the roms folder to your computer before making changes.</small></div>
+        <div><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 8L40 26H8z"/><path d="M8 34h32v6H8z"/></svg><b>Eject safely</b><small>Always eject in Windows or macOS before unplugging the reader.</small></div>
+      </div>
+    </section>
+
+    <section class="pr-rom-cta">
+      <h2 class="pr-h2">Still stuck? We'll walk you through it.</h2>
+      <p>Send us the make of your card reader and a photo of what your computer is showing, and we will tell you exactly what to click.</p>
+      <div class="pr-rom-btns">
+        {%- if s.support_email != blank -%}<a class="pr-btn" href="mailto:{{ s.support_email }}">Email support</a>{%- endif -%}
+        {%- comment -%} the Contact us button is gone (owner 2026-10-30 "contact us doesn't work either, we don't even want that on there"): the Contact page is unpublished, so /pages/contact was a 404 {%- endcomment -%}
+        <a class="pr-btn pr-btn-ghost" href="/pages/track-order">Track your order</a>
+      </div>
+    </section>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "PR ROM Guide",
+  "settings": [
+    {"type": "text", "id": "title", "label": "Page title", "default": "ROM Guide"},
+    {"type": "text", "id": "subtitle", "label": "Subtitle"},
+    {"type": "text", "id": "diskgenius_url", "label": "DiskGenius link", "default": "https://www.diskgenius.com/free.php"},
+    {"type": "text", "id": "support_email", "label": "Support email"}
+  ],
+  "presets": [{"name": "PR ROM Guide"}]
+}
+{% endschema %}

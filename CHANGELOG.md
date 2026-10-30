@@ -1,3 +1,65 @@
+# Product photo to the top on desktop; ROM guide loses its dead Contact button
+
+## Request
+Owner, 2026-10-30: "make sure the site is functioning on Chrome and Safari and
+mobile, and the hero images on desktop are too low, they should be near the top
+of the page." Then: "ROM guide link is messed up", "Contact us doesn't work
+either, we don't even want that on there, just make sure ROM guide works."
+
+## Problem
+On the redesigned product pages (sections/pr-product.liquid, every pg-* template)
+the desktop gallery put the "1 \ 12" count and the arrows ABOVE the photo
+(order:-1, pass ~117) and then gave that bar a 32px top margin so it sat level
+with the title (owner 10-24 "arrow and page count on desktop is too high").
+Measured on a 1440x900 copy of the page with the live stylesheet: the photo
+started 78px below the gallery's top edge at load, and once the gallery pinned
+(sticky, top 24px) the photo sat 102px below the top of the screen with only the
+small bar in the gap. Phones were already right: pass 128 put the bar under the
+photo there.
+
+The ROM guide page's closing card had a "Contact us" button to /pages/contact.
+That page is unpublished in the admin, so the button landed on a 404.
+
+## Change
+1. assets/pr.css, pass 130 (desktop only, min-width 900px): the count + arrows
+   bar goes back UNDER the photo (order 0, 12px above it, 8px below), the
+   gallery pins 12px from the top instead of 24px, and the pin cap becomes
+   100vh - 72px so photo + bar still fit the screen. The thumbnail-rail layout
+   (plush and orb pages) keeps the rail beside the photo and moves its bar row
+   to the bottom the same way. Phones untouched (verified: identical boxes at
+   390px before and after).
+2. sections/pr-rom.liquid: the "Contact us" button is removed from the closing
+   card. "Track your order" stays. The ROM guide page itself (/pages/rom-guide,
+   template page.rom-guide.json -> pr-rom) renders fine in the local copy at
+   1440px and 390px; no URL redirect touches it.
+
+## Verified (local copy of the live theme, Chromium 1440x900 / 1366x768 / 390x844)
+Desktop product page before: photo top 219px at load, 102px when pinned.
+After: photo top 141px at load (level with the title block), 12px when pinned,
+bar under the photo. Homepage hero already sat flush under the header on
+desktop (top 95px = header height) at 1280, 1440 and 1920, so it was not
+changed.
+
+## Browser check (static, the storefront is not reachable from this session)
+pr.js and every pg-* script parse as ES2019 (no optional chaining, no lookbehind
+regex, every modern API guarded), so Safari 13+ and iOS 13+ run them. pr.css
+uses :has() in 18 cosmetic rules (Safari 15.4+; older Safari just skips them),
+svh with vh fallbacks, prefixed backdrop-filter and mask-image, and
+::-webkit-scrollbar twins for every scrollbar-width:none. The Xtra theme's own
+custom.js uses ?? and ?. (Safari 13.1+), unchanged from before the redesign.
+Nothing found that breaks Chrome, Safari or mobile; a live check in the real
+browsers still needs the storefront allowed in this session's network settings
+(www.thepocketera.com and cdn.shopify.com were blocked).
+
+## Where
+Unpublished theme "Photo to top + ROM contact gone (Claude 10-30a)"
+(id 189701456100), duplicated from the live theme "5% chip a touch bolder
+(Claude 10-28w)" (id 189504684260) and changed in just these two files.
+Publishing is the owner's step. Files in this repo: theme/assets/pr.css,
+theme/sections/pr-rom.liquid.
+
+---
+
 # Discounts: every product's deal applies, even with other deals in the cart
 
 ## Request
