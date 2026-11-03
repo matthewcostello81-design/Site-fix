@@ -1,3 +1,70 @@
+# Cart: floating photos actually float, and are bigger
+
+## Request
+Owner, 2026-11-03, from a phone on the published "Cart photos on white" theme:
+"Do the photos float? Can u make the cart image bigger look".
+
+## What was wrong
+- No float: the fl-*.png files are plain cut-outs with no shadow. The product
+  page makes them float with CSS (pr.css: pr-lev2 bob and a radial shadow
+  under the product). The cart had neither.
+- Small: the product fills only part of each file (R36S Pro / Ultra / Ultra
+  Max 44% wide x 70% tall, hoodie 52% x 70%, R36H Pro / Ultra 70% x 41%, X50
+  80% x 54%, measured from the alpha channel), and it was shown at the file's
+  full size.
+
+## Fix (sections/pg-cart-zfix.liquid, inline CSS)
+- Soft elliptical shadow under each floating shot and a gentle 4.6s bob,
+  staggered per line, like the product page. Off for prefers-reduced-motion.
+- Each family is enlarged to fill its box (up to 92% of the width, 80% of
+  the height, shadow below), with no cropping.
+- Box 120x140 (was 120x120) from 420px up, 86x120 (was 78x120) below.
+- Result: R36S Pro 70x112 px (was 53x83), R36H Ultra 110 px wide (was 84),
+  X50 110 px wide (was 96) on a 430px phone. Orbs and accessories still fill
+  their box with their own photo, no shadow or bob.
+
+## Where
+Draft theme "Cart photos float + bigger (Claude 11-03b)" (id 189911072996),
+duplicated from the live theme "Cart photos on white (Claude 11-03)", so
+publishing it changes only this file. Checked in preview at 390, 430 and
+1400px: text column unchanged on desktop, 8px narrower under 420px; bob and
+shadow running on floating lines only.
+
+---
+
+# Cart: floating product photos on plain white
+
+## Request
+Owner, 2026-11-03: "make sure cart photos are the floating w in the white background".
+
+## What was wrong
+The cart lines already use the floating shots (every console, hoodie and X50
+variant image is a transparent fl-*.png). They sat on a lavender tile (#F5F3F9)
+from pr.css (`html body.pr-page aside#cart#cart#cart#cart ul.l4ca picture`,
+`background: var(--pr-panel) !important`). On a phone the thumbnail box is
+78x120 with object-fit:cover, which also cut the sides off the wide consoles
+(R36H Pro / R36H Ultra).
+
+## Fix (sections/pg-cart-zfix.liquid, inline CSS)
+- Cart line picture/figure background -> #fff (five ids beat pr.css's four).
+- Floating shots only (`img[src*="/files/fl-"]`) -> object-fit:contain, so the
+  whole device shows. Desktop (120x120 square) looks the same apart from the
+  white. Orbs and accessories keep cover.
+
+## Not changed
+Orbs, cases, screen protectors and protection kits have no floating shot, so
+their cart photo is still their dark scene image. They need new transparent
+product shots to match.
+
+## Where
+Theme "Cart photos on white (Claude 11-03)" (id 189909893348, published by the owner 2026-11-03), duplicated
+from the live theme "Pack prices Oct 31 (Claude 10-31a)" on 2026-11-03, so
+publishing it changes only this file. Publishing is the owner's step (the API
+blocks theme publish). Verified in preview at 1400px and iPhone 13: line
+pictures white, floating shots uncropped.
+
+---
+
 # Discounts: every product's deal applies, even with other deals in the cart
 
 ## Request

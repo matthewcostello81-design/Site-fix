@@ -1,0 +1,142 @@
+{%- comment -%}
+  pg-cart-zfix
+  Cart drawer stacking fix.
+
+  The drawer footer (.sticky-in-panel) is position:sticky at z-index 5.
+  The orb offer card (#pg-unlock-slot .pg-offer) renders its ORB 1/2/3 and
+  FREE ORB pickers as .pg-offer-pick at position:relative z-index 2, and on
+  mobile Safari those select menus were painting through the footer, so the
+  subtotal, shipping protection and total rows ended up underneath them.
+
+  Fix: give the footer a clearly higher layer, and give every scrolling block
+  in the drawer its own stacking context pinned below it, so nothing inside
+  them can climb out. No media query needed, this applies on mobile and
+  desktop alike.
+{%- endcomment -%}
+{%- comment -%} 2026-10 speed (css-layers): this file's CSS now lives in assets/pgs-cart.css (search its banner for this file name), linked from layout/theme.liquid between the header-group and overlay-group, which keeps the cascade order it had here. Edit it there. {%- endcomment -%}
+{%- comment -%}
+  2026-11-03 CART PHOTOS: FLOATING SHOT ON PLAIN WHITE.
+  Owner: "make sure cart photos are the floating w in the white background".
+
+  Every console / hoodie / X50 variant image is already the transparent
+  "floating" PNG (fl-*.png), so the cart line shows the right photo. What it
+  sat on was pr.css's
+    html body.pr-page aside#cart#cart#cart#cart ul.l4ca picture
+      { background: var(--pr-panel) !important }   (#F5F3F9 lavender)
+  which drew a lavender tile behind it. Five ids beat that rule's four, so the
+  tile is now white and the product floats on the white drawer.
+
+  On a phone the thumbnail box is 78x120, and object-fit:cover cut the sides
+  off the wide consoles (R36H / R36H Ultra). Floating shots only (matched by
+  the fl- file name) switch to contain, so the whole device shows; the white
+  letterbox above and below is invisible on the white drawer. Square desktop
+  boxes look the same either way. Orbs and accessories have no floating shot
+  and keep cover, so their photos still fill the box.
+
+  Kept here as inline CSS, not in pgs-cart.css, because that file is 203KB.
+
+  2026-11-03 (later) FLOAT + BIGGER. Owner, from a phone on the draft: "Do the
+  photos float? Can u make the cart image bigger look".
+  - They did not float: the fl-*.png files are plain cut-outs with no shadow.
+    The product page makes them float with pr.css's pr-lev2 bob (4.6s, -4%)
+    and an elliptical radial shadow under the product (pr-levshadow). The cart
+    now does the same: a soft shadow under each floating shot and a gentle bob,
+    staggered per line, off for prefers-reduced-motion.
+  - They looked small because the product fills only part of each file: the
+    R36S Pro / Ultra / Ultra Max are 44% of the frame wide and 70% tall, the
+    hoodie 52% x 70%, the R36H Pro / Ultra 70% x 41%, the X50 80% x 54%. Each
+    family is now enlarged to fill its box: up to 92% of the box width and
+    80% of its height, the shadow taking the rest. Measured from the files'
+    alpha channels, so nothing is cropped.
+  - The box is 120x140 (was 120x120) from 420px up, and 86x120 (was 78x120)
+    on smaller phones. Height costs nothing in the text column; the 8px of
+    width on small phones leaves 232px of text at 360px wide.
+  Geometry: the image is an L x L square, L = the largest size at which the
+  product fits both limits; it is placed so product + gap + shadow sit centred
+  in the box. All of it is calc() on the vars below, so a new floating family
+  only needs its four numbers. The family is read with :has() on the figure
+  (the shadow lives on the figure); without :has the fallback numbers fit
+  every family uncropped, just without the per-family tuning or a shadow.
+{%- endcomment -%}
+<style>
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure,
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure picture{
+    background:#fff !important;
+  }
+
+  /* Box size, and the default numbers (safe for every floating family) */
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure{
+    --bw:120px; --bh:140px;
+    --pw:.8; --ph:.7; --pcy:.5;
+    --L:min(calc(var(--bw) * .92 / var(--pw)), calc(var(--bh) * .8 / var(--ph)));
+    --pt:calc((var(--bh) - var(--ph) * var(--L) - var(--bh) * .09) / 2);
+    width:var(--bw) !important; min-width:var(--bw) !important; max-width:var(--bw) !important;
+    height:var(--bh) !important; min-height:var(--bh) !important; max-height:var(--bh) !important;
+    flex:0 0 var(--bw) !important;
+    position:relative !important; overflow:hidden !important;
+  }
+  @media (max-width:419px){
+    html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure{ --bw:86px; --bh:120px; }
+  }
+
+  /* Product size and position inside each family's file (from the alpha channel) */
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-pro-"]),
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-ultra-"]),
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-max-"]){ --pw:.44; --ph:.7; --pcy:.49; }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-hoodie-"]){ --pw:.52; --ph:.7; --pcy:.49; }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-h-"]),
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-hu-"]){ --pw:.7; --ph:.41; --pcy:.635; }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-x50-"]){ --pw:.8; --ph:.54; --pcy:.52; }
+
+  /* Photos with no floating shot (orbs, cases, kits): fill the box as before */
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure img:not([src*="/files/fl-"]){
+    top:0 !important; left:0 !important; right:auto !important; bottom:auto !important;
+    width:100% !important; height:100% !important; max-width:none !important; max-height:none !important;
+    object-fit:cover !important;
+  }
+
+  /* Floating shots: enlarged, centred over their shadow, bobbing */
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure img[src*="/files/fl-"]{
+    position:absolute !important;
+    left:calc((var(--bw) - var(--L)) / 2) !important;
+    top:calc(var(--pt) - (var(--pcy) - var(--ph) / 2) * var(--L)) !important;
+    right:auto !important; bottom:auto !important;
+    width:var(--L) !important; height:var(--L) !important;
+    max-width:none !important; max-height:none !important;
+    object-fit:contain !important;
+    background:transparent !important;
+    z-index:1;
+    animation:pg-cfloat 4.6s ease-in-out infinite;
+    -webkit-backface-visibility:hidden; backface-visibility:hidden;
+  }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure:has(img[src*="/files/fl-"])::after{
+    content:"";
+    position:absolute;
+    z-index:0;
+    pointer-events:none;
+    right:auto; bottom:auto; margin:0; border:0; border-radius:0; box-shadow:none; opacity:1;
+    width:calc(var(--pw) * var(--L) * .8);
+    left:calc((var(--bw) - var(--pw) * var(--L) * .8) / 2);
+    top:calc(var(--pt) + var(--ph) * var(--L) + var(--bh) * .025);
+    height:calc(var(--bh) * .055);
+    background:radial-gradient(closest-side, rgba(24,12,48,.34), rgba(24,12,48,0));
+    animation:pg-cfloat-sh 4.6s ease-in-out infinite;
+  }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li:nth-child(3n+2) > figure img[src*="/files/fl-"],
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li:nth-child(3n+2) > figure::after{ animation-delay:-1.5s; }
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li:nth-child(3n+3) > figure img[src*="/files/fl-"],
+  html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li:nth-child(3n+3) > figure::after{ animation-delay:-3s; }
+  @keyframes pg-cfloat{ 0%,100%{ transform:translate3d(0,0,0); } 50%{ transform:translate3d(0,-2.5%,0); } }
+  @keyframes pg-cfloat-sh{ 0%,100%{ transform:scaleX(1); opacity:1; } 50%{ transform:scaleX(.8); opacity:.6; } }
+  @media (prefers-reduced-motion:reduce){
+    html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure img[src*="/files/fl-"],
+    html body aside#cart#cart#cart#cart#cart .l4ca:not(.in-panel) > li > figure::after{ animation:none !important; }
+  }
+</style>
+
+{% schema %}
+{
+  "name": "PG Cart zfix",
+  "settings": []
+}
+{% endschema %}
