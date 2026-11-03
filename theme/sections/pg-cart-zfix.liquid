@@ -1,0 +1,55 @@
+{%- comment -%}
+  pg-cart-zfix
+  Cart drawer stacking fix.
+
+  The drawer footer (.sticky-in-panel) is position:sticky at z-index 5.
+  The orb offer card (#pg-unlock-slot .pg-offer) renders its ORB 1/2/3 and
+  FREE ORB pickers as .pg-offer-pick at position:relative z-index 2, and on
+  mobile Safari those select menus were painting through the footer, so the
+  subtotal, shipping protection and total rows ended up underneath them.
+
+  Fix: give the footer a clearly higher layer, and give every scrolling block
+  in the drawer its own stacking context pinned below it, so nothing inside
+  them can climb out. No media query needed, this applies on mobile and
+  desktop alike.
+{%- endcomment -%}
+{%- comment -%} 2026-10 speed (css-layers): this file's CSS now lives in assets/pgs-cart.css (search its banner for this file name), linked from layout/theme.liquid between the header-group and overlay-group, which keeps the cascade order it had here. Edit it there. {%- endcomment -%}
+{%- comment -%}
+  2026-11-03 CART PHOTOS: FLOATING SHOT ON PLAIN WHITE.
+  Owner: "make sure cart photos are the floating w in the white background".
+
+  Every console / hoodie / X50 variant image is already the transparent
+  "floating" PNG (fl-*.png), so the cart line shows the right photo. What it
+  sat on was pr.css's
+    html body.pr-page aside#cart#cart#cart#cart ul.l4ca picture
+      { background: var(--pr-panel) !important }   (#F5F3F9 lavender)
+  which drew a lavender tile behind it. Five ids beat that rule's four, so the
+  tile is now white and the product floats on the white drawer.
+
+  On a phone the thumbnail box is 78x120, and object-fit:cover cut the sides
+  off the wide consoles (R36H / R36H Ultra). Floating shots only (matched by
+  the fl- file name) switch to contain, so the whole device shows; the white
+  letterbox above and below is invisible on the white drawer. Square desktop
+  boxes look the same either way. Orbs and accessories have no floating shot
+  and keep cover, so their photos still fill the box.
+
+  Kept here as inline CSS, not in pgs-cart.css, because that file is 203KB
+  and this is a four-line override.
+{%- endcomment -%}
+<style>
+  html body aside#cart#cart#cart#cart#cart .l4ca > li > figure,
+  html body aside#cart#cart#cart#cart#cart .l4ca > li > figure picture{
+    background:#fff !important;
+  }
+  html body aside#cart#cart#cart#cart#cart .l4ca > li > figure img[src*="/files/fl-"]{
+    object-fit:contain !important;
+    background:#fff !important;
+  }
+</style>
+
+{% schema %}
+{
+  "name": "PG Cart zfix",
+  "settings": []
+}
+{% endschema %}

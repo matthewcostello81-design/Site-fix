@@ -1,3 +1,36 @@
+# Cart: floating product photos on plain white
+
+## Request
+Owner, 2026-11-03: "make sure cart photos are the floating w in the white background".
+
+## What was wrong
+The cart lines already use the floating shots (every console, hoodie and X50
+variant image is a transparent fl-*.png). They sat on a lavender tile (#F5F3F9)
+from pr.css (`html body.pr-page aside#cart#cart#cart#cart ul.l4ca picture`,
+`background: var(--pr-panel) !important`). On a phone the thumbnail box is
+78x120 with object-fit:cover, which also cut the sides off the wide consoles
+(R36H Pro / R36H Ultra).
+
+## Fix (sections/pg-cart-zfix.liquid, inline CSS)
+- Cart line picture/figure background -> #fff (five ids beat pr.css's four).
+- Floating shots only (`img[src*="/files/fl-"]`) -> object-fit:contain, so the
+  whole device shows. Desktop (120x120 square) looks the same apart from the
+  white. Orbs and accessories keep cover.
+
+## Not changed
+Orbs, cases, screen protectors and protection kits have no floating shot, so
+their cart photo is still their dark scene image. They need new transparent
+product shots to match.
+
+## Where
+Draft theme "Cart photos on white (Claude 11-03)" (id 189909893348), duplicated
+from the live theme "Pack prices Oct 31 (Claude 10-31a)" on 2026-11-03, so
+publishing it changes only this file. Publishing is the owner's step (the API
+blocks theme publish). Verified in preview at 1400px and iPhone 13: line
+pictures white, floating shots uncropped.
+
+---
+
 # Discounts: every product's deal applies, even with other deals in the cart
 
 ## Request
