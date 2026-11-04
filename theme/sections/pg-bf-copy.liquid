@@ -9,20 +9,26 @@
   text (including text the tiles render later). Where "Extra 5%" starts a
   label (announcement bar segment, chips, cart row) it also gets a
   "Black Friday Sale: " prefix (owner 2026-11-04: "make sure it says Black
-  Friday sale too"). Outside the window it does nothing. Remove after
+  Friday sale too"); every other mention reads "Black Friday 15% off"
+  (owner: "repeat blackfriday in all of em"), e.g. "plus an extra Black
+  Friday 15% off at checkout". The announcement flip's "Fall Sale" (pg-mobile,
+  pg-fast-head) becomes "Black Friday Sale"; a line that already says Black
+  Friday only gets the 15%. Outside the window it does nothing. Remove after
   2027-01-01.
 {%- endcomment -%}
 <script>
 (function(){
   var START=1793764620000, END=1798783200000, now=Date.now();
   if(now<START||now>=END) return;
-  var PRE=/(^\s*|[|•·]\s*)(extra\s+)5%/gi;
+  var FALL=/\bfall sale\b/gi, PRE=/(^\s*|[|•·]\s*)(extra\s+)5%/gi;
   var RX=[/(^|[^\d.])5%(\s*(?:off|at checkout))/gi, /(extra\s+)5%/gi];
   function fix(node){
     var w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT,null), n;
     while((n=w.nextNode())){
-      var t=n.nodeValue; if(t.indexOf('5%')<0) continue;
-      var u=t.replace(PRE,'$1Black Friday Sale: $215%').replace(RX[0],'$115%$2').replace(RX[1],'$115%');
+      var t=n.nodeValue; if(t.indexOf('5%')<0 && !/fall sale/i.test(t)) continue;
+      var u=t.replace(FALL,function(m){return m===m.toUpperCase()?'BLACK FRIDAY SALE':'Black Friday Sale';}).replace(PRE,'$1Black Friday Sale: $215%');
+      var bf=/black friday/i.test(u);
+      u=u.replace(RX[0],bf?'$115%$2':'$1Black Friday 15%$2').replace(RX[1],bf?'$115%':'$1Black Friday 15%');
       if(u!==t) n.nodeValue=u;
     }
   }

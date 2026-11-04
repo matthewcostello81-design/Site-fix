@@ -18,6 +18,12 @@ Then (owner: "keep through december"): the 15% now ends 2027-01-01 00:00 CST,
 stack), and the copy switch END in the 11-04b draft is 1798783200000. The
 currently live 11-04 theme still has END = Dec 1, so 11-04b must be published
 before then or the site falls back to "5%" while checkout gives 15%.
+Then (owner: "repeat blackfriday in all of em"): sentences read "plus an extra
+Black Friday 15% off", and the announcement flip's "Fall Sale" / "Fall Sale:
+extra 5% off at checkout" (pg-mobile, pg-fast-head) read "Black Friday Sale" /
+"Black Friday Sale: extra 15% off at checkout". Preview (11-04b), 1400 and
+390px, R36S Pro, orb, home: every sale text node says Black Friday Sale + 15%;
+no "Fall Sale" or bare 5% left.
 
 ## Request
 Owner, 2026-11-04: "raise the shipping protection to 4.99", then, after the
