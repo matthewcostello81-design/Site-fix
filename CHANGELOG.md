@@ -1,4 +1,4 @@
-# Black Friday: prices +5%, extra 15% off now through Nov 30, Shipping Protection $4.99
+# Black Friday: prices +5%, extra 15% off now through Dec 31, Shipping Protection $4.99
 
 UPDATE 2026-11-04 03:57Z (owner: "we want black friday active now!"):
 "Extra 5% off entire order" ended now; "Black Friday - Extra 15% off entire
@@ -13,6 +13,11 @@ in a new draft, "Black Friday Sale wording (Claude 11-04b)" (189926080740),
 duplicated from the live one. Checked in preview at 1400 and 390px: the chip
 reads "BLACK FRIDAY SALE: EXTRA 15% OFF AT CHECKOUT" on one line under the
 price. Must be published.
+Then (owner: "keep through december"): the 15% now ends 2027-01-01 00:00 CST,
+"Extra 5% off your order" now starts 2027-01-01 00:00 CST (so the two never
+stack), and the copy switch END in the 11-04b draft is 1798783200000. The
+currently live 11-04 theme still has END = Dec 1, so 11-04b must be published
+before then or the site falls back to "5%" while checkout gives 15%.
 
 ## Request
 Owner, 2026-11-04: "raise the shipping protection to 4.99", then, after the

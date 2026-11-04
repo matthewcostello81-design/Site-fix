@@ -2,18 +2,19 @@
   Black Friday copy switch (2026-11-04).
   Automatic discounts: "Extra 5% off entire order" ended 2026-11-04 03:57Z (owner: BF active now),
   "Black Friday - Extra 15% off entire order" runs 2026-11-04 03:57Z to
-  2026-12-01 00:00 CST, then "Extra 5% off your order" takes over.
+  2027-01-01 00:00 CST (owner: "keep through december"), then "Extra 5% off
+  your order" takes over.
   The theme's tiles, chips and cart print "extra 5% off" as fixed text, so
   during that window this rewrites "5% off" / "Extra 5%" to 15% in the page
   text (including text the tiles render later). Where "Extra 5%" starts a
   label (announcement bar segment, chips, cart row) it also gets a
   "Black Friday Sale: " prefix (owner 2026-11-04: "make sure it says Black
   Friday sale too"). Outside the window it does nothing. Remove after
-  2026-12-01.
+  2027-01-01.
 {%- endcomment -%}
 <script>
 (function(){
-  var START=1793764620000, END=1796104800000, now=Date.now();
+  var START=1793764620000, END=1798783200000, now=Date.now();
   if(now<START||now>=END) return;
   var PRE=/(^\s*|[|•·]\s*)(extra\s+)5%/gi;
   var RX=[/(^|[^\d.])5%(\s*(?:off|at checkout))/gi, /(extra\s+)5%/gi];
