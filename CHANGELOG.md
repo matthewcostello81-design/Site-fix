@@ -1,3 +1,23 @@
+# Reddit ads: 5 winning + 5 Black Friday headlines per top ad (2026-11-04)
+
+Owner: "lets do 5 winning headlines and 5 blackfriday headlines for each
+campaign". Done through NotFair (AdPlug is out of requests until Dec 1).
+Ads (all DYNAMIC_CREATIVE_AD_TEMPLATE, "Asset Group 1"): PocketBoy 3 v2
+2592068316090897870, PocketBoy 2 2588112192548733278, PocketBoy
+2583934405799897731, R36S Ultra Max #1 2598572932379274377 (lands on the R36S
+Ultra page, so it got R36S Ultra copy), Eden Hoodie 2615935820745080484.
+Winners = the 5 headlines with the most purchases (Oct 5 - Nov 4 asset report);
+the dropped ones were mostly at 0 impressions. Images, videos, CTAs,
+thumbnails, destination and the UGC enhancement are unchanged (the hoodie's
+UGC flag dropped on the first write and was restored).
+New Black Friday headline assets (profile t2_2lv82z3oeq, ids 13t2_2lv82z3oeq + ):
+- R36S Pro: 0311023302-304, 0311023323-324
+- R36S Ultra: 0311023305-307, 0311023325-326
+- Hoodie: 0311023308-310, 0311023327-328
+New headlines go through Reddit review: an ad shows PENDING_APPROVAL /
+NO_ACTIVE_CHILDREN until approved (the hoodie cleared in ~5 minutes).
+After Dec 31: swap the Black Friday headlines back out.
+
 # Black Friday: prices +5%, extra 15% off now through Dec 31, Shipping Protection $4.99
 
 UPDATE 2026-11-04 03:57Z (owner: "we want black friday active now!"):
