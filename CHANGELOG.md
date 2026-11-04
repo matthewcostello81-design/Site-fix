@@ -1,3 +1,16 @@
+# Email: "Black Friday is live" sent to subscribers (2026-11-04)
+
+Owner: "send a black friday sale is live to all of our email subscribers" /
+"u do it". Shopify Email campaigns cannot be created through the API, so it went
+from the store Gmail (thepocketera@gmail.com) in 5 BCC batches (44/44/44/44/40),
+To: the store address. Recipients: Shopify segment email_subscription_status =
+'SUBSCRIBED' (217), minus the placeholder your@email.com = 216.
+Subject "Black Friday is live: extra 15% off everything"; links to R36S Pro,
+R36S Ultra Max (pocket-era-r36s-ultra-x), R36H Ultra, Eden Hoodie, Shop All.
+Footer has the business address and reply-to-unsubscribe (CAN-SPAM). Anyone
+who replies "unsubscribe" must be set to unsubscribed in Shopify within 10
+business days.
+
 # Reddit ads: 5 winning + 5 Black Friday headlines per top ad (2026-11-04)
 
 Owner: "lets do 5 winning headlines and 5 blackfriday headlines for each
