@@ -5,7 +5,14 @@ UPDATE 2026-11-04 03:57Z (owner: "we want black friday active now!"):
 order" started now (still ends 2026-12-01 00:00 CST, then "Extra 5% off your
 order" resumes). Copy switch START moved to 1793764620000 (now). Verified with
 draftOrderCalculate: R36S Pro Max $130.99 -> 15% off $19.64 -> $111.35.
-The live theme still prints "extra 5% off" until the draft theme is published.
+The owner published "Black Friday 15% copy (Claude 11-04)" (189924770020).
+Then (owner: "make sure it says Black Friday sale too"): labels that start with
+"Extra 5%" (announcement segment, the price chip, the cart row) now read
+"Black Friday Sale: Extra 15% ...". Live themes cannot be written, so this is
+in a new draft, "Black Friday Sale wording (Claude 11-04b)" (189926080740),
+duplicated from the live one. Checked in preview at 1400 and 390px: the chip
+reads "BLACK FRIDAY SALE: EXTRA 15% OFF AT CHECKOUT" on one line under the
+price. Must be published.
 
 ## Request
 Owner, 2026-11-04: "raise the shipping protection to 4.99", then, after the
