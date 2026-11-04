@@ -1,4 +1,11 @@
-# Black Friday: prices +5%, extra 15% off Nov 27-30, Shipping Protection $4.99
+# Black Friday: prices +5%, extra 15% off now through Nov 30, Shipping Protection $4.99
+
+UPDATE 2026-11-04 03:57Z (owner: "we want black friday active now!"):
+"Extra 5% off entire order" ended now; "Black Friday - Extra 15% off entire
+order" started now (still ends 2026-12-01 00:00 CST, then "Extra 5% off your
+order" resumes). Copy switch START moved to 1793764620000 (now). Verified with
+draftOrderCalculate: R36S Pro Max $130.99 -> 15% off $19.64 -> $111.35.
+The live theme still prints "extra 5% off" until the draft theme is published.
 
 ## Request
 Owner, 2026-11-04: "raise the shipping protection to 4.99", then, after the
