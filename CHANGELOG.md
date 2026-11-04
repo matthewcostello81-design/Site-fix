@@ -27,14 +27,22 @@ margin comparison, "add 5% in price but offer 15% auto applied at checkout".
 - "Extra 5% off your order" (1564344942820): from 2026-12-01 00:00, no end
   (Shopify needs a unique title, hence the new name).
 
-## Theme copy
-Tiles, chips and cart print "extra 5% off" as fixed text in many sections.
-snippets/pg-bf-copy.liquid (rendered from layout/theme.liquid) rewrites
-"5% off" / "Extra 5%" to 15% in page text, only between the two timestamps
-above. Draft theme "Black Friday 15% copy (Claude 11-04)" (id 189924770020),
-duplicated from the live "Cart photos float + bigger (Claude 11-03b)".
-Must be PUBLISHED by the owner before Nov 27; any later theme published
-instead needs the same snippet + render line.
+## Theme copy ("extra 5% off" -> 15% during the sale)
+Tiles, chips, the announcement bar ("Extra 5% off at checkout") and the cart
+print the 5% as fixed text in many sections. sections/pg-bf-copy.liquid, added
+to sections/header-group.json (footer group is at its 25-section limit),
+rewrites "5% off" / "5% at checkout" / "Extra 5%" to 15% in page text, only
+between 2026-11-27 06:00Z and 2026-12-01 06:00Z (client clock), including
+text the tiles render later. Outside the window it does nothing.
+Full-theme scan (586 files): every other "5%" is a comment or CSS. The cart
+upsell scripts read the live rate from /cart.js, so they follow the 15%.
+Product descriptions and pages: no "5%".
+Checked in preview with the clock set to 2026-11-28 at 1400px and 390px: home,
+2 collections, all consoles, orb, hoodie, a case: 15% shown, no 5% left.
+Draft theme "Black Friday 15% copy (Claude 11-04)" (id 189924770020),
+duplicated from the live "Cart photos float + bigger (Claude 11-03b)". Must be
+PUBLISHED by the owner before Nov 27. Any theme published later instead needs
+the same section + header-group entry.
 
 ## Margin (supplier cost + $1.99 shipping per supplier package + kits, 2.9% fees, before ads)
 Blended: 51.2% now -> 53.4% until BF -> 48.2% on BF (vs 45.8% for 15% off
