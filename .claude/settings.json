@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "defaultMode": "bypassPermissions",
     "allow": [
       "Bash",
       "Read",
@@ -11,7 +12,20 @@
       "WebFetch",
       "WebSearch",
       "mcp__Shopify",
-      "mcp__github"
+      "mcp__github",
+      "mcp__dsers",
+      "mcp__Notfair",
+      "mcp__Meta_Ads",
+      "mcp__TikTok_for_Business",
+      "mcp__AdKit_-_Ads_Manager",
+      "mcp__AdPlug_-_Reddit_Ads",
+      "mcp__Google_Drive",
+      "mcp__Gmail",
+      "mcp__Higgsfield",
+      "mcp__manifold",
+      "mcp__Xero",
+      "mcp__Meridian_Connector_for_Xero",
+      "mcp__Truthifi"
     ]
   }
 }
