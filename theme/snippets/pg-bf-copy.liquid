@@ -1,0 +1,33 @@
+{%- comment -%}
+  Black Friday copy switch (2026-11-04).
+  Automatic discounts: "Extra 5% off entire order" ends 2026-11-27 00:00 CST,
+  "Black Friday - Extra 15% off entire order" runs 2026-11-27 00:00 CST to
+  2026-12-01 00:00 CST, then "Extra 5% off your order" takes over.
+  The theme's tiles, chips and cart print "extra 5% off" as fixed text, so
+  during that window this rewrites "5% off" / "Extra 5%" to 15% in the page
+  text (including text the tiles render later). Outside the window it does
+  nothing. Remove after 2026-12-01.
+{%- endcomment -%}
+<script>
+(function(){
+  var START=1795759200000, END=1796104800000, now=Date.now();
+  if(now<START||now>=END) return;
+  var RX=[/(^|[^\d.])5%(\s*(?:off|at checkout))/gi, /(extra\s+)5%/gi];
+  function fix(node){
+    var w=document.createTreeWalker(node,NodeFilter.SHOW_TEXT,null), n;
+    while((n=w.nextNode())){
+      var t=n.nodeValue; if(t.indexOf('5%')<0) continue;
+      var u=t.replace(RX[0],'$115%$2').replace(RX[1],'$115%');
+      if(u!==t) n.nodeValue=u;
+    }
+  }
+  function run(){
+    fix(document.body);
+    new MutationObserver(function(ms){ms.forEach(function(m){
+      m.addedNodes.forEach(function(a){ if(a.nodeType===1) fix(a); else if(a.nodeType===3&&a.parentNode) fix(a.parentNode); });
+      if(m.type==='characterData'&&m.target.parentNode) fix(m.target.parentNode);
+    });}).observe(document.body,{childList:true,subtree:true,characterData:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+})();
+</script>

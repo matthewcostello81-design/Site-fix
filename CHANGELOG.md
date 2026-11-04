@@ -1,3 +1,45 @@
+# Black Friday: prices +5%, extra 15% off Nov 27-30, Shipping Protection $4.99
+
+## Request
+Owner, 2026-11-04: "raise the shipping protection to 4.99", then, after the
+margin comparison, "add 5% in price but offer 15% auto applied at checkout".
+
+## Prices (live, 2026-11-04)
+- Shipping Protection: $3.99 -> $4.99. Shipping Policy page text updated
+  ($2.99 -> $4.99). The Settings > Policies shipping policy still says $2.99:
+  the app has no write_legal_policies scope, so the owner must edit it.
+- Every ACTIVE product +5%, rounded to the nearest .99 (113 variants, 20
+  products). Compare-at prices left as they were. Shipping Protection and the
+  $0 protection kits unchanged. Drafts/archived untouched.
+  14.99->15.99, 19.99->20.99, 24.99->25.99, 29.99->30.99, 34.99->36.99,
+  69.99->72.99, 79.99->83.99, 109.99->114.99, 124.99->130.99,
+  129.99->135.99, 134.99->141.99, 139.99->146.99, 169.99->177.99,
+  174.99->183.99.
+- DSers pricing rule mode is "none", so DSers will not overwrite them.
+- Hoodie bundle discounts are fixed $ off ($9.99 / $14.98), so only their
+  titles changed: "2 for $135.99", "3 for $203.99".
+- Console duo discounts are fixed $ off each; unchanged (pairs move up 5%).
+
+## Discounts (automatic, Central time)
+- "Extra 5% off entire order" (1467483193572): now ends 2026-11-27 00:00.
+- "Black Friday - Extra 15% off entire order" (1564344746212):
+  2026-11-27 00:00 -> 2026-12-01 00:00. Combines with everything, like the 5%.
+- "Extra 5% off your order" (1564344942820): from 2026-12-01 00:00, no end
+  (Shopify needs a unique title, hence the new name).
+
+## Theme copy
+Tiles, chips and cart print "extra 5% off" as fixed text in many sections.
+snippets/pg-bf-copy.liquid (rendered from layout/theme.liquid) rewrites
+"5% off" / "Extra 5%" to 15% in page text, only between the two timestamps
+above. Draft theme "Black Friday 15% copy (Claude 11-04)" (id 189924770020),
+duplicated from the live "Cart photos float + bigger (Claude 11-03b)".
+Must be PUBLISHED by the owner before Nov 27; any later theme published
+instead needs the same snippet + render line.
+
+## Margin (supplier cost + $1.99 shipping per supplier package + kits, 2.9% fees, before ads)
+Blended: 51.2% now -> 53.4% until BF -> 48.2% on BF (vs 45.8% for 15% off
+with no price rise). BF needs ~13% more sales to match today's profit.
+
 # Cart: floating photos actually float, and are bigger
 
 ## Request
