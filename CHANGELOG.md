@@ -1,3 +1,39 @@
+# Product pages: "Choose your bundle" sticky bar centres the pack stack (2026-11-07)
+
+## Request
+Owner, 2026-11-07, desktop and mobile: "when u click sticky cart to take u
+to bundle it doesn't center the bundles on screen, it like puts your main
+view at bottom of bundle stack".
+
+## What was wrong
+Every product page uses the pr_product template; its pinned "Choose your
+bundle" bar (built in assets/pr.js, shown on phones and from 900px) scrolled
+the page so the "Pick your pack" block's top sat 14px under the viewport
+edge. The stack therefore hugged the top of the screen and the middle of the
+screen landed on its last row / the "Add to it" block. Reproduced in headless
+Chromium on the R36S Ultra Max page: after the click the block spanned
+y=14..658 of an 844px phone screen and y=14..578 of a 900px desktop one.
+
+## Fix (assets/pr.js, the sticky button's click handler)
+The block (label + rows) is now centred: target = block top - (viewport
+height - block height) / 2, clamped at 0. A block taller than the viewport
+cannot be centred, so that case keeps the old landing (block top 14px down,
+label and first rows in view). The flash on the rows is unchanged.
+Checked with the patched file injected over the live pages (390x844 and
+1400x900): Ultra Max 100px / 168px of space above and below the block,
+Eden Hoodie 146 / 225, R36 Pro 2 109 / 168, both layouts.
+
+## Where
+Draft theme "Sticky bar centres packs (Claude 11-07c)" (id 190119805156),
+duplicated from the live "Free shipping dot left (Claude 11-07b)", so
+publishing it changes only assets/pr.js. Publishing is the owner's step (the
+API blocks theme publish). The repo copy is theme/assets/pr.js.
+Note: the live theme's sections/pg-bf-copy.liquid no longer matches the repo
+copy (md5 185bc081... live vs 9552a91d... repo); it was changed on the
+theme after the 11-04b commit and has not been pulled back here.
+
+---
+
 # Email: "Black Friday is live" sent to subscribers (2026-11-04)
 
 Owner: "send a black friday sale is live to all of our email subscribers" /
